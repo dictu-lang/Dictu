@@ -13,6 +13,25 @@ print "hi";
 //bgf
 //bgf
 */
+//var test = 1;
+//var hi = 2;
+//var shalom = 3;
+//var x = ++test;
+//print x;
 
+var testing = 9;
+++testing;
+print testing;
 
-print 'hi';
+def hi() {
+    var t = 1;
+    ++t;
+    print t;
+    testing = 11;
+}
+
+var x = 10;
+
+hi();
+
+print x;

@@ -48,6 +48,8 @@ typedef enum {
 //> A Virtual Machine binary-ops
     OP_ADD,
     OP_SUBTRACT,
+    OP_INCREMENT,
+    OP_DECREMENT,
     OP_MULTIPLY,
     OP_DIVIDE,
 //> Types of Values not-op

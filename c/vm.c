@@ -714,6 +714,23 @@ static InterpretResult run() {
             case OP_SUBTRACT:
                 BINARY_OP(NUMBER_VAL, -);
                 break;
+            case OP_INCREMENT: {
+                if (!IS_NUMBER(peek(0))) {
+                    runtimeError("Operand must be a number.");
+                }
+
+                push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
+                break;
+            }
+
+            case OP_DECREMENT: {
+                if (!IS_NUMBER(peek(0))) {
+                    runtimeError("Operand must be a number.");
+                }
+
+                push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
+                break;
+            }
             case OP_MULTIPLY:
                 BINARY_OP(NUMBER_VAL, *);
                 break;

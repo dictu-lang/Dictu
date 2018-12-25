@@ -10,3 +10,5 @@ build/
 clox
 
 \.DS_Store
+
+clox\.dSYM/Contents/Info\.plist

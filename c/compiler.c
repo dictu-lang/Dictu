@@ -43,6 +43,7 @@ typedef enum {
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
     PREC_UNARY,       // ! - +
+    PREC_PREFIX,      // ++ --
     PREC_CALL,        // . () []
     PREC_PRIMARY
 } Precedence;
@@ -861,6 +862,14 @@ static void namedVariable(Token name, bool canAssign) {
 
 //< Local Variables not-yet
     if (canAssign && match(TOKEN_EQUAL)) {
+        if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
+            char errorMsg[200];
+            char *variableName = strndup(name.start, name.length);
+            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+            error(errorMsg);
+            return;
+        }
+
         expression();
 /* Global Variables not-yet < Local Variables not-yet
     emitBytes(OP_SET_GLOBAL, (uint8_t)arg);
@@ -936,8 +945,6 @@ static void this_(bool canAssign) {
 static void static_(bool canAssign) {
     if (currentClass == NULL) {
         error("Cannot use 'static' outside of a class.");
-    } else {
-        variable(false);
     }
 }
 //< Methods and Initializers not-yet
@@ -973,6 +980,49 @@ static void unary(bool canAssign) {
     }
 }
 
+static void prefix(bool canAssign) {
+//< Global Variables not-yet
+    TokenType operatorType = parser.previous.type;
+
+    // Compile the operand.
+/* Compiling Expressions unary < Compiling Expressions unary-operand
+  expression();
+*/
+//> unary-operand
+    parsePrecedence(PREC_PREFIX);
+//< unary-operand
+
+    // Emit the operator instruction.
+    switch (operatorType) {
+        case TOKEN_INCREMENT: {
+            emitByte(OP_INCREMENT);
+            break;
+        }
+        case TOKEN_DECREMENT:
+            emitByte(OP_DECREMENT);
+            break;
+        default:
+            return; // Unreachable.
+    }
+
+    uint8_t setOp;
+    int arg = resolveLocal(current, &parser.previous, false);
+    if (arg != -1) {
+        setOp = OP_SET_LOCAL;
+//< Local Variables not-yet
+//> Closures not-yet
+    } else if ((arg = resolveUpvalue(current, &parser.previous)) != -1) {
+        setOp = OP_SET_UPVALUE;
+//< Closures not-yet
+//> Local Variables not-yet
+    } else {
+        arg = identifierConstant(&parser.previous);
+        setOp = OP_SET_GLOBAL;
+    }
+
+    emitBytes(setOp, arg);
+}
+
 //< Compiling Expressions unary
 //> Compiling Expressions rules
 ParseRule rules[] = {
@@ -984,6 +1034,8 @@ ParseRule rules[] = {
         {NULL,     dot,    PREC_CALL},       // TOKEN_DOT
         {unary,    binary, PREC_TERM},       // TOKEN_MINUS
         {NULL,     binary, PREC_TERM},       // TOKEN_PLUS
+        {prefix,   NULL,   PREC_PREFIX},     // TOKEN_INCREMENT
+        {prefix,   NULL,   PREC_PREFIX},     // TOKEN_DECREMENT
         {NULL,     NULL,   PREC_NONE},       // TOKEN_SEMICOLON
         {NULL,     binary, PREC_FACTOR},     // TOKEN_SLASH
         {NULL,     binary, PREC_FACTOR},     // TOKEN_STAR
@@ -1259,6 +1311,15 @@ static void varDeclaration() {
     defineVariable(global);
 }
 
+static void loopVarDeclaration(int start) {
+    Local *local = &current->locals[current->localCount++];
+    local->depth = current->scopeDepth;
+    local->isUpvalue = false;
+    local->name = syntheticToken("i");
+
+    emitConstant(NUMBER_VAL(start));
+}
+
 static void expressionStatement() {
     expression();
     emitByte(OP_POP);
@@ -1268,6 +1329,118 @@ static void expressionStatement() {
 
 //< Global Variables not-yet
 //> Jumping Forward and Back not-yet
+static void forStatement() {
+    // for (var i = 0; i < 10; i = i + 1) print i;
+    //
+    //   var i = 0;
+    // start:                      <--.
+    //   if (i < 10) goto exit;  --.  |
+    //   goto body;  -----------.  |  |
+    // increment:            <--+--+--+--.
+    //   i = i + 1;             |  |  |  |
+    //   goto start;  ----------+--+--'  |
+    // body:                 <--'  |     |
+    //   print i;                  |     |
+    //   goto increment;  ---------+-----'
+    // exit:                    <--'
+    // for (2;10;1)
+
+    // Create a scope for the loop variable.
+    beginScope();
+
+    // The initialization clause.
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
+    int start = 0, start1 = 0, start2 = 0;
+
+    if (match(TOKEN_NUMBER)) {
+        //Get number substring
+        char *t = strndup(parser.previous.start, parser.previous.length);
+        //Convert string to int
+        start = strtol(t, NULL, 10);
+        consume(TOKEN_SEMICOLON, "Expect ';' after 'number'");
+    }
+
+    loopVarDeclaration(start);
+
+    int loopStart = currentChunk()->count;
+    int exitJump = -1;
+
+    // The exit condition.
+    //match(TOKEN_MINUS);
+
+    if (match(TOKEN_NUMBER)) {
+        //Get number substring
+        char *t1 = strndup(parser.previous.start, parser.previous.length);
+        //Convert string to int
+        start1 = strtol(t1, NULL, 10);
+        consume(TOKEN_SEMICOLON, "Expect ';' after 'number'");
+    }
+
+    //if (match(TOKEN_MINUS)) {
+    //    consume(TOKEN_MINUS, "Expect '-' before 'number'");
+    //}
+
+    if (match(TOKEN_NUMBER)) {
+        //Get number substring
+        char *t2 = strndup(parser.previous.start, parser.previous.length);
+        start2 = strtod(t2, NULL);
+        printf("%d\n", start2);
+        printf("%d\n", -10);
+    }
+
+    //emitByte(OP_ADD);
+
+
+    //consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+    /*
+    if (!match(TOKEN_SEMICOLON)) {
+        expression();
+        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
+
+        // Jump out of the loop if the condition is false.
+        exitJump = emitJump(OP_JUMP_IF_FALSE);
+        emitByte(OP_POP); // Condition.
+    }
+
+    // Increment step.
+    if (!match(TOKEN_RIGHT_PAREN)) {
+        // We don't want to execute the increment before the body, so jump
+        // over it.
+        int bodyJump = emitJump(OP_JUMP);
+
+        int incrementStart = currentChunk()->count;
+        expression();
+        emitByte(OP_POP);
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        // After the increment, start the whole loop over.
+        emitLoop(loopStart);
+
+        // At the end of the body, we want to jump to the increment, not
+        // the top of the loop.
+        loopStart = incrementStart;
+        //printf("\nLoop: %d\n", loopStart);
+
+        patchJump(bodyJump);
+    }
+     */
+
+    // Compile the body.
+    statement();
+
+    // Jump back to the beginning (or the increment).
+    //emitLoop(loopStart);
+
+    if (exitJump != -1) {
+        printf("%d", loopStart);
+        patchJump(exitJump);
+        emitByte(OP_POP); // Condition.
+    }
+
+    endScope(); // Loop variable.
+}
+
+/*
 static void forStatement() {
     // for (var i = 0; i < 10; i = i + 1) print i;
     //
@@ -1343,6 +1516,8 @@ static void forStatement() {
 
     endScope(); // Loop variable.
 }
+*/
+
 
 static void ifStatement() {
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
