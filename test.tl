@@ -1,15 +1,7 @@
 class testing {
-  hi(x,y,q,w,e,r,t,u,m,b) {
-    print x;
-    print y;
-    print q;
-    print w;
-    print e;
-    print r;
-    print t;
-    print u;
-    print m;
-    print b;
+  hi(q,w,e,r,t,y,u,i,o) {
+    print "test";
+    //print q;
   }
 }
 

@@ -172,10 +172,13 @@ static bool call(ObjFunction* function, int argCount) {
 
 static bool call(ObjClosure *closure, int argCount) {
     if (argCount != closure->function->arity) {
-        //runtimeError("Expected %d arguments but got %d.",
-                     //closure->function->arity, argCount);
+        runtimeError("Function '%s' expected %d arguments but got %d.",
+                     closure->function->name->chars,
+                     closure->function->arity,
+                     argCount
+        );
 //< Closures not-yet
-        //return false;
+        return false;
     }
 
     if (vm.frameCount == FRAMES_MAX) {
@@ -787,7 +790,29 @@ static InterpretResult run() {
             case OP_CALL_6:
             case OP_CALL_7:
             case OP_CALL_8:
-            case OP_CALL_9: {
+            case OP_CALL_9:
+            case OP_CALL_10:
+            case OP_CALL_11:
+            case OP_CALL_12:
+            case OP_CALL_13:
+            case OP_CALL_14:
+            case OP_CALL_15:
+            case OP_CALL_16:
+            case OP_CALL_17:
+            case OP_CALL_18:
+            case OP_CALL_19:
+            case OP_CALL_20:
+            case OP_CALL_21:
+            case OP_CALL_22:
+            case OP_CALL_23:
+            case OP_CALL_24:
+            case OP_CALL_25:
+            case OP_CALL_26:
+            case OP_CALL_27:
+            case OP_CALL_28:
+            case OP_CALL_29:
+            case OP_CALL_30:
+            case OP_CALL_31: {
                 int argCount = instruction - OP_CALL_0;
                 if (!callValue(peek(argCount), argCount)) {
                     return INTERPRET_RUNTIME_ERROR;
@@ -807,7 +832,29 @@ static InterpretResult run() {
             case OP_INVOKE_6:
             case OP_INVOKE_7:
             case OP_INVOKE_8:
-            case OP_INVOKE_9: {
+            case OP_INVOKE_9:
+            case OP_INVOKE_10:
+            case OP_INVOKE_11:
+            case OP_INVOKE_12:
+            case OP_INVOKE_13:
+            case OP_INVOKE_14:
+            case OP_INVOKE_15:
+            case OP_INVOKE_16:
+            case OP_INVOKE_17:
+            case OP_INVOKE_18:
+            case OP_INVOKE_19:
+            case OP_INVOKE_20:
+            case OP_INVOKE_21:
+            case OP_INVOKE_22:
+            case OP_INVOKE_23:
+            case OP_INVOKE_24:
+            case OP_INVOKE_25:
+            case OP_INVOKE_26:
+            case OP_INVOKE_27:
+            case OP_INVOKE_28:
+            case OP_INVOKE_29:
+            case OP_INVOKE_30:
+            case OP_INVOKE_31: {
                 ObjString *method = READ_STRING();
                 int argCount = instruction - OP_INVOKE_0;
                 if (!invoke(method, argCount)) {
@@ -827,7 +874,30 @@ static InterpretResult run() {
             case OP_SUPER_5:
             case OP_SUPER_6:
             case OP_SUPER_7:
-            case OP_SUPER_8: {
+            case OP_SUPER_8:
+            case OP_SUPER_9:
+            case OP_SUPER_10:
+            case OP_SUPER_11:
+            case OP_SUPER_12:
+            case OP_SUPER_13:
+            case OP_SUPER_14:
+            case OP_SUPER_15:
+            case OP_SUPER_16:
+            case OP_SUPER_17:
+            case OP_SUPER_18:
+            case OP_SUPER_19:
+            case OP_SUPER_20:
+            case OP_SUPER_21:
+            case OP_SUPER_22:
+            case OP_SUPER_23:
+            case OP_SUPER_24:
+            case OP_SUPER_25:
+            case OP_SUPER_26:
+            case OP_SUPER_27:
+            case OP_SUPER_28:
+            case OP_SUPER_29:
+            case OP_SUPER_30:
+            case OP_SUPER_31: {
                 ObjString *method = READ_STRING();
                 int argCount = instruction - OP_SUPER_0;
                 ObjClass *superclass = AS_CLASS(pop());

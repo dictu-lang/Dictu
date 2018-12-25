@@ -66,6 +66,15 @@ typedef enum {
     OP_LOOP,
 //< Jumping Forward and Back not-yet
 //> Calls and Functions not-yet
+    OP_CALL_0,
+    OP_CALL_1,
+    OP_CALL_2,
+    OP_CALL_3,
+    OP_CALL_4,
+    OP_CALL_5,
+    OP_CALL_6,
+    OP_CALL_7,
+    OP_CALL_8,
     OP_CALL_9,
     OP_CALL_10,
     OP_CALL_11,
