@@ -254,14 +254,14 @@ static Token number() {
 //< number
 //> string
 static Token string() {
-    while (peek() != '"' && !isAtEnd()) {
+    while (peek() != '"' && peek() != '\'' && !isAtEnd()) {
         if (peek() == '\n') scanner.line++;
         advance();
     }
 
     if (isAtEnd()) return errorToken("Unterminated string.");
 
-    // The closing ".
+    // The closing " or '.
     advance();
     return makeToken(TOKEN_STRING);
 }
@@ -324,6 +324,7 @@ Token scanToken() {
 //> scan-string
 
         case '"':
+        case '\'':
             return string();
 //< scan-string
     }

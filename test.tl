@@ -15,4 +15,4 @@ print "hi";
 */
 
 
-print you;
+print 'hi';
