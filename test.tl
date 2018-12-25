@@ -1,9 +1,18 @@
-class testing {
-  hi(q,w,e,r,t,y,u,i,o) {
-    print "test";
-    //print q;
-  }
-}
+/*
+print "hi";
+//
+//print "hi";
+//testing().hi(1,2,3,4,5,6,7,8,9,10);
+//cmdsiojcdsifsd
+//fd
+//sv
+//fdg
+//vfd
+//gv
+//df
+//bgf
+//bgf
+*/
 
-testing().hi(1,2,3,4,5,6,7,8,9,10);
 
+print you;
