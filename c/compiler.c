@@ -636,13 +636,14 @@ static uint8_t argumentList() {
             expression();
             argCount++;
 
-            //if (argCount > 8) {
-            //    error("Cannot have more than 8 arguments.");
-            //}
+            if (argCount > 32) {
+                error("Cannot have more than 32 arguments.");
+            }
         } while (match(TOKEN_COMMA));
     }
 
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+
     return argCount;
 }
 
@@ -1106,9 +1107,9 @@ static void function(FunctionType type) {
             defineVariable(paramConstant);
 
             current->function->arity++;
-            //if (current->function->arity > 8) {
-            //    error("Cannot have more than 8 parameters.");
-            //}
+            if (current->function->arity > 32) {
+                error("Cannot have more than 32 parameters.");
+            }
         } while (match(TOKEN_COMMA));
     }
 

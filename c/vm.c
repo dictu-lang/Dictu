@@ -786,7 +786,8 @@ static InterpretResult run() {
             case OP_CALL_5:
             case OP_CALL_6:
             case OP_CALL_7:
-            case OP_CALL_8: {
+            case OP_CALL_8:
+            case OP_CALL_9: {
                 int argCount = instruction - OP_CALL_0;
                 if (!callValue(peek(argCount), argCount)) {
                     return INTERPRET_RUNTIME_ERROR;
@@ -805,7 +806,8 @@ static InterpretResult run() {
             case OP_INVOKE_5:
             case OP_INVOKE_6:
             case OP_INVOKE_7:
-            case OP_INVOKE_8: {
+            case OP_INVOKE_8:
+            case OP_INVOKE_9: {
                 ObjString *method = READ_STRING();
                 int argCount = instruction - OP_INVOKE_0;
                 if (!invoke(method, argCount)) {
