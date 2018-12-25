@@ -21,14 +21,14 @@
 #undef DEBUG_TRACE_EXECUTION
 //< omit
 //< A Virtual Machine define-debug-trace
-//> Garbage Collection not-yet
+//> Garbage Collection not-yet.
 
 #define DEBUG_STRESS_GC
 //#define DEBUG_TRACE_GC
 //< Garbage Collection not-yet
 //> Local Variables not-yet
 
-#define UINT8_COUNT (UINT8_MAX + 1)
+#define UINT8_COUNT (UINT16_MAX + 1)
 //< Local Variables not-yet
 
 #endif

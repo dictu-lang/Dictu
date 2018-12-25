@@ -20,27 +20,28 @@ typedef enum {
     TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_NUMBER,
 
     // Keywords.
-    TOKEN_CLASS, TOKEN_STATIC, TOKEN_DEF, TOKEN_THIS, TOKEN_SUPER,
-    TOKEN_IF, TOKEN_ELSE, TOKEN_AND, TOKEN_OR,
-    TOKEN_VAR, TOKEN_TRUE, TOKEN_FALSE, TOKEN_NIL, TOKEN_RETURN,
+    TOKEN_CLASS, TOKEN_STATIC, TOKEN_THIS, TOKEN_SUPER, TOKEN_DEF,
+    TOKEN_IF, TOKEN_AND, TOKEN_ELSE, TOKEN_OR,
+    TOKEN_VAR, TOKEN_TRUE, TOKEN_FALSE, TOKEN_NIL,
     TOKEN_FOR, TOKEN_WHILE,
     TOKEN_PRINT,
-    TOKEN_ERROR,
-    TOKEN_EOF
+    TOKEN_RETURN,
+    TOKEN_EOF,
+    TOKEN_ERROR
+
 } TokenType;
 //< token-type
 //> token-struct
 
 typedef struct {
     TokenType type;
-    const char *start;
+    const char* start;
     int length;
     int line;
 } Token;
 //< token-struct
 
-void initScanner(const char *source);
-
+void initScanner(const char* source);
 //> scan-token-h
 Token scanToken();
 //< scan-token-h

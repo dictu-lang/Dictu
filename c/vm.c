@@ -172,10 +172,10 @@ static bool call(ObjFunction* function, int argCount) {
 
 static bool call(ObjClosure *closure, int argCount) {
     if (argCount != closure->function->arity) {
-        runtimeError("Expected %d arguments but got %d.",
-                     closure->function->arity, argCount);
+        //runtimeError("Expected %d arguments but got %d.",
+                     //closure->function->arity, argCount);
 //< Closures not-yet
-        return false;
+        //return false;
     }
 
     if (vm.frameCount == FRAMES_MAX) {

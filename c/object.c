@@ -16,8 +16,8 @@
 //< allocate-obj
 //> allocate-object
 
-static Obj *allocateObject(size_t size, ObjType type) {
-    Obj *object = (Obj *) reallocate(NULL, 0, size);
+static Obj* allocateObject(size_t size, ObjType type) {
+    Obj* object = (Obj*)reallocate(NULL, 0, size);
     object->type = type;
 //> Garbage Collection not-yet
     object->isDark = false;
@@ -29,9 +29,9 @@ static Obj *allocateObject(size_t size, ObjType type) {
 //< add-to-list
 //> Garbage Collection not-yet
 
-    #ifdef DEBUG_TRACE_GC
-        printf("%p allocate %ld for %d\n", object, size, type);
-    #endif
+#ifdef DEBUG_TRACE_GC
+    printf("%p allocate %ld for %d\n", object, size, type);
+#endif
 
 //< Garbage Collection not-yet
     return object;
@@ -39,8 +39,8 @@ static Obj *allocateObject(size_t size, ObjType type) {
 //< allocate-object
 //> Methods and Initializers not-yet
 
-ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method) {
-    ObjBoundMethod *bound = ALLOCATE_OBJ(ObjBoundMethod,
+ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
+    ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod,
                                          OBJ_BOUND_METHOD);
 
     bound->receiver = receiver;
@@ -54,9 +54,9 @@ ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method) {
 ObjClass* newClass(ObjString* name) {
 */
 //> Superclasses not-yet
-ObjClass *newClass(ObjString *name, ObjClass *superclass) {
+ObjClass* newClass(ObjString* name, ObjClass* superclass) {
 //< Superclasses not-yet
-    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
 //> Superclasses not-yet
     klass->superclass = superclass;
@@ -69,15 +69,15 @@ ObjClass *newClass(ObjString *name, ObjClass *superclass) {
 //< Classes and Instances not-yet
 //> Closures not-yet
 
-ObjClosure *newClosure(ObjFunction *function) {
+ObjClosure* newClosure(ObjFunction* function) {
     // Allocate the upvalue array first so it doesn't cause the closure
     // to get collected.
-    ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
+    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
         upvalues[i] = NULL;
     }
 
-    ObjClosure *closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
@@ -86,22 +86,23 @@ ObjClosure *newClosure(ObjFunction *function) {
 //< Closures not-yet
 //> Calls and Functions not-yet
 
-ObjFunction *newFunction() {
-    ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+ObjFunction* newFunction(bool isStatic) {
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
 //> Closures not-yet
     function->upvalueCount = 0;
 //< Closures not-yet
     function->name = NULL;
+    function->staticMethod = isStatic;
     initChunk(&function->chunk);
     return function;
 }
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
 
-ObjInstance *newInstance(ObjClass *klass) {
-    ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+ObjInstance* newInstance(ObjClass* klass) {
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
     initTable(&instance->fields);
     return instance;
@@ -109,8 +110,8 @@ ObjInstance *newInstance(ObjClass *klass) {
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
 
-ObjNative *newNative(NativeFn function) {
-    ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+ObjNative* newNative(NativeFn function) {
+    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
@@ -121,10 +122,10 @@ static ObjString* allocateString(char* chars, int length) {
 */
 //> allocate-string
 //> Hash Tables allocate-string
-static ObjString *allocateString(char *chars, int length,
+static ObjString* allocateString(char* chars, int length,
                                  uint32_t hash) {
 //< Hash Tables allocate-string
-    ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+    ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     string->length = length;
     string->chars = chars;
 //> Hash Tables allocate-store-hash
@@ -143,10 +144,9 @@ static ObjString *allocateString(char *chars, int length,
 //< Hash Tables allocate-store-string
     return string;
 }
-
 //< allocate-string
 //> Hash Tables hash-string
-static uint32_t hashString(const char *key, int length) {
+static uint32_t hashString(const char* key, int length) {
     uint32_t hash = 2166136261u;
 
     for (int i = 0; i < length; i++) {
@@ -156,17 +156,16 @@ static uint32_t hashString(const char *key, int length) {
 
     return hash;
 }
-
 //< Hash Tables hash-string
 //> take-string
-ObjString *takeString(char *chars, int length) {
+ObjString* takeString(char* chars, int length) {
 /* Strings take-string < Hash Tables take-string-hash
   return allocateString(chars, length);
 */
 //> Hash Tables take-string-hash
     uint32_t hash = hashString(chars, length);
 //> take-string-intern
-    ObjString *interned = tableFindString(&vm.strings, chars, length,
+    ObjString* interned = tableFindString(&vm.strings, chars, length,
                                           hash);
     if (interned != NULL) {
         FREE_ARRAY(char, chars, length);
@@ -177,19 +176,18 @@ ObjString *takeString(char *chars, int length) {
     return allocateString(chars, length, hash);
 //< Hash Tables take-string-hash
 }
-
 //< take-string
-ObjString *copyString(const char *chars, int length) {
+ObjString* copyString(const char* chars, int length) {
 //> Hash Tables copy-string-hash
     uint32_t hash = hashString(chars, length);
 //> copy-string-intern
-    ObjString *interned = tableFindString(&vm.strings, chars, length,
+    ObjString* interned = tableFindString(&vm.strings, chars, length,
                                           hash);
     if (interned != NULL) return interned;
 //< copy-string-intern
 
 //< Hash Tables copy-string-hash
-    char *heapChars = ALLOCATE(char, length + 1);
+    char* heapChars = ALLOCATE(char, length + 1);
     memcpy(heapChars, chars, length);
     heapChars[length] = '\0';
 
@@ -202,28 +200,32 @@ ObjString *copyString(const char *chars, int length) {
 }
 //> Closures not-yet
 
-ObjUpvalue *newUpvalue(Value *slot) {
-    ObjUpvalue *upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+ObjUpvalue* newUpvalue(Value* slot) {
+    ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
     upvalue->closed = NIL_VAL;
     upvalue->value = slot;
     upvalue->next = NULL;
 
     return upvalue;
 }
-
 //< Closures not-yet
 //> print-object
 void printObject(Value value) {
     switch (OBJ_TYPE(value)) {
 //> Classes and Instances not-yet
         case OBJ_CLASS:
-            printf("%s", AS_CLASS(value)->name->chars);
+            printf("<cls %s>", AS_CLASS(value)->name->chars);
             break;
 //< Classes and Instances not-yet
 //> Methods and Initializers not-yet
         case OBJ_BOUND_METHOD:
-            printf("<fn %s>",
-                   AS_BOUND_METHOD(value)->method->function->name->chars);
+            if (AS_BOUND_METHOD(value)->method->function->staticMethod)
+                printf("<static method %s>",
+                       AS_BOUND_METHOD(value)->method->function->name->chars);
+            else
+                printf("<bound method %s>",
+                       AS_BOUND_METHOD(value)->method->function->name->chars);
+
             break;
 //< Methods and Initializers not-yet
 //> Closures not-yet

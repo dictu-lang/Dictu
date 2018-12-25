@@ -151,10 +151,10 @@ static TokenType identifierType() {
             return checkKeyword(1, 2, "nd", TOKEN_AND);
         case 'c':
             return checkKeyword(1, 4, "lass", TOKEN_CLASS);
-        case 'e':
-            return checkKeyword(1, 3, "lse", TOKEN_ELSE);
         case 'd':
             return checkKeyword(1, 2, "ef", TOKEN_DEF);
+        case 'e':
+            return checkKeyword(1, 3, "lse", TOKEN_ELSE);
 //> keyword-f
         case 'f':
             if (scanner.current - scanner.start > 1) {
@@ -178,7 +178,15 @@ static TokenType identifierType() {
         case 'r':
             return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's':
-            return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'u':
+                        return checkKeyword(2, 3, "per", TOKEN_SUPER);
+                    case 't':
+                        return checkKeyword(2, 4, "atic", TOKEN_STATIC);
+                }
+            }
+
 //> keyword-t
         case 't':
             if (scanner.current - scanner.start > 1) {

@@ -1,46 +1,47 @@
-def test() {
-    print 1;
-}
-
-def hello() {
-  var test = 10;
-  var test1 = 11;
-
-  if (test == 10) {
-      print "hello";
-      print "what";
-      print "?????";
-      print (1 and true);
-  }
-  print "ok then";
-
-}
-
 class testing {
-  init() {
-    this.test1 = 10;
-    //return this;
-  }
-
-  //static hello() {
-  //  print "this";
-  //}
-
-  testing() {
-    print "hi";
+  static hello() {
+    //print this;
   }
 
   test() {
-    print this.test1;
-    print 2;
+    print "hello";
+    print x;
+    print y;
+    print q;
+    print w;
+    print e;
+    print r;
+    print t;
+    print u;
+    print i;
+    print p;
+    print a;
+    print s;
+    print d;
+    print f;
+    print g;
+    print h;
+    print j;
+  }
+
+  hi(x,y,q,w,e,r,t,u,m) {
+    print "test?";
+    print x;
+    print y;
+    print q;
+    print w;
+    print e;
+    print r;
+    print t;
+    print u;
   }
 }
 
-test();
+def x(){}
 
-hello();
+testing().hi(1,2,3,4,5,6,7,8,9);
 
-var obj = testing();
-//print obj;
-//obj.testing();
+print testing().hello;
+print testing().hi;
+//testing().test(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17);
 

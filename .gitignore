@@ -8,3 +8,5 @@ util/
 build/
 
 clox
+
+\.DS_Store

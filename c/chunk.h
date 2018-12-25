@@ -121,7 +121,7 @@ typedef struct {
   int count;
   int capacity;
 //< count-and-capacity
-  uint8_t* code;
+  uint16_t* code;
 //> chunk-lines
   int* lines;
 //< chunk-lines
@@ -141,7 +141,7 @@ void freeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte);
 */
 //> write-chunk-with-line-h
-void writeChunk(Chunk* chunk, uint8_t byte, int line);
+void writeChunk(Chunk* chunk, uint16_t byte, int line);
 //< write-chunk-with-line-h
 //> add-constant-h
 int addConstant(Chunk* chunk, Value value);

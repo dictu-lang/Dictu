@@ -106,6 +106,7 @@ typedef struct {
 //< Closures not-yet
   Chunk chunk;
   ObjString* name;
+  bool staticMethod;
 } ObjFunction;
 
 typedef Value (*NativeFn)(int argCount, Value* args);
@@ -191,7 +192,7 @@ ObjClass* newClass(ObjString* name, ObjClass* superclass);
 ObjClosure* newClosure(ObjFunction* function);
 //< Closures not-yet
 //> Calls and Functions not-yet
-ObjFunction* newFunction();
+ObjFunction* newFunction(bool isStatic);
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
 ObjInstance* newInstance(ObjClass* klass);

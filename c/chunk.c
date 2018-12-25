@@ -40,12 +40,12 @@ void writeChunk(Chunk* chunk, uint8_t byte) {
 */
 //> write-chunk
 //> write-chunk-with-line
-void writeChunk(Chunk* chunk, uint8_t byte, int line) {
+void writeChunk(Chunk* chunk, uint16_t byte, int line) {
 //< write-chunk-with-line
   if (chunk->capacity < chunk->count + 1) {
     int oldCapacity = chunk->capacity;
     chunk->capacity = GROW_CAPACITY(oldCapacity);
-    chunk->code = GROW_ARRAY(chunk->code, uint8_t,
+    chunk->code = GROW_ARRAY(chunk->code, uint16_t,
         oldCapacity, chunk->capacity);
 //> write-chunk-line
     chunk->lines = GROW_ARRAY(chunk->lines, int,
