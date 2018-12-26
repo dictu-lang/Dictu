@@ -1310,7 +1310,7 @@ static void varDeclaration() {
 
     defineVariable(global);
 }
-
+/*
 static void loopVarDeclaration(int start) {
     Local *local = &current->locals[current->localCount++];
     local->depth = current->scopeDepth;
@@ -1319,7 +1319,7 @@ static void loopVarDeclaration(int start) {
 
     emitConstant(NUMBER_VAL(start));
 }
-
+*/
 static void expressionStatement() {
     expression();
     emitByte(OP_POP);
@@ -1329,6 +1329,7 @@ static void expressionStatement() {
 
 //< Global Variables not-yet
 //> Jumping Forward and Back not-yet
+/*
 static void forStatement() {
     // for (var i = 0; i < 10; i = i + 1) print i;
     //
@@ -1390,41 +1391,6 @@ static void forStatement() {
 
     //emitByte(OP_ADD);
 
-
-    //consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
-    /*
-    if (!match(TOKEN_SEMICOLON)) {
-        expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
-
-        // Jump out of the loop if the condition is false.
-        exitJump = emitJump(OP_JUMP_IF_FALSE);
-        emitByte(OP_POP); // Condition.
-    }
-
-    // Increment step.
-    if (!match(TOKEN_RIGHT_PAREN)) {
-        // We don't want to execute the increment before the body, so jump
-        // over it.
-        int bodyJump = emitJump(OP_JUMP);
-
-        int incrementStart = currentChunk()->count;
-        expression();
-        emitByte(OP_POP);
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
-
-        // After the increment, start the whole loop over.
-        emitLoop(loopStart);
-
-        // At the end of the body, we want to jump to the increment, not
-        // the top of the loop.
-        loopStart = incrementStart;
-        //printf("\nLoop: %d\n", loopStart);
-
-        patchJump(bodyJump);
-    }
-     */
-
     // Compile the body.
     statement();
 
@@ -1439,8 +1405,9 @@ static void forStatement() {
 
     endScope(); // Loop variable.
 }
+ */
 
-/*
+
 static void forStatement() {
     // for (var i = 0; i < 10; i = i + 1) print i;
     //
@@ -1516,7 +1483,6 @@ static void forStatement() {
 
     endScope(); // Loop variable.
 }
-*/
 
 
 static void ifStatement() {

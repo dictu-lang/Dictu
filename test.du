@@ -18,8 +18,61 @@ print "hi";
 //var shalom = 3;
 //var x = ++test;
 //print x;
+/*
+def someFunctionWithArgs(arg1, arg2) {
+    print arg1 + arg2;
+}
 
-var someVar = "";
+someFunctionWithArgs(5, 5); // 10
+someFunctionWithArgs("test", "test"); //testtest
 
-if (someVar)
-    print "True!";
+def someFunctionWithReturn() {
+    return 10;
+}
+
+print someFunctionWithReturn(); // 10
+
+for (var i = 0; i < 10; ++i) {
+    print "hi";
+}
+
+var i = 0;
+while (i < 10) {
+    print i;
+    ++i;
+}
+*/
+
+class SomeNewClass {
+    // Constructor
+    init(someArg) {
+        this.someArg = someArg;
+    }
+
+    printSomeArg() {
+        //print this;
+        //print "hi";
+    }
+
+    static test() {
+        //print "static";
+    }
+}
+
+//SomeNewClass("Instance variables!!").printSomeArg();
+
+//var myObject = SomeNewClass("Instance variables!!"); // Instantiate the class
+//myObject.printSomeArg();
+//SomeNewClass.printSomeArg();
+SomeNewClass.test();
+
+class SomeOtherClass {
+    init(someArg) {
+        this.someArg = someArg;
+    }
+
+    static staticMethod() {
+
+    }
+}
+

@@ -18,6 +18,17 @@ var someBoolean = true;
 var someFalseBoolean = false;
 var someNilValue = nil;
 ```
+*Operators*
+```
+var test = 1; // Variable declaration
+
+test = test + 1; // Addition. Variable 'test': 2
+test = test - 1; // Subtraction. Variable 'test': 1
+++test; // Prefix incremenet. Variable 'test': 2
+--test; // Prefix decrement. Variable 'test': 1
+test = test * 10; // Multiplication. Variable 'test': 10
+test = test / 2; // Division. Variable 'test': 5
+```
 *Comments*
 ```
 //This is a single line comment
@@ -63,4 +74,90 @@ if (someVar > 9)
     
 if (someVar < 9)
     print "False!";
+    
+var someBoolean = false;
+someBoolean = !someBoolean;
+```
+*Loops*
+```
+// For loop
+for (var i = 0; i < 10; ++i) {
+    print i;
+}
+
+//While loop
+var i = 0;
+while (i < 10) {
+    print i;
+    ++i;
+}
+```
+*Functions*
+```
+//Define the function 
+def someFunction() {
+    print "Hello!";
+}
+
+someFunction(); // Call the function
+
+def someFunctionWithArgs(arg1, arg2) {
+    print arg1 + arg2;
+}
+
+someFunctionWithArgs(5, 5); // 10
+someFunctionWithArgs("test", "test"); //testtest
+
+def someFunctionWithReturn() {
+    return 10;
+}
+
+print someFunctionWithReturn(); // 10
+```
+*Classes*
+```
+class SomeClass {
+    // Constructor
+    init() {
+        print "Object created!";
+    }
+}
+
+var myObject = SomeClass(); // Instantiate the class
+
+class SomeNewClass {
+    // Constructor
+    init(someArg) {
+        this.someArg = someArg;
+    }
+    
+    // 'this' is passed implicitly to all methods
+    printSomeArg() {
+        print this.someArg;
+    }
+}
+
+var myObject = SomeNewClass("Instance variables!!"); // Instantiate the class
+myObject.printSomeArg(); // Call the method
+
+class SomeOtherClass {
+    init(someArg) {
+        this.someArg = someArg;
+    }
+    
+    // 'this' is not passed to static methods
+    static printHello() {
+        print "hello";
+    }
+}
+
+SomeOtherClass.printHello(); // Static methods dont need the object to be instantiated 
+```
+
+## Running Dictu
+```bash
+$ git clone x
+$ cd Dictu
+$ make dictu
+$ ./dictu test.du
 ```

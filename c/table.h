@@ -2,6 +2,8 @@
 #ifndef clox_table_h
 #define clox_table_h
 
+#include <stdio.h>
+
 #include "common.h"
 #include "value.h"
 //> entry

@@ -281,6 +281,23 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 static bool invoke(ObjString *name, int argCount) {
     Value receiver = peek(argCount);
 
+    if (IS_CLASS(receiver)) {
+        ObjClass *instance = AS_CLASS(receiver);
+        Value method;
+        if (!tableGet(&instance->methods, name, &method)) {
+            runtimeError("Undefined property '%s'.", name->chars);
+            return false;
+        }
+
+        if (!AS_CLOSURE(method)->function->staticMethod) {
+            runtimeError("'%s' is not static. Only static methods can be invoked directly from a class.", name->chars);
+            return false;
+        }
+
+        vm.stackTop[-argCount] = method;
+        return callValue(method, argCount);
+    }
+
     if (!IS_INSTANCE(receiver)) {
         runtimeError("Only instances have methods.");
         return false;
