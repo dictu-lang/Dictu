@@ -1051,7 +1051,7 @@ ParseRule rules[] = {
         {string,   NULL,   PREC_NONE},       // TOKEN_STRING
         {number,   NULL,   PREC_NONE},       // TOKEN_NUMBER
         {NULL,     NULL,   PREC_NONE},       // TOKEN_CLASS
-        {static_,  NULL,   PREC_NONE},      // TOKEN_STATIC
+        {static_,  NULL,   PREC_NONE},       // TOKEN_STATIC
         {this_,    NULL,   PREC_NONE},       // TOKEN_THIS
         {super_,   NULL,   PREC_NONE},       // TOKEN_SUPER
         {NULL,     NULL,   PREC_NONE},       // TOKEN_DEF

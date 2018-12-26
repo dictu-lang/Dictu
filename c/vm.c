@@ -402,7 +402,10 @@ static void createClass(ObjString *name, ObjClass *superclass) {
 //< Classes and Instances not-yet
 //> Types of Values is-falsey
 static bool isFalsey(Value value) {
-    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
+    return IS_NIL(value) ||
+           (IS_BOOL(value) && !AS_BOOL(value)) ||
+           (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
+           (IS_STRING(value) && AS_CSTRING(value)[0] == '\0');
 }
 
 //< Types of Values is-falsey

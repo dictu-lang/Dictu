@@ -19,19 +19,7 @@ print "hi";
 //var x = ++test;
 //print x;
 
-var testing = 9;
-++testing;
-print testing;
+var someVar = "";
 
-def hi() {
-    var t = 1;
-    ++t;
-    print t;
-    testing = 11;
-}
-
-var x = 10;
-
-hi();
-
-print x;
+if (someVar)
+    print "True!";
