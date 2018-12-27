@@ -127,6 +127,10 @@ typedef struct Compiler {
     // The current level of block scope nesting. Zero is the outermost
     // local scope. 0 is global scope.
     int scopeDepth;
+
+    // Loop depth. Check if we are within a loop for the break keyword.
+    // 0 is not in a loop.
+    int loopDepth;
 } Compiler;
 //< Local Variables not-yet
 //> Methods and Initializers not-yet
@@ -346,6 +350,7 @@ static void initCompiler(Compiler *compiler, int scopeDepth,
 */
 //> Calls and Functions not-yet
     compiler->scopeDepth = scopeDepth;
+    compiler->loopDepth = 0;
     compiler->function = newFunction(type == TYPE_STATIC);
 //< Calls and Functions not-yet
     current = compiler;
@@ -1006,18 +1011,28 @@ static void prefix(bool canAssign) {
     }
 
     uint8_t setOp;
-    int arg = resolveLocal(current, &parser.previous, false);
+    Token name = parser.previous;
+
+    int arg = resolveLocal(current, &name, false);
     if (arg != -1) {
         setOp = OP_SET_LOCAL;
 //< Local Variables not-yet
 //> Closures not-yet
-    } else if ((arg = resolveUpvalue(current, &parser.previous)) != -1) {
+    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
         setOp = OP_SET_UPVALUE;
 //< Closures not-yet
 //> Local Variables not-yet
     } else {
-        arg = identifierConstant(&parser.previous);
+        arg = identifierConstant(&name);
         setOp = OP_SET_GLOBAL;
+    }
+
+    if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
+        char errorMsg[200];
+        char *variableName = strndup(name.start, name.length);
+        snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+        error(errorMsg);
+        return;
     }
 
     emitBytes(setOp, arg);
@@ -1065,6 +1080,7 @@ ParseRule rules[] = {
         {literal,  NULL,   PREC_NONE},       // TOKEN_NIL
         {NULL,     NULL,   PREC_NONE},       // TOKEN_FOR
         {NULL,     NULL,   PREC_NONE},       // TOKEN_WHILE
+        {NULL,     NULL,   PREC_NONE},       // TOKEN_BREAK
         {NULL,     NULL,   PREC_NONE},       // TOKEN_PRINT
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RETURN
         {NULL,     NULL,   PREC_NONE},       // TOKEN_EOF
@@ -1175,6 +1191,7 @@ static void function(FunctionType type) {
     endScope();
 
     if (type == TYPE_STATIC) {
+        // Reset 'staticMethod' for next function
         staticMethod = false;
     }
 
@@ -1425,6 +1442,7 @@ static void forStatement() {
 
     // Create a scope for the loop variable.
     beginScope();
+    current->loopDepth++;
 
     // The initialization clause.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
@@ -1440,6 +1458,23 @@ static void forStatement() {
 
     // The exit condition.
     int exitJump = -1;
+
+    /*
+    if (match(TOKEN_BREAK)) {
+        printf("??\n");
+
+        emitByte(OP_FALSE); // Condition.
+        exitJump = emitJump(OP_JUMP_IF_FALSE);
+        emitByte(OP_POP); // Condition.
+
+        //consume(TOKEN_SEMICOLON, "Expect ';' after break.");
+    } else
+    */
+
+    if (match(TOKEN_BREAK)) {
+        printf("hi\n");
+    }
+
     if (!match(TOKEN_SEMICOLON)) {
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
@@ -1482,6 +1517,7 @@ static void forStatement() {
     }
 
     endScope(); // Loop variable.
+    current->loopDepth--;
 }
 
 
@@ -1539,14 +1575,46 @@ static void returnStatement() {
     }
 }
 
+
+static void breakStatement() {
+    if (current->loopDepth == 0) {
+        error("Cannot use 'break' outside of a loop.");
+        return;
+    }
+
+    consume(TOKEN_SEMICOLON, "Expected semicolon after break");
+
+    /*
+    emitByte(OP_FALSE);
+    int exitJump = emitJump(OP_JUMP_IF_FALSE);
+
+    // Compile the body.
+    emitByte(OP_POP); // Condition.
+    //statement();
+
+    // Loop back to the start.
+    //emitLoop(loopStart);
+
+    patchJump(exitJump);
+    emitByte(OP_POP); // Condition.
+    */
+}
+
+
 //< Calls and Functions not-yet
 //> Jumping Forward and Back not-yet
 static void whileStatement() {
+    current->loopDepth++;
+
     int loopStart = currentChunk()->count;
 
-    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
-    expression();
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+    if (check(TOKEN_LEFT_BRACE)) {
+        emitByte(OP_TRUE);
+    } else {
+        consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
+        expression();
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+    }
 
     // Jump out of the loop if the condition is false.
     int exitJump = emitJump(OP_JUMP_IF_FALSE);
@@ -1560,6 +1628,8 @@ static void whileStatement() {
 
     patchJump(exitJump);
     emitByte(OP_POP); // Condition.
+
+    current->loopDepth--;
 }
 //< Jumping Forward and Back not-yet
 //> Global Variables not-yet
@@ -1578,6 +1648,7 @@ static void synchronize() {
             case TOKEN_FOR:
             case TOKEN_IF:
             case TOKEN_WHILE:
+            case TOKEN_BREAK:
             case TOKEN_PRINT:
             case TOKEN_RETURN:
                 return;
@@ -1634,6 +1705,8 @@ static void statement() {
         returnStatement();
 //< Calls and Functions not-yet
 //> Jumping Forward and Back not-yet
+    } else if (match(TOKEN_BREAK)) {
+        breakStatement();
     } else if (match(TOKEN_WHILE)) {
         whileStatement();
 //< Jumping Forward and Back not-yet

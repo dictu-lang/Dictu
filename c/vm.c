@@ -815,6 +815,21 @@ static InterpretResult run() {
 //< Calls and Functions not-yet
                 break;
             }
+
+            case OP_BREAK: {
+                //printValue(pop());
+                //printf("\n");
+                //push(OP_FALSE);
+                //push(OP_JUMP);
+                //push(0xff);
+                //push(0xff);
+
+
+                //int exitJump = emitJump(OP_JUMP_IF_FALSE);
+
+                //patchJump(exitJump);
+                break;
+            }
 //< Jumping Forward and Back not-yet
 //> Calls and Functions not-yet
 

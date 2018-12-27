@@ -32,16 +32,12 @@ def someFunctionWithReturn() {
 
 print someFunctionWithReturn(); // 10
 
-for (var i = 0; i < 10; ++i) {
-    print "hi";
-}
-
 var i = 0;
 while (i < 10) {
     print i;
     ++i;
 }
-*/
+
 
 class SomeNewClass {
     // Constructor
@@ -75,4 +71,18 @@ class SomeOtherClass {
 
     }
 }
+*/
+
+class test {
+    static hello() {
+        //print this;
+    }
+
+    t() {
+
+    }
+}
+
+test.t();
+
 
