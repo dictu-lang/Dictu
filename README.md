@@ -31,7 +31,7 @@ test = test / 2; // Division. Variable 'test': 5
 ```
 *Comments*
 ```
-//This is a single line comment
+// This is a single line comment
 
 /*
 this
@@ -48,7 +48,7 @@ if (false or true) {
     print variable;
 }
 
-//Single line if statement body does not require braces
+// Single line if statement body does not require braces
 if (true)
     print "hello";
 ```
@@ -85,11 +85,17 @@ for (var i = 0; i < 10; ++i) {
     print i;
 }
 
-//While loop
+// While loop
 var i = 0;
 while (i < 10) {
     print i;
     ++i;
+}
+
+// While 'true' loop
+// If no expression is made, true is implicitly assumed
+while {
+    print "hello";
 }
 ```
 *Functions*
