@@ -1,6 +1,6 @@
 //> Chunks of Bytecode memory-h
-#ifndef clox_memory_h
-#define clox_memory_h
+#ifndef dictu_memory_h
+#define dictu_memory_h
 
 //> Strings memory-include-object
 #include "object.h"

@@ -1,6 +1,6 @@
 //> Scanning on Demand compiler-h
-#ifndef clox_compiler_h
-#define clox_compiler_h
+#ifndef dictu_compiler_h
+#define dictu_compiler_h
 
 //> Strings compiler-include-object
 #include "object.h"

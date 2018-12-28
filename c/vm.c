@@ -10,6 +10,7 @@
 //> Calls and Functions not-yet
 #include <time.h>
 //< Calls and Functions not-yet
+#include <math.h>
 
 //< vm-include-stdio
 #include "common.h"
@@ -28,12 +29,48 @@
 VM vm; // [one]
 //> Calls and Functions not-yet
 
-static Value clockNative(int argCount, Value *args) {
-    return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
-}
-
 //< Calls and Functions not-yet
 //> reset-stack
+
+//static Value roundNative(int argCount, Value *args) {
+//    return args[0];
+//}
+
+void defineAllNatives();
+
+/*
+static void printNative(int argCount, Value *args) {
+    Value value = args[0];
+//> Optimization not-yet
+#ifdef NAN_TAGGING
+    if (IS_BOOL(value)) {
+        printf(AS_BOOL(value) ? "true" : "false");
+    } else if (IS_NIL(value)) {
+        printf("nil");
+    } else if (IS_NUMBER(value)) {
+        printf("%g", AS_NUMBER(value));
+    } else if (IS_OBJ(value)) {
+        printObject(value);
+    }
+#else
+    //< Optimization not-yet
+//> Types of Values print-value
+  switch (value.type) {
+    case VAL_BOOL:   printf(AS_BOOL(value) ? "true" : "false"); break;
+    case VAL_NIL:    printf("nil"); break;
+    case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
+//> Strings call-print-object
+    case VAL_OBJ:    printObject(value); break;
+//< Strings call-print-object
+  }
+//< Types of Values print-value
+//> Optimization not-yet
+#endif
+//< Optimization not-yet
+}
+*/
+
+
 static void resetStack() {
     vm.stackTop = vm.stack;
 //> Calls and Functions not-yet
@@ -47,11 +84,9 @@ static void resetStack() {
 //< reset-stack
 //> Types of Values runtime-error
 static void runtimeError(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    fputs("\n", stderr);
+    //vfprintf(stderr, format, args);
+    //va_end(args);
+    //fputs("\n", stderr);
 
 /* Types of Values runtime-error < Calls and Functions not-yet
   size_t instruction = vm.ip - vm.chunk->code;
@@ -72,15 +107,23 @@ static void runtimeError(const char *format, ...) {
         size_t instruction = frame->ip - function->chunk.code - 1;
         fprintf(stderr, "[line %d] in ",
                 function->chunk.lines[instruction]);
+
         if (function->name == NULL) {
-            fprintf(stderr, "script\n");
+            fprintf(stderr, "script: ");
         } else {
-            fprintf(stderr, "%s()\n", function->name->chars);
+            fprintf(stderr, "%s(): ", function->name->chars);
         }
+
+        va_list args;
+        va_start(args, format);
+        vfprintf(stderr, format, args);
+        fputs("\n", stderr);
+        va_end(args);
+
     }
 //< Calls and Functions not-yet
 
-    resetStack();
+    // resetStack();
 }
 //< Types of Values runtime-error
 //> Calls and Functions not-yet
@@ -92,6 +135,16 @@ static void defineNative(const char *name, NativeFn function) {
     pop();
     pop();
 }
+
+/*
+static void defineNativeVoid(const char *name, NativeFnVoid function) {
+    push(OBJ_VAL(copyString(name, (int) strlen(name))));
+    push(OBJ_VAL(newNativeVoid(function)));
+    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+    pop();
+    pop();
+}
+*/
 //< Calls and Functions not-yet
 
 void initVM() {
@@ -122,8 +175,7 @@ void initVM() {
 //< Methods and Initializers not-yet
 //> Calls and Functions not-yet
 
-    defineNative("clock", clockNative);
-//< Calls and Functions not-yet
+    defineAllNatives();
 }
 
 void freeVM() {
@@ -1088,7 +1140,7 @@ InterpretResult interpret(const char *source) {
 /* Compiling Expressions interpret-chunk < Calls and Functions not-yet
   Chunk chunk;
   initChunk(&chunk);
- 
+
   if (!compile(source, &chunk)) {
     freeChunk(&chunk);
     return INTERPRET_COMPILE_ERROR;
@@ -1130,3 +1182,113 @@ InterpretResult interpret(const char *source) {
 //< Compiling Expressions interpret-chunk
 }
 //< interpret
+
+
+// Native functions
+
+static Value clockNative(int argCount, Value *args) {
+    return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
+}
+
+static Value minNative(int argCount, Value *args) {
+    double minimum;
+    double current;
+    bool set = false;
+
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+        if (!IS_NUMBER(value)) {
+            runtimeError("A non-number value passed to min()");
+            return NIL_VAL;
+        }
+
+        current = AS_NUMBER(value);
+
+        if (!set) {
+            minimum = current;
+            set = true;
+        } else if (minimum > current) {
+            minimum = current;
+        }
+    }
+
+    return NUMBER_VAL(minimum);
+}
+
+static Value maxNative(int argCount, Value *args) {
+    double maximum;
+    double current;
+    bool set = false;
+
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+        if (!IS_NUMBER(value)) {
+            runtimeError("A non-number value passed to max()");
+            return NIL_VAL;
+        }
+
+        current = AS_NUMBER(value);
+
+        if (!set) {
+            maximum = current;
+            set = true;
+        } else if (maximum < current) {
+            maximum = current;
+        }
+    }
+
+    return NUMBER_VAL(maximum);
+}
+
+static Value averageNative(int argCount, Value *args) {
+    double average = 0;
+
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+        if (!IS_NUMBER(value)) {
+            runtimeError("A non-number value passed to average()");
+            return NIL_VAL;
+        }
+        average = average + AS_NUMBER(value);
+    }
+
+    return NUMBER_VAL(average / argCount);
+}
+
+static Value floorNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("floor() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    return NUMBER_VAL((int) AS_NUMBER(args[0]));
+}
+
+void defineAllNatives() {
+    char *nativeNames[5] = {
+            "clock",
+            "min",
+            "max",
+            "average",
+            "floor"
+            //"print"
+    };
+
+    NativeFn nativeFunctions[5] = {
+            clockNative,
+            minNative,
+            maxNative,
+            averageNative,
+            floorNative
+            //testNative
+            //printNative
+    };
+
+    //NativeFnVoid nativeVoidFunctions[1] = {
+    //        printNative
+    //};
+
+    for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
+        defineNative(nativeNames[i], nativeFunctions[i]);
+    }
+}

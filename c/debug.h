@@ -1,6 +1,6 @@
 //> Chunks of Bytecode debug-h
-#ifndef clox_debug_h
-#define clox_debug_h
+#ifndef dictu_debug_h
+#define dictu_debug_h
 
 #include "chunk.h"
 

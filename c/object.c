@@ -115,6 +115,14 @@ ObjNative* newNative(NativeFn function) {
     native->function = function;
     return native;
 }
+
+/*
+ObjNative* newNativeVoid(NativeFnVoid function) {
+    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    native->function = function;
+    return native;
+}
+*/
 //< Calls and Functions not-yet
 
 /* Strings allocate-string < Hash Tables allocate-string

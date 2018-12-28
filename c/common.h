@@ -1,6 +1,6 @@
 //> Chunks of Bytecode common-h
-#ifndef clox_common_h
-#define clox_common_h
+#ifndef dictu_common_h
+#define dictu_common_h
 
 #include <stdbool.h>
 #include <stddef.h>

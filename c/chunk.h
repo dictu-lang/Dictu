@@ -1,6 +1,6 @@
 //> Chunks of Bytecode chunk-h
-#ifndef clox_chunk_h
-#define clox_chunk_h
+#ifndef dictu_chunk_h
+#define dictu_chunk_h
 
 #include "common.h"
 //> chunk-h-include-value

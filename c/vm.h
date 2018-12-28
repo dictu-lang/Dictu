@@ -1,6 +1,6 @@
 //> A Virtual Machine vm-h
-#ifndef clox_vm_h
-#define clox_vm_h
+#ifndef dictu_vm_h
+#define dictu_vm_h
 
 /* A Virtual Machine vm-h < Calls and Functions not-yet
 #include "chunk.h"
@@ -29,10 +29,10 @@ typedef struct {
   ObjFunction* function;
 */
 //> Closures not-yet
-  ObjClosure* closure;
+    ObjClosure *closure;
 //< Closures not-yet
-  uint8_t* ip;
-  Value* slots;
+    uint8_t *ip;
+    Value *slots;
 } CallFrame;
 //< Calls and Functions not-yet
 
@@ -44,48 +44,48 @@ typedef struct {
   uint8_t* ip;
 */
 //> vm-stack
-  Value stack[STACK_MAX];
-  Value* stackTop;
+    Value stack[STACK_MAX];
+    Value *stackTop;
 //< vm-stack
 //> Calls and Functions not-yet
 
-  CallFrame frames[FRAMES_MAX];
-  int frameCount;
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
 
 //< Calls and Functions not-yet
 //> Global Variables not-yet
-  Table globals;
+    Table globals;
 //< Global Variables not-yet
 //> Hash Tables vm-strings
-  Table strings;
+    Table strings;
 //< Hash Tables vm-strings
 //> Methods and Initializers not-yet
-  ObjString* initString;
+    ObjString *initString;
 //< Methods and Initializers not-yet
 //> Closures not-yet
-  ObjUpvalue* openUpvalues;
+    ObjUpvalue *openUpvalues;
 //< Closures not-yet
 //> Garbage Collection not-yet
 
-  size_t bytesAllocated;
-  size_t nextGC;
+    size_t bytesAllocated;
+    size_t nextGC;
 //< Garbage Collection not-yet
 //> Strings objects-root
 
-  Obj* objects;
+    Obj *objects;
 //< Strings objects-root
 //> Garbage Collection not-yet
-  int grayCount;
-  int grayCapacity;
-  Obj** grayStack;
+    int grayCount;
+    int grayCapacity;
+    Obj **grayStack;
 //< Garbage Collection not-yet
 } VM;
 
 //> interpret-result
 typedef enum {
-  INTERPRET_OK,
-  INTERPRET_COMPILE_ERROR,
-  INTERPRET_RUNTIME_ERROR
+    INTERPRET_OK,
+    INTERPRET_COMPILE_ERROR,
+    INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
 //< interpret-result
@@ -94,15 +94,18 @@ extern VM vm;
 
 //< Strings extern-vm
 void initVM();
+
 void freeVM();
 /* A Virtual Machine interpret-h < Scanning on Demand vm-interpret-h
 InterpretResult interpret(Chunk* chunk);
 */
 //> Scanning on Demand vm-interpret-h
-InterpretResult interpret(const char* source);
+InterpretResult interpret(const char *source);
+
 //< Scanning on Demand vm-interpret-h
 //> push-pop
 void push(Value value);
+
 Value pop();
 //< push-pop
 

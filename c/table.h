@@ -1,6 +1,6 @@
 //> Hash Tables table-h
-#ifndef clox_table_h
-#define clox_table_h
+#ifndef dictu_table_h
+#define dictu_table_h
 
 #include <stdio.h>
 

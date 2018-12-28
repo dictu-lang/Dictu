@@ -1,6 +1,6 @@
 //> Chunks of Bytecode value-h
-#ifndef clox_value_h
-#define clox_value_h
+#ifndef dictu_value_h
+#define dictu_value_h
 
 #include "common.h"
 

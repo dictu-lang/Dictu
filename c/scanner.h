@@ -1,6 +1,6 @@
 //> Scanning on Demand scanner-h
-#ifndef clox_scanner_h
-#define clox_scanner_h
+#ifndef dictu_scanner_h
+#define dictu_scanner_h
 //> token-type
 
 typedef enum {

@@ -1,6 +1,6 @@
 //> Strings object-h
-#ifndef clox_object_h
-#define clox_object_h
+#ifndef dictu_object_h
+#define dictu_object_h
 
 #include "common.h"
 //> Calls and Functions not-yet
@@ -63,159 +63,169 @@
 
 typedef enum {
 //> Methods and Initializers not-yet
-  OBJ_BOUND_METHOD,
+    OBJ_BOUND_METHOD,
 //< Methods and Initializers not-yet
 //> Classes and Instances not-yet
-  OBJ_CLASS,
+    OBJ_CLASS,
 //< Classes and Instances not-yet
 //> Closures not-yet
-  OBJ_CLOSURE,
+    OBJ_CLOSURE,
 //< Closures not-yet
 //> Calls and Functions not-yet
-  OBJ_FUNCTION,
+    OBJ_FUNCTION,
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
-  OBJ_INSTANCE,
+    OBJ_INSTANCE,
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
-  OBJ_NATIVE,
+    OBJ_NATIVE,
 //< Calls and Functions not-yet
-  OBJ_STRING,
+    OBJ_STRING,
 //> Closures not-yet
-  OBJ_UPVALUE
+    OBJ_UPVALUE
 //< Closures not-yet
 } ObjType;
 //< obj-type
 
 struct sObj {
-  ObjType type;
+    ObjType type;
 //> Garbage Collection not-yet
-  bool isDark;
+    bool isDark;
 //< Garbage Collection not-yet
 //> next-field
-  struct sObj* next;
+    struct sObj *next;
 //< next-field
 };
 //> Calls and Functions not-yet
 
 typedef struct {
-  Obj obj;
-  int arity;
+    Obj obj;
+    int arity;
 //> Closures not-yet
-  int upvalueCount;
+    int upvalueCount;
 //< Closures not-yet
-  Chunk chunk;
-  ObjString* name;
-  bool staticMethod;
+    Chunk chunk;
+    ObjString *name;
+    bool staticMethod;
 } ObjFunction;
 
-typedef Value (*NativeFn)(int argCount, Value* args);
+typedef Value (*NativeFn)(int argCount, Value *args);
+
+//typedef void (*NativeFnVoid)(int argCount, Value *args);
 
 typedef struct {
-  Obj obj;
-  NativeFn function;
+    Obj obj;
+    NativeFn function;
 } ObjNative;
 //< Calls and Functions not-yet
 //> obj-string
 
 struct sObjString {
-  Obj obj;
-  int length;
-  char* chars;
+    Obj obj;
+    int length;
+    char *chars;
 //> Hash Tables obj-string-hash
-  uint32_t hash;
+    uint32_t hash;
 //< Hash Tables obj-string-hash
 };
 //< obj-string
 //> Closures not-yet
 
 typedef struct sUpvalue {
-  Obj obj;
+    Obj obj;
 
-  // Pointer to the variable this upvalue is referencing.
-  Value* value;
+    // Pointer to the variable this upvalue is referencing.
+    Value *value;
 
-  // If the upvalue is closed (i.e. the local variable it was pointing
-  // to has been popped off the stack) then the closed-over value is
-  // hoisted out of the stack into here. [value] is then be changed to
-  // point to this.
-  Value closed;
+    // If the upvalue is closed (i.e. the local variable it was pointing
+    // to has been popped off the stack) then the closed-over value is
+    // hoisted out of the stack into here. [value] is then be changed to
+    // point to this.
+    Value closed;
 
-  // Open upvalues are stored in a linked list. This points to the next
-  // one in that list.
-  struct sUpvalue* next;
+    // Open upvalues are stored in a linked list. This points to the next
+    // one in that list.
+    struct sUpvalue *next;
 } ObjUpvalue;
 
 typedef struct {
-  Obj obj;
-  ObjFunction* function;
-  ObjUpvalue** upvalues;
-  int upvalueCount;
+    Obj obj;
+    ObjFunction *function;
+    ObjUpvalue **upvalues;
+    int upvalueCount;
 } ObjClosure;
 //< Closures not-yet
 //> Classes and Instances not-yet
 
 typedef struct sObjClass {
-  Obj obj;
-  ObjString* name;
+    Obj obj;
+    ObjString *name;
 //> Superclasses not-yet
-  struct sObjClass* superclass;
+    struct sObjClass *superclass;
 //< Superclasses not-yet
 //> Methods and Initializers not-yet
-  Table methods;
+    Table methods;
 //< Methods and Initializers not-yet
 } ObjClass;
 
 typedef struct {
-  Obj obj;
-  ObjClass* klass;
-  Table fields;
+    Obj obj;
+    ObjClass *klass;
+    Table fields;
 } ObjInstance;
 //< Classes and Instances not-yet
 
 //> Methods and Initializers not-yet
 typedef struct {
-  Obj obj;
-  Value receiver;
-  ObjClosure* method;
+    Obj obj;
+    Value receiver;
+    ObjClosure *method;
 } ObjBoundMethod;
 
-ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
+ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 //< Methods and Initializers not-yet
 /* Classes and Instances not-yet < Superclasses not-yet
 ObjClass* newClass(ObjString* name);
 */
 //> Superclasses not-yet
-ObjClass* newClass(ObjString* name, ObjClass* superclass);
+ObjClass *newClass(ObjString *name, ObjClass *superclass);
+
 //< Superclasses not-yet
 //> Closures not-yet
-ObjClosure* newClosure(ObjFunction* function);
+ObjClosure *newClosure(ObjFunction *function);
+
 //< Closures not-yet
 //> Calls and Functions not-yet
-ObjFunction* newFunction(bool isStatic);
+ObjFunction *newFunction(bool isStatic);
+
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
-ObjInstance* newInstance(ObjClass* klass);
+ObjInstance *newInstance(ObjClass *klass);
+
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
-ObjNative* newNative(NativeFn function);
+ObjNative *newNative(NativeFn function);
+
 //< Calls and Functions not-yet
 //> take-string-h
-ObjString* takeString(char* chars, int length);
+ObjString *takeString(char *chars, int length);
+
 //< take-string-h
 //> copy-string-h
-ObjString* copyString(const char* chars, int length);
+ObjString *copyString(const char *chars, int length);
 
 //< copy-string-h
 //> Closures not-yet
-ObjUpvalue* newUpvalue(Value* slot);
+ObjUpvalue *newUpvalue(Value *slot);
+
 //< Closures not-yet
 //> print-object-h
 void printObject(Value value);
+
 //< print-object-h
 //> is-obj-type
 static inline bool isObjType(Value value, ObjType type) {
-  return IS_OBJ(value) && AS_OBJ(value)->type == type;
+    return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
 
 //< is-obj-type
