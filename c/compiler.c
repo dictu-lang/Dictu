@@ -155,7 +155,6 @@ Compiler *current = NULL;
 
 ClassCompiler *currentClass = NULL;
 
-
 bool staticMethod = false;
 //< Methods and Initializers not-yet
 /* Compiling Expressions compiling-chunk < Calls and Functions not-yet
@@ -583,7 +582,7 @@ static void addLocal(Token name) {
 // we're in a local scope.
 static void declareVariable() {
     // Global variables are implicitly declared.
-    if (current->scopeDepth == 0) return;
+    if (current->scopeDepth <= 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
@@ -1027,15 +1026,17 @@ static void prefix(bool canAssign) {
         setOp = OP_SET_GLOBAL;
     }
 
-    if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
-        char errorMsg[200];
-        char *variableName = strndup(name.start, name.length);
-        snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
-        error(errorMsg);
-        return;
+    if (current->scopeDepth != 0) {
+        if (setOp != OP_SET_LOCAL) {
+            char errorMsg[200];
+            char *variableName = strndup(name.start, name.length);
+            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+            error(errorMsg);
+            return;
+        }
     }
 
-    emitBytes(setOp, arg);
+    emitBytes(setOp, (uint8_t) arg);
 }
 
 //< Compiling Expressions unary
@@ -1081,7 +1082,6 @@ ParseRule rules[] = {
         {NULL,     NULL,   PREC_NONE},       // TOKEN_FOR
         {NULL,     NULL,   PREC_NONE},       // TOKEN_WHILE
         {NULL,     NULL,   PREC_NONE},       // TOKEN_BREAK
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_PRINT
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RETURN
         {NULL,     NULL,   PREC_NONE},       // TOKEN_EOF
         {NULL,     NULL,   PREC_NONE},       // TOKEN_ERROR
@@ -1459,22 +1459,6 @@ static void forStatement() {
     // The exit condition.
     int exitJump = -1;
 
-    /*
-    if (match(TOKEN_BREAK)) {
-        printf("??\n");
-
-        emitByte(OP_FALSE); // Condition.
-        exitJump = emitJump(OP_JUMP_IF_FALSE);
-        emitByte(OP_POP); // Condition.
-
-        //consume(TOKEN_SEMICOLON, "Expect ';' after break.");
-    } else
-    */
-
-    if (match(TOKEN_BREAK)) {
-        printf("hi\n");
-    }
-
     if (!match(TOKEN_SEMICOLON)) {
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
@@ -1547,11 +1531,13 @@ static void ifStatement() {
 
 //< Jumping Forward and Back not-yet
 //> Global Variables not-yet
+/*
 static void printStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after value.");
     emitByte(OP_PRINT);
 }
+*/
 
 //< Global Variables not-yet
 //> Calls and Functions not-yet
@@ -1583,23 +1569,9 @@ static void breakStatement() {
     }
 
     consume(TOKEN_SEMICOLON, "Expected semicolon after break");
-
-    /*
-    emitByte(OP_FALSE);
-    int exitJump = emitJump(OP_JUMP_IF_FALSE);
-
-    // Compile the body.
-    emitByte(OP_POP); // Condition.
-    //statement();
-
-    // Loop back to the start.
-    //emitLoop(loopStart);
-
-    patchJump(exitJump);
-    emitByte(OP_POP); // Condition.
-    */
+    emitByte(OP_BREAK);
+    //emitByte(OP_FALSE);
 }
-
 
 //< Calls and Functions not-yet
 //> Jumping Forward and Back not-yet
@@ -1649,7 +1621,6 @@ static void synchronize() {
             case TOKEN_IF:
             case TOKEN_WHILE:
             case TOKEN_BREAK:
-            case TOKEN_PRINT:
             case TOKEN_RETURN:
                 return;
 
@@ -1676,8 +1647,6 @@ static void declaration() {
 /* Global Variables not-yet < Calls and Functions not-yet
   if (match(TOKEN_VAR)) {
 */
-    //} else if (match(TOKEN_STATIC)) {
-        // printf("STATIC FOUND!");
     } else if (match(TOKEN_VAR)) {
 //< Calls and Functions not-yet
         varDeclaration();
@@ -1690,17 +1659,12 @@ static void declaration() {
 
 static void statement() {
 /* Global Variables not-yet < Jumping Forward and Back not-yet
-  if (match(TOKEN_PRINT)) {
 */
 //> Jumping Forward and Back not-yet
     if (match(TOKEN_FOR)) {
         forStatement();
     } else if (match(TOKEN_IF)) {
         ifStatement();
-    } else if (match(TOKEN_PRINT)) {
-//< Jumping Forward and Back not-yet
-        printStatement();
-//> Calls and Functions not-yet
     } else if (match(TOKEN_RETURN)) {
         returnStatement();
 //< Calls and Functions not-yet
@@ -1712,9 +1676,9 @@ static void statement() {
 //< Jumping Forward and Back not-yet
 //> Local Variables not-yet
     } else if (match(TOKEN_LEFT_BRACE)) {
-        beginScope();
+        //beginScope();
         block();
-        endScope();
+        //endScope();
 //< Local Variables not-yet
     } else {
         expressionStatement();

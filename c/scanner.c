@@ -193,8 +193,6 @@ static TokenType identifierType() {
             return checkKeyword(1, 2, "il", TOKEN_NIL);
         case 'o':
             return checkKeyword(1, 1, "r", TOKEN_OR);
-        case 'p':
-            return checkKeyword(1, 4, "rint", TOKEN_PRINT);
         case 'r':
             return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's':

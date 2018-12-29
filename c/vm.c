@@ -136,7 +136,7 @@ static void defineNative(const char *name, NativeFn function) {
     pop();
 }
 
-/*
+
 static void defineNativeVoid(const char *name, NativeFnVoid function) {
     push(OBJ_VAL(copyString(name, (int) strlen(name))));
     push(OBJ_VAL(newNativeVoid(function)));
@@ -144,7 +144,7 @@ static void defineNativeVoid(const char *name, NativeFnVoid function) {
     pop();
     pop();
 }
-*/
+
 //< Calls and Functions not-yet
 
 void initVM() {
@@ -869,17 +869,7 @@ static InterpretResult run() {
             }
 
             case OP_BREAK: {
-                //printValue(pop());
-                //printf("\n");
-                //push(OP_FALSE);
-                //push(OP_JUMP);
-                //push(0xff);
-                //push(0xff);
-
-
-                //int exitJump = emitJump(OP_JUMP_IF_FALSE);
-
-                //patchJump(exitJump);
+                push(OP_BREAK);
                 break;
             }
 //< Jumping Forward and Back not-yet
@@ -1054,6 +1044,7 @@ static InterpretResult run() {
         return INTERPRET_OK;
 */
 //> Calls and Functions not-yet
+
                 Value result = pop();
 //> Closures not-yet
 
@@ -1186,6 +1177,10 @@ InterpretResult interpret(const char *source) {
 
 // Native functions
 
+static Value timeNative(int argCount, Value *args) {
+    return NUMBER_VAL((double) time(NULL));
+}
+
 static Value clockNative(int argCount, Value *args) {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
@@ -1264,31 +1259,74 @@ static Value floorNative(int argCount, Value *args) {
     return NUMBER_VAL((int) AS_NUMBER(args[0]));
 }
 
+// Natives no return
+
+static void sleepNative(int argCount, Value *args) {
+
+    if (argCount != 1) {
+        runtimeError("sleep() takes 1 argument (%d  given)", argCount);
+        return;
+    }
+
+    double stopTime = (double) time(NULL) + AS_NUMBER(args[0]);
+
+    while ((double) time(NULL) < stopTime) {
+        //Do nothing
+    };
+}
+
+static void printNative(int argCount, Value *args) {
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+
+        if (IS_BOOL(value)) {
+            printf(AS_BOOL(value) ? "true" : "false");
+        } else if (IS_NIL(value)) {
+            printf("nil");
+        } else if (IS_NUMBER(value)) {
+            printf("%g", AS_NUMBER(value));
+        } else if (IS_OBJ(value)) {
+            printObject(value);
+        }
+
+        printf("\n");
+    }
+}
+
 void defineAllNatives() {
-    char *nativeNames[5] = {
-            "clock",
-            "min",
-            "max",
-            "average",
-            "floor"
-            //"print"
+    char *nativeNames[6] = {
+        "clock",
+        "min",
+        "max",
+        "average",
+        "floor",
+        "time"
     };
 
-    NativeFn nativeFunctions[5] = {
-            clockNative,
-            minNative,
-            maxNative,
-            averageNative,
-            floorNative
-            //testNative
-            //printNative
+    NativeFn nativeFunctions[6] = {
+        clockNative,
+        minNative,
+        maxNative,
+        averageNative,
+        floorNative,
+        timeNative
     };
 
-    //NativeFnVoid nativeVoidFunctions[1] = {
-    //        printNative
-    //};
+    char *nativeVoidNames[2] = {
+        "sleep",
+        "print"
+    };
+
+    NativeFnVoid nativeVoidFunctions[2] = {
+        sleepNative,
+        printNative
+    };
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
         defineNative(nativeNames[i], nativeFunctions[i]);
+    }
+
+    for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
+        defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
     }
 }

@@ -33,6 +33,7 @@
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
 #define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
+#define IS_NATIVE_VOID(value)   isObjType(value, OBJ_NATIVE_VOID)
 //< Calls and Functions not-yet
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 //< is-string
@@ -55,6 +56,7 @@
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
 #define AS_NATIVE(value)        (((ObjNative*)AS_OBJ(value))->function)
+#define AS_NATIVE_VOID(value)   (((ObjNativeVoid*)AS_OBJ(value))->function)
 //< Calls and Functions not-yet
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
@@ -79,6 +81,7 @@ typedef enum {
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
     OBJ_NATIVE,
+    OBJ_NATIVE_VOID,
 //< Calls and Functions not-yet
     OBJ_STRING,
 //> Closures not-yet
@@ -111,12 +114,17 @@ typedef struct {
 
 typedef Value (*NativeFn)(int argCount, Value *args);
 
-//typedef void (*NativeFnVoid)(int argCount, Value *args);
+typedef void (*NativeFnVoid)(int argCount, Value *args);
 
 typedef struct {
     Obj obj;
     NativeFn function;
 } ObjNative;
+
+typedef struct {
+    Obj obj;
+    NativeFnVoid function;
+} ObjNativeVoid;
 //< Calls and Functions not-yet
 //> obj-string
 
@@ -205,6 +213,8 @@ ObjInstance *newInstance(ObjClass *klass);
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
 ObjNative *newNative(NativeFn function);
+
+ObjNativeVoid *newNativeVoid(NativeFnVoid function);
 
 //< Calls and Functions not-yet
 //> take-string-h

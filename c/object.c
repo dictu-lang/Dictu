@@ -116,13 +116,13 @@ ObjNative* newNative(NativeFn function) {
     return native;
 }
 
-/*
-ObjNative* newNativeVoid(NativeFnVoid function) {
-    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+
+ObjNativeVoid* newNativeVoid(NativeFnVoid function) {
+    ObjNativeVoid* native = ALLOCATE_OBJ(ObjNativeVoid, OBJ_NATIVE);
     native->function = function;
     return native;
 }
-*/
+
 //< Calls and Functions not-yet
 
 /* Strings allocate-string < Hash Tables allocate-string
@@ -252,6 +252,7 @@ void printObject(Value value) {
             break;
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
+        case OBJ_NATIVE_VOID:
         case OBJ_NATIVE:
             printf("<native fn>");
             break;

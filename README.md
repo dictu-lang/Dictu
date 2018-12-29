@@ -17,6 +17,7 @@ var someOtherString = 'hello';
 var someBoolean = true;
 var someFalseBoolean = false;
 var someNilValue = nil;
+var someOtherNilValue; // Variables declared without a value are set to nil
 ```
 *Operators*
 ```
@@ -44,13 +45,13 @@ comment
 *If statements*
 ``` 
 if (false or true) {
-    var variable = "hello";
-    print variable;
+    var variable = "Hello";
+    print(variable);  // Print is a native function so parenthesis are required
 }
 
 // Single line if statement body does not require braces
 if (true)
-    print "hello";
+    print("Hello");
 ```
 *Conditional expressions*
 ```
@@ -58,22 +59,22 @@ var someVar = 10;
 var someTestVar = 11;
 
 if (someVar == 10 and someTestVar == 11)
-    print "True!";
+    print("True!");
     
 if (someVar == 9 or someTestVar == 11)
-    print "True!";
+    print("True!");
     
 if (someVar >= 9)
-    print "True!";
+    print("True!");
     
 if (someVar <= 9)
-    print "False!";
+    print("False!");
     
 if (someVar > 9)
-    print "True!";
+    print("True!");
     
 if (someVar < 9)
-    print "False!";
+    print("False!");
     
 var someBoolean = false;
 someBoolean = !someBoolean;
@@ -82,33 +83,33 @@ someBoolean = !someBoolean;
 ```
 // For loop
 for (var i = 0; i < 10; ++i) {
-    print i;
+    print(i);
 }
 
 // While loop
 var i = 0;
 while (i < 10) {
-    print i;
+    print(i);
     ++i;
 }
 
 // While 'true' loop
 // If no expression is made, true is implicitly assumed
 while {
-    print "hello";
+    print("Hello");
 }
 ```
 *Functions*
 ```
 //Define the function 
 def someFunction() {
-    print "Hello!";
+    print("Hello!");
 }
 
 someFunction(); // Call the function
 
 def someFunctionWithArgs(arg1, arg2) {
-    print arg1 + arg2;
+    print(arg1 + arg2);
 }
 
 someFunctionWithArgs(5, 5); // 10
@@ -118,14 +119,14 @@ def someFunctionWithReturn() {
     return 10;
 }
 
-print someFunctionWithReturn(); // 10
+print(someFunctionWithReturn()); // 10
 ```
 *Classes*
 ```
 class SomeClass {
     // Constructor
     init() {
-        print "Object created!";
+        print("Object created!");
     }
 }
 
@@ -139,7 +140,7 @@ class SomeNewClass {
     
     // 'this' is passed implicitly to all methods
     printSomeArg() {
-        print this.someArg;
+        print(this.someArg);
     }
 }
 
@@ -153,7 +154,7 @@ class SomeOtherClass {
     
     // 'this' is not passed to static methods
     static printHello() {
-        print "hello";
+        print("Hello");
     }
 }
 
