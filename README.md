@@ -160,6 +160,24 @@ class SomeOtherClass {
 
 SomeOtherClass.printHello(); // Static methods dont need the object to be instantiated 
 ```
+*Built-in functions*
+```
+print(10, "test", nil, true); // Each argument is printed
+sleep(10); // Pauses execution for time specified (seconds)
+assert(true) // Returns a runtime errorr if expression passed is false
+var x = min(1, 2, 3); // Returns the smallest number of the arguments
+var x = max(1, 2, 3); // Returns the largest number of the arguments
+var x = average(1, 2, 3); // Returns an average number of the arguments
+var x = floor(17.4); // Returns previous integer: 17
+var x = round(17.4); // Rounds to the nearest integer: 17
+var x = ceil(17.4); // Returns next integer: 18
+var x = abs(-10); // Returns absolute value: 10
+var x = time(); // Returns UNIX timestamp
+var x = len("test"); // Returns the string length
+
+var x = input(); // Returns user input as a string
+var x = input("Input: "); // Returns user input as a string. Can pass an optional prompt
+```
 
 ## Running Dictu
 ```bash

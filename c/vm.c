@@ -4,6 +4,7 @@
 //< Types of Values include-stdarg
 //> vm-include-stdio
 #include <stdio.h>
+#include <stdlib.h>
 //> Strings vm-include-string
 #include <string.h>
 //< Strings vm-include-string
@@ -11,6 +12,12 @@
 #include <time.h>
 //< Calls and Functions not-yet
 #include <math.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 
 //< vm-include-stdio
 #include "common.h"
@@ -37,39 +44,6 @@ VM vm; // [one]
 //}
 
 void defineAllNatives();
-
-/*
-static void printNative(int argCount, Value *args) {
-    Value value = args[0];
-//> Optimization not-yet
-#ifdef NAN_TAGGING
-    if (IS_BOOL(value)) {
-        printf(AS_BOOL(value) ? "true" : "false");
-    } else if (IS_NIL(value)) {
-        printf("nil");
-    } else if (IS_NUMBER(value)) {
-        printf("%g", AS_NUMBER(value));
-    } else if (IS_OBJ(value)) {
-        printObject(value);
-    }
-#else
-    //< Optimization not-yet
-//> Types of Values print-value
-  switch (value.type) {
-    case VAL_BOOL:   printf(AS_BOOL(value) ? "true" : "false"); break;
-    case VAL_NIL:    printf("nil"); break;
-    case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
-//> Strings call-print-object
-    case VAL_OBJ:    printObject(value); break;
-//< Strings call-print-object
-  }
-//< Types of Values print-value
-//> Optimization not-yet
-#endif
-//< Optimization not-yet
-}
-*/
-
 
 static void resetStack() {
     vm.stackTop = vm.stack;
@@ -197,12 +171,14 @@ void freeVM() {
 void push(Value value) {
     *vm.stackTop = value;
     vm.stackTop++;
+    vm.stackCount++;
 }
 
 //< push
 //> pop
 Value pop() {
     vm.stackTop--;
+    vm.stackCount--;
     return *vm.stackTop;
 }
 
@@ -794,7 +770,6 @@ static InterpretResult run() {
                 push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
                 break;
             }
-
             case OP_DECREMENT: {
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
@@ -865,6 +840,27 @@ static InterpretResult run() {
 //> Calls and Functions not-yet
                 frame->ip -= offset;
 //< Calls and Functions not-yet
+                break;
+            }
+
+            case OP_ARRAY: {
+
+
+                //int arraySize = AS_NUMBER(pop());
+                /*
+
+                Value v = pop();
+
+                printf(IS_NUMBER(v) ? "true\n" : "false\n");
+
+                printf("%f\n", AS_NUMBER(v));
+
+                for (int i = 0; i < AS_NUMBER(v); ++i) {
+                    pop();
+                }
+                pop();
+                */
+
                 break;
             }
 
@@ -1118,7 +1114,7 @@ InterpretResult interpret(Chunk* chunk) {
   return run();
 */
 //> Scanning on Demand vm-interpret-c
-InterpretResult interpret(const char *source) {
+InterpretResult interpret(const char *source, bool repl) {
 /* Scanning on Demand omit < Compiling Expressions interpret-chunk
   // Hack to avoid unused function error. run() is not used in the
   // scanning chapter.
@@ -1165,6 +1161,16 @@ InterpretResult interpret(const char *source) {
 //> Compiling Expressions interpret-chunk
 
     InterpretResult result = run();
+
+    if (repl && vm.stackCount != 0) {
+        //for (int i = 0; i < vm.stackCount; ++i) {
+        //    printValue(pop());
+        //    printf("xx\n");
+        //}
+
+        //printf("\n");
+    }
+
 /* Compiling Expressions interpret-chunk < Calls and Functions not-yet
 
   freeChunk(&chunk);
@@ -1183,6 +1189,20 @@ static Value timeNative(int argCount, Value *args) {
 
 static Value clockNative(int argCount, Value *args) {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
+}
+
+static Value lenNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("len() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("len() only takes strings as an argument.", argCount);
+        return NIL_VAL;
+    }
+
+    return NUMBER_VAL(AS_STRING(args[0])->length);
 }
 
 static Value minNative(int argCount, Value *args) {
@@ -1256,23 +1276,118 @@ static Value floorNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    return NUMBER_VAL((int) AS_NUMBER(args[0]));
+
+    return NUMBER_VAL(floor(AS_NUMBER(args[0])));
 }
+
+static Value roundNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("round() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+
+    return NUMBER_VAL(round(AS_NUMBER(args[0])));
+}
+
+static Value ceilNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("ceil() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+
+    return NUMBER_VAL(ceil(AS_NUMBER(args[0])));
+}
+
+static Value absNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("abs() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    double absValue = AS_NUMBER(args[0]);
+
+    if (absValue < 0)
+        return NUMBER_VAL(absValue * -1);
+    return NUMBER_VAL(absValue);
+}
+
+
+static Value boolNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("bool() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    return BOOL_VAL(!isFalsey(args[0]));
+}
+
+
+static Value inputNative(int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError("input() takes at most one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (argCount != 0) {
+        Value prompt = args[0];
+        if (!IS_STRING(prompt)) {
+            runtimeError("input() only takes a string argument");
+            return NIL_VAL;
+        }
+
+        printf("%s", AS_CSTRING(prompt));
+    }
+
+    uint8_t len_max = 128;
+    uint8_t current_size = len_max;
+
+    char *line = malloc(len_max);
+
+    if (line != NULL) {
+        int c = EOF;
+        uint8_t i = 0;
+        while ((c = getchar()) != '\n' && c != EOF) {
+            line[i++] = (char) c;
+
+            if (i == current_size) {
+                current_size = i + len_max;
+                line = realloc(line, current_size);
+            }
+        }
+
+        line[i] = '\0';
+
+        Value l = OBJ_VAL(copyString(line, strlen(line)));
+        free(line);
+
+        return l;
+    }
+
+
+    return NIL_VAL;
+}
+
+
 
 // Natives no return
 
-static void sleepNative(int argCount, Value *args) {
 
+
+static void sleepNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("sleep() takes 1 argument (%d  given)", argCount);
+        runtimeError("sleep() takes exactly one argument (%d  given)", argCount);
         return;
     }
 
-    double stopTime = (double) time(NULL) + AS_NUMBER(args[0]);
+    double stopTime = AS_NUMBER(args[0]);
 
-    while ((double) time(NULL) < stopTime) {
-        //Do nothing
-    };
+    #ifdef _WIN32
+        Sleep(stopTime * 1000);
+    #else
+        sleep(stopTime);
+    #endif
 }
 
 static void printNative(int argCount, Value *args) {
@@ -1293,33 +1408,60 @@ static void printNative(int argCount, Value *args) {
     }
 }
 
+static void assertNative(int argCount, Value *args) {
+    Value value = args[0];
+
+    if (!IS_BOOL(value)) {
+        runtimeError("assert() only takes a boolean as an argument.", argCount);
+        return;
+    }
+
+    value = AS_BOOL(value);
+    if (!value)
+        runtimeError("assert() was false!");
+}
+
 void defineAllNatives() {
-    char *nativeNames[6] = {
+    char *nativeNames[] = {
         "clock",
         "min",
         "max",
         "average",
         "floor",
-        "time"
+        "round",
+        "ceil",
+        "abs",
+        "time",
+        "len",
+        "bool",
+        "input"
     };
 
-    NativeFn nativeFunctions[6] = {
+    NativeFn nativeFunctions[] = {
         clockNative,
         minNative,
         maxNative,
         averageNative,
         floorNative,
-        timeNative
+        roundNative,
+        ceilNative,
+        absNative,
+        timeNative,
+        lenNative,
+        boolNative,
+        inputNative
     };
 
-    char *nativeVoidNames[2] = {
+    char *nativeVoidNames[] = {
         "sleep",
-        "print"
+        "print",
+        "assert"
     };
 
-    NativeFnVoid nativeVoidFunctions[2] = {
+    NativeFnVoid nativeVoidFunctions[] = {
         sleepNative,
-        printNative
+        printNative,
+        assertNative
     };
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {

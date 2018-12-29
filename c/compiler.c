@@ -838,6 +838,45 @@ static void string(bool canAssign) {
                                     parser.previous.length - 2)));
 }
 
+static void array(bool canAssign) {
+    //uint8_t argCount = 0;
+    /*
+    if (!check(TOKEN_RIGHT_BRACKET)) {
+
+    }
+
+    do {
+        expression();
+        argCount++;
+    } while (match(TOKEN_COMMA));
+
+
+    if (parser.previous.length != 2) {
+        int previous = 0;
+
+        for (int i = 1; i < parser.previous.length - 1; ++i) {
+            if (parser.previous.start[i] == ',') {
+                //char *line = (char *) malloc(previous);
+                printf("%d\n", previous + i);
+            } else {
+                //printf("%c", parser.previous.start[i]);
+            }
+
+        }
+        //printf("\n");
+    }
+    */
+
+
+
+    //printf("%c\n", parser.previous.start[1]);
+
+    //emitConstant(NUMBER_VAL(argCount));
+    //emitByte(OP_ARRAY);
+
+    //consume(TOKEN_RIGHT_BRACKET, "Expect ']' for array.");
+}
+
 //< Strings parse-string
 //> Global Variables not-yet
 // Compiles a reference to a variable whose name is the given token.
@@ -1046,6 +1085,8 @@ ParseRule rules[] = {
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_PAREN
         {NULL,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACE [big]
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACE
+        {NULL,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACKET
+        {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACKET
         {NULL,     NULL,   PREC_NONE},       // TOKEN_COMMA
         {NULL,     dot,    PREC_CALL},       // TOKEN_DOT
         {unary,    binary, PREC_TERM},       // TOKEN_MINUS
@@ -1066,6 +1107,7 @@ ParseRule rules[] = {
         {variable, NULL,   PREC_NONE},       // TOKEN_IDENTIFIER
         {string,   NULL,   PREC_NONE},       // TOKEN_STRING
         {number,   NULL,   PREC_NONE},       // TOKEN_NUMBER
+        {array,    NULL,   PREC_NONE},       // TOKEN_ARRAY
         {NULL,     NULL,   PREC_NONE},       // TOKEN_CLASS
         {static_,  NULL,   PREC_NONE},       // TOKEN_STATIC
         {this_,    NULL,   PREC_NONE},       // TOKEN_THIS

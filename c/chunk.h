@@ -16,6 +16,7 @@ typedef enum {
     OP_NIL,
     OP_TRUE,
     OP_FALSE,
+    OP_ARRAY,
 //< Types of Values literal-ops
 //> Global Variables not-yet
     OP_POP,

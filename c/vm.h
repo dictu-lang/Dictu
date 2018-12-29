@@ -46,6 +46,7 @@ typedef struct {
 //> vm-stack
     Value stack[STACK_MAX];
     Value *stackTop;
+    int stackCount;
 //< vm-stack
 //> Calls and Functions not-yet
 
@@ -100,7 +101,7 @@ void freeVM();
 InterpretResult interpret(Chunk* chunk);
 */
 //> Scanning on Demand vm-interpret-h
-InterpretResult interpret(const char *source);
+InterpretResult interpret(const char *source, bool repl);
 
 //< Scanning on Demand vm-interpret-h
 //> push-pop

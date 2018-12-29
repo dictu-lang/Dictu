@@ -15,9 +15,12 @@
 //> A Virtual Machine main-include-vm
 #include "vm.h"
 
+#define VERSION "Dictu Version: 0.0.1\n"
+
 //< A Virtual Machine main-include-vm
 //> Scanning on Demand repl
 static void repl() {
+    printf(VERSION);
     char line[1024];
     for (;;) {
         printf(">>> ");
@@ -27,7 +30,7 @@ static void repl() {
             break;
         }
 
-        interpret(line);
+        interpret(line, true);
     }
 }
 
@@ -72,7 +75,7 @@ static char *readFile(const char *path) {
 //> Scanning on Demand run-file
 static void runFile(const char *path) {
     char *source = readFile(path);
-    InterpretResult result = interpret(source);
+    InterpretResult result = interpret(source, false);
     free(source); // [owner]
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
