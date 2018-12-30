@@ -118,7 +118,7 @@ ObjNative* newNative(NativeFn function) {
 
 
 ObjNativeVoid* newNativeVoid(NativeFnVoid function) {
-    ObjNativeVoid* native = ALLOCATE_OBJ(ObjNativeVoid, OBJ_NATIVE);
+    ObjNativeVoid* native = ALLOCATE_OBJ(ObjNativeVoid, OBJ_NATIVE_VOID);
     native->function = function;
     return native;
 }

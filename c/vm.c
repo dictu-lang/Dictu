@@ -273,7 +273,16 @@ static bool callValue(Value callee, int argCount) {
       case OBJ_FUNCTION:
         return call(AS_FUNCTION(callee), argCount);
 
+
 */
+            case OBJ_NATIVE_VOID: {
+                NativeFnVoid native = AS_NATIVE_VOID(callee);
+                native(argCount, vm.stackTop - argCount);
+                vm.stackTop -= argCount + 1;
+                push(NIL_VAL);
+                return true;
+            }
+
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
@@ -481,7 +490,7 @@ static void concatenate() {
 
 //< Strings concatenate
 //> run
-static InterpretResult run() {
+static InterpretResult run(bool repl) {
 //> Calls and Functions not-yet
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
 
@@ -588,9 +597,16 @@ static InterpretResult run() {
                 break;
 //< Types of Values interpret-literals
 //> Global Variables not-yet
-            case OP_POP:
-                pop();
+            case OP_POP: {
+                if (repl) {
+                    Value v = pop();
+                    if (!IS_NIL(v)) {
+                        printValue(v);
+                        printf("\n");
+                    }
+                }
                 break;
+            }
 //< Global Variables not-yet
 //> Local Variables not-yet
 
@@ -1160,16 +1176,7 @@ InterpretResult interpret(const char *source, bool repl) {
 //< Scanning on Demand vm-interpret-c
 //> Compiling Expressions interpret-chunk
 
-    InterpretResult result = run();
-
-    if (repl && vm.stackCount != 0) {
-        //for (int i = 0; i < vm.stackCount; ++i) {
-        //    printValue(pop());
-        //    printf("xx\n");
-        //}
-
-        //printf("\n");
-    }
+    InterpretResult result = run(repl);
 
 /* Compiling Expressions interpret-chunk < Calls and Functions not-yet
 
