@@ -51,6 +51,7 @@ typedef enum {
     OP_SUBTRACT,
     OP_INCREMENT,
     OP_DECREMENT,
+    OP_ADD_EQUALS,
     OP_MULTIPLY,
     OP_DIVIDE,
 //> Types of Values not-op

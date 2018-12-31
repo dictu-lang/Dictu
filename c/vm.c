@@ -794,6 +794,16 @@ static InterpretResult run(bool repl) {
                 push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
                 break;
             }
+            case OP_ADD_EQUALS: {
+                if (!IS_NUMBER(peek(0))) {
+                    runtimeError("Operand must be a number.");
+                }
+
+                printf("x: %f\n", AS_NUMBER(pop()));
+                printf("y: %f\n", AS_NUMBER(pop()));
+                push(NUMBER_VAL(10));
+                break;
+            }
             case OP_MULTIPLY:
                 BINARY_OP(NUMBER_VAL, *);
                 break;

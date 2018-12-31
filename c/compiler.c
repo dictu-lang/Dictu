@@ -1078,6 +1078,61 @@ static void prefix(bool canAssign) {
     emitBytes(setOp, (uint8_t) arg);
 }
 
+
+static void binaryAssign(bool canAssign) {
+//< Global Variables not-yet
+    TokenType operatorType = parser.previous.type;
+
+    //printf("%s\n", parser.previous.start);
+
+    // Compile the operand.
+
+//> unary-operand
+    parsePrecedence(PREC_ASSIGNMENT);
+//< unary-operand
+
+    // Emit the operator instruction.
+    switch (operatorType) {
+        case TOKEN_PLUS_EQUALS: {
+            emitByte(OP_ADD_EQUALS);
+            break;
+        }
+        default:
+            return; // Unreachable.
+    }
+
+    uint8_t setOp;
+    Token name = parser.previous;
+
+    //printf("%s\n", parser.current.start);
+
+    int arg = resolveLocal(current, &name, false);
+    if (arg != -1) {
+        setOp = OP_SET_LOCAL;
+//< Local Variables not-yet
+//> Closures not-yet
+    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
+        setOp = OP_SET_UPVALUE;
+//< Closures not-yet
+//> Local Variables not-yet
+    } else {
+        arg = identifierConstant(&name);
+        setOp = OP_SET_GLOBAL;
+    }
+
+    if (current->scopeDepth != 0) {
+        if (setOp != OP_SET_LOCAL) {
+            char errorMsg[200];
+            char *variableName = strndup(name.start, name.length);
+            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+            error(errorMsg);
+            return;
+        }
+    }
+
+    emitBytes(setOp, (uint8_t) arg);
+}
+
 //< Compiling Expressions unary
 //> Compiling Expressions rules
 ParseRule rules[] = {
@@ -1093,6 +1148,7 @@ ParseRule rules[] = {
         {NULL,     binary, PREC_TERM},       // TOKEN_PLUS
         {prefix,   NULL,   PREC_PREFIX},     // TOKEN_INCREMENT
         {prefix,   NULL,   PREC_PREFIX},     // TOKEN_DECREMENT
+        {NULL,     binaryAssign,   PREC_ASSIGNMENT},       // TOKEN_PLUS_EQUALS
         {NULL,     NULL,   PREC_NONE},       // TOKEN_SEMICOLON
         {NULL,     binary, PREC_FACTOR},     // TOKEN_SLASH
         {NULL,     binary, PREC_FACTOR},     // TOKEN_STAR
@@ -1160,6 +1216,7 @@ static void parsePrecedence(Precedence precedence) {
 */
 //> Global Variables not-yet
         infixRule(canAssign);
+
 //< Global Variables not-yet
     }
 //> Global Variables not-yet

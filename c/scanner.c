@@ -322,8 +322,15 @@ Token scanToken() {
 //> two-char
         case '-':
             return makeToken(match('-') ? TOKEN_DECREMENT : TOKEN_MINUS);
-        case '+':
-            return makeToken(match('+') ? TOKEN_INCREMENT : TOKEN_PLUS);
+        case '+': {
+            if (match('+')) {
+                return makeToken(TOKEN_INCREMENT);
+            } else if (match('=')) {
+                return makeToken(TOKEN_PLUS_EQUALS);
+            } else {
+                return makeToken(TOKEN_PLUS);
+            }
+        }
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
