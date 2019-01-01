@@ -12,6 +12,7 @@ typedef enum {
     TOKEN_INCREMENT, TOKEN_DECREMENT,
     TOKEN_PLUS_EQUALS,
     TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR,
+    TOKEN_PERCENT,
 
     // One or two character tokens.
     TOKEN_BANG, TOKEN_BANG_EQUAL,

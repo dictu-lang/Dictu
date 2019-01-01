@@ -1,5 +1,3 @@
-var x;
-var s = "test";
+while (true) {
 
-if((x = len(s)) == 4)
-    print(x);
+}

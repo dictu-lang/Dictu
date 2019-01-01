@@ -242,9 +242,19 @@ void printObject(Value value) {
             break;
 //< Closures not-yet
 //> Calls and Functions not-yet
-        case OBJ_FUNCTION:
-            printf("<fn %s>", AS_FUNCTION(value)->name->chars);
+        case OBJ_FUNCTION: {
+
+            char *x = AS_FUNCTION(value)->name->chars;
+            if (x != NULL) {
+                //printf("%lu", strlen(x));
+            }
+
+            if (false) {
+                printf("<fn %s>", x);
+            }
+
             break;
+        }
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
         case OBJ_INSTANCE:
@@ -258,7 +268,7 @@ void printObject(Value value) {
             break;
 //< Calls and Functions not-yet
         case OBJ_STRING:
-            printf("%s", AS_CSTRING(value));
+            //printf("%s", AS_CSTRING(value));
             break;
 //> Closures not-yet
         case OBJ_UPVALUE:

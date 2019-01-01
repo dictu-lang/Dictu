@@ -169,6 +169,9 @@ void freeVM() {
 
 //> push
 void push(Value value) {
+    //printValue(value);
+    //printf("%d\n", vm.stackCount);
+    //printf("\n");
     *vm.stackTop = value;
     vm.stackTop++;
     vm.stackCount++;
@@ -810,6 +813,15 @@ static InterpretResult run(bool repl) {
             case OP_DIVIDE:
                 BINARY_OP(NUMBER_VAL, /);
                 break;
+            case OP_MOD: {
+                double b = AS_NUMBER(pop());
+                double a = AS_NUMBER(pop());
+
+                //push(NUMBER_VAL(10));
+
+                push(NUMBER_VAL(fmod(a, b)));
+                break;
+            }
 //< Types of Values op-arithmetic
 //> Types of Values op-not
             case OP_NOT:
@@ -1481,11 +1493,14 @@ void defineAllNatives() {
         assertNative
     };
 
+
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
         defineNative(nativeNames[i], nativeFunctions[i]);
     }
 
-    for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
-        defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
+    if (false) {
+        for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
+            defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
+        }
     }
 }

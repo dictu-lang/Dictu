@@ -39,7 +39,7 @@ void printValue(Value value) {
 //> Optimization not-yet
 #ifdef NAN_TAGGING
     if (IS_BOOL(value)) {
-        printf(AS_BOOL(value) ? "true" : "false");
+        //printf(AS_BOOL(value) ? "true" : "false");
     } else if (IS_NIL(value)) {
         printf("nil");
     } else if (IS_NUMBER(value)) {

@@ -301,10 +301,13 @@ static void emitReturn() {
 //> Compiling Expressions make-constant
 static uint8_t makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
+    printf("constant added: ");
     if (constant > UINT8_MAX) {
         error("Too many constants in one chunk.");
         return 0;
     }
+
+    printf("%d\n", constant);
 
     return (uint8_t) constant;
 }
@@ -719,6 +722,9 @@ static void binary(bool canAssign) {
             break;
         case TOKEN_SLASH:
             emitByte(OP_DIVIDE);
+            break;
+        case TOKEN_PERCENT:
+            emitByte(OP_MOD);
             break;
         default:
             return; // Unreachable.
@@ -1152,6 +1158,7 @@ ParseRule rules[] = {
         {NULL,     NULL,   PREC_NONE},       // TOKEN_SEMICOLON
         {NULL,     binary, PREC_FACTOR},     // TOKEN_SLASH
         {NULL,     binary, PREC_FACTOR},     // TOKEN_STAR
+        {NULL,     binary, PREC_FACTOR},     // TOKEN_PERCENT
         {unary,    NULL,   PREC_NONE},       // TOKEN_BANG
         {NULL,     binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
         {NULL,     NULL,   PREC_NONE},       // TOKEN_EQUAL
@@ -1540,7 +1547,7 @@ static void forStatement() {
     // exit:                    <--'
 
     // Create a scope for the loop variable.
-    beginScope();
+    //beginScope();
     current->loopDepth++;
 
     // The initialization clause.
@@ -1599,7 +1606,7 @@ static void forStatement() {
         emitByte(OP_POP); // Condition.
     }
 
-    endScope(); // Loop variable.
+    //endScope(); // Loop variable.
     current->loopDepth--;
 }
 
@@ -1681,6 +1688,7 @@ static void whileStatement() {
 
     if (check(TOKEN_LEFT_BRACE)) {
         emitByte(OP_TRUE);
+        //emitByte(OP_POP);
     } else {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
         expression();
@@ -1775,9 +1783,9 @@ static void statement() {
 //< Jumping Forward and Back not-yet
 //> Local Variables not-yet
     } else if (match(TOKEN_LEFT_BRACE)) {
-        //beginScope();
+        beginScope();
         block();
-        //endScope();
+        endScope();
 //< Local Variables not-yet
     } else {
         expressionStatement();

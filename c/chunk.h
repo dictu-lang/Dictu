@@ -54,6 +54,7 @@ typedef enum {
     OP_ADD_EQUALS,
     OP_MULTIPLY,
     OP_DIVIDE,
+    OP_MOD,
 //> Types of Values not-op
     OP_NOT,
 //< Types of Values not-op
