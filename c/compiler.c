@@ -301,13 +301,10 @@ static void emitReturn() {
 //> Compiling Expressions make-constant
 static uint8_t makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
-    printf("constant added: ");
     if (constant > UINT8_MAX) {
         error("Too many constants in one chunk.");
         return 0;
     }
-
-    printf("%d\n", constant);
 
     return (uint8_t) constant;
 }
@@ -1783,9 +1780,9 @@ static void statement() {
 //< Jumping Forward and Back not-yet
 //> Local Variables not-yet
     } else if (match(TOKEN_LEFT_BRACE)) {
-        beginScope();
+        //beginScope();
         block();
-        endScope();
+        //endScope();
 //< Local Variables not-yet
     } else {
         expressionStatement();

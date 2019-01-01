@@ -607,6 +607,8 @@ static InterpretResult run(bool repl) {
                         printValue(v);
                         printf("\n");
                     }
+                } else {
+                    pop();
                 }
                 break;
             }
@@ -1498,9 +1500,7 @@ void defineAllNatives() {
         defineNative(nativeNames[i], nativeFunctions[i]);
     }
 
-    if (false) {
-        for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
-            defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
-        }
+    for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
+        defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
     }
 }
