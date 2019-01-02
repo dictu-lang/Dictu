@@ -867,6 +867,7 @@ static void subscript(bool canAssign) {
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else {
         emitByte(OP_SUBSCRIPT);
+        emitByte(OP_NIL);
     }
 }
 

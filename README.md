@@ -30,6 +30,13 @@ test = test - 1; // Subtraction. Variable 'test': 1
 --test; // Prefix decrement. Variable 'test': 1
 test = test * 10; // Multiplication. Variable 'test': 10
 test = test / 2; // Division. Variable 'test': 5
+
+// List indexing
+var someList = [1, 2, 3];
+var someNumber = someList[0]; // Lists are 0 indexed. Variable 'someNumber': 1
+var lastNumber = someList[-1]; // Negative indexes work from the back of the list. Variable 'someNumber': 3
+someList[-2] = 10;
+print(someList); // [1, 10, 3]
 ```
 *Comments*
 ```

@@ -903,6 +903,8 @@ static InterpretResult run() {
             }
 
             case OP_SUBSCRIPT: {
+                printf("Count: %d\n", vm.stackCount);
+
                 Value indexValue = pop();
                 Value listValue = pop();
 
@@ -912,14 +914,29 @@ static InterpretResult run() {
                 }
 
                 ObjList *list = AS_LIST(listValue);
-                uint8_t index = AS_NUMBER(indexValue);
+                int index = AS_NUMBER(indexValue);
 
-                push(list->values.values[index]);
+                if (index >= 0 && index < list->values.count) {
+                    push(list->values.values[index]);
+                } else if (index < 0) {
+                    index = list->values.count + index;
+                    if (index < 0) {
+                        runtimeError("Array index out of range!.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    push(list->values.values[index]);
+                } else {
+                    runtimeError("Array index out of range!.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
 
                 break;
             }
 
             case OP_SUBSCRIPT_ASSIGN: {
+                printf("Count: %d\n", vm.stackCount);
+
                 Value assignValue = pop();
                 Value indexValue = pop();
                 Value listValue = pop();
@@ -930,9 +947,24 @@ static InterpretResult run() {
                 }
 
                 ObjList *list = AS_LIST(listValue);
-                uint8_t index = AS_NUMBER(indexValue);
+                int index = AS_NUMBER(indexValue);
 
-                list->values.values[index] = assignValue;
+                if (index >= 0 && index < list->values.count) {
+                    list->values.values[index] = assignValue;
+                } else if (index < 0) {
+                    index = list->values.count + index;
+                    if (index < 0) {
+                        runtimeError("Array index out of range!.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    list->values.values[index] = assignValue;
+                } else {
+                    runtimeError("Array index out of range!.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                //push(NIL_VAL);
 
                 break;
             }
