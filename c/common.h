@@ -28,7 +28,7 @@
 //< Garbage Collection not-yet
 //> Local Variables not-yet
 
-#define UINT8_COUNT (UINT16_MAX + 1)
+#define UINT8_COUNT (UINT8_MAX + 1)
 //< Local Variables not-yet
 
 #endif

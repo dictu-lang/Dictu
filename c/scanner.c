@@ -253,18 +253,6 @@ static Token number() {
 
 //< number
 //> string
-static Token array() {
-    while (peek() != ']' && !isAtEnd()) {
-        if (peek() == '\n') scanner.line++;
-        advance();
-    }
-
-    if (isAtEnd()) return errorToken("Unclosed array.");
-
-    // The closing ].
-    advance();
-    return makeToken(TOKEN_ARRAY);
-}
 
 static Token string() {
     while (peek() != '"' && peek() != '\'' && !isAtEnd()) {
@@ -309,6 +297,10 @@ Token scanToken() {
             return makeToken(TOKEN_LEFT_BRACE);
         case '}':
             return makeToken(TOKEN_RIGHT_BRACE);
+        case '[':
+            return makeToken(TOKEN_LEFT_BRACKET);
+        case ']':
+            return makeToken(TOKEN_RIGHT_BRACKET);
         case ';':
             return makeToken(TOKEN_SEMICOLON);
         case ',':
@@ -348,9 +340,6 @@ Token scanToken() {
         case '"':
         case '\'':
             return string();
-
-        case '[':
-            return array();
 //< scan-string
     }
 //< scan-char

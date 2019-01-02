@@ -47,6 +47,8 @@ typedef struct {
     Value stack[STACK_MAX];
     Value *stackTop;
     int stackCount;
+
+    bool repl;
 //< vm-stack
 //> Calls and Functions not-yet
 
@@ -94,14 +96,14 @@ typedef enum {
 extern VM vm;
 
 //< Strings extern-vm
-void initVM();
+void initVM(bool repl);
 
 void freeVM();
 /* A Virtual Machine interpret-h < Scanning on Demand vm-interpret-h
 InterpretResult interpret(Chunk* chunk);
 */
 //> Scanning on Demand vm-interpret-h
-InterpretResult interpret(const char *source, bool repl);
+InterpretResult interpret(const char *source);
 
 //< Scanning on Demand vm-interpret-h
 //> push-pop

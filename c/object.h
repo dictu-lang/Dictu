@@ -36,6 +36,7 @@
 #define IS_NATIVE_VOID(value)   isObjType(value, OBJ_NATIVE_VOID)
 //< Calls and Functions not-yet
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
+#define IS_LIST(value)          isObjType(value, OBJ_LIST)
 //< is-string
 //> as-string
 
@@ -60,32 +61,34 @@
 //< Calls and Functions not-yet
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
+#define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
 //< as-string
 //> obj-type
 
 typedef enum {
 //> Methods and Initializers not-yet
-    OBJ_BOUND_METHOD,
+            OBJ_BOUND_METHOD,
 //< Methods and Initializers not-yet
 //> Classes and Instances not-yet
-    OBJ_CLASS,
+            OBJ_CLASS,
 //< Classes and Instances not-yet
 //> Closures not-yet
-    OBJ_CLOSURE,
+            OBJ_CLOSURE,
 //< Closures not-yet
 //> Calls and Functions not-yet
-    OBJ_FUNCTION,
+            OBJ_FUNCTION,
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
-    OBJ_INSTANCE,
+            OBJ_INSTANCE,
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
-    OBJ_NATIVE,
+            OBJ_NATIVE,
     OBJ_NATIVE_VOID,
 //< Calls and Functions not-yet
-    OBJ_STRING,
+            OBJ_STRING,
+    OBJ_LIST,
 //> Closures not-yet
-    OBJ_UPVALUE
+            OBJ_UPVALUE
 //< Closures not-yet
 } ObjType;
 //< obj-type
@@ -138,6 +141,11 @@ struct sObjString {
 };
 //< obj-string
 //> Closures not-yet
+
+struct sObjList {
+    Obj obj;
+    ValueArray values;
+};
 
 typedef struct sUpvalue {
     Obj obj;
@@ -223,6 +231,8 @@ ObjString *takeString(char *chars, int length);
 //< take-string-h
 //> copy-string-h
 ObjString *copyString(const char *chars, int length);
+
+ObjList *initList();
 
 //< copy-string-h
 //> Closures not-yet

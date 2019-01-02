@@ -841,43 +841,21 @@ static void string(bool canAssign) {
                                     parser.previous.length - 2)));
 }
 
-static void array(bool canAssign) {
-    //uint8_t argCount = 0;
-    /*
-    if (!check(TOKEN_RIGHT_BRACKET)) {
-
-    }
+static void list(bool canAssign) {
+    emitByte(OP_NEW_LIST);
 
     do {
+        if (check(TOKEN_RIGHT_BRACKET))
+            break;
+
         expression();
-        argCount++;
+        emitByte(OP_ADD_LIST);
     } while (match(TOKEN_COMMA));
 
+    // Pop the list off when done
+    //pop();
 
-    if (parser.previous.length != 2) {
-        int previous = 0;
-
-        for (int i = 1; i < parser.previous.length - 1; ++i) {
-            if (parser.previous.start[i] == ',') {
-                //char *line = (char *) malloc(previous);
-                printf("%d\n", previous + i);
-            } else {
-                //printf("%c", parser.previous.start[i]);
-            }
-
-        }
-        //printf("\n");
-    }
-    */
-
-
-
-    //printf("%c\n", parser.previous.start[1]);
-
-    //emitConstant(NUMBER_VAL(argCount));
-    //emitByte(OP_ARRAY);
-
-    //consume(TOKEN_RIGHT_BRACKET, "Expect ']' for array.");
+    consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
 //< Strings parse-string
@@ -1143,7 +1121,7 @@ ParseRule rules[] = {
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_PAREN
         {NULL,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACE [big]
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACE
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACKET
+        {list,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACKET
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACKET
         {NULL,     NULL,   PREC_NONE},       // TOKEN_COMMA
         {NULL,     dot,    PREC_CALL},       // TOKEN_DOT
@@ -1167,7 +1145,6 @@ ParseRule rules[] = {
         {variable, NULL,   PREC_NONE},       // TOKEN_IDENTIFIER
         {string,   NULL,   PREC_NONE},       // TOKEN_STRING
         {number,   NULL,   PREC_NONE},       // TOKEN_NUMBER
-        {array,    NULL,   PREC_NONE},       // TOKEN_ARRAY
         {NULL,     NULL,   PREC_NONE},       // TOKEN_CLASS
         {static_,  NULL,   PREC_NONE},       // TOKEN_STATIC
         {this_,    NULL,   PREC_NONE},       // TOKEN_THIS
@@ -1685,6 +1662,7 @@ static void whileStatement() {
 
     if (check(TOKEN_LEFT_BRACE)) {
         emitByte(OP_TRUE);
+
         //emitByte(OP_POP);
     } else {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
@@ -1694,6 +1672,9 @@ static void whileStatement() {
 
     // Jump out of the loop if the condition is false.
     int exitJump = emitJump(OP_JUMP_IF_FALSE);
+
+    if (vm.repl)
+        emitByte(OP_NO_PRINT);
 
     // Compile the body.
     emitByte(OP_POP); // Condition.

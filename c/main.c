@@ -30,7 +30,7 @@ static void repl() {
             break;
         }
 
-        interpret(line, true);
+        interpret(line);
     }
 }
 
@@ -75,7 +75,7 @@ static char *readFile(const char *path) {
 //> Scanning on Demand run-file
 static void runFile(const char *path) {
     char *source = readFile(path);
-    InterpretResult result = interpret(source, false);
+    InterpretResult result = interpret(source);
     free(source); // [owner]
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
@@ -85,7 +85,7 @@ static void runFile(const char *path) {
 
 int main(int argc, const char *argv[]) {
 //> A Virtual Machine main-init-vm
-    initVM();
+    initVM(argc == 1);
 
 //> Scanning on Demand args
     if (argc == 1) {

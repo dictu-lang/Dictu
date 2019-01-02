@@ -9,6 +9,7 @@ typedef struct sObj Obj;
 //> forward-declare-obj-string
 typedef struct sObjString ObjString;
 //< forward-declare-obj-string
+typedef struct sObjList ObjList;
 
 //< Strings forward-declare-obj
 //> Optimization not-yet

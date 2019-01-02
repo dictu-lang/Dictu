@@ -16,10 +16,12 @@ typedef enum {
     OP_NIL,
     OP_TRUE,
     OP_FALSE,
-    OP_ARRAY,
 //< Types of Values literal-ops
+    OP_NEW_LIST,
+    OP_ADD_LIST,
 //> Global Variables not-yet
     OP_POP,
+    OP_NO_PRINT,
 //< Global Variables not-yet
 //> Local Variables not-yet
     OP_GET_LOCAL,

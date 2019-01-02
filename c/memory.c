@@ -140,6 +140,9 @@ static void blackenObject(Obj *object) {
             grayValue(((ObjUpvalue *) object)->closed);
             break;
 
+        case OBJ_LIST:
+            break;
+
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
@@ -223,6 +226,10 @@ static void freeObject(Obj *object) {
             ObjString *string = (ObjString *) object;
             FREE_ARRAY(char, string->chars, string->length + 1);
             FREE(ObjString, object);
+            break;
+        }
+
+        case OBJ_LIST: {
             break;
         }
 //> Closures not-yet

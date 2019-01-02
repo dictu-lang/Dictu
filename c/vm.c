@@ -121,12 +121,13 @@ static void defineNativeVoid(const char *name, NativeFnVoid function) {
 
 //< Calls and Functions not-yet
 
-void initVM() {
+void initVM(bool repl) {
 //> call-reset-stack
     resetStack();
 //< call-reset-stack
 //> Strings init-objects-root
     vm.objects = NULL;
+    vm.repl = repl;
 //< Strings init-objects-root
 //> Garbage Collection not-yet
     vm.bytesAllocated = 0;
@@ -169,9 +170,6 @@ void freeVM() {
 
 //> push
 void push(Value value) {
-    //printValue(value);
-    //printf("%d\n", vm.stackCount);
-    //printf("\n");
     *vm.stackTop = value;
     vm.stackTop++;
     vm.stackCount++;
@@ -493,7 +491,7 @@ static void concatenate() {
 
 //< Strings concatenate
 //> run
-static InterpretResult run(bool repl) {
+static InterpretResult run() {
 //> Calls and Functions not-yet
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
 
@@ -601,7 +599,7 @@ static InterpretResult run(bool repl) {
 //< Types of Values interpret-literals
 //> Global Variables not-yet
             case OP_POP: {
-                if (repl) {
+                if (vm.repl) {
                     Value v = pop();
                     if (!IS_NIL(v)) {
                         printValue(v);
@@ -614,7 +612,6 @@ static InterpretResult run(bool repl) {
             }
 //< Global Variables not-yet
 //> Local Variables not-yet
-
             case OP_GET_LOCAL: {
                 uint8_t slot = READ_BYTE();
 /* Local Variables not-yet < Calls and Functions not-yet
@@ -883,29 +880,25 @@ static InterpretResult run(bool repl) {
                 break;
             }
 
-            case OP_ARRAY: {
-
-
-                //int arraySize = AS_NUMBER(pop());
-                /*
-
-                Value v = pop();
-
-                printf(IS_NUMBER(v) ? "true\n" : "false\n");
-
-                printf("%f\n", AS_NUMBER(v));
-
-                for (int i = 0; i < AS_NUMBER(v); ++i) {
-                    pop();
-                }
-                pop();
-                */
-
+            case OP_BREAK: {
+                push(OP_BREAK);
                 break;
             }
 
-            case OP_BREAK: {
-                push(OP_BREAK);
+            case OP_NEW_LIST: {
+                ObjList *list = initList();
+                push(OBJ_VAL(list));
+                break;
+            }
+
+            case OP_ADD_LIST: {
+                Value addValue = pop();
+                Value listValue = pop();
+
+                ObjList *list = AS_LIST(listValue);
+                writeValueArray(&list->values, addValue);
+
+                push(OBJ_VAL(list));
                 break;
             }
 //< Jumping Forward and Back not-yet
@@ -1154,7 +1147,7 @@ InterpretResult interpret(Chunk* chunk) {
   return run();
 */
 //> Scanning on Demand vm-interpret-c
-InterpretResult interpret(const char *source, bool repl) {
+InterpretResult interpret(const char *source) {
 /* Scanning on Demand omit < Compiling Expressions interpret-chunk
   // Hack to avoid unused function error. run() is not used in the
   // scanning chapter.
@@ -1200,7 +1193,7 @@ InterpretResult interpret(const char *source, bool repl) {
 //< Scanning on Demand vm-interpret-c
 //> Compiling Expressions interpret-chunk
 
-    InterpretResult result = run(repl);
+    InterpretResult result = run();
 
 /* Compiling Expressions interpret-chunk < Calls and Functions not-yet
 
@@ -1400,6 +1393,10 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value testNative(int argCount, Value *args) {
+    return OBJ_VAL(initList());
+}
+
 
 
 // Natives no return
@@ -1465,7 +1462,8 @@ void defineAllNatives() {
         "time",
         "len",
         "bool",
-        "input"
+        "input",
+        "test"
     };
 
     NativeFn nativeFunctions[] = {
@@ -1480,7 +1478,8 @@ void defineAllNatives() {
         timeNative,
         lenNative,
         boolNative,
-        inputNative
+        inputNative,
+        testNative
     };
 
     char *nativeVoidNames[] = {
