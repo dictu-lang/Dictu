@@ -1221,12 +1221,14 @@ static Value lenNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    if (!IS_STRING(args[0])) {
-        runtimeError("len() only takes strings as an argument.", argCount);
-        return NIL_VAL;
+    if (IS_STRING(args[0])) {
+        return NUMBER_VAL(AS_STRING(args[0])->length);
+    } else if (IS_LIST(args[0])) {
+        return NUMBER_VAL(AS_LIST(args[0])->values.count);
     }
 
-    return NUMBER_VAL(AS_STRING(args[0])->length);
+    runtimeError("len() only takes a string or a list as an argument.", argCount);
+    return NIL_VAL;
 }
 
 static Value minNative(int argCount, Value *args) {
