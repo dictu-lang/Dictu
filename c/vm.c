@@ -901,6 +901,41 @@ static InterpretResult run() {
                 push(OBJ_VAL(list));
                 break;
             }
+
+            case OP_SUBSCRIPT: {
+                Value indexValue = pop();
+                Value listValue = pop();
+
+                if (!IS_NUMBER(indexValue)) {
+                    runtimeError("Array index must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjList *list = AS_LIST(listValue);
+                uint8_t index = AS_NUMBER(indexValue);
+
+                push(list->values.values[index]);
+
+                break;
+            }
+
+            case OP_SUBSCRIPT_ASSIGN: {
+                Value assignValue = pop();
+                Value indexValue = pop();
+                Value listValue = pop();
+
+                if (!IS_NUMBER(indexValue)) {
+                    runtimeError("Array index must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjList *list = AS_LIST(listValue);
+                uint8_t index = AS_NUMBER(indexValue);
+
+                list->values.values[index] = assignValue;
+
+                break;
+            }
 //< Jumping Forward and Back not-yet
 //> Calls and Functions not-yet
 

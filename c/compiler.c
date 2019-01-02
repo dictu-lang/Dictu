@@ -858,6 +858,18 @@ static void list(bool canAssign) {
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
+static void subscript(bool canAssign) {
+    expression();
+    consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+
+    if (match(TOKEN_EQUAL)) {
+        expression();
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else {
+        emitByte(OP_SUBSCRIPT);
+    }
+}
+
 //< Strings parse-string
 //> Global Variables not-yet
 // Compiles a reference to a variable whose name is the given token.
@@ -1117,19 +1129,19 @@ static void binaryAssign(bool canAssign) {
 //< Compiling Expressions unary
 //> Compiling Expressions rules
 ParseRule rules[] = {
-        {grouping, call,   PREC_CALL},       // TOKEN_LEFT_PAREN
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_PAREN
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACE [big]
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACE
-        {list,     NULL,   PREC_NONE},       // TOKEN_LEFT_BRACKET
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_RIGHT_BRACKET
-        {NULL,     NULL,   PREC_NONE},       // TOKEN_COMMA
-        {NULL,     dot,    PREC_CALL},       // TOKEN_DOT
-        {unary,    binary, PREC_TERM},       // TOKEN_MINUS
-        {NULL,     binary, PREC_TERM},       // TOKEN_PLUS
-        {prefix,   NULL,   PREC_PREFIX},     // TOKEN_INCREMENT
-        {prefix,   NULL,   PREC_PREFIX},     // TOKEN_DECREMENT
-        {NULL,     binaryAssign,   PREC_ASSIGNMENT},       // TOKEN_PLUS_EQUALS
+        {grouping, call,         PREC_CALL},       // TOKEN_LEFT_PAREN
+        {NULL,     NULL,         PREC_NONE},       // TOKEN_RIGHT_PAREN
+        {NULL,     NULL,         PREC_NONE},       // TOKEN_LEFT_BRACE [big]
+        {NULL,     NULL,         PREC_NONE},       // TOKEN_RIGHT_BRACE
+        {list,     subscript,    PREC_CALL},    // TOKEN_LEFT_BRACKET
+        {NULL,     NULL,         PREC_NONE},       // TOKEN_RIGHT_BRACKET
+        {NULL,     NULL,         PREC_NONE},       // TOKEN_COMMA
+        {NULL,     dot,          PREC_CALL},       // TOKEN_DOT
+        {unary,    binary,       PREC_TERM},       // TOKEN_MINUS
+        {NULL,     binary,       PREC_TERM},       // TOKEN_PLUS
+        {prefix,   NULL,         PREC_PREFIX},     // TOKEN_INCREMENT
+        {prefix,   NULL,         PREC_PREFIX},     // TOKEN_DECREMENT
+        {NULL,     binaryAssign, PREC_ASSIGNMENT},       // TOKEN_PLUS_EQUALS
         {NULL,     NULL,   PREC_NONE},       // TOKEN_SEMICOLON
         {NULL,     binary, PREC_FACTOR},     // TOKEN_SLASH
         {NULL,     binary, PREC_FACTOR},     // TOKEN_STAR
@@ -1421,7 +1433,6 @@ static void expressionStatement() {
     expression();
     emitByte(OP_POP);
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-
 }
 
 //< Global Variables not-yet

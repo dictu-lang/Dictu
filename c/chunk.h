@@ -19,6 +19,8 @@ typedef enum {
 //< Types of Values literal-ops
     OP_NEW_LIST,
     OP_ADD_LIST,
+    OP_SUBSCRIPT,
+    OP_SUBSCRIPT_ASSIGN,
 //> Global Variables not-yet
     OP_POP,
     OP_NO_PRINT,
