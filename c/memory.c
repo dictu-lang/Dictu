@@ -331,10 +331,14 @@ void freeLists() {
     Obj *object = vm.listObjects;
     while (object != NULL) {
         Obj *next = object->next;
-        ObjList *list = (ObjList *) object;
-        freeValueArray(&list->values);
-        FREE(ObjList, list);
+        freeList(object);
         object = next;
     }
+}
+
+void freeList(Obj *object) {
+    ObjList *list = (ObjList *) object;
+    freeValueArray(&list->values);
+    FREE(ObjList, list);
 }
 //< Strings free-objects

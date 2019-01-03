@@ -1284,10 +1284,41 @@ static Value lenNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value sumNative(int argCount, Value *args) {
+    double sum = 0;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+        if (!IS_NUMBER(value)) {
+            runtimeError("A non-number value passed to sum()");
+            return NIL_VAL;
+        }
+        sum = sum + AS_NUMBER(value);
+    }
+
+    return NUMBER_VAL(sum);
+}
+
 static Value minNative(int argCount, Value *args) {
     double minimum;
     double current;
     bool set = false;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
 
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
@@ -1314,6 +1345,14 @@ static Value maxNative(int argCount, Value *args) {
     double current;
     bool set = false;
 
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
@@ -1336,6 +1375,14 @@ static Value maxNative(int argCount, Value *args) {
 
 static Value averageNative(int argCount, Value *args) {
     double average = 0;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
 
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
@@ -1448,6 +1495,24 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value popNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("pop() takes exactly one argument (%d  given)", argCount);
+        return NIL_VAL;
+    }
+
+    if(!IS_LIST(args[0])) {
+        runtimeError("pop() only takes a list as an argument");
+        return NIL_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    Value last = list->values.values[list->values.count - 1];
+    //FREE(Value, &list->values.values[list->values.count - 1]);
+    list->values.count--;
+
+    return last;
+}
 
 // Natives no return
 
@@ -1499,11 +1564,27 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
+static void pushNative(int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError("push() takes exactly two arguments (%d given)", argCount);
+        return;
+    }
+
+    if (!IS_LIST(args[0])) {
+        runtimeError("push() first argument must be a list", argCount);
+        return;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    writeValueArray(&list->values, args[1]);
+}
+
 // End of natives
 
 void defineAllNatives() {
     char *nativeNames[] = {
         "clock",
+        "sum",
         "min",
         "max",
         "average",
@@ -1514,11 +1595,13 @@ void defineAllNatives() {
         "time",
         "len",
         "bool",
-        "input"
+        "input",
+        "pop"
     };
 
     NativeFn nativeFunctions[] = {
         clockNative,
+        sumNative,
         minNative,
         maxNative,
         averageNative,
@@ -1529,19 +1612,22 @@ void defineAllNatives() {
         timeNative,
         lenNative,
         boolNative,
-        inputNative
+        inputNative,
+        popNative
     };
 
     char *nativeVoidNames[] = {
         "sleep",
         "print",
-        "assert"
+        "assert",
+        "push"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
         sleepNative,
         printNative,
-        assertNative
+        assertNative,
+        pushNative
     };
 
 
