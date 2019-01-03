@@ -582,7 +582,7 @@ static void addLocal(Token name) {
 // we're in a local scope.
 static void declareVariable() {
     // Global variables are implicitly declared.
-    if (current->scopeDepth <= 0) return;
+    if (current->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.

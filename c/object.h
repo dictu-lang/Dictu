@@ -67,28 +67,28 @@
 
 typedef enum {
 //> Methods and Initializers not-yet
-            OBJ_BOUND_METHOD,
+    OBJ_BOUND_METHOD,
 //< Methods and Initializers not-yet
 //> Classes and Instances not-yet
-            OBJ_CLASS,
+    OBJ_CLASS,
 //< Classes and Instances not-yet
 //> Closures not-yet
-            OBJ_CLOSURE,
+    OBJ_CLOSURE,
 //< Closures not-yet
 //> Calls and Functions not-yet
-            OBJ_FUNCTION,
+    OBJ_FUNCTION,
 //< Calls and Functions not-yet
 //> Classes and Instances not-yet
-            OBJ_INSTANCE,
+    OBJ_INSTANCE,
 //< Classes and Instances not-yet
 //> Calls and Functions not-yet
-            OBJ_NATIVE,
+    OBJ_NATIVE,
     OBJ_NATIVE_VOID,
 //< Calls and Functions not-yet
-            OBJ_STRING,
+    OBJ_STRING,
     OBJ_LIST,
 //> Closures not-yet
-            OBJ_UPVALUE
+    OBJ_UPVALUE
 //< Closures not-yet
 } ObjType;
 //< obj-type

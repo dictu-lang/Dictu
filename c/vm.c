@@ -127,6 +127,7 @@ void initVM(bool repl) {
 //< call-reset-stack
 //> Strings init-objects-root
     vm.objects = NULL;
+    vm.listObjects = NULL;
     vm.repl = repl;
 //< Strings init-objects-root
 //> Garbage Collection not-yet
@@ -165,6 +166,7 @@ void freeVM() {
 //< Methods and Initializers not-yet
 //> Strings call-free-objects
     freeObjects();
+    freeLists();
 //< Strings call-free-objects
 }
 
@@ -914,23 +916,16 @@ static InterpretResult run() {
                 ObjList *list = AS_LIST(listValue);
                 int index = AS_NUMBER(indexValue);
 
-                if (index >= 0 && index < list->values.count) {
-                    push(list->values.values[index]);
-                } else if (index < 0) {
+                if (index < 0)
                     index = list->values.count + index;
 
-                    if (index >= 0 && index < list->values.count) {
-                        push(list->values.values[index]);
-                    } else {
-                        runtimeError("Array index out of bounds.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
-                } else {
-                    runtimeError("Array index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                if (index >= 0 && index < list->values.count) {
+                    push(list->values.values[index]);
+                    break;
                 }
 
-                break;
+                runtimeError("Array index out of bounds.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
             case OP_SUBSCRIPT_ASSIGN: {
@@ -946,25 +941,19 @@ static InterpretResult run() {
                 ObjList *list = AS_LIST(listValue);
                 int index = AS_NUMBER(indexValue);
 
-                if (index >= 0 && index < list->values.count) {
-                    list->values.values[index] = assignValue;
-                } else if (index < 0) {
+                if (index < 0)
                     index = list->values.count + index;
 
-                    if (index >= 0 && index < list->values.count) {
-                        list->values.values[index] = assignValue;
-                    } else {
-                        runtimeError("Array index out of bounds.");
-                        return INTERPRET_RUNTIME_ERROR;
-                    }
-                } else {
-                    runtimeError("Array index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                if (index >= 0 && index < list->values.count) {
+                    list->values.values[index] = assignValue;
+                    push(NIL_VAL);
+                    break;
                 }
 
                 push(NIL_VAL);
 
-                break;
+                runtimeError("Array index out of bounds.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 //< Jumping Forward and Back not-yet
 //> Calls and Functions not-yet
@@ -1271,7 +1260,6 @@ InterpretResult interpret(const char *source) {
 
 
 // Native functions
-
 static Value timeNative(int argCount, Value *args) {
     return NUMBER_VAL((double) time(NULL));
 }
@@ -1460,11 +1448,6 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value testNative(int argCount, Value *args) {
-    return OBJ_VAL(initList());
-}
-
-
 
 // Natives no return
 
@@ -1478,11 +1461,11 @@ static void sleepNative(int argCount, Value *args) {
 
     double stopTime = AS_NUMBER(args[0]);
 
-    #ifdef _WIN32
-        Sleep(stopTime * 1000);
-    #else
-        sleep(stopTime);
-    #endif
+#ifdef _WIN32
+    Sleep(stopTime * 1000);
+#else
+    sleep(stopTime);
+#endif
 }
 
 static void printNative(int argCount, Value *args) {
@@ -1516,6 +1499,8 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
+// End of natives
+
 void defineAllNatives() {
     char *nativeNames[] = {
         "clock",
@@ -1529,8 +1514,7 @@ void defineAllNatives() {
         "time",
         "len",
         "bool",
-        "input",
-        "test"
+        "input"
     };
 
     NativeFn nativeFunctions[] = {
@@ -1545,8 +1529,7 @@ void defineAllNatives() {
         timeNative,
         lenNative,
         boolNative,
-        inputNative,
-        testNative
+        inputNative
     };
 
     char *nativeVoidNames[] = {

@@ -31,6 +31,12 @@ test = test - 1; // Subtraction. Variable 'test': 1
 test = test * 10; // Multiplication. Variable 'test': 10
 test = test / 2; // Division. Variable 'test': 5
 ```
+*Lists*
+```
+var myList = [1, 2, 3, 4]; // Assigning a list
+var someListElement = myList[0]; // Lists are 0 indexed
+var someOtherListElement = myList[-1]; // Negative indexes start from the back of the list
+```
 *Comments*
 ```
 // This is a single line comment
