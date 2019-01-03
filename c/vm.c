@@ -912,9 +912,23 @@ static InterpretResult run() {
                 }
 
                 ObjList *list = AS_LIST(listValue);
-                uint8_t index = AS_NUMBER(indexValue);
+                int index = AS_NUMBER(indexValue);
 
-                push(list->values.values[index]);
+                if (index >= 0 && index < list->values.count) {
+                    push(list->values.values[index]);
+                } else if (index < 0) {
+                    index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        push(list->values.values[index]);
+                    } else {
+                        runtimeError("Array index out of bounds.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                } else {
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
 
                 break;
             }
@@ -930,9 +944,25 @@ static InterpretResult run() {
                 }
 
                 ObjList *list = AS_LIST(listValue);
-                uint8_t index = AS_NUMBER(indexValue);
+                int index = AS_NUMBER(indexValue);
 
-                list->values.values[index] = assignValue;
+                if (index >= 0 && index < list->values.count) {
+                    list->values.values[index] = assignValue;
+                } else if (index < 0) {
+                    index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        list->values.values[index] = assignValue;
+                    } else {
+                        runtimeError("Array index out of bounds.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                } else {
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                push(NIL_VAL);
 
                 break;
             }
