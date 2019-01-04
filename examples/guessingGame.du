@@ -1,0 +1,21 @@
+def guessingGame() {
+    var userInput;
+    var guess = 10;
+
+    while {
+        userInput = number(input("Input your guess: "));
+        print(userInput);
+        if (userInput == guess) {
+            print("Well done!");
+            return;
+        } else if (userInput < guess) {
+            print("Too low!");
+        } else {
+            print("Too high!");
+        }
+
+        sleep(1);
+    }
+}
+
+guessingGame();

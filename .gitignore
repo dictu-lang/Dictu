@@ -1,18 +1,12 @@
-
 \.idea/
-
-c/clox\.xcodeproj/
-
-util/
 
 build/
 
-clox
-
 \.DS_Store
-
-clox\.dSYM/Contents/Info\.plist
 
 dictu
 
 dictu\.dSYM/Contents/Info\.plist
+
+
+test/

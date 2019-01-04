@@ -15,7 +15,7 @@
 //> A Virtual Machine main-include-vm
 #include "vm.h"
 
-#define VERSION "Dictu Version: 0.0.1\n"
+#define VERSION "Dictu Version: 0.1.0\n"
 
 //< A Virtual Machine main-include-vm
 //> Scanning on Demand repl

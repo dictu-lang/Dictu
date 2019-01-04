@@ -199,5 +199,5 @@ var x = input("Input: "); // Returns user input as a string. Can pass an optiona
 $ git clone x
 $ cd Dictu
 $ make dictu
-$ ./dictu test.du
+$ ./dictu examples/guessingGame.du
 ```

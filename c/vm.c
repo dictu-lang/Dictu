@@ -39,10 +39,6 @@ VM vm; // [one]
 //< Calls and Functions not-yet
 //> reset-stack
 
-//static Value roundNative(int argCount, Value *args) {
-//    return args[0];
-//}
-
 void defineAllNatives();
 
 static void resetStack() {
@@ -1268,6 +1264,23 @@ static Value clockNative(int argCount, Value *args) {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
 
+static Value numberNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("number() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("number() only takes a string as an argument");
+        return NIL_VAL;
+    }
+
+    char *numberString = AS_CSTRING(args[0]);
+    double number = strtod(numberString, NULL);
+
+    return NUMBER_VAL(number);
+}
+
 static Value lenNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("len() takes exactly one argument (%d given).", argCount);
@@ -1596,7 +1609,8 @@ void defineAllNatives() {
         "len",
         "bool",
         "input",
-        "pop"
+        "pop",
+        "number"
     };
 
     NativeFn nativeFunctions[] = {
@@ -1613,7 +1627,8 @@ void defineAllNatives() {
         lenNative,
         boolNative,
         inputNative,
-        popNative
+        popNative,
+        numberNative
     };
 
     char *nativeVoidNames[] = {
