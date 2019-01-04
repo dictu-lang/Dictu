@@ -61,6 +61,21 @@ if (false or true) {
 // Single line if statement body does not require braces
 if (true)
     print("Hello");
+    
+if (false)
+    print("Not going to print!");
+else
+    print("Will print!");
+    
+    
+var x = 5;
+if (x == 6) {
+    print("Not going to print!");
+} else if (x == 5) {
+    print("Will print!");
+} else {
+    print("Not going to print!");
+}
 ```
 *Conditional expressions*
 ```
