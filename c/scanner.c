@@ -130,6 +130,7 @@ static void skipWhitespace() {
                         if (peekNext() == '/') {
                             break;
                         }
+                        advance();
                     }
                     advance();
                     advance();
