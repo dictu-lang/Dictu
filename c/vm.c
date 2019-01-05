@@ -1281,6 +1281,58 @@ static Value numberNative(int argCount, Value *args) {
     return NUMBER_VAL(number);
 }
 
+static Value strNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("str() only takes a number as an argument");
+        return NIL_VAL;
+    }
+
+    double number = AS_NUMBER(args[0]);
+
+    int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
+    char *numberString = malloc(sizeof(char) * numberStringLength);
+    snprintf(numberString, numberStringLength, "%.15g", number);
+
+    ObjString *string = copyString(numberString, numberStringLength);
+    free(numberString);
+
+    return OBJ_VAL(string);
+}
+
+static Value typeNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (IS_BOOL(args[0])) {
+        return OBJ_VAL(copyString("bool", 4));
+    } else if (IS_NIL(args[0])) {
+        return OBJ_VAL(copyString("nil", 3));
+    } else if (IS_NUMBER(args[0])) {
+        return OBJ_VAL(copyString("number", 6));
+    } else if (IS_OBJ(args[0])) {
+        switch (OBJ_TYPE(args[0])) {
+            //TODO: Add more cases for type()
+            case OBJ_CLASS:
+                return OBJ_VAL(copyString("class", 5));
+            case OBJ_FUNCTION:
+                return OBJ_VAL(copyString("function", 8));
+            case OBJ_STRING:
+                return OBJ_VAL(copyString("string", 6));
+            default:
+                break;
+        }
+    }
+
+    return OBJ_VAL(copyString("Unknown Type", 12));
+}
+
 static Value lenNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("len() takes exactly one argument (%d given).", argCount);
@@ -1509,8 +1561,8 @@ static Value inputNative(int argCount, Value *args) {
 }
 
 static Value popNative(int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError("pop() takes exactly one argument (%d  given)", argCount);
+    if (argCount < 0 || argCount > 2) {
+        runtimeError("pop() takes either one or two arguments (%d  given)", argCount);
         return NIL_VAL;
     }
 
@@ -1519,9 +1571,30 @@ static Value popNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
+    Value last;
     ObjList *list = AS_LIST(args[0]);
-    Value last = list->values.values[list->values.count - 1];
-    //FREE(Value, &list->values.values[list->values.count - 1]);
+
+    if (argCount == 1) {
+        last = list->values.values[list->values.count - 1];
+    } else {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError("pop() second argument must be a number");
+            return NIL_VAL;
+        }
+
+        uint8_t index = AS_NUMBER(args[1]);
+
+        if (index < 0 || index > list->values.count) {
+            runtimeError("Index passed to pop() is out of bounds for the list given");
+            return NIL_VAL;
+        }
+
+        last = list->values.values[index];
+
+        for (int i = index; i < list->values.count - 1; ++i) {
+            list->values.values[i] = list->values.values[i + 1];
+        }
+    }
     list->values.count--;
 
     return last;
@@ -1555,7 +1628,7 @@ static void printNative(int argCount, Value *args) {
         } else if (IS_NIL(value)) {
             printf("nil");
         } else if (IS_NUMBER(value)) {
-            printf("%g", AS_NUMBER(value));
+            printf("%.15g", AS_NUMBER(value));
         } else if (IS_OBJ(value)) {
             printObject(value);
         }
@@ -1578,8 +1651,8 @@ static void assertNative(int argCount, Value *args) {
 }
 
 static void pushNative(int argCount, Value *args) {
-    if (argCount != 2) {
-        runtimeError("push() takes exactly two arguments (%d given)", argCount);
+    if (argCount < 2 || argCount > 3) {
+        runtimeError("push() takes either two  or three arguments (%d given)", argCount);
         return;
     }
 
@@ -1589,7 +1662,36 @@ static void pushNative(int argCount, Value *args) {
     }
 
     ObjList *list = AS_LIST(args[0]);
-    writeValueArray(&list->values, args[1]);
+
+    if (argCount == 2) {
+        writeValueArray(&list->values, args[1]);
+    } else {
+        if (!IS_NUMBER(args[2])) {
+            runtimeError("push() third argument must be a number", argCount);
+            return;
+        }
+
+        uint8_t index = AS_NUMBER(args[2]);
+
+        if (index < 0 || index > list->values.count) {
+            runtimeError("Index passed to push() is out of bounds for the list given");
+            return;
+        }
+
+        if (list->values.capacity < list->values.count + 1) {
+            int oldCapacity = list->values.capacity;
+            list->values.capacity = GROW_CAPACITY(oldCapacity);
+            list->values.values = GROW_ARRAY(list->values.values, Value,
+                                       oldCapacity, list->values.capacity);
+        }
+
+        for (int i = index; i < list->values.count - 1; ++i) {
+            list->values.values[i + 1] = list->values.values[i];
+        }
+
+        list->values.values[index] = args[1];
+        list->values.count++;
+    }
 }
 
 // End of natives
@@ -1610,7 +1712,9 @@ void defineAllNatives() {
         "bool",
         "input",
         "pop",
-        "number"
+        "number",
+        "str",
+        "type"
     };
 
     NativeFn nativeFunctions[] = {
@@ -1628,7 +1732,9 @@ void defineAllNatives() {
         boolNative,
         inputNative,
         popNative,
-        numberNative
+        numberNative,
+        strNative,
+        typeNative
     };
 
     char *nativeVoidNames[] = {

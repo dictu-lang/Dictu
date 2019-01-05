@@ -190,7 +190,9 @@ print(10, "test", nil, true); // Each argument is printed
 sleep(10); // Pauses execution for time specified (seconds)
 assert(true) // Returns a runtime errorr if expression passed is false
 push(list, 10); // Push element to the end of a list
+push(list, 10, 1); // Push element to list at given index (will reshuffle values, not replace)
 var x = pop(list); // Pop element off the end of a list
+var x = pop(list, 1); // Pop element off list at given index
 var x = min(1, 2, 3); // Returns the smallest number of the arguments
 var x = min([1, 2, 3]); // min() also accepts lists
 var x = max(1, 2, 3); // Returns the largest number of the arguments
@@ -207,6 +209,9 @@ var x = time(); // Returns UNIX timestamp
 var x = len("test"); // Returns the string length
 var x = input(); // Returns user input as a string
 var x = input("Input: "); // Returns user input as a string. Can pass an optional prompt
+var x = type(x); // Returns a string of the type of variable. E.g type("hi"); returns "string"
+var x = number("10.2"); // Convert string to number value
+var x = str(10.2); // Convert number to string value
 ```
 
 ## Running Dictu
