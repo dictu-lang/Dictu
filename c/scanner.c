@@ -130,6 +130,7 @@ static void skipWhitespace() {
                         if (peekNext() == '/') {
                             break;
                         }
+                        advance();
                     }
                     advance();
                     advance();
@@ -220,7 +221,15 @@ static TokenType identifierType() {
         case 'v':
             return checkKeyword(1, 2, "ar", TOKEN_VAR);
         case 'w':
-            return checkKeyword(1, 4, "hile", TOKEN_WHILE);
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'h':
+                        return checkKeyword(2, 3, "ile", TOKEN_WHILE);
+                    case 'i':
+                        return checkKeyword(2, 2, "th", TOKEN_WITH);
+                }
+            }
+            break;
     }
 
 //< keywords

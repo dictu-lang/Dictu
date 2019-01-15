@@ -39,10 +39,6 @@ VM vm; // [one]
 //< Calls and Functions not-yet
 //> reset-stack
 
-//static Value roundNative(int argCount, Value *args) {
-//    return args[0];
-//}
-
 void defineAllNatives();
 
 static void resetStack() {
@@ -127,6 +123,7 @@ void initVM(bool repl) {
 //< call-reset-stack
 //> Strings init-objects-root
     vm.objects = NULL;
+    vm.listObjects = NULL;
     vm.repl = repl;
 //< Strings init-objects-root
 //> Garbage Collection not-yet
@@ -165,6 +162,7 @@ void freeVM() {
 //< Methods and Initializers not-yet
 //> Strings call-free-objects
     freeObjects();
+    freeLists();
 //< Strings call-free-objects
 }
 
@@ -931,7 +929,13 @@ static InterpretResult run() {
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
-                break;
+                if (index >= 0 && index < list->values.count) {
+                    push(list->values.values[index]);
+                    break;
+                }
+
+                runtimeError("Array index out of bounds.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
             case OP_SUBSCRIPT_ASSIGN: {
@@ -966,7 +970,16 @@ static InterpretResult run() {
 
                 //push(NIL_VAL);
 
-                break;
+                if (index >= 0 && index < list->values.count) {
+                    list->values.values[index] = assignValue;
+                    push(NIL_VAL);
+                    break;
+                }
+
+                push(NIL_VAL);
+
+                runtimeError("Array index out of bounds.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 //< Jumping Forward and Back not-yet
 //> Calls and Functions not-yet
@@ -1273,13 +1286,81 @@ InterpretResult interpret(const char *source) {
 
 
 // Native functions
-
 static Value timeNative(int argCount, Value *args) {
     return NUMBER_VAL((double) time(NULL));
 }
 
 static Value clockNative(int argCount, Value *args) {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
+}
+
+static Value numberNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("number() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("number() only takes a string as an argument");
+        return NIL_VAL;
+    }
+
+    char *numberString = AS_CSTRING(args[0]);
+    double number = strtod(numberString, NULL);
+
+    return NUMBER_VAL(number);
+}
+
+static Value strNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("str() only takes a number as an argument");
+        return NIL_VAL;
+    }
+
+    double number = AS_NUMBER(args[0]);
+
+    int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
+    char *numberString = malloc(sizeof(char) * numberStringLength);
+    snprintf(numberString, numberStringLength, "%.15g", number);
+
+    ObjString *string = copyString(numberString, numberStringLength);
+    free(numberString);
+
+    return OBJ_VAL(string);
+}
+
+static Value typeNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (IS_BOOL(args[0])) {
+        return OBJ_VAL(copyString("bool", 4));
+    } else if (IS_NIL(args[0])) {
+        return OBJ_VAL(copyString("nil", 3));
+    } else if (IS_NUMBER(args[0])) {
+        return OBJ_VAL(copyString("number", 6));
+    } else if (IS_OBJ(args[0])) {
+        switch (OBJ_TYPE(args[0])) {
+            //TODO: Add more cases for type()
+            case OBJ_CLASS:
+                return OBJ_VAL(copyString("class", 5));
+            case OBJ_FUNCTION:
+                return OBJ_VAL(copyString("function", 8));
+            case OBJ_STRING:
+                return OBJ_VAL(copyString("string", 6));
+            default:
+                break;
+        }
+    }
+
+    return OBJ_VAL(copyString("Unknown Type", 12));
 }
 
 static Value lenNative(int argCount, Value *args) {
@@ -1298,10 +1379,41 @@ static Value lenNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value sumNative(int argCount, Value *args) {
+    double sum = 0;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        Value value = args[i];
+        if (!IS_NUMBER(value)) {
+            runtimeError("A non-number value passed to sum()");
+            return NIL_VAL;
+        }
+        sum = sum + AS_NUMBER(value);
+    }
+
+    return NUMBER_VAL(sum);
+}
+
 static Value minNative(int argCount, Value *args) {
     double minimum;
     double current;
     bool set = false;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
 
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
@@ -1328,6 +1440,14 @@ static Value maxNative(int argCount, Value *args) {
     double current;
     bool set = false;
 
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
@@ -1350,6 +1470,14 @@ static Value maxNative(int argCount, Value *args) {
 
 static Value averageNative(int argCount, Value *args) {
     double average = 0;
+
+    if (argCount == 0) {
+        return NUMBER_VAL(0);
+    } else if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList* list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
 
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
@@ -1462,11 +1590,45 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value testNative(int argCount, Value *args) {
-    return OBJ_VAL(initList());
+static Value popNative(int argCount, Value *args) {
+    if (argCount < 0 || argCount > 2) {
+        runtimeError("pop() takes either one or two arguments (%d  given)", argCount);
+        return NIL_VAL;
+    }
+
+    if(!IS_LIST(args[0])) {
+        runtimeError("pop() only takes a list as an argument");
+        return NIL_VAL;
+    }
+
+    Value last;
+    ObjList *list = AS_LIST(args[0]);
+
+    if (argCount == 1) {
+        last = list->values.values[list->values.count - 1];
+    } else {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError("pop() second argument must be a number");
+            return NIL_VAL;
+        }
+
+        uint8_t index = AS_NUMBER(args[1]);
+
+        if (index < 0 || index > list->values.count) {
+            runtimeError("Index passed to pop() is out of bounds for the list given");
+            return NIL_VAL;
+        }
+
+        last = list->values.values[index];
+
+        for (int i = index; i < list->values.count - 1; ++i) {
+            list->values.values[i] = list->values.values[i + 1];
+        }
+    }
+    list->values.count--;
+
+    return last;
 }
-
-
 
 // Natives no return
 
@@ -1480,11 +1642,11 @@ static void sleepNative(int argCount, Value *args) {
 
     double stopTime = AS_NUMBER(args[0]);
 
-    #ifdef _WIN32
-        Sleep(stopTime * 1000);
-    #else
-        sleep(stopTime);
-    #endif
+#ifdef _WIN32
+    Sleep(stopTime * 1000);
+#else
+    sleep(stopTime);
+#endif
 }
 
 static void printNative(int argCount, Value *args) {
@@ -1496,7 +1658,7 @@ static void printNative(int argCount, Value *args) {
         } else if (IS_NIL(value)) {
             printf("nil");
         } else if (IS_NUMBER(value)) {
-            printf("%g", AS_NUMBER(value));
+            printf("%.15g", AS_NUMBER(value));
         } else if (IS_OBJ(value)) {
             printObject(value);
         }
@@ -1518,9 +1680,56 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
+static void pushNative(int argCount, Value *args) {
+    if (argCount < 2 || argCount > 3) {
+        runtimeError("push() takes either two  or three arguments (%d given)", argCount);
+        return;
+    }
+
+    if (!IS_LIST(args[0])) {
+        runtimeError("push() first argument must be a list", argCount);
+        return;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+
+    if (argCount == 2) {
+        writeValueArray(&list->values, args[1]);
+    } else {
+        if (!IS_NUMBER(args[2])) {
+            runtimeError("push() third argument must be a number", argCount);
+            return;
+        }
+
+        uint8_t index = AS_NUMBER(args[2]);
+
+        if (index < 0 || index > list->values.count) {
+            runtimeError("Index passed to push() is out of bounds for the list given");
+            return;
+        }
+
+        if (list->values.capacity < list->values.count + 1) {
+            int oldCapacity = list->values.capacity;
+            list->values.capacity = GROW_CAPACITY(oldCapacity);
+            list->values.values = GROW_ARRAY(list->values.values, Value,
+                                       oldCapacity, list->values.capacity);
+        }
+
+        for (int i = index; i < list->values.count - 1; ++i) {
+            list->values.values[i + 1] = list->values.values[i];
+        }
+
+        list->values.values[index] = args[1];
+        list->values.count++;
+    }
+}
+
+// End of natives
+
 void defineAllNatives() {
     char *nativeNames[] = {
         "clock",
+        "sum",
         "min",
         "max",
         "average",
@@ -1532,11 +1741,15 @@ void defineAllNatives() {
         "len",
         "bool",
         "input",
-        "test"
+        "pop",
+        "number",
+        "str",
+        "type"
     };
 
     NativeFn nativeFunctions[] = {
         clockNative,
+        sumNative,
         minNative,
         maxNative,
         averageNative,
@@ -1548,19 +1761,24 @@ void defineAllNatives() {
         lenNative,
         boolNative,
         inputNative,
-        testNative
+        popNative,
+        numberNative,
+        strNative,
+        typeNative
     };
 
     char *nativeVoidNames[] = {
         "sleep",
         "print",
-        "assert"
+        "assert",
+        "push"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
         sleepNative,
         printNative,
-        assertNative
+        assertNative,
+        pushNative
     };
 
 

@@ -11,12 +11,15 @@
 #include "vm.h"
 //> allocate-obj
 
+#define ALLOCATE_OBJ_LIST(type, objectType) \
+    (type*)allocateObject(sizeof(type), objectType, true)
+
 #define ALLOCATE_OBJ(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType)
+    (type*)allocateObject(sizeof(type), objectType, false)
 //< allocate-obj
 //> allocate-object
 
-static Obj *allocateObject(size_t size, ObjType type) {
+static Obj *allocateObject(size_t size, ObjType type, bool isList) {
     Obj *object = (Obj *) reallocate(NULL, 0, size);
     object->type = type;
 //> Garbage Collection not-yet
@@ -24,8 +27,13 @@ static Obj *allocateObject(size_t size, ObjType type) {
 //< Garbage Collection not-yet
 //> add-to-list
 
-    object->next = vm.objects;
-    vm.objects = object;
+    if (!isList) {
+        object->next = vm.objects;
+        vm.objects = object;
+    } else {
+        object->next = vm.listObjects;
+        vm.listObjects = object;
+    }
 //< add-to-list
 //> Garbage Collection not-yet
 
@@ -154,7 +162,7 @@ static ObjString *allocateString(char *chars, int length,
 }
 
 ObjList *initList() {
-    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    ObjList *list = ALLOCATE_OBJ_LIST(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }

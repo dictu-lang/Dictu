@@ -582,7 +582,7 @@ static void addLocal(Token name) {
 // we're in a local scope.
 static void declareVariable() {
     // Global variables are implicitly declared.
-    if (current->scopeDepth <= 0) return;
+    if (current->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
@@ -1175,6 +1175,7 @@ ParseRule rules[] = {
         {NULL,     NULL,   PREC_NONE},       // TOKEN_WHILE
         {NULL,     NULL,   PREC_NONE},       // TOKEN_BREAK
         {NULL,     NULL,   PREC_NONE},       // TOKEN_RETURN
+        {NULL,     NULL,   PREC_NONE},       // TOKEN_WITH
         {NULL,     NULL,   PREC_NONE},       // TOKEN_EOF
         {NULL,     NULL,   PREC_NONE},       // TOKEN_ERROR
 };
@@ -1621,6 +1622,27 @@ static void ifStatement() {
     patchJump(endJump);
 }
 
+static void withStatement() {
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+    //consume(TOKEN_STRING, "Expect file name");
+    expression();
+    consume(TOKEN_COMMA, "Expect comma");
+    //consume(TOKEN_STRING, "Expect file open type");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+
+    beginScope();
+
+    //TODO: Create a "file" variable local to this scope
+    // emitByte(FILE_OPEN) // READ | WRITE | APPEND
+
+    statement();
+
+    //TODO: Close the file at scope end and remove(free) "file" variable
+
+    endScope();
+}
+
 //< Jumping Forward and Back not-yet
 //> Global Variables not-yet
 /*
@@ -1764,6 +1786,8 @@ static void statement() {
         ifStatement();
     } else if (match(TOKEN_RETURN)) {
         returnStatement();
+    } else if (match(TOKEN_WITH)) {
+        withStatement();
 //< Calls and Functions not-yet
 //> Jumping Forward and Back not-yet
     } else if (match(TOKEN_BREAK)) {

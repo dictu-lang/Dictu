@@ -39,6 +39,8 @@ void collectGarbage();
 //< Garbage Collection not-yet
 //> Strings free-objects-h
 void freeObjects();
+void freeLists();
+void freeList();
 //< Strings free-objects-h
 
 #endif

@@ -38,6 +38,14 @@ var lastNumber = someList[-1]; // Negative indexes work from the back of the lis
 someList[-2] = 10;
 print(someList); // [1, 10, 3]
 ```
+*Lists*
+```
+var myList = [1, 2, 3, 4]; // Assigning a list
+var someListElement = myList[0]; // Lists are 0 indexed
+var someOtherListElement = myList[-1]; // Negative indexes start from the back of the list
+push(myList, 10); // Push an element to the end of a list
+var aNewListElement = pop(myList); // Pops an element off the end of a list
+```
 *Comments*
 ```
 // This is a single line comment
@@ -60,6 +68,21 @@ if (false or true) {
 // Single line if statement body does not require braces
 if (true)
     print("Hello");
+    
+if (false)
+    print("Not going to print!");
+else
+    print("Will print!");
+    
+    
+var x = 5;
+if (x == 6) {
+    print("Not going to print!");
+} else if (x == 5) {
+    print("Will print!");
+} else {
+    print("Not going to print!");
+}
 ```
 *Conditional expressions*
 ```
@@ -173,18 +196,29 @@ SomeOtherClass.printHello(); // Static methods dont need the object to be instan
 print(10, "test", nil, true); // Each argument is printed
 sleep(10); // Pauses execution for time specified (seconds)
 assert(true) // Returns a runtime errorr if expression passed is false
-var x = min(1, 2, 3); // Returns the smallest number of the arguments
-var x = max(1, 2, 3); // Returns the largest number of the arguments
-var x = average(1, 2, 3); // Returns an average number of the arguments
+push(list, 10); // Push element to the end of a list
+push(list, 10, 1); // Push element to list at given index (will reshuffle values, not replace)
+var x = pop(list); // Pop element off the end of a list
+var x = pop(list, 1); // Pop element off list at given index
+var x = min(1, 2, 3); // Returns the smallest number of the arguments: 1
+var x = min([1, 2, 3]); // min() also accepts lists: 1
+var x = max(1, 2, 3); // Returns the largest number of the arguments: 3
+var x = max([1, 2, 3]); // max() also accepts lists: 3
+var x = average(1, 2, 3); // Returns an average number of the arguments: 2
+var x = average([1, 2, 3]); // average() also accepts lists: 2
+var x = sum(1, 2, 3); // Returns a sum of all arguments passed: 6
+var x = sum([1, 2, 3]); // sum() also accepts lists: 6
 var x = floor(17.4); // Returns previous integer: 17
 var x = round(17.4); // Rounds to the nearest integer: 17
 var x = ceil(17.4); // Returns next integer: 18
 var x = abs(-10); // Returns absolute value: 10
-var x = time(); // Returns UNIX timestamp
-var x = len("test"); // Returns the string length
-
+var x = time(); // Returns UNIX timestamp: 1546646643
+var x = len("test"); // Returns the string length: 4
 var x = input(); // Returns user input as a string
 var x = input("Input: "); // Returns user input as a string. Can pass an optional prompt
+var x = type(x); // Returns a string of the type of variable. E.g type("hi"); returns "string"
+var x = number("10.2"); // Convert string to number value: 10.2
+var x = str(10.2); // Convert number to string value: "10.2"
 ```
 
 ## Running Dictu
@@ -192,5 +226,5 @@ var x = input("Input: "); // Returns user input as a string. Can pass an optiona
 $ git clone x
 $ cd Dictu
 $ make dictu
-$ ./dictu test.du
+$ ./dictu examples/guessingGame.du
 ```

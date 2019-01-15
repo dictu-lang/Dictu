@@ -76,6 +76,7 @@ typedef struct {
 //> Strings objects-root
 
     Obj *objects;
+    Obj *listObjects;
 //< Strings objects-root
 //> Garbage Collection not-yet
     int grayCount;

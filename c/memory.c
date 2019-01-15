@@ -140,8 +140,11 @@ static void blackenObject(Obj *object) {
             grayValue(((ObjUpvalue *) object)->closed);
             break;
 
-        case OBJ_LIST:
+        case OBJ_LIST: {
+            //ObjList *list = (ObjList *) object;
+            //grayArray(&list->values);
             break;
+        }
 
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
@@ -229,9 +232,9 @@ static void freeObject(Obj *object) {
             break;
         }
 
-        case OBJ_LIST: {
+        case OBJ_LIST:
             break;
-        }
+
 //> Closures not-yet
 
         case OBJ_UPVALUE:
@@ -322,5 +325,20 @@ void freeObjects() {
 
     free(vm.grayStack);
 //< Garbage Collection not-yet
+}
+
+void freeLists() {
+    Obj *object = vm.listObjects;
+    while (object != NULL) {
+        Obj *next = object->next;
+        freeList(object);
+        object = next;
+    }
+}
+
+void freeList(Obj *object) {
+    ObjList *list = (ObjList *) object;
+    freeValueArray(&list->values);
+    FREE(ObjList, list);
 }
 //< Strings free-objects
