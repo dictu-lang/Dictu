@@ -223,7 +223,7 @@ var x = str(10.2); // Convert number to string value: "10.2"
 
 ## Running Dictu
 ```bash
-$ git clone x
+$ git clone https://github.com/Jason2605/Dictu.git
 $ cd Dictu
 $ make dictu
 $ ./dictu examples/guessingGame.du
