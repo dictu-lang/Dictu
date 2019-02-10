@@ -899,6 +899,7 @@ static void namedVariable(Token name, bool canAssign) {
 
 //< Local Variables not-yet
     if (canAssign && match(TOKEN_EQUAL)) {
+        /*
         if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
             char errorMsg[200];
             char *variableName = strndup(name.start, name.length);
@@ -906,6 +907,7 @@ static void namedVariable(Token name, bool canAssign) {
             error(errorMsg);
             return;
         }
+        */
 
         expression();
 /* Global Variables not-yet < Local Variables not-yet
@@ -1059,15 +1061,17 @@ static void prefix(bool canAssign) {
         setOp = OP_SET_GLOBAL;
     }
 
+    /*
     if (current->scopeDepth != 0) {
         if (setOp != OP_SET_LOCAL) {
             char errorMsg[200];
             char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment1", variableName);
             error(errorMsg);
             return;
         }
     }
+     */
 
     emitBytes(setOp, (uint8_t) arg);
 }
@@ -1113,16 +1117,17 @@ static void binaryAssign(bool canAssign) {
         arg = identifierConstant(&name);
         setOp = OP_SET_GLOBAL;
     }
-
+    /*
     if (current->scopeDepth != 0) {
         if (setOp != OP_SET_LOCAL) {
             char errorMsg[200];
             char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
+            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment2", variableName);
             error(errorMsg);
             return;
         }
     }
+    */
 
     emitBytes(setOp, (uint8_t) arg);
 }
@@ -1534,7 +1539,7 @@ static void forStatement() {
     // exit:                    <--'
 
     // Create a scope for the loop variable.
-    //beginScope();
+    beginScope();
     current->loopDepth++;
 
     // The initialization clause.
@@ -1593,7 +1598,7 @@ static void forStatement() {
         emitByte(OP_POP); // Condition.
     }
 
-    //endScope(); // Loop variable.
+    endScope(); // Loop variable.
     current->loopDepth--;
 }
 
@@ -1797,9 +1802,9 @@ static void statement() {
 //< Jumping Forward and Back not-yet
 //> Local Variables not-yet
     } else if (match(TOKEN_LEFT_BRACE)) {
-        //beginScope();
+        beginScope();
         block();
-        //endScope();
+        endScope();
 //< Local Variables not-yet
     } else {
         expressionStatement();
