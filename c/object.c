@@ -201,6 +201,20 @@ ObjString *takeString(char *chars, int length) {
 //< Hash Tables take-string-hash
 }
 
+char* removeBackslash(char *string, char c) {
+    int write = 0, read = 0;
+    while (string[read]) {
+        if (string[read] != c) {
+            string[write++] = string[read];
+        }
+
+        read++;
+    }
+    string[write] = '\0';
+
+    return string;
+}
+
 //< take-string
 ObjString *copyString(const char *chars, int length) {
 //> Hash Tables copy-string-hash
@@ -210,6 +224,8 @@ ObjString *copyString(const char *chars, int length) {
                                           hash);
     if (interned != NULL) return interned;
 //< copy-string-intern
+
+    //removeBackslash(chars, '\\');
 
 //< Hash Tables copy-string-hash
     char *heapChars = ALLOCATE(char, length + 1);

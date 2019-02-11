@@ -263,9 +263,13 @@ static Token number() {
 //< number
 //> string
 
-static Token string() {
-    while (peek() != '"' && peek() != '\'' && !isAtEnd()) {
-        if (peek() == '\n') scanner.line++;
+static Token string(char stringToken) {
+    while (peek() != stringToken && !isAtEnd()) {
+        if (peek() == '\n') {
+            scanner.line++;
+        } else if (peek() == '\\') {
+            scanner.current++;
+        }
         advance();
     }
 
@@ -347,8 +351,9 @@ Token scanToken() {
 //> scan-string
 
         case '"':
+            return string('"');
         case '\'':
-            return string();
+            return string('\'');
 //< scan-string
     }
 //< scan-char
