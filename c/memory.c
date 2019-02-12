@@ -1,15 +1,9 @@
-//> Chunks of Bytecode memory-c
 #include <stdlib.h>
 
 #include "common.h"
-//> Garbage Collection not-yet
 #include "compiler.h"
-//< Garbage Collection not-yet
 #include "memory.h"
-//> Strings memory-include-vm
 #include "vm.h"
-//< Strings memory-include-vm
-//> Garbage Collection not-yet
 
 #ifdef DEBUG_TRACE_GC
 #include <stdio.h>
@@ -17,10 +11,8 @@
 #endif
 
 #define GC_HEAP_GROW_FACTOR 2
-//< Garbage Collection not-yet
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize) {
-//> Garbage Collection not-yet
     vm.bytesAllocated += newSize - oldSize;
 
     if (newSize > oldSize) {
@@ -33,7 +25,6 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize) {
         }
     }
 
-//< Garbage Collection not-yet
     if (newSize == 0) {
         free(previous);
         return NULL;
@@ -41,7 +32,6 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize) {
 
     return realloc(previous, newSize);
 }
-//> Garbage Collection not-yet
 
 void grayObject(Obj *object) {
     if (object == NULL) return;
@@ -88,29 +78,21 @@ static void blackenObject(Obj *object) {
 #endif
 
     switch (object->type) {
-//> Methods and Initializers not-yet
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *bound = (ObjBoundMethod *) object;
             grayValue(bound->receiver);
             grayObject((Obj *) bound->method);
             break;
         }
-//< Methods and Initializers not-yet
-//> Classes and Instances not-yet
 
         case OBJ_CLASS: {
             ObjClass *klass = (ObjClass *) object;
             grayObject((Obj *) klass->name);
-//> Superclasses not-yet
             grayObject((Obj *) klass->superclass);
-//< Superclasses not-yet
-//> Methods and Initializers not-yet
             grayTable(&klass->methods);
-//< Methods and Initializers not-yet
             break;
         }
 
-//< Classes and Instances not-yet
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
             grayObject((Obj *) closure->function);
@@ -127,7 +109,6 @@ static void blackenObject(Obj *object) {
             break;
         }
 
-//> Classes and Instances not-yet
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
             grayObject((Obj *) instance->klass);
@@ -135,7 +116,6 @@ static void blackenObject(Obj *object) {
             break;
         }
 
-//< Classes and Instances not-yet
         case OBJ_UPVALUE:
             grayValue(((ObjUpvalue *) object)->closed);
             break;
@@ -149,46 +129,29 @@ static void blackenObject(Obj *object) {
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
-            // No references.
             break;
     }
 }
 
-//< Garbage Collection not-yet
-//> Strings free-object
 static void freeObject(Obj *object) {
-//> Garbage Collection not-yet
 #ifdef DEBUG_TRACE_GC
     printf("%p free ", object);
     printValue(OBJ_VAL(object));
     printf("\n");
 #endif
 
-//< Garbage Collection not-yet
     switch (object->type) {
-//> Methods and Initializers not-yet
         case OBJ_BOUND_METHOD:
             FREE(ObjBoundMethod, object);
             break;
 
-//< Methods and Initializers not-yet
-/* Classes and Instances not-yet < Methods and Initializers not-yet
-    case OBJ_CLASS:
-*/
-//> Classes and Instances not-yet
-//> Methods and Initializers not-yet
         case OBJ_CLASS: {
             ObjClass *klass = (ObjClass *) object;
             freeTable(&klass->methods);
-//< Methods and Initializers not-yet
             FREE(ObjClass, object);
             break;
-//> Methods and Initializers not-yet
         }
-//< Methods and Initializers not-yet
 
-//< Classes and Instances not-yet
-//> Closures not-yet
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
             FREE_ARRAY(Value, closure->upvalues, closure->upvalueCount);
@@ -196,8 +159,6 @@ static void freeObject(Obj *object) {
             break;
         }
 
-//< Closures not-yet
-//> Calls and Functions not-yet
         case OBJ_FUNCTION: {
             ObjFunction *function = (ObjFunction *) object;
             freeChunk(&function->chunk);
@@ -205,8 +166,6 @@ static void freeObject(Obj *object) {
             break;
         }
 
-//< Calls and Functions not-yet
-//> Classes and Instances not-yet
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
             freeTable(&instance->fields);
@@ -214,8 +173,6 @@ static void freeObject(Obj *object) {
             break;
         }
 
-//< Classes and Instances not-yet
-//> Calls and Functions not-yet
         case OBJ_NATIVE:
             FREE(ObjNative, object);
             break;
@@ -224,7 +181,6 @@ static void freeObject(Obj *object) {
             FREE(ObjNativeVoid, object);
             break;
 
-//< Calls and Functions not-yet
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
             FREE_ARRAY(char, string->chars, string->length + 1);
@@ -235,16 +191,11 @@ static void freeObject(Obj *object) {
         case OBJ_LIST:
             break;
 
-//> Closures not-yet
-
         case OBJ_UPVALUE:
             FREE(ObjUpvalue, object);
             break;
-//< Closures not-yet
     }
 }
-//< Strings free-object
-//> Garbage Collection not-yet
 
 void collectGarbage() {
 #ifdef DEBUG_TRACE_GC
@@ -271,9 +222,7 @@ void collectGarbage() {
     // Mark the global roots.
     grayTable(&vm.globals);
     grayCompilerRoots();
-//> Methods and Initializers not-yet
     grayObject((Obj *) vm.initString);
-//< Methods and Initializers not-yet
 
     // Traverse the references.
     while (vm.grayCount > 0) {
@@ -312,8 +261,6 @@ void collectGarbage() {
 #endif
 }
 
-//< Garbage Collection not-yet
-//> Strings free-objects
 void freeObjects() {
     Obj *object = vm.objects;
     while (object != NULL) {
@@ -321,10 +268,8 @@ void freeObjects() {
         freeObject(object);
         object = next;
     }
-//> Garbage Collection not-yet
 
     free(vm.grayStack);
-//< Garbage Collection not-yet
 }
 
 void freeLists() {
@@ -341,4 +286,3 @@ void freeList(Obj *object) {
     freeValueArray(&list->values);
     FREE(ObjList, list);
 }
-//< Strings free-objects
