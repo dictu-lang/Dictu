@@ -1,7 +1,5 @@
-//> Scanning on Demand scanner-h
 #ifndef dictu_scanner_h
 #define dictu_scanner_h
-//> token-type
 
 typedef enum {
     // Single-character tokens.
@@ -33,20 +31,16 @@ typedef enum {
     TOKEN_ERROR
 
 } TokenType;
-//< token-type
-//> token-struct
 
 typedef struct {
     TokenType type;
-    const char* start;
+    const char *start;
     int length;
     int line;
 } Token;
-//< token-struct
 
-void initScanner(const char* source);
-//> scan-token-h
+void initScanner(const char *source);
+
 Token scanToken();
-//< scan-token-h
 
 #endif
