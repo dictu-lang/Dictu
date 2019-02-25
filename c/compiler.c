@@ -712,7 +712,6 @@ static void variable(bool canAssign) {
         }
 
         emitBytes(setOp, (uint8_t) arg);
-        // emitByte(OP_NIL);
     }
 }
 
