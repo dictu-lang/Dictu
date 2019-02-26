@@ -19,6 +19,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "util.h"
 
 VM vm; // [one]
 
@@ -636,7 +637,25 @@ static InterpretResult run() {
             }
 
             case OP_BREAK: {
-                push(OP_BREAK);
+
+                break;
+            }
+
+            case OP_IMPORT: {
+                ObjString *fileName = AS_STRING(pop());
+                char *s = readFile(fileName->chars);
+
+                ObjFunction *function = compile(s);
+                if (function == NULL) return INTERPRET_COMPILE_ERROR;
+                push(OBJ_VAL(function));
+                ObjClosure *closure = newClosure(function);
+                pop();
+
+                frame = &vm.frames[vm.frameCount++];
+                frame->ip = closure->function->chunk.code;
+                frame->closure = closure;
+                frame->slots = vm.stackTop - 1;
+
                 break;
             }
 

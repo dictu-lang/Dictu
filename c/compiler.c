@@ -6,7 +6,6 @@
 #include "compiler.h"
 #include "memory.h"
 #include "scanner.h"
-#include "util.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -28,7 +27,7 @@ typedef enum {
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
-    PREC_UNARY,       // ! - +
+    PREC_UNARY,       // ! -
     PREC_PREFIX,      // ++ --
     PREC_CALL,        // . () []
     PREC_PRIMARY
@@ -663,16 +662,6 @@ static void namedVariable(Token name, bool canAssign) {
     }
 
     if (canAssign && match(TOKEN_EQUAL)) {
-        /*
-        if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
-            char errorMsg[200];
-            char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
-            error(errorMsg);
-            return;
-        }
-        */
-
         expression();
         emitBytes(setOp, (uint8_t) arg);
     } else {
@@ -1276,6 +1265,14 @@ static void returnStatement() {
     }
 }
 
+static void importStatement() {
+    consume(TOKEN_STRING, "Expect string after import.");
+    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
+                                    parser.previous.length - 2)));
+    consume(TOKEN_SEMICOLON, "Expect ';' after import.");
+
+    emitByte(OP_IMPORT);
+}
 
 static void breakStatement() {
     if (current->loopDepth == 0) {
@@ -1285,7 +1282,6 @@ static void breakStatement() {
 
     consume(TOKEN_SEMICOLON, "Expected semicolon after break");
     emitByte(OP_BREAK);
-    //emitByte(OP_FALSE);
 }
 
 static void whileStatement() {
@@ -1374,15 +1370,7 @@ static void statement() {
     } else if (match(TOKEN_WITH)) {
         withStatement();
     } else if (match(TOKEN_IMPORT)){
-        //interpret("var x = 10;");
-        consume(TOKEN_STRING, "Expect string after import.");
-
-        ObjString *string = copyString(parser.previous.start + 1, parser.previous.length - 2);
-        consume(TOKEN_SEMICOLON, "Expect ';' after import.");
-
-        char *source = readFile(string->chars);
-        interpret(source);
-        free(source);
+        importStatement();
     } else if (match(TOKEN_BREAK)) {
         breakStatement();
     } else if (match(TOKEN_WHILE)) {
