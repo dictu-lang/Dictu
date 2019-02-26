@@ -400,8 +400,8 @@ static InterpretResult run() {
         disassembleInstruction(&frame->closure->function->chunk,
             (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
-        uint8_t instruction;
-        switch (instruction = READ_BYTE()) {
+        uint8_t instruction = READ_BYTE();
+        switch (instruction) {
             case OP_CONSTANT: {
                 Value constant = READ_CONSTANT();
                 push(constant);
@@ -616,12 +616,6 @@ static InterpretResult run() {
 
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
-
-            case OP_PRINT: {
-                printValue(pop());
-                printf("\n");
-                break;
-            }
 
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
@@ -916,7 +910,6 @@ static InterpretResult run() {
 InterpretResult interpret(const char *source) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
-
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
@@ -1364,6 +1357,15 @@ static void pushNative(int argCount, Value *args) {
     }
 }
 
+static void testNative(int argCount, Value *args) {
+    printf("%d\n", vm.stackCount);
+}
+
+static void stackPopNative(int argCount, Value *args) {
+    printValue(pop());
+    printf("\n");
+}
+
 // End of natives
 
 void defineAllNatives() {
@@ -1411,14 +1413,18 @@ void defineAllNatives() {
             "sleep",
             "print",
             "assert",
-            "push"
+            "push",
+            "test",
+            "stack"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
             assertNative,
-            pushNative
+            pushNative,
+            testNative,
+            stackPopNative
     };
 
 

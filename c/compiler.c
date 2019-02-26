@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "scanner.h"
+#include "util.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -868,6 +869,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RETURN
         {NULL,     NULL,         PREC_NONE},               // TOKEN_WITH
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EOF
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_IMPORT
         {NULL,     NULL,         PREC_NONE},               // TOKEN_ERROR
 };
 
@@ -1336,6 +1338,7 @@ static void synchronize() {
             case TOKEN_WHILE:
             case TOKEN_BREAK:
             case TOKEN_RETURN:
+            case TOKEN_IMPORT:
                 return;
 
             default:
@@ -1370,6 +1373,16 @@ static void statement() {
         returnStatement();
     } else if (match(TOKEN_WITH)) {
         withStatement();
+    } else if (match(TOKEN_IMPORT)){
+        //interpret("var x = 10;");
+        consume(TOKEN_STRING, "Expect string after import.");
+
+        ObjString *string = copyString(parser.previous.start + 1, parser.previous.length - 2);
+        consume(TOKEN_SEMICOLON, "Expect ';' after import.");
+
+        char *source = readFile(string->chars);
+        interpret(source);
+        free(source);
     } else if (match(TOKEN_BREAK)) {
         breakStatement();
     } else if (match(TOKEN_WHILE)) {
