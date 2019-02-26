@@ -201,6 +201,18 @@ class SomeOtherClass {
 
 SomeOtherClass.printHello(); // Static methods dont need the object to be instantiated 
 ```
+*Importing Files*
+```
+// some_file.du
+var test = "hello from some_file!";
+
+----------------------------------
+
+// test.du
+import "some_file.du";
+
+print(test); // hello from some_file!
+```
 *Built-in functions*
 ```
 print(10, "test", nil, true); // Each argument is printed
