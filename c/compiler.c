@@ -680,7 +680,7 @@ static void namedVariable(Token name, bool canAssign) {
 }
 
 static void variable(bool canAssign) {
-    if (parser.current.type == TOKEN_IDENTIFIER) {
+    if (parser.current.type == TOKEN_IDENTIFIER || parser.current.type == TOKEN_EQUAL) {
         namedVariable(parser.previous, canAssign);
     } else {
         Token name = parser.previous;
