@@ -19,6 +19,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "util.h"
 
 VM vm; // [one]
 
@@ -400,8 +401,8 @@ static InterpretResult run() {
         disassembleInstruction(&frame->closure->function->chunk,
             (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
-        uint8_t instruction;
-        switch (instruction = READ_BYTE()) {
+        uint8_t instruction = READ_BYTE();
+        switch (instruction) {
             case OP_CONSTANT: {
                 Value constant = READ_CONSTANT();
                 push(constant);
@@ -617,12 +618,6 @@ static InterpretResult run() {
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
 
-            case OP_PRINT: {
-                printValue(pop());
-                printf("\n");
-                break;
-            }
-
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
                 frame->ip += offset;
@@ -642,7 +637,25 @@ static InterpretResult run() {
             }
 
             case OP_BREAK: {
-                push(OP_BREAK);
+
+                break;
+            }
+
+            case OP_IMPORT: {
+                ObjString *fileName = AS_STRING(pop());
+                char *s = readFile(fileName->chars);
+
+                ObjFunction *function = compile(s);
+                if (function == NULL) return INTERPRET_COMPILE_ERROR;
+                push(OBJ_VAL(function));
+                ObjClosure *closure = newClosure(function);
+                pop();
+
+                frame = &vm.frames[vm.frameCount++];
+                frame->ip = closure->function->chunk.code;
+                frame->closure = closure;
+                frame->slots = vm.stackTop - 1;
+
                 break;
             }
 
@@ -916,7 +929,6 @@ static InterpretResult run() {
 InterpretResult interpret(const char *source) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
-
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
