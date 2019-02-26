@@ -1376,15 +1376,6 @@ static void pushNative(int argCount, Value *args) {
     }
 }
 
-static void testNative(int argCount, Value *args) {
-    printf("%d\n", vm.stackCount);
-}
-
-static void stackPopNative(int argCount, Value *args) {
-    printValue(pop());
-    printf("\n");
-}
-
 // End of natives
 
 void defineAllNatives() {
@@ -1432,18 +1423,14 @@ void defineAllNatives() {
             "sleep",
             "print",
             "assert",
-            "push",
-            "test",
-            "stack"
+            "push"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
             assertNative,
-            pushNative,
-            testNative,
-            stackPopNative
+            pushNative
     };
 
 
