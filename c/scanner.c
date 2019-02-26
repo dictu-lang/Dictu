@@ -268,14 +268,31 @@ Token scanToken() {
             return makeToken(TOKEN_COMMA);
         case '.':
             return makeToken(TOKEN_DOT);
-        case '/':
-            return makeToken(TOKEN_SLASH);
-        case '*':
-            return makeToken(TOKEN_STAR);
+        case '/': {
+            if (match('=')) {
+                return makeToken(TOKEN_DIVIDE_EQUALS);
+            } else {
+                return makeToken(TOKEN_SLASH);
+            }
+        }
+        case '*': {
+            if (match('=')) {
+                return makeToken(TOKEN_MULTIPLY_EQUALS);
+            } else {
+                return makeToken(TOKEN_STAR);
+            }
+        }
         case '%':
             return makeToken(TOKEN_PERCENT);
-        case '-':
-            return makeToken(match('-') ? TOKEN_DECREMENT : TOKEN_MINUS);
+        case '-': {
+            if (match('-')) {
+                return makeToken(TOKEN_DECREMENT);
+            } else if (match('=')) {
+                return makeToken(TOKEN_MINUS_EQUALS);
+            } else {
+                return makeToken(TOKEN_MINUS);
+            }
+        }
         case '+': {
             if (match('+')) {
                 return makeToken(TOKEN_INCREMENT);

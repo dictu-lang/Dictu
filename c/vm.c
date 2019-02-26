@@ -176,6 +176,7 @@ static bool callValue(Value callee, int argCount) {
                 NativeFnVoid native = AS_NATIVE_VOID(callee);
                 native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
+                vm.stackCount -= argCount + 1;
                 push(NIL_VAL);
                 return true;
             }
@@ -184,6 +185,7 @@ static bool callValue(Value callee, int argCount) {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
+                vm.stackCount -= argCount + 1;
                 push(result);
                 return true;
             }
@@ -549,8 +551,16 @@ static InterpretResult run() {
                     double b = AS_NUMBER(pop());
                     double a = AS_NUMBER(pop());
                     push(NUMBER_VAL(a + b));
+                } else if (IS_LIST(peek(1))) {
+                    Value addValue = pop();
+                    Value listValue = pop();
+
+                    ObjList *list = AS_LIST(listValue);
+                    writeValueArray(&list->values, addValue);
+
+                    push(OBJ_VAL(list));
                 } else {
-                    runtimeError("Operands must be two numbers or two strings.");
+                    runtimeError("Unsupported operand types.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -575,17 +585,6 @@ static InterpretResult run() {
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
-                break;
-            }
-
-            case OP_ADD_EQUALS: {
-                if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Operand must be a number.");
-                }
-
-                printf("x: %f\n", AS_NUMBER(pop()));
-                printf("y: %f\n", AS_NUMBER(pop()));
-                push(NUMBER_VAL(10));
                 break;
             }
 
