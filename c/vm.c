@@ -968,7 +968,7 @@ static Value strNative(int argCount, Value *args) {
     char *numberString = malloc(sizeof(char) * numberStringLength);
     snprintf(numberString, numberStringLength, "%.15g", number);
 
-    ObjString *string = copyString(numberString, numberStringLength);
+    ObjString *string = copyString(numberString, numberStringLength - 1);
     free(numberString);
 
     return OBJ_VAL(string);
