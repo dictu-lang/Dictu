@@ -156,7 +156,14 @@ static TokenType identifierType() {
             }
             break;
         case 'i':
-            return checkKeyword(1, 1, "f", TOKEN_IF);
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'f':
+                        return checkKeyword(2, 0, "", TOKEN_IF);
+                    case 'm':
+                        return checkKeyword(2, 4, "port", TOKEN_IMPORT);
+                }
+            }
         case 'n':
             return checkKeyword(1, 2, "il", TOKEN_NIL);
         case 'o':
@@ -268,14 +275,31 @@ Token scanToken() {
             return makeToken(TOKEN_COMMA);
         case '.':
             return makeToken(TOKEN_DOT);
-        case '/':
-            return makeToken(TOKEN_SLASH);
-        case '*':
-            return makeToken(TOKEN_STAR);
+        case '/': {
+            if (match('=')) {
+                return makeToken(TOKEN_DIVIDE_EQUALS);
+            } else {
+                return makeToken(TOKEN_SLASH);
+            }
+        }
+        case '*': {
+            if (match('=')) {
+                return makeToken(TOKEN_MULTIPLY_EQUALS);
+            } else {
+                return makeToken(TOKEN_STAR);
+            }
+        }
         case '%':
             return makeToken(TOKEN_PERCENT);
-        case '-':
-            return makeToken(match('-') ? TOKEN_DECREMENT : TOKEN_MINUS);
+        case '-': {
+            if (match('-')) {
+                return makeToken(TOKEN_DECREMENT);
+            } else if (match('=')) {
+                return makeToken(TOKEN_MINUS_EQUALS);
+            } else {
+                return makeToken(TOKEN_MINUS);
+            }
+        }
         case '+': {
             if (match('+')) {
                 return makeToken(TOKEN_INCREMENT);

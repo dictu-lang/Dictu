@@ -27,7 +27,7 @@ typedef enum {
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
-    PREC_UNARY,       // ! - +
+    PREC_UNARY,       // ! -
     PREC_PREFIX,      // ++ --
     PREC_CALL,        // . () []
     PREC_PRIMARY
@@ -662,16 +662,6 @@ static void namedVariable(Token name, bool canAssign) {
     }
 
     if (canAssign && match(TOKEN_EQUAL)) {
-        /*
-        if (setOp == OP_SET_GLOBAL && current->scopeDepth != 0) {
-            char errorMsg[200];
-            char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment", variableName);
-            error(errorMsg);
-            return;
-        }
-        */
-
         expression();
         emitBytes(setOp, (uint8_t) arg);
     } else {
@@ -680,7 +670,39 @@ static void namedVariable(Token name, bool canAssign) {
 }
 
 static void variable(bool canAssign) {
-    namedVariable(parser.previous, canAssign);
+    if (parser.current.type == TOKEN_IDENTIFIER || parser.current.type == TOKEN_EQUAL) {
+        namedVariable(parser.previous, canAssign);
+    } else {
+        Token name = parser.previous;
+        uint8_t setOp;
+        namedVariable(name, false);
+
+        if (match(TOKEN_PLUS_EQUALS)) {
+            expression();
+            emitByte(OP_ADD);
+        } else if (match(TOKEN_MINUS_EQUALS)) {
+            expression();
+            emitByte(OP_SUBTRACT);
+        } else if (match(TOKEN_MULTIPLY_EQUALS)) {
+            expression();
+            emitByte(OP_MULTIPLY);
+        } else if (match(TOKEN_DIVIDE_EQUALS)) {
+            expression();
+            emitByte(OP_DIVIDE);
+        }
+
+        int arg = resolveLocal(current, &name, false);
+        if (arg != -1) {
+            setOp = OP_SET_LOCAL;
+        } else if ((arg = resolveUpvalue(current, &name)) != -1) {
+            setOp = OP_SET_UPVALUE;
+        } else {
+            arg = identifierConstant(&name);
+            setOp = OP_SET_GLOBAL;
+        }
+
+        emitBytes(setOp, (uint8_t) arg);
+    }
 }
 
 static Token syntheticToken(const char *text) {
@@ -782,77 +804,26 @@ static void prefix(bool canAssign) {
         setOp = OP_SET_GLOBAL;
     }
 
-    /*
-    if (current->scopeDepth != 0) {
-        if (setOp != OP_SET_LOCAL) {
-            char errorMsg[200];
-            char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment1", variableName);
-            error(errorMsg);
-            return;
-        }
-    }
-    */
-
-    emitBytes(setOp, (uint8_t) arg);
-}
-
-
-static void binaryAssign(bool canAssign) {
-    TokenType operatorType = parser.previous.type;
-    parsePrecedence(PREC_ASSIGNMENT);
-
-    // Emit the operator instruction.
-    switch (operatorType) {
-        case TOKEN_PLUS_EQUALS: {
-            emitByte(OP_ADD_EQUALS);
-            break;
-        }
-        default:
-            return;
-    }
-
-    uint8_t setOp;
-    Token name = parser.previous;
-
-    int arg = resolveLocal(current, &name, false);
-    if (arg != -1) {
-        setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
-        setOp = OP_SET_UPVALUE;
-    } else {
-        arg = identifierConstant(&name);
-        setOp = OP_SET_GLOBAL;
-    }
-    /*
-    if (current->scopeDepth != 0) {
-        if (setOp != OP_SET_LOCAL) {
-            char errorMsg[200];
-            char *variableName = strndup(name.start, name.length);
-            snprintf(errorMsg, sizeof(errorMsg), "Local variable '%s' referenced before assignment2", variableName);
-            error(errorMsg);
-            return;
-        }
-    }
-    */
-
     emitBytes(setOp, (uint8_t) arg);
 }
 
 ParseRule rules[] = {
-        {grouping, call,         PREC_CALL},         // TOKEN_LEFT_PAREN
-        {NULL,     NULL,         PREC_NONE},         // TOKEN_RIGHT_PAREN
-        {NULL,     NULL,         PREC_NONE},         // TOKEN_LEFT_BRACE [big]
-        {NULL,     NULL,         PREC_NONE},         // TOKEN_RIGHT_BRACE
-        {list,     subscript,    PREC_CALL},         // TOKEN_LEFT_BRACKET
-        {NULL,     NULL,         PREC_NONE},         // TOKEN_RIGHT_BRACKET
-        {NULL,     NULL,         PREC_NONE},         // TOKEN_COMMA
-        {NULL,     dot,          PREC_CALL},         // TOKEN_DOT
-        {unary,    binary,       PREC_TERM},         // TOKEN_MINUS
-        {NULL,     binary,       PREC_TERM},         // TOKEN_PLUS
-        {prefix,   NULL,         PREC_PREFIX},       // TOKEN_INCREMENT
-        {prefix,   NULL,         PREC_PREFIX},       // TOKEN_DECREMENT
-        {NULL,     binaryAssign, PREC_ASSIGNMENT},   // TOKEN_PLUS_EQUALS
+        {grouping, call,         PREC_CALL},               // TOKEN_LEFT_PAREN
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_PAREN
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACE
+        {list,     subscript,    PREC_CALL},               // TOKEN_LEFT_BRACKET
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACKET
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_COMMA
+        {NULL,     dot,          PREC_CALL},               // TOKEN_DOT
+        {unary,    binary,       PREC_TERM},               // TOKEN_MINUS
+        {NULL,     binary,       PREC_TERM},               // TOKEN_PLUS
+        {prefix,   NULL,         PREC_PREFIX},             // TOKEN_INCREMENT
+        {prefix,   NULL,         PREC_PREFIX},             // TOKEN_DECREMENT
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_PLUS_EQUALS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_MINUS_EQUALS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_DIVIDE_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_SEMICOLON
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_SLASH
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
@@ -887,6 +858,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RETURN
         {NULL,     NULL,         PREC_NONE},               // TOKEN_WITH
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EOF
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_IMPORT
         {NULL,     NULL,         PREC_NONE},               // TOKEN_ERROR
 };
 
@@ -1293,6 +1265,14 @@ static void returnStatement() {
     }
 }
 
+static void importStatement() {
+    consume(TOKEN_STRING, "Expect string after import.");
+    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
+                                    parser.previous.length - 2)));
+    consume(TOKEN_SEMICOLON, "Expect ';' after import.");
+
+    emitByte(OP_IMPORT);
+}
 
 static void breakStatement() {
     if (current->loopDepth == 0) {
@@ -1302,7 +1282,6 @@ static void breakStatement() {
 
     consume(TOKEN_SEMICOLON, "Expected semicolon after break");
     emitByte(OP_BREAK);
-    //emitByte(OP_FALSE);
 }
 
 static void whileStatement() {
@@ -1355,6 +1334,7 @@ static void synchronize() {
             case TOKEN_WHILE:
             case TOKEN_BREAK:
             case TOKEN_RETURN:
+            case TOKEN_IMPORT:
                 return;
 
             default:
@@ -1389,6 +1369,8 @@ static void statement() {
         returnStatement();
     } else if (match(TOKEN_WITH)) {
         withStatement();
+    } else if (match(TOKEN_IMPORT)){
+        importStatement();
     } else if (match(TOKEN_BREAK)) {
         breakStatement();
     } else if (match(TOKEN_WHILE)) {

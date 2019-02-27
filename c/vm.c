@@ -19,6 +19,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "util.h"
 
 VM vm; // [one]
 
@@ -176,6 +177,7 @@ static bool callValue(Value callee, int argCount) {
                 NativeFnVoid native = AS_NATIVE_VOID(callee);
                 native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
+                vm.stackCount -= argCount + 1;
                 push(NIL_VAL);
                 return true;
             }
@@ -184,6 +186,7 @@ static bool callValue(Value callee, int argCount) {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
                 vm.stackTop -= argCount + 1;
+                vm.stackCount -= argCount + 1;
                 push(result);
                 return true;
             }
@@ -398,8 +401,8 @@ static InterpretResult run() {
         disassembleInstruction(&frame->closure->function->chunk,
             (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
-        uint8_t instruction;
-        switch (instruction = READ_BYTE()) {
+        uint8_t instruction = READ_BYTE();
+        switch (instruction) {
             case OP_CONSTANT: {
                 Value constant = READ_CONSTANT();
                 push(constant);
@@ -549,8 +552,16 @@ static InterpretResult run() {
                     double b = AS_NUMBER(pop());
                     double a = AS_NUMBER(pop());
                     push(NUMBER_VAL(a + b));
+                } else if (IS_LIST(peek(1))) {
+                    Value addValue = pop();
+                    Value listValue = pop();
+
+                    ObjList *list = AS_LIST(listValue);
+                    writeValueArray(&list->values, addValue);
+
+                    push(OBJ_VAL(list));
                 } else {
-                    runtimeError("Operands must be two numbers or two strings.");
+                    runtimeError("Unsupported operand types.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 break;
@@ -575,17 +586,6 @@ static InterpretResult run() {
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
-                break;
-            }
-
-            case OP_ADD_EQUALS: {
-                if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Operand must be a number.");
-                }
-
-                printf("x: %f\n", AS_NUMBER(pop()));
-                printf("y: %f\n", AS_NUMBER(pop()));
-                push(NUMBER_VAL(10));
                 break;
             }
 
@@ -618,12 +618,6 @@ static InterpretResult run() {
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
 
-            case OP_PRINT: {
-                printValue(pop());
-                printf("\n");
-                break;
-            }
-
             case OP_JUMP: {
                 uint16_t offset = READ_SHORT();
                 frame->ip += offset;
@@ -643,7 +637,25 @@ static InterpretResult run() {
             }
 
             case OP_BREAK: {
-                push(OP_BREAK);
+
+                break;
+            }
+
+            case OP_IMPORT: {
+                ObjString *fileName = AS_STRING(pop());
+                char *s = readFile(fileName->chars);
+
+                ObjFunction *function = compile(s);
+                if (function == NULL) return INTERPRET_COMPILE_ERROR;
+                push(OBJ_VAL(function));
+                ObjClosure *closure = newClosure(function);
+                pop();
+
+                frame = &vm.frames[vm.frameCount++];
+                frame->ip = closure->function->chunk.code;
+                frame->closure = closure;
+                frame->slots = vm.stackTop - 1;
+
                 break;
             }
 
@@ -917,7 +929,6 @@ static InterpretResult run() {
 InterpretResult interpret(const char *source) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
-
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
@@ -969,7 +980,7 @@ static Value strNative(int argCount, Value *args) {
     char *numberString = malloc(sizeof(char) * numberStringLength);
     snprintf(numberString, numberStringLength, "%.15g", number);
 
-    ObjString *string = copyString(numberString, numberStringLength);
+    ObjString *string = copyString(numberString, numberStringLength - 1);
     free(numberString);
 
     return OBJ_VAL(string);

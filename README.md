@@ -31,6 +31,13 @@ test = test - 1; // Subtraction. Variable 'test': 1
 test = test * 10; // Multiplication. Variable 'test': 10
 test = test / 2; // Division. Variable 'test': 5
 
+// Short hand
+
+test += 10; // Addition, and assign to variable.
+test -= 10; // Division, and assign to variable.
+test *= 10; // Multiplication, and assign to variable.
+test /= 10; // Division, and assign to variable.
+
 // List indexing
 var someList = [1, 2, 3];
 var someNumber = someList[0]; // Lists are 0 indexed. Variable 'someNumber': 1
@@ -44,6 +51,9 @@ var myList = [1, 2, 3, 4]; // Assigning a list
 var someListElement = myList[0]; // Lists are 0 indexed
 var someOtherListElement = myList[-1]; // Negative indexes start from the back of the list
 push(myList, 10); // Push an element to the end of a list
+// You can also use the + operator instead of push
+var newList = [];
+newList + 10; // [10]
 var aNewListElement = pop(myList); // Pops an element off the end of a list
 ```
 *Comments*
@@ -191,11 +201,23 @@ class SomeOtherClass {
 
 SomeOtherClass.printHello(); // Static methods dont need the object to be instantiated 
 ```
+*Importing Files*
+```
+// some_file.du
+var test = "hello from some_file!";
+
+----------------------------------
+
+// test.du
+import "some_file.du";
+
+print(test); // hello from some_file!
+```
 *Built-in functions*
 ```
 print(10, "test", nil, true); // Each argument is printed
 sleep(10); // Pauses execution for time specified (seconds)
-assert(true) // Returns a runtime errorr if expression passed is false
+assert(true) // Returns a runtime error if expression passed is false
 push(list, 10); // Push element to the end of a list
 push(list, 10, 1); // Push element to list at given index (will reshuffle values, not replace)
 var x = pop(list); // Pop element off the end of a list
