@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 #include "common.h"
 #include "chunk.h"
@@ -10,16 +8,18 @@
 #include "vm.h"
 #include "util.h"
 
-#define VERSION "Dictu Version: 0.1.0\n"
+#include "linenoise.h"
+
+#define VERSION "Dictu Version: 0.1.1\n"
 
 static void repl() {
     printf(VERSION);
     char *line;
-    for (;;) {
-        line = readline(">>> ");
-        add_history(line);
 
+    while((line = linenoise(">>> ")) != NULL) {
         interpret(line);
+        linenoiseHistoryAdd(line);
+        free(line);
     }
 }
 
