@@ -8,20 +8,18 @@
 #include "vm.h"
 #include "util.h"
 
-#define VERSION "Dictu Version: 0.1.0\n"
+#include "linenoise.h"
+
+#define VERSION "Dictu Version: 0.1.1\n"
 
 static void repl() {
     printf(VERSION);
-    char line[1024];
-    for (;;) {
-        printf(">>> ");
+    char *line;
 
-        if (!fgets(line, sizeof(line), stdin)) {
-            printf("\n");
-            break;
-        }
-
+    while((line = linenoise(">>> ")) != NULL) {
         interpret(line);
+        linenoiseHistoryAdd(line);
+        free(line);
     }
 }
 
