@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "common.h"
 #include "chunk.h"
@@ -12,14 +14,10 @@
 
 static void repl() {
     printf(VERSION);
-    char line[1024];
+    char *line;
     for (;;) {
-        printf(">>> ");
-
-        if (!fgets(line, sizeof(line), stdin)) {
-            printf("\n");
-            break;
-        }
+        line = readline(">>> ");
+        add_history(line);
 
         interpret(line);
     }
