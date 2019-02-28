@@ -1,6 +1,6 @@
-#ifndef DICTU_UTIL_H
-#define DICTU_UTIL_H
+#ifndef dictu_util_h
+#define dictu_util_h
 
 char *readFile(const char *path);
 
-#endif //DICTU_UTIL_H
+#endif //dictu_util_h

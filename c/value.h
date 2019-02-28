@@ -7,7 +7,7 @@ typedef struct sObj Obj;
 typedef struct sObjString ObjString;
 typedef struct sObjList ObjList;
 typedef struct sObjDict ObjDict;
-typedef struct dictItems dictItems;
+typedef struct dictItem dictItem;
 
 #ifdef NAN_TAGGING
 
@@ -114,9 +114,15 @@ void writeValueArray(ValueArray *array, Value value);
 
 void freeValueArray(ValueArray *array);
 
-void initDictValues(ObjDict *dict);
+ObjDict *initDictValues(uint32_t capacity);
 
-void freeDictValue(dictItems *dictItem);
+void insertDict(ObjDict *dict, char *key, Value value);
+
+void resizeDict(ObjDict *dict);
+
+Value searchDict(ObjDict *dict, char *key);
+
+void freeDictValue(dictItem *dictItem);
 
 void freeDict(ObjDict *dict);
 

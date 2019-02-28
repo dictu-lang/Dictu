@@ -635,7 +635,6 @@ static void list(bool canAssign) {
 }
 
 static void dict(bool canAssign) {
-    printf("Dict!\n");
     emitByte(OP_NEW_DICT);
     consume(TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }

@@ -113,8 +113,8 @@ ObjList *initList() {
 }
 
 ObjDict *initDict() {
-    ObjDict *dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
-    initDictValues(dict);
+    ObjDict *dict = initDictValues(8);
+    insertDict(dict, "test", TRUE_VAL);
     return dict;
 }
 
@@ -228,9 +228,24 @@ void printObject(Value value) {
             break;
         }
 
-        case OBJ_DICT:
-            printf("Dict");
+        case OBJ_DICT: {
+            int count = 0;
+            ObjDict *dict = AS_DICT(value);
+            printf("{");
+            for (int i = 0; i < dict->capacity; ++i) {
+                dictItem *item = dict->items[i];
+                if (!item || item->deleted)
+                    continue;
+
+                count++;
+                printf("'%s': ", item->key);
+                printValue(item->item);
+                if (count != dict->count)
+                    printf(", ");
+            }
+            printf("}");
             break;
+        }
 
         case OBJ_UPVALUE:
             printf("upvalue");

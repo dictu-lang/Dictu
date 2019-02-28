@@ -1,6 +1,8 @@
 #ifndef dictu_object_h
 #define dictu_object_h
 
+#include <stdint.h>
+
 #include "common.h"
 #include "chunk.h"
 #include "table.h"
@@ -86,16 +88,18 @@ struct sObjList {
     ValueArray values;
 };
 
-struct dictItems {
+struct dictItem {
     char *key;
-    Value *item;
+    Value item;
+    bool deleted;
+    uint32_t hash;
 };
 
 struct sObjDict {
     Obj obj;
     int capacity;
     int count;
-    dictItems **items;
+    dictItem **items;
 };
 
 typedef struct sUpvalue {
