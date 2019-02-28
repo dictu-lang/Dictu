@@ -14,6 +14,7 @@ typedef enum {
     OP_SUBSCRIPT,
     OP_SUBSCRIPT_ASSIGN,
     OP_POP,
+    OP_NEW_DICT,
     OP_NO_PRINT,
     OP_GET_LOCAL,
     OP_SET_LOCAL,

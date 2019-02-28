@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "memory.h"
 #include "value.h"
@@ -25,6 +26,37 @@ void writeValueArray(ValueArray *array, Value value) {
 void freeValueArray(ValueArray *array) {
     FREE_ARRAY(Value, array->values, array->capacity);
     initValueArray(array);
+}
+
+// TODO: Implement adding to hash table
+// TODO: Implement searching hash table
+// TODO: Implement removing a key
+
+void initDictValues(ObjDict *dict) {
+    dict->capacity = 10;
+    dict->count = 0;
+
+    for (int i = 0; i < dict->capacity; i++)
+    {
+        dict->items[i] = NULL;
+    }
+}
+
+void freeDictValue(dictItems *dictItem) {
+    free(dictItem->key);
+    free(dictItem->item);
+    free(dictItem);
+}
+
+void freeDict(ObjDict *dict) {
+    for (int i = 0; i < dict->size; i++) {
+        dictItems* item = dict->items[i];
+        if (item != NULL) {
+            freeDictValue(item);
+        }
+    }
+    free(dict->items);
+    free(dict);
 }
 
 void printValue(Value value) {

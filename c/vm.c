@@ -665,6 +665,12 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_NEW_DICT: {
+                ObjDict *dict = initDict();
+                push(OBJ_VAL(dict));
+                break;
+            }
+
             case OP_ADD_LIST: {
                 Value addValue = pop();
                 Value listValue = pop();

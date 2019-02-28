@@ -634,6 +634,12 @@ static void list(bool canAssign) {
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
+static void dict(bool canAssign) {
+    printf("Dict!\n");
+    emitByte(OP_NEW_DICT);
+    consume(TOKEN_RIGHT_BRACE, "Expected closing '}'");
+}
+
 static void subscript(bool canAssign) {
     expression();
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
@@ -810,7 +816,7 @@ static void prefix(bool canAssign) {
 ParseRule rules[] = {
         {grouping, call,         PREC_CALL},               // TOKEN_LEFT_PAREN
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_PAREN
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
+        {dict,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACE
         {list,     subscript,    PREC_CALL},               // TOKEN_LEFT_BRACKET
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACKET
@@ -1375,10 +1381,10 @@ static void statement() {
         breakStatement();
     } else if (match(TOKEN_WHILE)) {
         whileStatement();
-    } else if (match(TOKEN_LEFT_BRACE)) {
-        beginScope();
-        block();
-        endScope();
+    //} else if (match(TOKEN_LEFT_BRACE)) {
+    //    beginScope();
+    //    block();
+    //    endScope();
     } else {
         expressionStatement();
     }

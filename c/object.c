@@ -112,6 +112,12 @@ ObjList *initList() {
     return list;
 }
 
+ObjDict *initDict() {
+    ObjDict *dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    initDictValues(dict);
+    return dict;
+}
+
 static uint32_t hashString(const char *key, int length) {
     uint32_t hash = 2166136261u;
 
@@ -221,6 +227,10 @@ void printObject(Value value) {
             printf("]");
             break;
         }
+
+        case OBJ_DICT:
+            printf("Dict");
+            break;
 
         case OBJ_UPVALUE:
             printf("upvalue");

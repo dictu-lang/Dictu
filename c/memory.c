@@ -121,11 +121,12 @@ static void blackenObject(Obj *object) {
             break;
 
         case OBJ_LIST: {
-            //ObjList *list = (ObjList *) object;
-            //grayArray(&list->values);
+            ObjList *list = (ObjList *) object;
+            grayArray(&list->values);
             break;
         }
 
+        case OBJ_DICT:
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
@@ -189,6 +190,7 @@ static void freeObject(Obj *object) {
         }
 
         case OBJ_LIST:
+        case OBJ_DICT:
             break;
 
         case OBJ_UPVALUE:
