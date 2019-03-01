@@ -122,8 +122,6 @@ void resizeDict(ObjDict *dict);
 
 Value searchDict(ObjDict *dict, char *key);
 
-void freeDictValue(dictItem *dictItem);
-
 void freeDict(ObjDict *dict);
 
 void printValue(Value value);

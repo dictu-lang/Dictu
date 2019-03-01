@@ -21,14 +21,14 @@ static Obj *allocateObject(size_t size, ObjType type, bool isList) {
     }
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", object, size, type);
+    printf("%p allocate %ld for %d\n", (void *)object, size, type);
 #endif
 
     return object;
 }
 
-#define ALLOCATE_OBJ(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, false)
+#define ALLOCATE_OBJ_LIST(type, objectType) \
+    (type*)allocateObject(sizeof(type), objectType, true)
 
 void initValueArray(ValueArray *array) {
     array->values = NULL;
@@ -56,7 +56,7 @@ void freeValueArray(ValueArray *array) {
 // TODO: Implement removing a key
 
 ObjDict *initDictValues(uint32_t capacity) {
-    ObjDict *dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    ObjDict *dict = ALLOCATE_OBJ_LIST(ObjDict, OBJ_DICT);
     dict->capacity = capacity;
     dict->count = 0;
     dict->items = malloc(capacity * sizeof(*dict->items));
@@ -125,7 +125,7 @@ void resizeDict(ObjDict *dict) {
         }
 
         if (dict->items[i]->deleted) {
-            //freeDictValue(dict->items[i]);
+            freeDictValue(dict->items[i]);
             continue;
         }
 
@@ -161,23 +161,6 @@ Value searchDict(ObjDict *dict, char *key) {
     }
 
     return NIL_VAL;
-}
-
-void freeDictValue(dictItem *dictItem) {
-    free(dictItem->key);
-    //free(dictItem->item);
-    free(dictItem);
-}
-
-void freeDict(ObjDict *dict) {
-    for (int i = 0; i < dict->capacity; i++) {
-        dictItem *item = dict->items[i];
-        if (item != NULL) {
-            freeDictValue(item);
-        }
-    }
-    free(dict->items);
-    free(dict);
 }
 
 void printValue(Value value) {

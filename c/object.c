@@ -27,7 +27,7 @@ static Obj *allocateObject(size_t size, ObjType type, bool isList) {
     }
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", object, size, type);
+    printf("%p allocate %ld for %d\n", (void *)object, size, type);
 #endif
 
     return object;
