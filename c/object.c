@@ -114,7 +114,6 @@ ObjList *initList() {
 
 ObjDict *initDict() {
     ObjDict *dict = initDictValues(8);
-    insertDict(dict, "test", TRUE_VAL);
     return dict;
 }
 

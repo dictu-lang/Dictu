@@ -682,6 +682,25 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_ADD_DICT: {
+                Value value = pop();
+                Value key = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(key)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *keyString = AS_CSTRING(key);
+
+                insertDict(dict, keyString, value);
+
+                push(OBJ_VAL(dict));
+                break;
+            }
+
             case OP_SUBSCRIPT: {
                 Value indexValue = pop();
                 Value listValue = pop();
@@ -732,6 +751,23 @@ static InterpretResult run() {
 
                 runtimeError("Array index out of bounds.");
                 return INTERPRET_RUNTIME_ERROR;
+            }
+
+            case OP_SUBSCRIPT_DICT: {
+                Value indexValue = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(indexValue)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *key = AS_CSTRING(indexValue);
+
+                push(searchDict(dict, key));
+
+                break;
             }
 
             case OP_CALL_0:

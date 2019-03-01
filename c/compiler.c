@@ -636,18 +636,48 @@ static void list(bool canAssign) {
 
 static void dict(bool canAssign) {
     emitByte(OP_NEW_DICT);
+
+    do {
+        if (check(TOKEN_RIGHT_BRACKET))
+            break;
+
+        expression();
+        consume(TOKEN_COLON, "Expected ':'");
+        expression();
+        emitByte(OP_ADD_DICT);
+    } while (match(TOKEN_COMMA));
+
     consume(TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
 
 static void subscript(bool canAssign) {
     expression();
+
+    TokenType type;
+    if (parser.previous.type == TOKEN_NUMBER) {
+        type = TOKEN_NUMBER;
+    } else {
+        type = TOKEN_STRING;
+    }
+
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
-    if (match(TOKEN_EQUAL)) {
-        expression();
-        emitByte(OP_SUBSCRIPT_ASSIGN);
+    // Number means its a list subscript
+    if (type == TOKEN_NUMBER) {
+        if (match(TOKEN_EQUAL)) {
+            expression();
+            emitByte(OP_SUBSCRIPT_ASSIGN);
+        } else {
+            emitByte(OP_SUBSCRIPT);
+        }
     } else {
-        emitByte(OP_SUBSCRIPT);
+        // Dict subscript
+        if (match(TOKEN_EQUAL)) {
+            //expression();
+            //emitByte(OP_SUBSCRIPT_ASSIGN_DICT);
+        } else {
+            emitByte(OP_SUBSCRIPT_DICT);
+        }
     }
 }
 
@@ -830,6 +860,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_DIVIDE_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_SEMICOLON
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_COLON
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_SLASH
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
