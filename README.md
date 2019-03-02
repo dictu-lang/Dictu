@@ -18,7 +18,7 @@ var someBoolean = true;
 var someFalseBoolean = false;
 var someNilValue = nil;
 var someOtherNilValue; // Variables declared without a value are set to nil
-car someList = [1, 2, "hi", 'hi', nil, true, false]; // Lists can hold any value
+var someList = [1, 2, "hi", 'hi', nil, true, false]; // Lists can hold any value
 ```
 *Operators*
 ```
