@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Classes
-nav_order: 6
+nav_order: 7
 ---
 
 # Classes
@@ -59,7 +59,7 @@ class SomeClass {
     }
 }
 
-SomeClass.printMessage(); // Hello!
+SomeClass().printMessage(); // Hello!
 ```
 
 ## This
@@ -102,8 +102,8 @@ class SomeOtherClass {
     }
 }
 
-SomeOtherClass.printHello();
-SomeOtherClass.printMessage();
+SomeOtherClass.printHello(); // Hello
+SomeOtherClass().printMessage(); // Some Text
 ```
 Output
 ```js
