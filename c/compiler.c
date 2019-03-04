@@ -104,10 +104,6 @@ ClassCompiler *currentClass = NULL;
 
 bool staticMethod = false;
 
-static void block();
-static void dict(bool canAssign);
-// static void dictOrScope(bool canAssign);
-
 static Chunk *currentChunk() {
     return &current->function->chunk;
 }
@@ -637,23 +633,6 @@ static void list(bool canAssign) {
 
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
-
-/*
-static void dictOrScope(bool canAssign) {
-    if (check(TOKEN_STRING)) {
-        printf("return\n");
-        dict(canAssign);
-        return;
-    }
-
-    printf("Scope?\n");
-
-    beginScope();
-    block();
-    endScope();
-
-}
-*/
 
 static void dict(bool canAssign) {
     emitByte(OP_NEW_DICT);

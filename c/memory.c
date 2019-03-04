@@ -145,7 +145,6 @@ static void blackenObject(Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            //grayObject((Obj *) dict->items);
             for (int i = 0; i < dict->count; ++i) {
                 if (!dict->items[i])
                     continue;

@@ -33,7 +33,6 @@ static bool isAtEnd() {
 }
 
 static char advance() {
-    // printf("Forward!\n");
     scanner.current++;
     return scanner.current[-1];
 }
