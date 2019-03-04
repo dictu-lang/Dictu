@@ -1382,7 +1382,7 @@ static void assertNative(int argCount, Value *args) {
 
 static void pushNative(int argCount, Value *args) {
     if (argCount < 2 || argCount > 3) {
-        runtimeError("push() takes either two  or three arguments (%d given)", argCount);
+        runtimeError("push() takes either two or three arguments (%d given)", argCount);
         return;
     }
 
@@ -1415,12 +1415,13 @@ static void pushNative(int argCount, Value *args) {
                                              oldCapacity, list->values.capacity);
         }
 
-        for (int i = index; i < list->values.count - 1; ++i) {
-            list->values.values[i + 1] = list->values.values[i];
+        list->values.count++;
+
+        for (int i = list->values.count - 1; i > index; --i) {
+            list->values.values[i] = list->values.values[i - 1];
         }
 
         list->values.values[index] = args[1];
-        list->values.count++;
     }
 }
 
