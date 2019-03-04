@@ -33,6 +33,22 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize) {
     return realloc(previous, newSize);
 }
 
+void freeDictValue(dictItem *dictItem) {
+    free(dictItem->key);
+    free(dictItem);
+}
+
+void freeDict(ObjDict *dict) {
+    for (int i = 0; i < dict->capacity; i++) {
+        dictItem *item = dict->items[i];
+        if (item != NULL) {
+            freeDictValue(item);
+        }
+    }
+    free(dict->items);
+    free(dict);
+}
+
 void grayObject(Obj *object) {
     if (object == NULL) return;
 
@@ -40,7 +56,7 @@ void grayObject(Obj *object) {
     if (object->isDark) return;
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p gray ", object);
+    printf("%p gray ", (void *)object);
     printValue(OBJ_VAL(object));
     printf("\n");
 #endif
@@ -72,7 +88,7 @@ static void grayArray(ValueArray *array) {
 
 static void blackenObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    printf("%p blacken ", object);
+    printf("%p blacken ", (void *)object);
     printValue(OBJ_VAL(object));
     printf("\n");
 #endif
@@ -121,21 +137,35 @@ static void blackenObject(Obj *object) {
             break;
 
         case OBJ_LIST: {
-            //ObjList *list = (ObjList *) object;
-            //grayArray(&list->values);
+            ObjList *list = (ObjList *) object;
+            grayArray(&list->values);
             break;
         }
+
+
+        case OBJ_DICT: {
+            ObjDict *dict = (ObjDict *) object;
+            for (int i = 0; i < dict->count; ++i) {
+                if (!dict->items[i])
+                    continue;
+
+                grayValue(dict->items[i]->item);
+            }
+            break;
+        }
+
 
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
+        //case OBJ_DICT:
             break;
     }
 }
 
-static void freeObject(Obj *object) {
+void freeObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    printf("%p free ", object);
+    printf("%p free ", (void *)object);
     printValue(OBJ_VAL(object));
     printf("\n");
 #endif
@@ -189,6 +219,7 @@ static void freeObject(Obj *object) {
         }
 
         case OBJ_LIST:
+        case OBJ_DICT:
             break;
 
         case OBJ_UPVALUE:
@@ -282,7 +313,12 @@ void freeLists() {
 }
 
 void freeList(Obj *object) {
-    ObjList *list = (ObjList *) object;
-    freeValueArray(&list->values);
-    FREE(ObjList, list);
+    if (object->type == OBJ_LIST) {
+        ObjList *list = (ObjList *) object;
+        freeValueArray(&list->values);
+        FREE(ObjList, list);
+    } else {
+        ObjDict *dict = (ObjDict *) object;
+        freeDict(dict);
+    }
 }

@@ -361,6 +361,11 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static void setReplVar(Value value) {
+    ObjString *replVariable = copyString("_", 1);
+    tableSet(&vm.globals, replVariable, value);
+}
+
 static InterpretResult run() {
 
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
@@ -423,8 +428,9 @@ static InterpretResult run() {
 
             case OP_POP: {
                 if (vm.repl) {
-                    Value v = pop();
-                    if (!IS_NIL(v)) {
+                    if (!IS_NIL(peek(0))) {
+                        Value v = pop();
+                        setReplVar(v);
                         printValue(v);
                         printf("\n");
                     }
@@ -676,6 +682,31 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_NEW_DICT: {
+                ObjDict *dict = initDict();
+                push(OBJ_VAL(dict));
+                break;
+            }
+
+            case OP_ADD_DICT: {
+                Value value = pop();
+                Value key = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(key)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *keyString = AS_CSTRING(key);
+
+                insertDict(dict, keyString, value);
+
+                push(OBJ_VAL(dict));
+                break;
+            }
+
             case OP_SUBSCRIPT: {
                 Value indexValue = pop();
                 Value listValue = pop();
@@ -726,6 +757,23 @@ static InterpretResult run() {
 
                 runtimeError("Array index out of bounds.");
                 return INTERPRET_RUNTIME_ERROR;
+            }
+
+            case OP_SUBSCRIPT_DICT: {
+                Value indexValue = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(indexValue)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *key = AS_CSTRING(indexValue);
+
+                push(searchDict(dict, key));
+
+                break;
             }
 
             case OP_CALL_0:
@@ -1334,7 +1382,7 @@ static void assertNative(int argCount, Value *args) {
 
 static void pushNative(int argCount, Value *args) {
     if (argCount < 2 || argCount > 3) {
-        runtimeError("push() takes either two  or three arguments (%d given)", argCount);
+        runtimeError("push() takes either two or three arguments (%d given)", argCount);
         return;
     }
 
@@ -1367,12 +1415,13 @@ static void pushNative(int argCount, Value *args) {
                                              oldCapacity, list->values.capacity);
         }
 
-        for (int i = index; i < list->values.count - 1; ++i) {
-            list->values.values[i + 1] = list->values.values[i];
+        list->values.count++;
+
+        for (int i = list->values.count - 1; i > index; --i) {
+            list->values.values[i] = list->values.values[i - 1];
         }
 
         list->values.values[index] = args[1];
-        list->values.count++;
     }
 }
 

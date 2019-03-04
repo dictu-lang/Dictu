@@ -1,6 +1,8 @@
 #ifndef dictu_object_h
 #define dictu_object_h
 
+#include <stdint.h>
+
 #include "common.h"
 #include "chunk.h"
 #include "table.h"
@@ -17,6 +19,7 @@
 #define IS_NATIVE_VOID(value)   isObjType(value, OBJ_NATIVE_VOID)
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_LIST(value)          isObjType(value, OBJ_LIST)
+#define IS_DICT(value)          isObjType(value, OBJ_DICT)
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
@@ -28,6 +31,7 @@
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
+#define AS_DICT(value)          ((ObjDict*)AS_OBJ(value))
 
 typedef enum {
     OBJ_BOUND_METHOD,
@@ -39,6 +43,7 @@ typedef enum {
     OBJ_NATIVE_VOID,
     OBJ_STRING,
     OBJ_LIST,
+    OBJ_DICT,
     OBJ_UPVALUE
 } ObjType;
 
@@ -81,6 +86,20 @@ struct sObjString {
 struct sObjList {
     Obj obj;
     ValueArray values;
+};
+
+struct dictItem {
+    char *key;
+    Value item;
+    bool deleted;
+    uint32_t hash;
+};
+
+struct sObjDict {
+    Obj obj;
+    int capacity;
+    int count;
+    dictItem **items;
 };
 
 typedef struct sUpvalue {
@@ -145,6 +164,8 @@ ObjString *takeString(char *chars, int length);
 ObjString *copyString(const char *chars, int length);
 
 ObjList *initList();
+
+ObjDict *initDict();
 
 ObjUpvalue *newUpvalue(Value *slot);
 

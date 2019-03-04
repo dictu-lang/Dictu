@@ -12,7 +12,7 @@ typedef enum {
     TOKEN_PLUS_EQUALS, TOKEN_MINUS_EQUALS,
     TOKEN_MULTIPLY_EQUALS, TOKEN_DIVIDE_EQUALS,
 
-    TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR,
+    TOKEN_SEMICOLON, TOKEN_COLON, TOKEN_SLASH, TOKEN_STAR,
     TOKEN_PERCENT,
 
     // One or two character tokens.
@@ -43,6 +43,8 @@ typedef struct {
 } Token;
 
 void initScanner(const char *source);
+
+void backTrack();
 
 Token scanToken();
 
