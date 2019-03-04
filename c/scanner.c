@@ -33,6 +33,7 @@ static bool isAtEnd() {
 }
 
 static char advance() {
+    // printf("Forward!\n");
     scanner.current++;
     return scanner.current[-1];
 }
@@ -242,6 +243,10 @@ static Token string(char stringToken) {
     // The closing " or '.
     advance();
     return makeToken(TOKEN_STRING);
+}
+
+void backTrack() {
+    scanner.current--;
 }
 
 Token scanToken() {

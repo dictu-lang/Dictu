@@ -104,6 +104,10 @@ ClassCompiler *currentClass = NULL;
 
 bool staticMethod = false;
 
+static void block();
+static void dict(bool canAssign);
+// static void dictOrScope(bool canAssign);
+
 static Chunk *currentChunk() {
     return &current->function->chunk;
 }
@@ -634,11 +638,28 @@ static void list(bool canAssign) {
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
+/*
+static void dictOrScope(bool canAssign) {
+    if (check(TOKEN_STRING)) {
+        printf("return\n");
+        dict(canAssign);
+        return;
+    }
+
+    printf("Scope?\n");
+
+    beginScope();
+    block();
+    endScope();
+
+}
+*/
+
 static void dict(bool canAssign) {
     emitByte(OP_NEW_DICT);
 
     do {
-        if (check(TOKEN_RIGHT_BRACKET))
+        if (check(TOKEN_RIGHT_BRACE))
             break;
 
         expression();
@@ -673,8 +694,8 @@ static void subscript(bool canAssign) {
     } else {
         // Dict subscript
         if (match(TOKEN_EQUAL)) {
-            //expression();
-            //emitByte(OP_SUBSCRIPT_ASSIGN_DICT);
+            expression();
+            emitByte(OP_ADD_DICT);
         } else {
             emitByte(OP_SUBSCRIPT_DICT);
         }
@@ -1411,10 +1432,32 @@ static void statement() {
         breakStatement();
     } else if (match(TOKEN_WHILE)) {
         whileStatement();
-    //} else if (match(TOKEN_LEFT_BRACE)) {
-    //    beginScope();
-    //    block();
-    //    endScope();
+    } else if (match(TOKEN_LEFT_BRACE)) {
+        Token previous = parser.previous;
+        Token current = parser.current;
+        if (check(TOKEN_STRING)) {
+            for (int i = 0; i < parser.current.length - parser.previous.length + 1; ++i) {
+                backTrack();
+            }
+
+            parser.current = previous;
+            expressionStatement();
+            return;
+        } else if (check(TOKEN_RIGHT_BRACE)) {
+            advance();
+            if (check(TOKEN_SEMICOLON)) {
+                backTrack();
+                backTrack();
+                parser.current = previous;
+                expressionStatement();
+                return;
+            }
+        }
+        parser.current = current;
+
+        beginScope();
+        block();
+        endScope();
     } else {
         expressionStatement();
     }

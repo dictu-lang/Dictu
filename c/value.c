@@ -107,8 +107,14 @@ void insertDict(ObjDict *dict, char *key, Value value) {
         resizeDict(dict);
     }
 
-    while (dict->items[index] && !dict->items[index]->deleted)
+    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0)
         index++;
+
+    if (dict->items[index]) {
+        free(dict->items[index]->key);
+        free(dict->items[index]);
+        dict->count--;
+    }
 
     dict->items[index] = item;
     dict->count++;

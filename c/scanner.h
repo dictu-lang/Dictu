@@ -44,6 +44,8 @@ typedef struct {
 
 void initScanner(const char *source);
 
+void backTrack();
+
 Token scanToken();
 
 #endif

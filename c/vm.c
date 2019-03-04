@@ -361,6 +361,11 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static void setReplVar(Value value) {
+    ObjString *replVariable = copyString("_", 1);
+    tableSet(&vm.globals, replVariable, value);
+}
+
 static InterpretResult run() {
 
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
@@ -423,8 +428,9 @@ static InterpretResult run() {
 
             case OP_POP: {
                 if (vm.repl) {
-                    Value v = pop();
-                    if (!IS_NIL(v)) {
+                    if (!IS_NIL(peek(0))) {
+                        Value v = pop();
+                        setReplVar(v);
                         printValue(v);
                         printf("\n");
                     }
@@ -665,12 +671,6 @@ static InterpretResult run() {
                 break;
             }
 
-            case OP_NEW_DICT: {
-                ObjDict *dict = initDict();
-                push(OBJ_VAL(dict));
-                break;
-            }
-
             case OP_ADD_LIST: {
                 Value addValue = pop();
                 Value listValue = pop();
@@ -679,6 +679,12 @@ static InterpretResult run() {
                 writeValueArray(&list->values, addValue);
 
                 push(OBJ_VAL(list));
+                break;
+            }
+
+            case OP_NEW_DICT: {
+                ObjDict *dict = initDict();
+                push(OBJ_VAL(dict));
                 break;
             }
 
