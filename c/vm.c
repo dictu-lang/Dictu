@@ -236,6 +236,8 @@ static bool invoke(ObjString *name, int argCount) {
 
     if (IS_LIST(receiver)) {
         return listMethods(name->chars, argCount + 1);
+    } else if (IS_DICT(receiver)) {
+        return dictMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
@@ -433,8 +435,8 @@ static InterpretResult run() {
 
             case OP_POP_REPL: {
                 if (vm.repl) {
-                    if (!IS_NIL(peek(0))) {
-                        Value v = pop();
+                    Value v = pop();
+                    if (!IS_NIL(v)) {
                         setReplVar(v);
                         printValue(v);
                         printf("\n");
@@ -783,6 +785,25 @@ static InterpretResult run() {
 
                 push(searchDict(dict, key));
 
+                break;
+            }
+
+            case OP_SUBSCRIPT_DICT_ASSIGN: {
+                Value value = pop();
+                Value key = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(key)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *keyString = AS_CSTRING(key);
+
+                insertDict(dict, keyString, value);
+
+                push(NIL_VAL);
                 break;
             }
 

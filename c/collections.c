@@ -8,8 +8,10 @@ static bool pushListItem(int argCount) {
         return false;
     }
 
-    ObjList *list = AS_LIST(peek(1));
-    writeValueArray(&list->values, pop());
+    Value listItem = pop();
+
+    ObjList *list = AS_LIST(pop());
+    writeValueArray(&list->values, listItem);
     push(NIL_VAL);
 
     return true;
@@ -26,8 +28,10 @@ static bool insertListItem(int argCount) {
         return false;
     }
 
-    ObjList *list = AS_LIST(peek(2));
+
     int index = AS_NUMBER(pop());
+    Value insertValue = pop();
+    ObjList *list = AS_LIST(pop());
 
     if (index < 0 || index > list->values.count) {
         runtimeError("Index passed to insert() is out of bounds for the list given");
@@ -47,7 +51,7 @@ static bool insertListItem(int argCount) {
         list->values.values[i] = list->values.values[i - 1];
     }
 
-    list->values.values[index] = pop();
+    list->values.values[index] = insertValue;
     push(NIL_VAL);
 
     return true;
@@ -68,7 +72,7 @@ static bool popListItem(int argCount) {
             return false;
         }
 
-        list = AS_LIST(peek(0));
+        list = AS_LIST(pop());
 
         if (list->values.count == 0) {
             runtimeError("pop() called on an empty list");
@@ -87,18 +91,16 @@ static bool popListItem(int argCount) {
             return false;
         }
 
-        list = AS_LIST(peek(1));
+        int index = AS_NUMBER(pop());
+        list = AS_LIST(pop());
 
         if (list->values.count == 0) {
             runtimeError("pop() called on an empty list");
             return false;
         }
 
-        int index = AS_NUMBER(pop());
-
         if (index < 0 || index > list->values.count) {
             runtimeError("Index passed to pop() is out of bounds for the list given");
-            push(NIL_VAL);
             return false;
         }
 
@@ -122,7 +124,7 @@ static bool containsListItem(int argCount) {
     }
 
     Value search = pop();
-    ObjList *list = AS_LIST(peek(0));
+    ObjList *list = AS_LIST(pop());
 
     for (int i = 0; i < list->values.capacity; ++i) {
         if (!list->values.values[i])
@@ -149,5 +151,105 @@ bool listMethods(char *method, int argCount) {
         return containsListItem(argCount);
     }
 
+    runtimeError("List has no method %s()", method);
+    return false;
+}
+
+static bool getDictItem(int argCount) {
+    if (argCount != 3) {
+        runtimeError("get() takes three arguments (%d  given)", argCount);
+        return false;
+    }
+
+    Value defaultValue = pop();
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Key passed to get() must be a string");
+        return false;
+    }
+
+    Value key = pop();
+    ObjDict *dict = AS_DICT(pop());
+
+    Value ret = searchDict(dict, AS_CSTRING(key));
+
+    if (ret == NIL_VAL) {
+        push(defaultValue);
+    } else {
+        push(ret);
+    }
+
+    return true;
+}
+
+static bool removeDictItem(int argCount) {
+    if (argCount != 2) {
+        runtimeError("remove() takes two arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Key passed to remove() must be a string");
+        return false;
+    }
+
+    char *key = AS_CSTRING(pop());
+    ObjDict *dict = AS_DICT(pop());
+
+    for (int i = 0; i < dict->capacity; ++i) {
+        if (!dict->items[i])
+            continue;
+
+        if (strcmp(dict->items[i]->key, key) == 0) {
+            dict->items[i]->deleted = true;
+            dict->count--;
+            push(NIL_VAL);
+
+            return true;
+        }
+    }
+
+    runtimeError("Key %s passed to remove() does not exist", key);
+    return false;
+}
+
+static bool dictItemExists(int argCount) {
+    if (argCount != 2) {
+        runtimeError("exists() takes two arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Key passed to exists() must be a string");
+        return false;
+    }
+
+    char *key = AS_CSTRING(pop());
+    ObjDict *dict = AS_DICT(pop());
+
+    for (int i = 0; i < dict->capacity; ++i) {
+        if (!dict->items[i])
+            continue;
+
+        if (strcmp(dict->items[i]->key, key) == 0) {
+            push(TRUE_VAL);
+            return true;
+        }
+    }
+
+    push(FALSE_VAL);
+    return true;
+}
+
+bool dictMethods(char *method, int argCount) {
+    if (strcmp(method, "get") == 0) {
+        return getDictItem(argCount);
+    } else if (strcmp(method, "remove") == 0) {
+        return removeDictItem(argCount);
+    } else if (strcmp(method, "exists") == 0) {
+        return dictItemExists(argCount);
+    }
+
+    runtimeError("Dict has no method %s()", method);
     return false;
 }
