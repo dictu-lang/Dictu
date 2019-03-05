@@ -1113,9 +1113,7 @@ static Value sumNative(int argCount, Value *args) {
 }
 
 static Value minNative(int argCount, Value *args) {
-    double minimum;
     double current;
-    bool set = false;
 
     if (argCount == 0) {
         return NUMBER_VAL(0);
@@ -1125,7 +1123,9 @@ static Value minNative(int argCount, Value *args) {
         args = list->values.values;
     }
 
-    for (int i = 0; i < argCount; ++i) {
+    double minimum = AS_NUMBER(args[0]);
+
+    for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to min()");
@@ -1134,10 +1134,7 @@ static Value minNative(int argCount, Value *args) {
 
         current = AS_NUMBER(value);
 
-        if (!set) {
-            minimum = current;
-            set = true;
-        } else if (minimum > current) {
+        if (minimum > current) {
             minimum = current;
         }
     }
@@ -1146,9 +1143,7 @@ static Value minNative(int argCount, Value *args) {
 }
 
 static Value maxNative(int argCount, Value *args) {
-    double maximum;
     double current;
-    bool set = false;
 
     if (argCount == 0) {
         return NUMBER_VAL(0);
@@ -1158,7 +1153,9 @@ static Value maxNative(int argCount, Value *args) {
         args = list->values.values;
     }
 
-    for (int i = 0; i < argCount; ++i) {
+    double maximum = AS_NUMBER(args[0]);
+
+    for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to max()");
@@ -1167,10 +1164,7 @@ static Value maxNative(int argCount, Value *args) {
 
         current = AS_NUMBER(value);
 
-        if (!set) {
-            maximum = current;
-            set = true;
-        } else if (maximum < current) {
+        if (maximum < current) {
             maximum = current;
         }
     }

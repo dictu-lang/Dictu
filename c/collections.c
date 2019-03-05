@@ -98,7 +98,8 @@ static bool popListItem(int argCount) {
 
         if (index < 0 || index > list->values.count) {
             runtimeError("Index passed to pop() is out of bounds for the list given");
-            return NIL_VAL;
+            push(NIL_VAL);
+            return false;
         }
 
         last = list->values.values[index];
@@ -114,6 +115,29 @@ static bool popListItem(int argCount) {
     return true;
 }
 
+static bool containsListItem(int argCount) {
+    if (argCount != 2) {
+        runtimeError("contains() contains takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    Value search = pop();
+    ObjList *list = AS_LIST(peek(0));
+
+    for (int i = 0; i < list->values.capacity; ++i) {
+        if (!list->values.values[i])
+            continue;
+
+        if (list->values.values[i] == search) {
+            push(TRUE_VAL);
+            return true;
+        }
+    }
+
+    push(FALSE_VAL);
+    return true;
+}
+
 bool listMethods(char *method, int argCount) {
     if (strcmp(method, "push") == 0) {
         return pushListItem(argCount);
@@ -121,6 +145,8 @@ bool listMethods(char *method, int argCount) {
         return insertListItem(argCount);
     } else if (strcmp(method, "pop") == 0) {
         return popListItem(argCount);
+    } else if (strcmp(method, "contains") == 0) {
+        return containsListItem(argCount);
     }
 
     return false;
