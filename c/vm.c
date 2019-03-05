@@ -20,6 +20,7 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
+#include "collections.h"
 
 VM vm; // [one]
 
@@ -31,7 +32,7 @@ static void resetStack() {
     vm.openUpvalues = NULL;
 }
 
-static void runtimeError(const char *format, ...) {
+void runtimeError(const char *format, ...) {
     for (int i = vm.frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm.frames[i];
 
@@ -111,7 +112,7 @@ Value pop() {
     return *vm.stackTop;
 }
 
-static Value peek(int distance) {
+Value peek(int distance) {
     return vm.stackTop[-1 - distance];
 }
 
@@ -231,6 +232,10 @@ static bool invoke(ObjString *name, int argCount) {
 
         vm.stackTop[-argCount] = method;
         return callValue(method, argCount);
+    }
+
+    if (IS_LIST(receiver)) {
+        return listMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
@@ -426,7 +431,7 @@ static InterpretResult run() {
                 push(BOOL_VAL(false));
                 break;
 
-            case OP_POP: {
+            case OP_POP_REPL: {
                 if (vm.repl) {
                     if (!IS_NIL(peek(0))) {
                         Value v = pop();
@@ -437,6 +442,11 @@ static InterpretResult run() {
                 } else {
                     pop();
                 }
+                break;
+            }
+
+            case OP_POP: {
+                pop();
                 break;
             }
 
@@ -1290,46 +1300,6 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value popNative(int argCount, Value *args) {
-    if (argCount < 0 || argCount > 2) {
-        runtimeError("pop() takes either one or two arguments (%d  given)", argCount);
-        return NIL_VAL;
-    }
-
-    if (!IS_LIST(args[0])) {
-        runtimeError("pop() only takes a list as an argument");
-        return NIL_VAL;
-    }
-
-    Value last;
-    ObjList *list = AS_LIST(args[0]);
-
-    if (argCount == 1) {
-        last = list->values.values[list->values.count - 1];
-    } else {
-        if (!IS_NUMBER(args[1])) {
-            runtimeError("pop() second argument must be a number");
-            return NIL_VAL;
-        }
-
-        uint8_t index = AS_NUMBER(args[1]);
-
-        if (index < 0 || index > list->values.count) {
-            runtimeError("Index passed to pop() is out of bounds for the list given");
-            return NIL_VAL;
-        }
-
-        last = list->values.values[index];
-
-        for (int i = index; i < list->values.count - 1; ++i) {
-            list->values.values[i] = list->values.values[i + 1];
-        }
-    }
-    list->values.count--;
-
-    return last;
-}
-
 // Natives no return
 
 
@@ -1380,51 +1350,6 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
-static void pushNative(int argCount, Value *args) {
-    if (argCount < 2 || argCount > 3) {
-        runtimeError("push() takes either two or three arguments (%d given)", argCount);
-        return;
-    }
-
-    if (!IS_LIST(args[0])) {
-        runtimeError("push() first argument must be a list", argCount);
-        return;
-    }
-
-    ObjList *list = AS_LIST(args[0]);
-
-    if (argCount == 2) {
-        writeValueArray(&list->values, args[1]);
-    } else {
-        if (!IS_NUMBER(args[2])) {
-            runtimeError("push() third argument must be a number", argCount);
-            return;
-        }
-
-        uint8_t index = AS_NUMBER(args[2]);
-
-        if (index < 0 || index > list->values.count) {
-            runtimeError("Index passed to push() is out of bounds for the list given");
-            return;
-        }
-
-        if (list->values.capacity < list->values.count + 1) {
-            int oldCapacity = list->values.capacity;
-            list->values.capacity = GROW_CAPACITY(oldCapacity);
-            list->values.values = GROW_ARRAY(list->values.values, Value,
-                                             oldCapacity, list->values.capacity);
-        }
-
-        list->values.count++;
-
-        for (int i = list->values.count - 1; i > index; --i) {
-            list->values.values[i] = list->values.values[i - 1];
-        }
-
-        list->values.values[index] = args[1];
-    }
-}
-
 // End of natives
 
 void defineAllNatives() {
@@ -1442,7 +1367,6 @@ void defineAllNatives() {
             "len",
             "bool",
             "input",
-            "pop",
             "number",
             "str",
             "type"
@@ -1462,7 +1386,6 @@ void defineAllNatives() {
             lenNative,
             boolNative,
             inputNative,
-            popNative,
             numberNative,
             strNative,
             typeNative
@@ -1471,15 +1394,13 @@ void defineAllNatives() {
     char *nativeVoidNames[] = {
             "sleep",
             "print",
-            "assert",
-            "push"
+            "assert"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
-            assertNative,
-            pushNative
+            assertNative
     };
 
 
