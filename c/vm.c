@@ -1104,9 +1104,11 @@ static Value lenNative(int argCount, Value *args) {
         return NUMBER_VAL(AS_STRING(args[0])->length);
     } else if (IS_LIST(args[0])) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
+    } else if (IS_DICT(args[0])) {
+        return NUMBER_VAL(AS_DICT(args[0])->count);
     }
 
-    runtimeError("len() only takes a string or a list as an argument.", argCount);
+    runtimeError("Unsupported type passed to len()", argCount);
     return NIL_VAL;
 }
 
