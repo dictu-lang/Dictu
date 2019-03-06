@@ -674,7 +674,7 @@ static void subscript(bool canAssign) {
         // Dict subscript
         if (match(TOKEN_EQUAL)) {
             expression();
-            emitByte(OP_ADD_DICT);
+            emitByte(OP_SUBSCRIPT_DICT_ASSIGN);
         } else {
             emitByte(OP_SUBSCRIPT_DICT);
         }
@@ -1075,7 +1075,7 @@ static void varDeclaration() {
 
 static void expressionStatement() {
     expression();
-    emitByte(OP_POP);
+    emitByte(OP_POP_REPL);
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
 }
 

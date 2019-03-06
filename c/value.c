@@ -53,8 +53,6 @@ void freeValueArray(ValueArray *array) {
     initValueArray(array);
 }
 
-// TODO: Implement removing a key
-
 ObjDict *initDictValues(uint32_t capacity) {
     ObjDict *dict = ALLOCATE_OBJ_LIST(ObjDict, OBJ_DICT);
     dict->capacity = capacity;
@@ -107,13 +105,17 @@ void insertDict(ObjDict *dict, char *key, Value value) {
         resizeDict(dict);
     }
 
-    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0)
+    while (index < dict->capacity &&
+           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
         index++;
+        if (index == dict->capacity)
+            index = 0;
+    }
+
 
     if (dict->items[index]) {
         free(dict->items[index]->key);
         free(dict->items[index]);
-        dict->count--;
     }
 
     dict->items[index] = item;
@@ -121,39 +123,38 @@ void insertDict(ObjDict *dict, char *key, Value value) {
 }
 
 void resizeDict(ObjDict *dict) {
-    int oldCapacity = dict->capacity;
+    int newSize = dict->capacity << 1; // Grow by a factor of 2
 
-    ObjDict *newDict = initDictValues(oldCapacity << 1); // Grow by a factor of 2
+    dictItem **items = malloc(newSize * sizeof(*dict->items));
 
-    for (int i = 0; i < oldCapacity; ++i) {
-        if (!dict->items[i]) {
-            continue;
-        }
-
-        if (dict->items[i]->deleted) {
-            freeDictValue(dict->items[i]);
-            continue;
-        }
-
-        uint32_t index = dict->items[i]->hash % newDict->capacity;
-
-        while (newDict->items[index])
-            index++;
-
-        newDict->items[index] = dict->items[i];
-        newDict->count++;
+    for (int i = 0; i < newSize; ++i) {
+        items[i] = NULL;
     }
 
+    for (int j = 0; j < dict->capacity; ++j) {
+        if (!dict->items[j])
+            continue;
 
-    const int tmp_size = dict->count;
-    dict->count = newDict->count;
-    newDict->count = tmp_size;
+        if (dict->items[j]->deleted) {
+            freeDictValue(dict->items[j]);
+            continue;
+        }
 
-    dictItem **tmp_items = dict->items;
-    dict->items = newDict->items;
-    newDict->items = tmp_items;
+        int index = dict->items[j]->hash % newSize;
 
-    freeDict(newDict);
+        while (index < newSize && items[index]) {
+            index++;
+            if (index == newSize)
+                index = 0;
+        }
+
+        items[index] = dict->items[j];
+    }
+
+    free(dict->items);
+
+    dict->capacity = newSize;
+    dict->items = items;
 }
 
 Value searchDict(ObjDict *dict, char *key) {
