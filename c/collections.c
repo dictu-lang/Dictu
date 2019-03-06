@@ -209,7 +209,7 @@ static bool removeDictItem(int argCount) {
         }
     }
 
-    runtimeError("Key %s passed to remove() does not exist", key);
+    runtimeError("Key '%s' passed to remove() does not exist", key);
     return false;
 }
 
