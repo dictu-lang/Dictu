@@ -58,7 +58,7 @@ myList.contains(10); // false
 ```js
 var myList = [1, 2, 3];
 // If no index is given, pops from the end
-var someNumber = myList.pop()); // 3
+var someNumber = myList.pop(); // 3
 myList; // [1, 2]
 myList.pop(0); // 1
 myList; // [2]
