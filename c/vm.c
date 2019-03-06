@@ -20,6 +20,7 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
+#include "collections.h"
 
 VM vm; // [one]
 
@@ -31,7 +32,7 @@ static void resetStack() {
     vm.openUpvalues = NULL;
 }
 
-static void runtimeError(const char *format, ...) {
+void runtimeError(const char *format, ...) {
     for (int i = vm.frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm.frames[i];
 
@@ -111,7 +112,7 @@ Value pop() {
     return *vm.stackTop;
 }
 
-static Value peek(int distance) {
+Value peek(int distance) {
     return vm.stackTop[-1 - distance];
 }
 
@@ -231,6 +232,12 @@ static bool invoke(ObjString *name, int argCount) {
 
         vm.stackTop[-argCount] = method;
         return callValue(method, argCount);
+    }
+
+    if (IS_LIST(receiver)) {
+        return listMethods(name->chars, argCount + 1);
+    } else if (IS_DICT(receiver)) {
+        return dictMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
@@ -361,6 +368,11 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static void setReplVar(Value value) {
+    ObjString *replVariable = copyString("_", 1);
+    tableSet(&vm.globals, replVariable, value);
+}
+
 static InterpretResult run() {
 
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
@@ -421,16 +433,22 @@ static InterpretResult run() {
                 push(BOOL_VAL(false));
                 break;
 
-            case OP_POP: {
+            case OP_POP_REPL: {
                 if (vm.repl) {
                     Value v = pop();
                     if (!IS_NIL(v)) {
+                        setReplVar(v);
                         printValue(v);
                         printf("\n");
                     }
                 } else {
                     pop();
                 }
+                break;
+            }
+
+            case OP_POP: {
+                pop();
                 break;
             }
 
@@ -676,6 +694,31 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_NEW_DICT: {
+                ObjDict *dict = initDict();
+                push(OBJ_VAL(dict));
+                break;
+            }
+
+            case OP_ADD_DICT: {
+                Value value = pop();
+                Value key = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(key)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *keyString = AS_CSTRING(key);
+
+                insertDict(dict, keyString, value);
+
+                push(OBJ_VAL(dict));
+                break;
+            }
+
             case OP_SUBSCRIPT: {
                 Value indexValue = pop();
                 Value listValue = pop();
@@ -726,6 +769,42 @@ static InterpretResult run() {
 
                 runtimeError("Array index out of bounds.");
                 return INTERPRET_RUNTIME_ERROR;
+            }
+
+            case OP_SUBSCRIPT_DICT: {
+                Value indexValue = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(indexValue)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *key = AS_CSTRING(indexValue);
+
+                push(searchDict(dict, key));
+
+                break;
+            }
+
+            case OP_SUBSCRIPT_DICT_ASSIGN: {
+                Value value = pop();
+                Value key = pop();
+                Value dictValue = pop();
+
+                if (!IS_STRING(key)) {
+                    runtimeError("Dictionary key must be a string.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjDict *dict = AS_DICT(dictValue);
+                char *keyString = AS_CSTRING(key);
+
+                insertDict(dict, keyString, value);
+
+                push(NIL_VAL);
+                break;
             }
 
             case OP_CALL_0:
@@ -1025,9 +1104,11 @@ static Value lenNative(int argCount, Value *args) {
         return NUMBER_VAL(AS_STRING(args[0])->length);
     } else if (IS_LIST(args[0])) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
+    } else if (IS_DICT(args[0])) {
+        return NUMBER_VAL(AS_DICT(args[0])->count);
     }
 
-    runtimeError("len() only takes a string or a list as an argument.", argCount);
+    runtimeError("Unsupported type passed to len()", argCount);
     return NIL_VAL;
 }
 
@@ -1055,9 +1136,7 @@ static Value sumNative(int argCount, Value *args) {
 }
 
 static Value minNative(int argCount, Value *args) {
-    double minimum;
     double current;
-    bool set = false;
 
     if (argCount == 0) {
         return NUMBER_VAL(0);
@@ -1067,7 +1146,9 @@ static Value minNative(int argCount, Value *args) {
         args = list->values.values;
     }
 
-    for (int i = 0; i < argCount; ++i) {
+    double minimum = AS_NUMBER(args[0]);
+
+    for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to min()");
@@ -1076,10 +1157,7 @@ static Value minNative(int argCount, Value *args) {
 
         current = AS_NUMBER(value);
 
-        if (!set) {
-            minimum = current;
-            set = true;
-        } else if (minimum > current) {
+        if (minimum > current) {
             minimum = current;
         }
     }
@@ -1088,9 +1166,7 @@ static Value minNative(int argCount, Value *args) {
 }
 
 static Value maxNative(int argCount, Value *args) {
-    double maximum;
     double current;
-    bool set = false;
 
     if (argCount == 0) {
         return NUMBER_VAL(0);
@@ -1100,7 +1176,9 @@ static Value maxNative(int argCount, Value *args) {
         args = list->values.values;
     }
 
-    for (int i = 0; i < argCount; ++i) {
+    double maximum = AS_NUMBER(args[0]);
+
+    for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to max()");
@@ -1109,10 +1187,7 @@ static Value maxNative(int argCount, Value *args) {
 
         current = AS_NUMBER(value);
 
-        if (!set) {
-            maximum = current;
-            set = true;
-        } else if (maximum < current) {
+        if (maximum < current) {
             maximum = current;
         }
     }
@@ -1242,46 +1317,6 @@ static Value inputNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value popNative(int argCount, Value *args) {
-    if (argCount < 0 || argCount > 2) {
-        runtimeError("pop() takes either one or two arguments (%d  given)", argCount);
-        return NIL_VAL;
-    }
-
-    if (!IS_LIST(args[0])) {
-        runtimeError("pop() only takes a list as an argument");
-        return NIL_VAL;
-    }
-
-    Value last;
-    ObjList *list = AS_LIST(args[0]);
-
-    if (argCount == 1) {
-        last = list->values.values[list->values.count - 1];
-    } else {
-        if (!IS_NUMBER(args[1])) {
-            runtimeError("pop() second argument must be a number");
-            return NIL_VAL;
-        }
-
-        uint8_t index = AS_NUMBER(args[1]);
-
-        if (index < 0 || index > list->values.count) {
-            runtimeError("Index passed to pop() is out of bounds for the list given");
-            return NIL_VAL;
-        }
-
-        last = list->values.values[index];
-
-        for (int i = index; i < list->values.count - 1; ++i) {
-            list->values.values[i] = list->values.values[i + 1];
-        }
-    }
-    list->values.count--;
-
-    return last;
-}
-
 // Natives no return
 
 
@@ -1332,50 +1367,6 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
-static void pushNative(int argCount, Value *args) {
-    if (argCount < 2 || argCount > 3) {
-        runtimeError("push() takes either two  or three arguments (%d given)", argCount);
-        return;
-    }
-
-    if (!IS_LIST(args[0])) {
-        runtimeError("push() first argument must be a list", argCount);
-        return;
-    }
-
-    ObjList *list = AS_LIST(args[0]);
-
-    if (argCount == 2) {
-        writeValueArray(&list->values, args[1]);
-    } else {
-        if (!IS_NUMBER(args[2])) {
-            runtimeError("push() third argument must be a number", argCount);
-            return;
-        }
-
-        uint8_t index = AS_NUMBER(args[2]);
-
-        if (index < 0 || index > list->values.count) {
-            runtimeError("Index passed to push() is out of bounds for the list given");
-            return;
-        }
-
-        if (list->values.capacity < list->values.count + 1) {
-            int oldCapacity = list->values.capacity;
-            list->values.capacity = GROW_CAPACITY(oldCapacity);
-            list->values.values = GROW_ARRAY(list->values.values, Value,
-                                             oldCapacity, list->values.capacity);
-        }
-
-        for (int i = index; i < list->values.count - 1; ++i) {
-            list->values.values[i + 1] = list->values.values[i];
-        }
-
-        list->values.values[index] = args[1];
-        list->values.count++;
-    }
-}
-
 // End of natives
 
 void defineAllNatives() {
@@ -1393,7 +1384,6 @@ void defineAllNatives() {
             "len",
             "bool",
             "input",
-            "pop",
             "number",
             "str",
             "type"
@@ -1413,7 +1403,6 @@ void defineAllNatives() {
             lenNative,
             boolNative,
             inputNative,
-            popNative,
             numberNative,
             strNative,
             typeNative
@@ -1422,15 +1411,13 @@ void defineAllNatives() {
     char *nativeVoidNames[] = {
             "sleep",
             "print",
-            "assert",
-            "push"
+            "assert"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
-            assertNative,
-            pushNative
+            assertNative
     };
 
 

@@ -1,8 +1,34 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 #include "memory.h"
 #include "value.h"
+#include "vm.h"
+
+static Obj *allocateObject(size_t size, ObjType type, bool isList) {
+    Obj *object = (Obj *) reallocate(NULL, 0, size);
+    object->type = type;
+    object->isDark = false;
+
+    if (!isList) {
+        object->next = vm.objects;
+        vm.objects = object;
+    } else {
+        object->next = vm.listObjects;
+        vm.listObjects = object;
+    }
+
+#ifdef DEBUG_TRACE_GC
+    printf("%p allocate %ld for %d\n", (void *)object, size, type);
+#endif
+
+    return object;
+}
+
+#define ALLOCATE_OBJ_LIST(type, objectType) \
+    (type*)allocateObject(sizeof(type), objectType, true)
 
 void initValueArray(ValueArray *array) {
     array->values = NULL;
@@ -25,6 +51,123 @@ void writeValueArray(ValueArray *array, Value value) {
 void freeValueArray(ValueArray *array) {
     FREE_ARRAY(Value, array->values, array->capacity);
     initValueArray(array);
+}
+
+ObjDict *initDictValues(uint32_t capacity) {
+    ObjDict *dict = ALLOCATE_OBJ_LIST(ObjDict, OBJ_DICT);
+    dict->capacity = capacity;
+    dict->count = 0;
+    dict->items = malloc(capacity * sizeof(*dict->items));
+
+    for (int i = 0; i < dict->capacity; i++) {
+        dict->items[i] = NULL;
+    }
+
+    return dict;
+}
+
+static uint32_t hash(char *str) {
+    uint32_t hash = 5381;
+    int c;
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c;
+
+    return hash;
+}
+
+void insertDict(ObjDict *dict, char *key, Value value) {
+    uint32_t hashValue = hash(key);
+    int index = hashValue % dict->capacity;
+
+    char *key_m = ALLOCATE(char, strlen(key) + 1);
+
+    if (!key_m) {
+        printf("ERROR!");
+        return;
+    }
+
+    strcpy(key_m, key);
+
+    dictItem *item = ALLOCATE(dictItem, sizeof(dictItem));
+
+    if (!item) {
+        printf("ERROR!");
+        return;
+    }
+
+    item->key = key_m;
+    item->item = value;
+    item->deleted = false;
+    item->hash = hashValue;
+
+    if (dict->count * 100 / dict->capacity >= 70) {
+        resizeDict(dict);
+    }
+
+    while (index < dict->capacity &&
+           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+        index++;
+        if (index == dict->capacity)
+            index = 0;
+    }
+
+
+    if (dict->items[index]) {
+        free(dict->items[index]->key);
+        free(dict->items[index]);
+    }
+
+    dict->items[index] = item;
+    dict->count++;
+}
+
+void resizeDict(ObjDict *dict) {
+    int newSize = dict->capacity << 1; // Grow by a factor of 2
+
+    dictItem **items = malloc(newSize * sizeof(*dict->items));
+
+    for (int i = 0; i < newSize; ++i) {
+        items[i] = NULL;
+    }
+
+    for (int j = 0; j < dict->capacity; ++j) {
+        if (!dict->items[j])
+            continue;
+
+        if (dict->items[j]->deleted) {
+            freeDictValue(dict->items[j]);
+            continue;
+        }
+
+        int index = dict->items[j]->hash % newSize;
+
+        while (index < newSize && items[index]) {
+            index++;
+            if (index == newSize)
+                index = 0;
+        }
+
+        items[index] = dict->items[j];
+    }
+
+    free(dict->items);
+
+    dict->capacity = newSize;
+    dict->items = items;
+}
+
+Value searchDict(ObjDict *dict, char *key) {
+    int index = hash(key) % dict->capacity;
+
+    if (!dict->items[index])
+        return NIL_VAL;
+
+    if (strcmp(dict->items[index]->key, key) == 0) {
+        return dict->items[index]->item;
+    }
+
+    return NIL_VAL;
 }
 
 void printValue(Value value) {

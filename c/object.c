@@ -27,7 +27,7 @@ static Obj *allocateObject(size_t size, ObjType type, bool isList) {
     }
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", object, size, type);
+    printf("%p allocate %ld for %d\n", (void *)object, size, type);
 #endif
 
     return object;
@@ -110,6 +110,11 @@ ObjList *initList() {
     ObjList *list = ALLOCATE_OBJ_LIST(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
+}
+
+ObjDict *initDict() {
+    ObjDict *dict = initDictValues(8);
+    return dict;
 }
 
 static uint32_t hashString(const char *key, int length) {
@@ -219,6 +224,25 @@ void printObject(Value value) {
                     printf(", ");
             }
             printf("]");
+            break;
+        }
+
+        case OBJ_DICT: {
+            int count = 0;
+            ObjDict *dict = AS_DICT(value);
+            printf("{");
+            for (int i = 0; i < dict->capacity; ++i) {
+                dictItem *item = dict->items[i];
+                if (!item || item->deleted)
+                    continue;
+
+                count++;
+                printf("'%s': ", item->key);
+                printValue(item->item);
+                if (count != dict->count)
+                    printf(", ");
+            }
+            printf("}");
             break;
         }
 

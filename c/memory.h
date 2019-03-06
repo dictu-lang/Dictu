@@ -33,4 +33,8 @@ void freeLists();
 
 void freeList();
 
+void freeObject(Obj *object);
+
+void freeDictValue(dictItem *dictItem);
+
 #endif

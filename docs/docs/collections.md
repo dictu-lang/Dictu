@@ -40,18 +40,28 @@ myList[1] = 2; // [1, 2, 3]
 
 ```js
 var myList = [];
-push(myList, 10); // [10]
-push(myList, 12); // [10, 12]
-// Can push to an index. This will not replace the value.
-push(myList, 11, 1); // [10, 11, 12]
+myList.push(10); // [10]
+myList.push(12); // [10, 12]
+// Can insert to an index. This will not replace the value.
+myList.insert(11, 1); // [10, 11, 12]
+```
+
+### Checking a value exists within a list
+
+```js
+var myList = [1, 2, 3];
+myList.contains(2); // true
+myList.contains(10); // false
 ```
 
 ### Removing from lists
 ```js
 var myList = [1, 2, 3];
 // If no index is given, pops from the end
-var someNumber = pop(myList); // 3
-myList; // [1, 3]
+var someNumber = myList.pop(); // 3
+myList; // [1, 2]
+myList.pop(0); // 1
+myList; // [2]
 ```
 
 ## Dictionaries
@@ -65,10 +75,14 @@ var myDict = {"key": 1, "key1": true};
 ### Accessing dictionary values
 
 Accessing dictionary items is the same syntax as lists, except instead of an index, it expects a string key.
+If you try to access a key that does not exist, `nil` is returned. If you expect a key may not exist `.get()` can be used to return a default value.
 
 ```js
 var myDict = {"key": 1, "key1": true};
 var someItem = myDict["key"]; // 1
+var nilValue = myDict["unknown key"]; // nil
+// Using .get() for defaults
+var defaultValue = myDict.get("unknown key", "No key!"); // No key!
 ```
 
 ### Updating a dictionary value
@@ -87,6 +101,21 @@ var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
+### Checking if a key exists
+
+```js
+var myDict = {"key": 1, "key1": true};
+var keyExists = myDict.exists("key"); // true
+var keyDoesNotExist = myDict.exists("unknown key"); // false
+```
+
 ### Removing from dictionaries
 
-TODO
+If you try to remove a key that does not exist a runtime error is raised.
+
+```js
+var myDict = {"key": 1, "key1": true};
+myDict.remove("key");
+myDict; // {'key1': true}
+myDict.remove("unknown key"); // [line 1] in script: Key 'unknown key' passed to remove() does not exist
+```

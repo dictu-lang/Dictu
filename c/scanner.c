@@ -164,6 +164,7 @@ static TokenType identifierType() {
                         return checkKeyword(2, 4, "port", TOKEN_IMPORT);
                 }
             }
+            break;
         case 'n':
             return checkKeyword(1, 2, "il", TOKEN_NIL);
         case 'o':
@@ -179,6 +180,7 @@ static TokenType identifierType() {
                         return checkKeyword(2, 4, "atic", TOKEN_STATIC);
                 }
             }
+            break;
         case 't':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
@@ -244,6 +246,10 @@ static Token string(char stringToken) {
     return makeToken(TOKEN_STRING);
 }
 
+void backTrack() {
+    scanner.current--;
+}
+
 Token scanToken() {
     skipWhitespace();
 
@@ -271,6 +277,8 @@ Token scanToken() {
             return makeToken(TOKEN_RIGHT_BRACKET);
         case ';':
             return makeToken(TOKEN_SEMICOLON);
+        case ':':
+            return makeToken(TOKEN_COLON);
         case ',':
             return makeToken(TOKEN_COMMA);
         case '.':

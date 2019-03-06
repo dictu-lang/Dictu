@@ -634,15 +634,50 @@ static void list(bool canAssign) {
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
+static void dict(bool canAssign) {
+    emitByte(OP_NEW_DICT);
+
+    do {
+        if (check(TOKEN_RIGHT_BRACE))
+            break;
+
+        expression();
+        consume(TOKEN_COLON, "Expected ':'");
+        expression();
+        emitByte(OP_ADD_DICT);
+    } while (match(TOKEN_COMMA));
+
+    consume(TOKEN_RIGHT_BRACE, "Expected closing '}'");
+}
+
 static void subscript(bool canAssign) {
     expression();
+
+    TokenType type;
+    if (parser.previous.type == TOKEN_NUMBER) {
+        type = TOKEN_NUMBER;
+    } else {
+        type = TOKEN_STRING;
+    }
+
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
-    if (match(TOKEN_EQUAL)) {
-        expression();
-        emitByte(OP_SUBSCRIPT_ASSIGN);
+    // Number means its a list subscript
+    if (type == TOKEN_NUMBER) {
+        if (match(TOKEN_EQUAL)) {
+            expression();
+            emitByte(OP_SUBSCRIPT_ASSIGN);
+        } else {
+            emitByte(OP_SUBSCRIPT);
+        }
     } else {
-        emitByte(OP_SUBSCRIPT);
+        // Dict subscript
+        if (match(TOKEN_EQUAL)) {
+            expression();
+            emitByte(OP_SUBSCRIPT_DICT_ASSIGN);
+        } else {
+            emitByte(OP_SUBSCRIPT_DICT);
+        }
     }
 }
 
@@ -810,7 +845,7 @@ static void prefix(bool canAssign) {
 ParseRule rules[] = {
         {grouping, call,         PREC_CALL},               // TOKEN_LEFT_PAREN
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_PAREN
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
+        {dict,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACE
         {list,     subscript,    PREC_CALL},               // TOKEN_LEFT_BRACKET
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACKET
@@ -825,6 +860,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_DIVIDE_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_SEMICOLON
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_COLON
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_SLASH
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
@@ -1039,7 +1075,7 @@ static void varDeclaration() {
 
 static void expressionStatement() {
     expression();
-    emitByte(OP_POP);
+    emitByte(OP_POP_REPL);
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
 }
 
@@ -1376,6 +1412,28 @@ static void statement() {
     } else if (match(TOKEN_WHILE)) {
         whileStatement();
     } else if (match(TOKEN_LEFT_BRACE)) {
+        Token previous = parser.previous;
+        Token current = parser.current;
+        if (check(TOKEN_STRING)) {
+            for (int i = 0; i < parser.current.length - parser.previous.length + 1; ++i) {
+                backTrack();
+            }
+
+            parser.current = previous;
+            expressionStatement();
+            return;
+        } else if (check(TOKEN_RIGHT_BRACE)) {
+            advance();
+            if (check(TOKEN_SEMICOLON)) {
+                backTrack();
+                backTrack();
+                parser.current = previous;
+                expressionStatement();
+                return;
+            }
+        }
+        parser.current = current;
+
         beginScope();
         block();
         endScope();
