@@ -101,7 +101,7 @@ var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
-### Checking if a key exists
+### Checking if a key exists
 
 ```js
 var myDict = {"key": 1, "key1": true};
