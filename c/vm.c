@@ -1067,7 +1067,7 @@ static Value strNative(int argCount, Value *args) {
 
 static Value typeNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        runtimeError("type() takes exactly one argument (%d given).", argCount);
         return NIL_VAL;
     }
 
