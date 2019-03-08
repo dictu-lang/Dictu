@@ -56,9 +56,9 @@ void grayObject(Obj *object) {
     if (object->isDark) return;
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p gray ", (void *)object);
-    printValue(OBJ_VAL(object));
-    printf("\n");
+    //printf("%p gray ", (void *)object);
+    //printValue(OBJ_VAL(object));
+    //printf("\n");
 #endif
 
     object->isDark = true;
@@ -88,9 +88,9 @@ static void grayArray(ValueArray *array) {
 
 static void blackenObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    printf("%p blacken ", (void *)object);
-    printValue(OBJ_VAL(object));
-    printf("\n");
+    //printf("%p blacken ", (void *)object);
+    //printValue(OBJ_VAL(object));
+    //printf("\n");
 #endif
 
     switch (object->type) {
@@ -145,7 +145,7 @@ static void blackenObject(Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            for (int i = 0; i < dict->count; ++i) {
+            for (int i = 0; i < dict->capacity; ++i) {
                 if (!dict->items[i])
                     continue;
 
@@ -165,15 +165,16 @@ static void blackenObject(Obj *object) {
 
 void freeObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    printf("%p free ", (void *)object);
-    printValue(OBJ_VAL(object));
-    printf("\n");
+    //printf("%p free ", (void *)object);
+    //printValue(OBJ_VAL(object));
+    //printf("\n");
 #endif
 
     switch (object->type) {
-        case OBJ_BOUND_METHOD:
+        case OBJ_BOUND_METHOD: {
             FREE(ObjBoundMethod, object);
             break;
+        }
 
         case OBJ_CLASS: {
             ObjClass *klass = (ObjClass *) object;
@@ -203,13 +204,15 @@ void freeObject(Obj *object) {
             break;
         }
 
-        case OBJ_NATIVE:
+        case OBJ_NATIVE: {
             FREE(ObjNative, object);
             break;
+        }
 
-        case OBJ_NATIVE_VOID:
+        case OBJ_NATIVE_VOID: {
             FREE(ObjNativeVoid, object);
             break;
+        }
 
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
@@ -218,13 +221,23 @@ void freeObject(Obj *object) {
             break;
         }
 
-        case OBJ_LIST:
-        case OBJ_DICT:
+        case OBJ_LIST: {
+            // TODO: Free lists via the GC
+            //ObjList *list = (ObjList *) object;
+            //freeValueArray(&list->values);
+            //FREE(ObjList, list);
             break;
+        }
 
-        case OBJ_UPVALUE:
+        case OBJ_DICT: {
+            // TODO: Free dicts via the GC
+            break;
+        }
+
+        case OBJ_UPVALUE: {
             FREE(ObjUpvalue, object);
             break;
+        }
     }
 }
 
