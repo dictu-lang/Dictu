@@ -119,7 +119,7 @@ static bool popListItem(int argCount) {
 
 static bool containsListItem(int argCount) {
     if (argCount != 2) {
-        runtimeError("contains() contains takes 2 arguments (%d  given)", argCount);
+        runtimeError("contains() takes 2 arguments (%d  given)", argCount);
         return false;
     }
 

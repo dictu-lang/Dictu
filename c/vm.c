@@ -21,6 +21,7 @@
 #include "vm.h"
 #include "util.h"
 #include "collections.h"
+#include "strings.h"
 
 VM vm; // [one]
 
@@ -238,6 +239,8 @@ static bool invoke(ObjString *name, int argCount) {
         return listMethods(name->chars, argCount + 1);
     } else if (IS_DICT(receiver)) {
         return dictMethods(name->chars, argCount + 1);
+    } else if (IS_STRING(receiver)) {
+        return stringMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
