@@ -201,10 +201,8 @@ static bool dictComparison(Value a, Value b) {
 
     // Lengths are the same, and dict 1 has 0 length
     // therefore both are empty
-    if (dict->count == 0) {
-        printf("here\n");
+    if (dict->count == 0)
         return true;
-    }
 
     for (int i = 0; i < dict->capacity; ++i) {
         dictItem *item = dict->items[i];
