@@ -267,6 +267,7 @@ void collectGarbage() {
     grayTable(&vm.globals);
     grayCompilerRoots();
     grayObject((Obj *) vm.initString);
+    grayObject((Obj *) vm.replVar);
 
     // Traverse the references.
     while (vm.grayCount > 0) {
