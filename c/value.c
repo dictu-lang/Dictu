@@ -191,8 +191,65 @@ void printValue(Value value) {
 #endif
 }
 
+static bool dictComparison(Value a, Value b) {
+    ObjDict *dict = AS_DICT(a);
+    ObjDict *dictB = AS_DICT(b);
+
+    // Different lengths, not the same
+    if (dict->capacity != dictB->capacity)
+        return false;
+
+    // Lengths are the same, and dict 1 has 0 length
+    // therefore both are empty
+    if (dict->count == 0)
+        return true;
+
+    for (int i = 0; i < dict->capacity; ++i) {
+        dictItem *item = dict->items[i];
+        dictItem *itemB = dictB->items[i];
+
+        if (!item || !itemB) {
+            continue;
+        }
+
+        if (strcmp(item->key, itemB->key) != 0)
+            return false;
+
+        if (!valuesEqual(item->item, itemB->item))
+            return false;
+    }
+
+    return true;
+}
+
+static bool listComparison(Value a, Value b) {
+    ObjList *list = AS_LIST(a);
+    ObjList *listB = AS_LIST(b);
+
+    if (list->values.count != listB->values.count)
+        return false;
+
+    for (int i = 0; i < list->values.count; ++i) {
+        if (!valuesEqual(list->values.values[i], listB->values.values[i]))
+            return false;
+    }
+
+    return true;
+}
+
 bool valuesEqual(Value a, Value b) {
 #ifdef NAN_TAGGING
+
+    if (IS_OBJ(a) && IS_OBJ(b)) {
+        if (AS_OBJ(a)->type == OBJ_DICT && AS_OBJ(b)->type == OBJ_DICT) {
+            return dictComparison(a, b);
+        }
+
+        if (AS_OBJ(a)->type == OBJ_LIST && AS_OBJ(b)->type == OBJ_LIST) {
+            return listComparison(a, b);
+        }
+    }
+
     return a == b;
 #else
     if (a.type != b.type) return false;

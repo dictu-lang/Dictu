@@ -90,6 +90,7 @@ void initVM(bool repl) {
     initTable(&vm.globals);
     initTable(&vm.strings);
     vm.initString = copyString("init", 4);
+    vm.replVar = copyString("_", 1);
     defineAllNatives();
 }
 
@@ -97,6 +98,7 @@ void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
     vm.initString = NULL;
+    vm.replVar = NULL;
     freeObjects();
     freeLists();
 }
@@ -372,8 +374,7 @@ static void concatenate() {
 }
 
 static void setReplVar(Value value) {
-    ObjString *replVariable = copyString("_", 1);
-    tableSet(&vm.globals, replVariable, value);
+    tableSet(&vm.globals, vm.replVar, value);
 }
 
 static InterpretResult run() {
