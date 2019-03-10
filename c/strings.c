@@ -98,6 +98,144 @@ bool static findString(int argCount) {
     return true;
 }
 
+static bool replaceString(int argCount) {
+    if (argCount != 3) {
+        runtimeError("replace() takes 3 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to find() must be a string");
+        return false;
+    }
+
+    if (!IS_STRING(peek(1))) {
+        runtimeError("Argument passed to find() must be a string");
+        return false;
+    }
+
+
+    char *replace = AS_CSTRING(pop());
+    char *to_replace = AS_CSTRING(pop());
+    Value stringValue = pop();
+    char *string = AS_CSTRING(stringValue);
+
+    int count = 0;
+    const char *tmp = string;
+    while((tmp = strstr(tmp, to_replace)) != NULL) {
+        count++;
+        tmp++;
+    }
+
+    if (count == 0) {
+        push(stringValue);
+        return true;
+    }
+
+    int length = strlen(string) - count * (strlen(to_replace) - strlen(replace)) + 1;
+    char *pos;
+    char *newStr = malloc(sizeof(char) * length);
+
+    for (int i = 0; i < count; ++i) {
+        pos = strstr(string, to_replace);
+        if (pos != NULL)
+            *pos = '\0';
+
+        if (i == 0)
+            strncpy(newStr, string, strlen(string));
+        else
+            strncat(newStr, string, strlen(string));
+
+        strncat(newStr, replace, strlen(replace));
+        string = pos + strlen(to_replace);
+    }
+
+    strncat(newStr, string, strlen(string));
+    ObjString *newString = copyString(newStr, length - 1);
+    free(newStr);
+    push(OBJ_VAL(newString));
+    return true;
+}
+
+bool static lowerString(int argCount) {
+    if (argCount != 1) {
+        runtimeError("lower() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjString *string = AS_STRING(pop());
+
+    char *temp = malloc(sizeof(char) * (string->length + 1));
+
+    for(int i = 0; string->chars[i]; i++){
+        temp[i] = tolower(string->chars[i]);
+    }
+    temp[string->length] = '\0';
+
+    push(OBJ_VAL(copyString(temp, string->length)));
+    return true;
+}
+
+bool static upperString(int argCount) {
+    if (argCount != 1) {
+        runtimeError("upper() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjString *string = AS_STRING(pop());
+
+    char *temp = malloc(sizeof(char) * (string->length + 1));
+
+    for(int i = 0; string->chars[i]; i++){
+        temp[i] = toupper(string->chars[i]);
+    }
+    temp[string->length] = '\0';
+
+    push(OBJ_VAL(copyString(temp, string->length)));
+    return true;
+}
+
+bool static startsWithString(int argCount) {
+    if (argCount != 2) {
+        runtimeError("startsWith() takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to startsWith() must be a string");
+        return false;
+    }
+
+    ObjString *start = AS_STRING(pop());
+    char *string = AS_CSTRING(pop());
+
+    push(BOOL_VAL(strncmp(string, start->chars, start->length) == 0));
+    return true;
+}
+
+bool static endsWithString(int argCount) {
+    if (argCount != 2) {
+        runtimeError("endsWith() takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to endsWith() must be a string");
+        return false;
+    }
+
+    ObjString *suffix = AS_STRING(pop());
+    ObjString *string = AS_STRING(pop());
+
+    if (string->length < suffix->length) {
+        push(FALSE_VAL);
+        return true;
+    }
+
+    push(BOOL_VAL(strcmp(string->chars + (string->length - suffix->length), suffix->chars) == 0));
+    return true;
+}
+
 bool stringMethods(char *method, int argCount) {
     if (strcmp(method, "split") == 0) {
         return splitString(argCount);
@@ -105,8 +243,17 @@ bool stringMethods(char *method, int argCount) {
         return containsString(argCount);
     } else if (strcmp(method, "find") == 0) {
         return findString(argCount);
+    } else if (strcmp(method, "replace") == 0) {
+        return replaceString(argCount);
+    } else if (strcmp(method, "lower") == 0) {
+        return lowerString(argCount);
+    } else if (strcmp(method, "upper") == 0) {
+        return upperString(argCount);
+    } else if (strcmp(method, "startsWith") == 0) {
+        return startsWithString(argCount);
+    } else if (strcmp(method, "endsWith") == 0) {
+        return endsWithString(argCount);
     }
-
 
     runtimeError("String has no method %s()", method);
     return false;
