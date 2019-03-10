@@ -105,12 +105,12 @@ static bool replaceString(int argCount) {
     }
 
     if (!IS_STRING(peek(0))) {
-        runtimeError("Argument passed to find() must be a string");
+        runtimeError("Argument passed to replace() must be a string");
         return false;
     }
 
     if (!IS_STRING(peek(1))) {
-        runtimeError("Argument passed to find() must be a string");
+        runtimeError("Argument passed to replace() must be a string");
         return false;
     }
 
