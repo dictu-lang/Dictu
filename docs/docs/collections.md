@@ -1,10 +1,10 @@
 ---
 layout: default
 title: Collections
-nav_order: 4
+nav_order: 5
 ---
 
-# Variables
+# Collections
 {: .no_toc }
 
 ## Table of contents
