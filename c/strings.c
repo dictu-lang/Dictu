@@ -236,6 +236,67 @@ bool static endsWithString(int argCount) {
     return true;
 }
 
+static bool leftStripString(int argCount) {
+    if (argCount != 1) {
+        runtimeError("leftStrip() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+    ObjString *string = AS_STRING(pop());
+
+    bool charSeen = false;
+    int i, count = 0;
+
+    char *temp = malloc(sizeof(char) * (string->length + 1));
+
+    for (i = 0; i < string->length; ++i) {
+        if (!charSeen && isspace(string->chars[i])) {
+            count++;
+            continue;
+        }
+        temp[i - count] = string->chars[i];
+        charSeen = true;
+    }
+    temp[i - count] = '\0';
+    push(OBJ_VAL(copyString(temp, strlen(temp))));
+    free(temp);
+    return true;
+}
+
+static bool rightStripString(int argCount) {
+    if (argCount != 1) {
+        runtimeError("rightStrip() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+    ObjString *string = AS_STRING(pop());
+
+    int length;
+
+    char *temp = malloc(sizeof(char) * (string->length + 1));
+
+    for (length = string->length - 1; length > 0; --length) {
+        if (!isspace(string->chars[length])) {
+            break;
+        }
+    }
+
+    strncpy(temp, string->chars, length + 1);
+    temp[length + 1] = '\0';
+    push(OBJ_VAL(copyString(temp, strlen(temp))));
+    free(temp);
+    return true;
+}
+
+static bool stripString(int argCount) {
+    if (argCount != 1) {
+        runtimeError("strip() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    leftStripString(1);
+    rightStripString(1);
+    return true;
+}
+
 bool stringMethods(char *method, int argCount) {
     if (strcmp(method, "split") == 0) {
         return splitString(argCount);
@@ -253,6 +314,12 @@ bool stringMethods(char *method, int argCount) {
         return startsWithString(argCount);
     } else if (strcmp(method, "endsWith") == 0) {
         return endsWithString(argCount);
+    } else if (strcmp(method, "leftStrip") == 0) {
+        return leftStripString(argCount);
+    } else if (strcmp(method, "rightStrip") == 0) {
+        return rightStripString(argCount);
+    } else if (strcmp(method, "strip") == 0) {
+        return stripString(argCount);
     }
 
     runtimeError("String has no method %s()", method);
