@@ -21,6 +21,7 @@
 #include "vm.h"
 #include "util.h"
 #include "collections.h"
+#include "strings.h"
 
 VM vm; // [one]
 
@@ -240,6 +241,8 @@ static bool invoke(ObjString *name, int argCount) {
         return listMethods(name->chars, argCount + 1);
     } else if (IS_DICT(receiver)) {
         return dictMethods(name->chars, argCount + 1);
+    } else if (IS_STRING(receiver)) {
+        return stringMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
@@ -1028,7 +1031,7 @@ static Value clockNative(int argCount, Value *args) {
 
 static Value numberNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("number() takes exactly one argument (%d given).", argCount);
+        runtimeError("number() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1045,7 +1048,7 @@ static Value numberNative(int argCount, Value *args) {
 
 static Value strNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("str() takes exactly one argument (%d given).", argCount);
+        runtimeError("str() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1068,7 +1071,7 @@ static Value strNative(int argCount, Value *args) {
 
 static Value typeNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("type() takes exactly one argument (%d given).", argCount);
+        runtimeError("type() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1097,7 +1100,7 @@ static Value typeNative(int argCount, Value *args) {
 
 static Value lenNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("len() takes exactly one argument (%d given).", argCount);
+        runtimeError("len() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1221,7 +1224,7 @@ static Value averageNative(int argCount, Value *args) {
 
 static Value floorNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("floor() takes exactly one argument (%d given).", argCount);
+        runtimeError("floor() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1231,7 +1234,7 @@ static Value floorNative(int argCount, Value *args) {
 
 static Value roundNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("round() takes exactly one argument (%d given).", argCount);
+        runtimeError("round() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1241,7 +1244,7 @@ static Value roundNative(int argCount, Value *args) {
 
 static Value ceilNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("ceil() takes exactly one argument (%d given).", argCount);
+        runtimeError("ceil() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1251,7 +1254,7 @@ static Value ceilNative(int argCount, Value *args) {
 
 static Value absNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("abs() takes exactly one argument (%d given).", argCount);
+        runtimeError("abs() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1265,7 +1268,7 @@ static Value absNative(int argCount, Value *args) {
 
 static Value boolNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("bool() takes exactly one argument (%d given).", argCount);
+        runtimeError("bool() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1275,7 +1278,7 @@ static Value boolNative(int argCount, Value *args) {
 
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError("input() takes at most one argument (%d given).", argCount);
+        runtimeError("input() takes exactly 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -1324,7 +1327,7 @@ static Value inputNative(int argCount, Value *args) {
 
 static void sleepNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("sleep() takes exactly one argument (%d  given)", argCount);
+        runtimeError("sleep() takes exactly 1 argument (%d  given)", argCount);
         return;
     }
 
