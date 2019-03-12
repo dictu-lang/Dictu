@@ -22,6 +22,7 @@
 #include "util.h"
 #include "collections.h"
 #include "strings.h"
+#include "files.h"
 
 VM vm; // [one]
 
@@ -243,6 +244,8 @@ static bool invoke(ObjString *name, int argCount) {
         return dictMethods(name->chars, argCount + 1);
     } else if (IS_STRING(receiver)) {
         return stringMethods(name->chars, argCount + 1);
+    } else if (IS_FILE(receiver)) {
+        return fileMethods(name->chars, argCount + 1);
     }
 
     if (!IS_INSTANCE(receiver)) {
@@ -452,6 +455,12 @@ static InterpretResult run() {
             }
 
             case OP_POP: {
+                if (IS_FILE(peek(0))) {
+                    ObjFile *file = AS_FILE(peek(0));
+                    fclose(file->file);
+                    // FREE(ObjFile, file);
+                }
+
                 pop();
                 break;
             }
@@ -998,6 +1007,37 @@ static InterpretResult run() {
             case OP_METHOD:
                 defineMethod(READ_STRING());
                 break;
+
+            case OP_OPEN_FILE: {
+                Value openType = pop();
+                Value fileName = pop();
+
+                if (!IS_STRING(openType)) {
+                    runtimeError("File open type must be a string");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                if (!IS_STRING(fileName)) {
+                    runtimeError("Filename must be a string");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjString *openTypeString = AS_STRING(openType);
+                ObjString *fileNameString = AS_STRING(fileName);
+
+                ObjFile *file = initFile();
+                file->file = fopen(fileNameString->chars, openTypeString->chars);
+                file->path = fileNameString->chars;
+                file->openType = openTypeString->chars;
+
+                if (file->file == NULL) {
+                    runtimeError("Unable to open file");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                push(OBJ_VAL(file));
+                break;
+            }
         }
     }
 

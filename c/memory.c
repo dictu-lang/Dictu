@@ -158,6 +158,7 @@ static void blackenObject(Obj *object) {
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
+        case OBJ_FILE:
         //case OBJ_DICT:
             break;
     }
@@ -233,6 +234,9 @@ void freeObject(Obj *object) {
             // TODO: Free dicts via the GC
             break;
         }
+
+        case OBJ_FILE:
+            break;
 
         case OBJ_UPVALUE: {
             FREE(ObjUpvalue, object);

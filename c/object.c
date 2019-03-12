@@ -117,6 +117,11 @@ ObjDict *initDict() {
     return dict;
 }
 
+ObjFile *initFile() {
+    ObjFile *file = ALLOCATE_OBJ(ObjFile, OBJ_FILE);
+    return file;
+}
+
 static uint32_t hashString(const char *key, int length) {
     uint32_t hash = 2166136261u;
 
@@ -214,6 +219,12 @@ void printObject(Value value) {
         case OBJ_STRING:
             printf("'%s'", AS_CSTRING(value));
             break;
+
+        case OBJ_FILE: {
+            ObjFile *file = AS_FILE(value);
+            printf("<file: %s>", file->path);
+            break;
+        }
 
         case OBJ_LIST: {
             ObjList *list = AS_LIST(value);
