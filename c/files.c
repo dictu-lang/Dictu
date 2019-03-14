@@ -16,8 +16,8 @@ static bool writeFile(int argCount) {
     ObjString *string = AS_STRING(pop());
     ObjFile *file = AS_FILE(pop());
 
-    if (strcmp(file->openType, "w") != 0) {
-        runtimeError("write() can only be used with the file in write mode");
+    if (strcmp(file->openType, "r") == 0) {
+        runtimeError("File is not writable!");
         return false;
     }
 
