@@ -107,7 +107,7 @@ static ObjString *allocateString(char *chars, int length,
 }
 
 ObjList *initList() {
-    ObjList *list = ALLOCATE_OBJ_LIST(ObjList, OBJ_LIST);
+    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }

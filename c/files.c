@@ -2,7 +2,7 @@
 #include "vm.h"
 #include "memory.h"
 
-static bool writeFile(int argCount) {
+static bool writeFile(int argCount, bool newLine) {
     if (argCount != 2) {
         runtimeError("write() takes 2 arguments (%d given)", argCount);
         return false;
@@ -22,6 +22,9 @@ static bool writeFile(int argCount) {
     }
 
     int charsWrote = fprintf(file->file, "%s", string->chars);
+    if (newLine)
+        fprintf(file->file, "\n");
+
     fflush(file->file);
 
     push(NUMBER_VAL(charsWrote));
@@ -64,7 +67,7 @@ static bool readFile(int argCount) {
     buffer[bytesRead] = '\0';
 
     push(OBJ_VAL(copyString(buffer, strlen(buffer))));
-
+    free(buffer);
     return true;
 }
 
@@ -113,7 +116,9 @@ static bool seekFile(int argCount) {
 
 bool fileMethods(char *method, int argCount) {
     if (strcmp(method, "write") == 0) {
-        return writeFile(argCount);
+        return writeFile(argCount, false);
+    } else if (strcmp(method, "writeLine") == 0) {
+        return writeFile(argCount, true);
     } else if (strcmp(method, "read") == 0) {
         return readFile(argCount);
     } else if (strcmp(method, "readLine") == 0) {
