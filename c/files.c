@@ -29,7 +29,7 @@ static bool writeFile(int argCount) {
     return true;
 }
 
-bool static readFile(int argCount) {
+static bool readFile(int argCount) {
     if (argCount != 1) {
         runtimeError("read() takes 1 argument (%d given)", argCount);
         return false;
@@ -68,7 +68,7 @@ bool static readFile(int argCount) {
     return true;
 }
 
-bool static readLineFile(int argCount) {
+static bool readLineFile(int argCount) {
     if (argCount != 1) {
         runtimeError("readLine() takes 1 argument (%d given)", argCount);
         return false;
@@ -92,7 +92,7 @@ bool static readLineFile(int argCount) {
     return true;
 }
 
-bool static seekFile(int argCount) {
+static bool seekFile(int argCount) {
     if (argCount != 2) {
         runtimeError("seek() takes 2 arguments (%d given)", argCount);
         return false;
