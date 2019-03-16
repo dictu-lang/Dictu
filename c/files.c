@@ -68,6 +68,30 @@ bool static readFile(int argCount) {
     return true;
 }
 
+bool static readLineFile(int argCount) {
+    if (argCount != 1) {
+        runtimeError("readLine() takes 1 argument (%d given)", argCount);
+        return false;
+    }
+
+    char line[4096];
+
+    ObjFile *file = AS_FILE(pop());
+    if (fgets(line, 4096, file->file) != NULL) {
+
+        size_t length = strlen(line);
+        // Remove trailing newline
+        if (line[length - 1] == '\n') {
+            length--;
+        }
+
+        push(OBJ_VAL(copyString(line, length)));
+    } else {
+        push(OBJ_VAL(copyString("", 0)));
+    }
+    return true;
+}
+
 bool static seekFile(int argCount) {
     if (argCount != 2) {
         runtimeError("seek() takes 2 arguments (%d given)", argCount);
@@ -92,6 +116,8 @@ bool fileMethods(char *method, int argCount) {
         return writeFile(argCount);
     } else if (strcmp(method, "read") == 0) {
         return readFile(argCount);
+    } else if (strcmp(method, "readLine") == 0) {
+        return readLineFile(argCount);
     } else if (strcmp(method, "seek") == 0) {
         return seekFile(argCount);
     }

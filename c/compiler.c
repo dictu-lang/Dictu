@@ -1268,7 +1268,7 @@ static void withStatement() {
     consume(TOKEN_COMMA, "Expect comma");
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'with'.");
-    
+
     beginScope();
 
     Local *local = &current->locals[current->localCount++];

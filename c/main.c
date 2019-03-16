@@ -16,9 +16,12 @@ static void repl() {
     printf(VERSION);
     char *line;
 
+    linenoiseHistoryLoad("history.txt");
+
     while((line = linenoise(">>> ")) != NULL) {
         interpret(line);
         linenoiseHistoryAdd(line);
+        linenoiseHistorySave("history.txt");
         free(line);
     }
 }

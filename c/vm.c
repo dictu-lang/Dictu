@@ -458,7 +458,9 @@ static InterpretResult run() {
                 if (IS_FILE(peek(0))) {
                     ObjFile *file = AS_FILE(peek(0));
                     fclose(file->file);
-                    // FREE(ObjFile, file);
+                    collectGarbage();
+                    //FREE(ObjFile, file);
+                    //printf("Free here\n");
                 }
 
                 pop();
@@ -1411,6 +1413,10 @@ static void assertNative(int argCount, Value *args) {
         runtimeError("assert() was false!");
 }
 
+static void collectNative(int argCount, Value *args) {
+    collectGarbage();
+}
+
 // End of natives
 
 void defineAllNatives() {
@@ -1455,13 +1461,15 @@ void defineAllNatives() {
     char *nativeVoidNames[] = {
             "sleep",
             "print",
-            "assert"
+            "assert",
+            "collect"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
-            assertNative
+            assertNative,
+            collectNative
     };
 
 

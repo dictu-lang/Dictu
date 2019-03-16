@@ -217,6 +217,7 @@ void freeObject(Obj *object) {
 
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
+            printf("Free string: %s\n", string->chars);
             FREE_ARRAY(char, string->chars, string->length + 1);
             FREE(ObjString, object);
             break;
@@ -235,10 +236,14 @@ void freeObject(Obj *object) {
             break;
         }
 
-        case OBJ_FILE:
+        case OBJ_FILE: {
+            printf("Free File\n");
+            FREE(ObjFile, object);
             break;
+        }
 
         case OBJ_UPVALUE: {
+            printf("Free here?\n");
             FREE(ObjUpvalue, object);
             break;
         }
