@@ -96,9 +96,35 @@ static bool readLineFile(int argCount) {
 }
 
 static bool seekFile(int argCount) {
-    if (argCount != 2) {
-        runtimeError("seek() takes 2 arguments (%d given)", argCount);
+    if (argCount < 2 || argCount > 3) {
+        runtimeError("seek() takes 2 or 3 arguments (%d given)", argCount);
         return false;
+    }
+
+    int seekType = SEEK_SET;
+
+    if (argCount == 3) {
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+            runtimeError("seek() arguments must be numbers");
+            return false;
+        }
+
+        int seekTypeNum = AS_NUMBER(pop());
+
+        switch (seekTypeNum) {
+            case 0:
+                seekType = SEEK_SET;
+                break;
+            case 1:
+                seekType = SEEK_CUR;
+                break;
+            case 2:
+                seekType = SEEK_END;
+                break;
+            default:
+                seekType = SEEK_SET;
+                break;
+        }
     }
 
     if (!IS_NUMBER(peek(0))) {
@@ -108,7 +134,7 @@ static bool seekFile(int argCount) {
 
     int offset = AS_NUMBER(pop());
     ObjFile *file = AS_FILE(pop());
-    fseek(file->file, offset, SEEK_CUR);
+    fseek(file->file, offset, seekType);
 
     push(NIL_VAL);
     return true;

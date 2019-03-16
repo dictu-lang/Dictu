@@ -224,7 +224,6 @@ void freeObject(Obj *object) {
         }
 
         case OBJ_LIST: {
-            printf("Free list\n");
             ObjList *list = (ObjList *) object;
             freeValueArray(&list->values);
             FREE(ObjList, list);
