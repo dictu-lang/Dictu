@@ -39,8 +39,8 @@ To make all characters within a string lowercase, use the `.lower()` method.
 To make all characters within a string uppercase, use the `.upper()` method.
 
 ```py
-"dictu".lower(); // DICTU
-"DiCtU".lower(); // DICTU
+"dictu".upper(); // DICTU
+"DiCtU".upper(); // DICTU
 ```
 
 ### .startsWith(string)
