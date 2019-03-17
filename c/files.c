@@ -81,14 +81,7 @@ static bool readLineFile(int argCount) {
 
     ObjFile *file = AS_FILE(pop());
     if (fgets(line, 4096, file->file) != NULL) {
-
-        size_t length = strlen(line);
-        // Remove trailing newline
-        if (line[length - 1] == '\n') {
-            length--;
-        }
-
-        push(OBJ_VAL(copyString(line, length)));
+        push(OBJ_VAL(copyString(line, strlen(line))));
     } else {
         push(OBJ_VAL(copyString("", 0)));
     }
