@@ -459,8 +459,6 @@ static InterpretResult run() {
                     ObjFile *file = AS_FILE(peek(0));
                     fclose(file->file);
                     collectGarbage();
-                    //FREE(ObjFile, file);
-                    //printf("Free here\n");
                 }
 
                 pop();
