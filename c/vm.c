@@ -58,6 +58,8 @@ void runtimeError(const char *format, ...) {
         fputs("\n", stderr);
         va_end(args);
     }
+
+    resetStack();
 }
 
 
