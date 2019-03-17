@@ -151,7 +151,8 @@ typedef enum {
     OP_RETURN,
     OP_CLASS,
     OP_SUBCLASS,
-    OP_METHOD
+    OP_METHOD,
+    OP_OPEN_FILE
 } OpCode;
 
 typedef struct {

@@ -158,6 +158,7 @@ static void blackenObject(Obj *object) {
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
+        case OBJ_FILE:
         //case OBJ_DICT:
             break;
     }
@@ -214,6 +215,7 @@ void freeObject(Obj *object) {
             break;
         }
 
+
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
             FREE_ARRAY(char, string->chars, string->length + 1);
@@ -222,15 +224,19 @@ void freeObject(Obj *object) {
         }
 
         case OBJ_LIST: {
-            // TODO: Free lists via the GC
-            //ObjList *list = (ObjList *) object;
-            //freeValueArray(&list->values);
-            //FREE(ObjList, list);
+            ObjList *list = (ObjList *) object;
+            freeValueArray(&list->values);
+            FREE(ObjList, list);
             break;
         }
 
         case OBJ_DICT: {
             // TODO: Free dicts via the GC
+            break;
+        }
+
+        case OBJ_FILE: {
+            FREE(ObjFile, object);
             break;
         }
 

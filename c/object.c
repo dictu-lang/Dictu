@@ -107,7 +107,7 @@ static ObjString *allocateString(char *chars, int length,
 }
 
 ObjList *initList() {
-    ObjList *list = ALLOCATE_OBJ_LIST(ObjList, OBJ_LIST);
+    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
@@ -115,6 +115,11 @@ ObjList *initList() {
 ObjDict *initDict() {
     ObjDict *dict = initDictValues(8);
     return dict;
+}
+
+ObjFile *initFile() {
+    ObjFile *file = ALLOCATE_OBJ(ObjFile, OBJ_FILE);
+    return file;
 }
 
 static uint32_t hashString(const char *key, int length) {
@@ -214,6 +219,12 @@ void printObject(Value value) {
         case OBJ_STRING:
             printf("'%s'", AS_CSTRING(value));
             break;
+
+        case OBJ_FILE: {
+            ObjFile *file = AS_FILE(value);
+            printf("<file: %s>", file->path);
+            break;
+        }
 
         case OBJ_LIST: {
             ObjList *list = AS_LIST(value);
