@@ -56,7 +56,7 @@ static bool containsString(int argCount) {
     return true;
 }
 
-bool static findString(int argCount) {
+static bool findString(int argCount) {
     if (argCount < 2 || argCount > 3) {
         runtimeError("find() takes either 2 or 3 arguments (%d  given)", argCount);
         return false;
@@ -157,7 +157,7 @@ static bool replaceString(int argCount) {
     return true;
 }
 
-bool static lowerString(int argCount) {
+static bool lowerString(int argCount) {
     if (argCount != 1) {
         runtimeError("lower() takes 1 argument (%d  given)", argCount);
         return false;
@@ -176,7 +176,7 @@ bool static lowerString(int argCount) {
     return true;
 }
 
-bool static upperString(int argCount) {
+static bool upperString(int argCount) {
     if (argCount != 1) {
         runtimeError("upper() takes 1 argument (%d  given)", argCount);
         return false;
@@ -195,7 +195,7 @@ bool static upperString(int argCount) {
     return true;
 }
 
-bool static startsWithString(int argCount) {
+static bool startsWithString(int argCount) {
     if (argCount != 2) {
         runtimeError("startsWith() takes 2 arguments (%d  given)", argCount);
         return false;
@@ -213,7 +213,7 @@ bool static startsWithString(int argCount) {
     return true;
 }
 
-bool static endsWithString(int argCount) {
+static bool endsWithString(int argCount) {
     if (argCount != 2) {
         runtimeError("endsWith() takes 2 arguments (%d  given)", argCount);
         return false;

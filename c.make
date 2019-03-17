@@ -28,7 +28,7 @@ OBJECTS := $(addprefix $(BUILD_DIR)/$(NAME)/, $(notdir $(SOURCES:.c=.o)))
 build/$(NAME): $(OBJECTS)
 	@ printf "%8s %-40s %s\n" $(CC) $@ "$(CFLAGS)"
 	@ mkdir -p build
-	@ $(CC) $(CFLAGS) $^ -o $@
+	@ $(CC) $(CFLAGS) $^ -o $@ -lm
 
 # Compile object files.
 $(BUILD_DIR)/$(NAME)/%.o: $(SOURCE_DIR)/%.c $(HEADERS)

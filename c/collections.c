@@ -24,7 +24,7 @@ static bool insertListItem(int argCount) {
     }
 
     if (!IS_NUMBER(peek(0))) {
-        runtimeError("insert() third argument must be a number", argCount);
+        runtimeError("insert() third argument must be a number");
         return false;
     }
 

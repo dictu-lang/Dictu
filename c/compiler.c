@@ -1263,23 +1263,22 @@ static void ifStatement() {
 }
 
 static void withStatement() {
-    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
-    //consume(TOKEN_STRING, "Expect file name");
+    consume(TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
     expression();
     consume(TOKEN_COMMA, "Expect comma");
-    //consume(TOKEN_STRING, "Expect file open type");
     expression();
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after 'with'.");
 
     beginScope();
 
-    //TODO: Create a "file" variable local to this scope
-    // emitByte(FILE_OPEN) // READ | WRITE | APPEND
+    Local *local = &current->locals[current->localCount++];
+    local->depth = current->scopeDepth;
+    local->isUpvalue = false;
+    local->name = syntheticToken("file");
+
+    emitByte(OP_OPEN_FILE);
 
     statement();
-
-    //TODO: Close the file at scope end and remove(free) "file" variable
-
     endScope();
 }
 
