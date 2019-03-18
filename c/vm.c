@@ -182,9 +182,7 @@ static bool callValue(Value callee, int argCount) {
 
             case OBJ_NATIVE_VOID: {
                 NativeFnVoid native = AS_NATIVE_VOID(callee);
-                bool success = native(argCount, vm.stackTop - argCount);
-
-                if (!success)
+                if (!native(argCount, vm.stackTop - argCount))
                     return false;
 
                 vm.stackTop -= argCount + 1;
