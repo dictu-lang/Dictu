@@ -1370,6 +1370,7 @@ static void synchronize() {
             case TOKEN_BREAK:
             case TOKEN_RETURN:
             case TOKEN_IMPORT:
+            case TOKEN_WITH:
                 return;
 
             default:

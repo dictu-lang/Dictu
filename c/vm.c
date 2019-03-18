@@ -182,7 +182,9 @@ static bool callValue(Value callee, int argCount) {
 
             case OBJ_NATIVE_VOID: {
                 NativeFnVoid native = AS_NATIVE_VOID(callee);
-                native(argCount, vm.stackTop - argCount);
+                if (!native(argCount, vm.stackTop - argCount))
+                    return false;
+
                 vm.stackTop -= argCount + 1;
                 vm.stackCount -= argCount + 1;
                 push(NIL_VAL);
@@ -192,6 +194,10 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
+
+                if (IS_NIL(result))
+                    return false;
+
                 vm.stackTop -= argCount + 1;
                 vm.stackCount -= argCount + 1;
                 push(result);
@@ -1125,13 +1131,17 @@ static Value typeNative(int argCount, Value *args) {
         return OBJ_VAL(copyString("number", 6));
     } else if (IS_OBJ(args[0])) {
         switch (OBJ_TYPE(args[0])) {
-            //TODO: Add more cases for type()
             case OBJ_CLASS:
                 return OBJ_VAL(copyString("class", 5));
             case OBJ_FUNCTION:
                 return OBJ_VAL(copyString("function", 8));
             case OBJ_STRING:
                 return OBJ_VAL(copyString("string", 6));
+            case OBJ_NATIVE_VOID:
+            case OBJ_NATIVE:
+                return OBJ_VAL(copyString("native", 6));
+            case OBJ_FILE:
+                return OBJ_VAL(copyString("file", 4));
             default:
                 break;
         }
@@ -1270,6 +1280,11 @@ static Value floorNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("A non-number value passed to floor()");
+        return NIL_VAL;
+    }
+
 
     return NUMBER_VAL(floor(AS_NUMBER(args[0])));
 }
@@ -1277,6 +1292,11 @@ static Value floorNative(int argCount, Value *args) {
 static Value roundNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("round() takes exactly 1 argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("A non-number value passed to round()");
         return NIL_VAL;
     }
 
@@ -1290,6 +1310,11 @@ static Value ceilNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("A non-number value passed to ceil()");
+        return NIL_VAL;
+    }
+
 
     return NUMBER_VAL(ceil(AS_NUMBER(args[0])));
 }
@@ -1297,6 +1322,11 @@ static Value ceilNative(int argCount, Value *args) {
 static Value absNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("abs() takes exactly 1 argument (%d given).", argCount);
+        return NIL_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("A non-number value passed to abs()");
         return NIL_VAL;
     }
 
@@ -1339,38 +1369,43 @@ static Value inputNative(int argCount, Value *args) {
 
     char *line = malloc(len_max);
 
-    if (line != NULL) {
-        int c = EOF;
-        uint8_t i = 0;
-        while ((c = getchar()) != '\n' && c != EOF) {
-            line[i++] = (char) c;
-
-            if (i == current_size) {
-                current_size = i + len_max;
-                line = realloc(line, current_size);
-            }
-        }
-
-        line[i] = '\0';
-
-        Value l = OBJ_VAL(copyString(line, strlen(line)));
-        free(line);
-
-        return l;
+    if (line == NULL) {
+        runtimeError("Memory error on input()!");
+        return NIL_VAL;
     }
 
+    int c = EOF;
+    uint8_t i = 0;
+    while ((c = getchar()) != '\n' && c != EOF) {
+        line[i++] = (char) c;
 
-    return NIL_VAL;
+        if (i == current_size) {
+            current_size = i + len_max;
+            line = realloc(line, current_size);
+        }
+    }
+
+    line[i] = '\0';
+
+    Value l = OBJ_VAL(copyString(line, strlen(line)));
+    free(line);
+
+    return l;
 }
 
 // Natives no return
 
 
 
-static void sleepNative(int argCount, Value *args) {
+static bool sleepNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("sleep() takes exactly 1 argument (%d  given)", argCount);
-        return;
+        runtimeError("sleep() takes exactly 1 argument (%d given)", argCount);
+        return false;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("sleep() argument must be a number");
+        return false;
     }
 
     double stopTime = AS_NUMBER(args[0]);
@@ -1380,41 +1415,39 @@ static void sleepNative(int argCount, Value *args) {
 #else
     sleep(stopTime);
 #endif
+    return true;
 }
 
-static void printNative(int argCount, Value *args) {
+static bool printNative(int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
-
-        if (IS_BOOL(value)) {
-            printf(AS_BOOL(value) ? "true" : "false");
-        } else if (IS_NIL(value)) {
-            printf("nil");
-        } else if (IS_NUMBER(value)) {
-            printf("%.15g", AS_NUMBER(value));
-        } else if (IS_OBJ(value)) {
-            printObject(value);
-        }
-
+        printValue(value);
         printf("\n");
     }
+
+    return true;
 }
 
-static void assertNative(int argCount, Value *args) {
+static bool assertNative(int argCount, Value *args) {
     Value value = args[0];
 
     if (!IS_BOOL(value)) {
         runtimeError("assert() only takes a boolean as an argument.", argCount);
-        return;
+        return false;
     }
 
     value = AS_BOOL(value);
-    if (!value)
+    if (!value) {
         runtimeError("assert() was false!");
+        return false;
+    }
+
+    return true;
 }
 
-static void collectNative(int argCount, Value *args) {
+static bool collectNative(int argCount, Value *args) {
     collectGarbage();
+    return true;
 }
 
 // End of natives

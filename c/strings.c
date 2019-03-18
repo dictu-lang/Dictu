@@ -121,10 +121,12 @@ static bool replaceString(int argCount) {
     char *string = AS_CSTRING(stringValue);
 
     int count = 0;
+    size_t len = strlen(to_replace);
+
     const char *tmp = string;
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
-        tmp++;
+        tmp += len;
     }
 
     if (count == 0) {
@@ -132,7 +134,7 @@ static bool replaceString(int argCount) {
         return true;
     }
 
-    int length = strlen(string) - count * (strlen(to_replace) - strlen(replace)) + 1;
+    int length = strlen(string) - count * (len - strlen(replace)) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
 
@@ -142,12 +144,12 @@ static bool replaceString(int argCount) {
             *pos = '\0';
 
         if (i == 0)
-            strncpy(newStr, string, strlen(string));
+            snprintf(newStr, length, "%s", string);
         else
             strncat(newStr, string, strlen(string));
 
         strncat(newStr, replace, strlen(replace));
-        string = pos + strlen(to_replace);
+        string = pos + len;
     }
 
     strncat(newStr, string, strlen(string));
