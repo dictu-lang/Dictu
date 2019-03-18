@@ -134,7 +134,7 @@ static bool replaceString(int argCount) {
         return true;
     }
 
-    int length = strlen(string) - count * (strlen(to_replace) - strlen(replace)) + 1;
+    int length = strlen(string) - count * (len - strlen(replace)) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
 
@@ -149,7 +149,7 @@ static bool replaceString(int argCount) {
             strncat(newStr, string, strlen(string));
 
         strncat(newStr, replace, strlen(replace));
-        string = pos + strlen(to_replace);
+        string = pos + len;
     }
 
     strncat(newStr, string, strlen(string));
