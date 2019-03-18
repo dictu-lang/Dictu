@@ -5,8 +5,8 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-# CFLAGS := -std=c99 -Wall -Wextra -Werror -Wno-unused-parameter
-CFLAGS := -std=c99 -Wall -Wextra -Werror -Wno-unused-parameter -Wpedantic
+CFLAGS := -std=c99 -Wall -Wextra -Wno-unused-parameter -Wpedantic
+LFLAGS := -lm
 
 # Mode configuration.
 ifeq ($(MODE),debug)
@@ -28,7 +28,7 @@ OBJECTS := $(addprefix $(BUILD_DIR)/$(NAME)/, $(notdir $(SOURCES:.c=.o)))
 build/$(NAME): $(OBJECTS)
 	@ printf "%8s %-40s %s\n" $(CC) $@ "$(CFLAGS)"
 	@ mkdir -p build
-	@ $(CC) $(CFLAGS) $^ -o $@ -lm
+	@ $(CC) $(CFLAGS) $^ -o $@ $(LFLAGS)
 
 # Compile object files.
 $(BUILD_DIR)/$(NAME)/%.o: $(SOURCE_DIR)/%.c $(HEADERS)

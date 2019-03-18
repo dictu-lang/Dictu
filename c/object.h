@@ -68,7 +68,7 @@ typedef struct {
 
 typedef Value (*NativeFn)(int argCount, Value *args);
 
-typedef void (*NativeFnVoid)(int argCount, Value *args);
+typedef bool (*NativeFnVoid)(int argCount, Value *args);
 
 typedef struct {
     Obj obj;

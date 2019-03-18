@@ -121,10 +121,12 @@ static bool replaceString(int argCount) {
     char *string = AS_CSTRING(stringValue);
 
     int count = 0;
+    size_t len = strlen(to_replace);
+
     const char *tmp = string;
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
-        tmp++;
+        tmp += len;
     }
 
     if (count == 0) {
@@ -142,7 +144,7 @@ static bool replaceString(int argCount) {
             *pos = '\0';
 
         if (i == 0)
-            strncpy(newStr, string, strlen(string));
+            snprintf(newStr, length, "%s", string);
         else
             strncat(newStr, string, strlen(string));
 
