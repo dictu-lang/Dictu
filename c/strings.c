@@ -16,7 +16,9 @@ static bool splitString(int argCount) {
     char *delimiter = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
     char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
     strcpy(tmp, string);
+
     char *token;
 
     ObjList *list = initList();
@@ -31,8 +33,8 @@ static bool splitString(int argCount) {
         tmp = token + strlen(delimiter);
     } while (token != NULL);
 
+    free(tmpFree);
     push(OBJ_VAL(list));
-    //free(tmp);
     return true;
 }
 
@@ -50,6 +52,7 @@ static bool containsString(int argCount) {
     char *delimiter = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
     char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
     strcpy(tmp, string);
 
     if (!strstr(tmp, delimiter)) {
@@ -59,7 +62,7 @@ static bool containsString(int argCount) {
     }
 
     push(TRUE_VAL);
-    free(tmp);
+    free(tmpFree);
     return true;
 }
 
@@ -88,6 +91,7 @@ static bool findString(int argCount) {
     char *substr = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
     char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
     strcpy(tmp, string);
 
     int position = 0;
@@ -104,7 +108,7 @@ static bool findString(int argCount) {
     }
 
     push(NUMBER_VAL(position));
-    free(tmp);
+    free(tmpFree);
     return true;
 }
 
@@ -135,7 +139,9 @@ static bool replaceString(int argCount) {
 
     // Make a copy of the string so we do not modify the original
     char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
     char *tmp1 = malloc(strlen(string) + 1);
+    char *tmp1Free = tmp1;
     strcpy(tmp, string);
     strcpy(tmp1, string);
 
@@ -144,11 +150,11 @@ static bool replaceString(int argCount) {
         tmp += len;
     }
 
-    free(tmp);
+    free(tmpFree);
 
     if (count == 0) {
         push(stringValue);
-        free(tmp1); // We're exiting early so remember to free
+        free(tmp1Free); // We're exiting early so remember to free
         return true;
     }
 
@@ -173,7 +179,7 @@ static bool replaceString(int argCount) {
     strncat(newStr, tmp1, strlen(tmp1));
     ObjString *newString = copyString(newStr, length - 1);
     free(newStr);
-    free(tmp);
+    free(tmp1Free);
     push(OBJ_VAL(newString));
     return true;
 }
@@ -194,6 +200,7 @@ static bool lowerString(int argCount) {
     temp[string->length] = '\0';
 
     push(OBJ_VAL(copyString(temp, string->length)));
+    free(temp);
     return true;
 }
 
@@ -213,6 +220,7 @@ static bool upperString(int argCount) {
     temp[string->length] = '\0';
 
     push(OBJ_VAL(copyString(temp, string->length)));
+    free(temp);
     return true;
 }
 
