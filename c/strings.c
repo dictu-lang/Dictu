@@ -15,21 +15,24 @@ static bool splitString(int argCount) {
 
     char *delimiter = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
+    char *tmp = malloc(strlen(string) + 1);
+    strcpy(tmp, string);
     char *token;
 
     ObjList *list = initList();
 
     do {
-        token = strstr(string, delimiter);
+        token = strstr(tmp, delimiter);
         if (token)
             *token = '\0';
 
-        writeValueArray(&list->values, OBJ_VAL(copyString(string, strlen(string))));
-        string = token + strlen(delimiter);
-    } while(token != NULL);
+        ObjString *str = copyString(tmp, strlen(tmp));
+        writeValueArray(&list->values, OBJ_VAL(str));
+        tmp = token + strlen(delimiter);
+    } while (token != NULL);
 
     push(OBJ_VAL(list));
-
+    //free(tmp);
     return true;
 }
 
@@ -46,13 +49,17 @@ static bool containsString(int argCount) {
 
     char *delimiter = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
+    char *tmp = malloc(strlen(string) + 1);
+    strcpy(tmp, string);
 
-    if (!strstr(string, delimiter)) {
+    if (!strstr(tmp, delimiter)) {
         push(FALSE_VAL);
+        free(tmp);
         return true;
     }
 
     push(TRUE_VAL);
+    free(tmp);
     return true;
 }
 
@@ -80,21 +87,24 @@ static bool findString(int argCount) {
 
     char *substr = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
+    char *tmp = malloc(strlen(string) + 1);
+    strcpy(tmp, string);
 
     int position = 0;
 
     for (int i = 0; i < index; ++i) {
-        char *result = strstr(string, substr);
+        char *result = strstr(tmp, substr);
         if (!result) {
             position = -1;
             break;
         }
 
-        position += (result - string) + (i * strlen(substr));
-        string = result + strlen(substr);
+        position += (result - tmp) + (i * strlen(substr));
+        tmp = result + strlen(substr);
     }
 
     push(NUMBER_VAL(position));
+    free(tmp);
     return true;
 }
 
@@ -123,38 +133,47 @@ static bool replaceString(int argCount) {
     int count = 0;
     size_t len = strlen(to_replace);
 
-    const char *tmp = string;
+    // Make a copy of the string so we do not modify the original
+    char *tmp = malloc(strlen(string) + 1);
+    char *tmp1 = malloc(strlen(string) + 1);
+    strcpy(tmp, string);
+    strcpy(tmp1, string);
+
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
         tmp += len;
     }
 
+    free(tmp);
+
     if (count == 0) {
         push(stringValue);
+        free(tmp1); // We're exiting early so remember to free
         return true;
     }
 
-    int length = strlen(string) - count * (len - strlen(replace)) + 1;
+    int length = strlen(tmp1) - count * (len - strlen(replace)) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
 
     for (int i = 0; i < count; ++i) {
-        pos = strstr(string, to_replace);
+        pos = strstr(tmp1, to_replace);
         if (pos != NULL)
             *pos = '\0';
 
         if (i == 0)
-            snprintf(newStr, length, "%s", string);
+            snprintf(newStr, length, "%s", tmp1);
         else
-            strncat(newStr, string, strlen(string));
+            strncat(newStr, tmp1, strlen(tmp1));
 
         strncat(newStr, replace, strlen(replace));
-        string = pos + len;
+        tmp1 = pos + len;
     }
 
-    strncat(newStr, string, strlen(string));
+    strncat(newStr, tmp1, strlen(tmp1));
     ObjString *newString = copyString(newStr, length - 1);
     free(newStr);
+    free(tmp);
     push(OBJ_VAL(newString));
     return true;
 }

@@ -36,7 +36,7 @@ static void runFile(const char *path) {
 }
 
 int main(int argc, const char *argv[]) {
-    initVM(argc == 1);
+    initVM(argc == 1, argc == 2 ? argv[1] : "repl");
 
     if (argc == 1) {
         repl();

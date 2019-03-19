@@ -1,0 +1,10 @@
+import "tests/strings/split.du";
+
+assert("a".replace("a", "b") == "b");
+assert("aa".replace("aa", "b") == "b");
+assert("aaa".replace("aaa", "b") == "b");
+assert("aaaa".replace("aaaa", "b") == "b");
+assert("ab".replace("ab", "ab") == "ab");
+assert("abcabc".replace("abc", "b") == "bb");
+assert("hellohello".replace("hello", "Dictu!") == "Dictu!Dictu!");
+assert("test".replace("nowords", "b") == "test");
