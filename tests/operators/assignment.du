@@ -1,0 +1,13 @@
+var x = 10;
+
+x += 10;
+assert(x == 20);
+
+x -= 10;
+assert(x == 10);
+
+x *= 2;
+assert(x == 20);
+
+x /= 2;
+assert(x == 10);

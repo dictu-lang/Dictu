@@ -1,0 +1,11 @@
+var myDict = {"key": 1, "key1": true};
+
+// First check the dictionary was created properly
+assert(myDict == {"key": 1, "key1": true});
+
+// Test .remove()
+myDict.remove("key");
+assert(myDict == {"key1": true});
+
+myDict.remove("key1");
+assert(myDict == {});

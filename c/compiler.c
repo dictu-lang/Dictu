@@ -853,8 +853,8 @@ ParseRule rules[] = {
         {NULL,     dot,          PREC_CALL},               // TOKEN_DOT
         {unary,    binary,       PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,       PREC_TERM},               // TOKEN_PLUS
-        {prefix,   NULL,         PREC_PREFIX},             // TOKEN_INCREMENT
-        {prefix,   NULL,         PREC_PREFIX},             // TOKEN_DECREMENT
+        {prefix,   NULL,         PREC_NONE},               // TOKEN_INCREMENT
+        {prefix,   NULL,         PREC_NONE},               // TOKEN_DECREMENT
         {NULL,     NULL,         PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
