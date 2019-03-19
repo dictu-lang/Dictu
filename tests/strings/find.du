@@ -1,0 +1,6 @@
+assert("hello".find("hello") == 0);
+assert("hello".find("l") == 2);
+assert("hello".find("l", 2) == 3);
+assert("Dictu is great! Dictu is great!".find("Dictu") == 0);
+assert("Dictu is great! Dictu is great!".find("Dictu", 2) == 16);
+assert("Dictu is great! Dictu is great! Dictu is great!".find("Dictu", 3) == 37);

@@ -1,5 +1,3 @@
-import "tests/strings/split.du";
-
 assert("a".replace("a", "b") == "b");
 assert("aa".replace("aa", "b") == "b");
 assert("aaa".replace("aaa", "b") == "b");

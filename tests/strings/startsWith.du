@@ -1,0 +1,6 @@
+assert("test".startsWith("t"));
+assert("test".startsWith("te"));
+assert("test".startsWith("test"));
+assert(!("test".startsWith("e")));
+assert(!("test".startsWith("he")));
+assert(!("test".startsWith("hello")));

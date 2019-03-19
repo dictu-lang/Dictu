@@ -1,8 +1,6 @@
-//assert("Dictu is great!".split(" ") == ["Dictu", "is", "great!"]);
+assert("Dictu is great!".split(" ") == ["Dictu", "is", "great!"]);
 assert("Dictu,is,great!".split(",") == ["Dictu", "is", "great!"]);
 assert("Dictu--is--great!".split("--") == ["Dictu", "is", "great!"]);
-//assert("Dictu--is--great!".split("--") == ["Dictu", "is", "great!"]);
+assert("Dictu--is--great!".split("--") == ["Dictu", "is", "great!"]);
 assert("Dictu<spacer>is<spacer>great!".split("<spacer>") == ["Dictu", "is", "great!"]);
-print("Dictu is great!".split(","));
-//assert("Dictu is great!".split(",") == ["Dictu is great!"]);
-assert(true);
+assert("Dictu is great!".split(",") == ["Dictu is great!"]);

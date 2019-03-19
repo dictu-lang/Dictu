@@ -1,0 +1,3 @@
+assert("DiCtU".lower() == "dictu");
+assert("dictu".lower() == "dictu");
+assert("DICTU".lower() == "dictu");

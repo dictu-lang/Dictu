@@ -1,0 +1,2 @@
+assert("Dictu is great!".contains("is"));
+assert(!("Dictu is great!".contains("test")));
