@@ -1,0 +1,19 @@
+var x = [1, 2, 3, 4, 5];
+
+// First check the list was created properly
+assert(x == [1, 2, 3, 4, 5]);
+
+// Test .contains()
+assert(x.contains(1));
+assert(x.contains(2));
+assert(x.contains(3));
+assert(x.contains(4));
+assert(x.contains(5));
+
+// Test ! .contains()
+assert(!(x.contains(10)));
+assert(!(x.contains(11)));
+assert(!(x.contains(12)));
+assert(!(x.contains(13)));
+assert(!(x.contains(14)));
+

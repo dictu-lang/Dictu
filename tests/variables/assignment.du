@@ -1,0 +1,13 @@
+var x = 10;
+assert(x == 10);
+
+// New space ignored
+var test =
+
+123;
+
+assert(test == 123);
+
+// Test assignment of declared var
+x = 100;
+assert(x == 100);
