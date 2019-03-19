@@ -701,7 +701,7 @@ static InterpretResult run() {
                 frame->ip = closure->function->chunk.code;
                 frame->closure = closure;
                 frame->slots = vm.stackTop - 1;
-
+                free(s);
                 break;
             }
 
