@@ -614,6 +614,7 @@ static InterpretResult run() {
             case OP_INCREMENT: {
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
@@ -623,6 +624,7 @@ static InterpretResult run() {
             case OP_DECREMENT: {
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) - 1));

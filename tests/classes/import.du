@@ -1,0 +1,4 @@
+import "tests/classes/methodCall.du";
+import "tests/classes/static.du";
+import "tests/classes/properties.du";
+import "tests/classes/inherit.du";
