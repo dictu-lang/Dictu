@@ -1,0 +1,2 @@
+import "tests/variables/scope.du";
+import "tests/variables/assignment.du";

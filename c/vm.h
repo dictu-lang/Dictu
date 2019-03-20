@@ -20,8 +20,11 @@ typedef struct {
     Value *stackTop;
     int stackCount;
     bool repl;
+    const char *scriptName;
+    const char *currentScriptName;
     CallFrame frames[FRAMES_MAX];
     int frameCount;
+    int currentFrameCount;
     Table globals;
     Table strings;
     ObjString *initString;
@@ -44,7 +47,7 @@ typedef enum {
 
 extern VM vm;
 
-void initVM(bool repl);
+void initVM(bool repl, const char *scriptName);
 
 void freeVM();
 

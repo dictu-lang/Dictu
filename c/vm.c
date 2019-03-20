@@ -31,6 +31,7 @@ void defineAllNatives();
 static void resetStack() {
     vm.stackTop = vm.stack;
     vm.frameCount = 0;
+    vm.currentFrameCount = 0;
     vm.openUpvalues = NULL;
 }
 
@@ -47,7 +48,8 @@ void runtimeError(const char *format, ...) {
                 function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "script: ");
+            fprintf(stderr, "%s: ", vm.currentScriptName);
+            i = -1;
         } else {
             fprintf(stderr, "%s(): ", function->name->chars);
         }
@@ -80,11 +82,13 @@ static void defineNativeVoid(const char *name, NativeFnVoid function) {
     pop();
 }
 
-void initVM(bool repl) {
+void initVM(bool repl, const char *scriptName) {
     resetStack();
     vm.objects = NULL;
     vm.listObjects = NULL;
     vm.repl = repl;
+    vm.scriptName = scriptName;
+    vm.currentScriptName = scriptName;
     vm.bytesAllocated = 0;
     vm.nextGC = 1024 * 1024;
     vm.grayCount = 0;
@@ -242,11 +246,8 @@ static bool invoke(ObjString *name, int argCount) {
             return false;
         }
 
-        vm.stackTop[-argCount] = method;
         return callValue(method, argCount);
-    }
-
-    if (IS_LIST(receiver)) {
+    } else if (IS_LIST(receiver)) {
         return listMethods(name->chars, argCount + 1);
     } else if (IS_DICT(receiver)) {
         return dictMethods(name->chars, argCount + 1);
@@ -613,6 +614,7 @@ static InterpretResult run() {
             case OP_INCREMENT: {
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
@@ -622,6 +624,7 @@ static InterpretResult run() {
             case OP_DECREMENT: {
                 if (!IS_NUMBER(peek(0))) {
                     runtimeError("Operand must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
@@ -683,6 +686,7 @@ static InterpretResult run() {
             case OP_IMPORT: {
                 ObjString *fileName = AS_STRING(pop());
                 char *s = readFile(fileName->chars);
+                vm.currentScriptName = fileName->chars;
 
                 ObjFunction *function = compile(s);
                 if (function == NULL) return INTERPRET_COMPILE_ERROR;
@@ -690,11 +694,13 @@ static InterpretResult run() {
                 ObjClosure *closure = newClosure(function);
                 pop();
 
+                vm.currentFrameCount = vm.frameCount;
+
                 frame = &vm.frames[vm.frameCount++];
                 frame->ip = closure->function->chunk.code;
                 frame->closure = closure;
                 frame->slots = vm.stackTop - 1;
-
+                free(s);
                 break;
             }
 
@@ -976,10 +982,11 @@ static InterpretResult run() {
                 break;
             }
 
-            case OP_CLOSE_UPVALUE:
+            case OP_CLOSE_UPVALUE: {
                 closeUpvalues(vm.stackTop - 1);
                 pop();
                 break;
+            }
 
             case OP_RETURN: {
                 Value result = pop();
@@ -988,6 +995,12 @@ static InterpretResult run() {
                 closeUpvalues(frame->slots);
 
                 vm.frameCount--;
+
+                if (vm.frameCount == vm.currentFrameCount) {
+                    vm.currentScriptName = vm.scriptName;
+                    vm.currentFrameCount = -1;
+                }
+
                 if (vm.frameCount == 0) return INTERPRET_OK;
 
                 vm.stackTop = frame->slots;

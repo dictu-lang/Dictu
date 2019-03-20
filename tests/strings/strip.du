@@ -1,0 +1,12 @@
+// Left strip
+assert("  Dictu is great!".leftStrip() == "Dictu is great!");
+assert("Dictu is great!  ".leftStrip() == "Dictu is great!  ");
+assert("  Dictu is great!  ".leftStrip() == "Dictu is great!  ");
+// Right strip
+assert("Dictu is great!  ".rightStrip() == "Dictu is great!");
+assert("  Dictu is great!".rightStrip() == "  Dictu is great!");
+assert("  Dictu is great!  ".rightStrip() == "  Dictu is great!");
+// Strip
+assert("Dictu is great!  ".strip() == "Dictu is great!");
+assert("  Dictu is great!".strip() == "Dictu is great!");
+assert("  Dictu is great!  ".strip() == "Dictu is great!");

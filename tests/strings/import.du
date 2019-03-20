@@ -1,0 +1,9 @@
+import "tests/strings/replace.du";
+import "tests/strings/split.du";
+import "tests/strings/upper.du";
+import "tests/strings/concat.du";
+import "tests/strings/startsWith.du";
+import "tests/strings/endsWith.du";
+import "tests/strings/find.du";
+import "tests/strings/contains.du";
+import "tests/strings/strip.du";

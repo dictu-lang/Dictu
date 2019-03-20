@@ -1,0 +1,19 @@
+def test(a) {
+    assert(a == 10);
+}
+
+test(10);
+
+def test1(a, b) {
+    assert(a + b == 10);
+}
+
+test1(5, 5);
+
+def test2(a, b, c) {
+    assert(a == 10);
+    assert(b == "hello");
+    assert(c == true);
+}
+
+test2(10, "hello", true);

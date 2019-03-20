@@ -1,0 +1,19 @@
+var x = [1, 2, 3, 4, 5];
+
+// First check the list was created properly
+assert(x == [1, 2, 3, 4, 5]);
+
+// Test subscript
+assert(x[0] == 1);
+assert(x[1] == 2);
+assert(x[2] == 3);
+assert(x[3] == 4);
+assert(x[4] == 5);
+
+// Test subscript assignment
+x[0] = 10;
+assert(x == [10, 2, 3, 4, 5]);
+
+// Test negative subscript
+x[-1] = 10;
+assert(x == [10, 2, 3, 4, 10]);

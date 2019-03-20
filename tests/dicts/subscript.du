@@ -1,0 +1,18 @@
+var myDict = {"key": 1, "key1": true};
+
+// First check the dictionary was created properly
+assert(myDict == {"key": 1, "key1": true});
+
+assert(myDict["key"] == 1);
+assert(myDict["key1"]);
+
+// Keys not found return should nil
+assert(myDict["unknown"] == nil);
+
+// Keys not found in assignment should create a new pair
+myDict["test"] = 10;
+assert(myDict == {"key": 1, "key1": true, "test": 10});
+
+// Updating a value
+myDict["test"] = 100;
+assert(myDict == {"key": 1, "key1": true, "test": 100});
