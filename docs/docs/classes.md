@@ -102,8 +102,8 @@ class SomeOtherClass {
     }
 }
 
-SomeOtherClass.printHello(); // Hello
-SomeOtherClass().printMessage(); // Some Text
+SomeOtherClass.printHello();
+SomeOtherClass.printMessage();
 ```
 Output
 ```js

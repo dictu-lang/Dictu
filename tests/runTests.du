@@ -3,6 +3,7 @@ import "tests/variables/import.du";
 import "tests/lists/import.du";
 import "tests/dicts/import.du";
 import "tests/operators/import.du";
+import "tests/functions/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

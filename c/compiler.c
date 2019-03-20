@@ -1075,8 +1075,8 @@ static void varDeclaration() {
 
 static void expressionStatement() {
     expression();
-    emitByte(OP_POP_REPL);
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+    emitByte(OP_POP_REPL);
 }
 
 /*

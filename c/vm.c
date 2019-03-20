@@ -246,11 +246,8 @@ static bool invoke(ObjString *name, int argCount) {
             return false;
         }
 
-        vm.stackTop[-argCount] = method;
         return callValue(method, argCount);
-    }
-
-    if (IS_LIST(receiver)) {
+    } else if (IS_LIST(receiver)) {
         return listMethods(name->chars, argCount + 1);
     } else if (IS_DICT(receiver)) {
         return dictMethods(name->chars, argCount + 1);
