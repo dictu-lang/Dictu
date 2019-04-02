@@ -1,0 +1,10 @@
+var myDict = {"key": 1, "key1": true};
+
+// First check the dictionary was created properly
+assert(myDict == {"key": 1, "key1": true});
+
+assert(myDict.get("key", nil) == 1);
+assert(myDict.get("key1", nil));
+
+// Return a default value if key is not found
+assert(myDict.get("unknown", 10) == 10);

@@ -1,0 +1,10 @@
+var x = 10;
+
+assert(x / 10 == 1);
+assert(10 / x == 1);
+assert(x / x == 1);
+assert(x / -1 == -10);
+
+// Decimals
+assert(x / 2.5 == 4);
+assert(20 / 2.5 == 8);

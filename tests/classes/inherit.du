@@ -1,0 +1,16 @@
+class Base {
+    func() {
+        return 10;
+    }
+}
+
+class Test < Base {}
+
+class Testing < Base {
+    init() {
+        this.value = super.func();
+    }
+}
+
+assert(Test().func() == 10);
+assert(Testing().value == 10);

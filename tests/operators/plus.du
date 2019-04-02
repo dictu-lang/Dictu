@@ -1,0 +1,6 @@
+var x = 10;
+
+assert(x + 1 == 11);
+assert(x + x == 20);
+assert(1 + x == 11);
+assert(10 + x + 10 == 30);

@@ -1,0 +1,13 @@
+class Test {
+    static func() {
+        return 10;
+    }
+
+    static args(a, b) {
+        return a + b;
+    }
+}
+
+assert(Test.func() == 10);
+assert(Test.args(10, 20) == 30);
+assert(Test.args("Dictu", " is great") == "Dictu is great");

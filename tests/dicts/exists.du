@@ -1,0 +1,9 @@
+var myDict = {"key": 1, "key1": true};
+
+// First check the dictionary was created properly
+assert(myDict == {"key": 1, "key1": true});
+
+// Test .exists()
+assert(myDict.exists("key"));
+assert(myDict.exists("key1"));
+assert(!(myDict.exists("unknown")));

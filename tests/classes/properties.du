@@ -1,0 +1,16 @@
+class Test {
+    init() {
+        this.x = 10;
+    }
+
+    change() {
+        this.x = this.x + 10;
+    }
+}
+
+var obj = Test();
+
+assert(obj.x == 10);
+obj.change();
+assert(obj.x == 20);
+//obj.x += 10;

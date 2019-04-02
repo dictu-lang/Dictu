@@ -1,0 +1,6 @@
+assert("test".endsWith("t"));
+assert("test".endsWith("st"));
+assert("test".endsWith("test"));
+assert(!("test".endsWith("e")));
+assert(!("test".endsWith("he")));
+assert(!("test".endsWith("hello")));

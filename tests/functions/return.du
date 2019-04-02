@@ -1,0 +1,12 @@
+def test() {
+    return 10;
+}
+
+assert(test() == 10);
+
+def test1() {
+    // Return expression
+    return 10 + 20 + 30;
+}
+
+assert(test1() == 60);

@@ -1,0 +1,1 @@
+assert("Dictu" + " is " + "great!" == "Dictu is great!");

@@ -1,0 +1,7 @@
+class Test {
+    func() {
+        return 10;
+    }
+}
+
+assert(Test().func() == 10);

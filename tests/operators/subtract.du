@@ -1,0 +1,6 @@
+var x = 10;
+
+assert(x - 1 == 9);
+assert(x - x == 0);
+assert(1 - x == -9);
+assert(10 - x - 10 == -10);

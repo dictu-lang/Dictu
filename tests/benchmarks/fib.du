@@ -1,0 +1,14 @@
+class Fib {
+    static get(n) {
+      if (n < 2) return n;
+      return Fib.get(n - 2) + Fib.get(n - 1);
+    }
+}
+
+var start = clock();
+
+for (var i = 0; i < 5; ++i) {
+    print(Fib.get(28));
+}
+
+print(clock() - start);
