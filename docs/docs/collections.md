@@ -44,6 +44,8 @@ myList.push(10); // [10]
 myList.push(12); // [10, 12]
 // Can insert to an index. This will not replace the value.
 myList.insert(11, 1); // [10, 11, 12]
+// You can also use the + operator to extend lists
+myList + [13]; // [10, 11, 12, 13]
 ```
 
 ### Checking a value exists within a list

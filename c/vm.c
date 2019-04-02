@@ -592,14 +592,18 @@ static InterpretResult run() {
                     double b = AS_NUMBER(pop());
                     double a = AS_NUMBER(pop());
                     push(NUMBER_VAL(a + b));
-                } else if (IS_LIST(peek(1))) {
-                    Value addValue = pop();
+                } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
+                    Value listToAddValue = pop();
                     Value listValue = pop();
 
                     ObjList *list = AS_LIST(listValue);
-                    writeValueArray(&list->values, addValue);
+                    ObjList *listToAdd = AS_LIST(listToAddValue);
 
-                    push(OBJ_VAL(list));
+                    for (int i = 0; i < listToAdd->values.count; ++i) {
+                        writeValueArray(&list->values, listToAdd->values.values[i]);
+                    }
+
+                    push(NIL_VAL);
                 } else {
                     runtimeError("Unsupported operand types.");
                     return INTERPRET_RUNTIME_ERROR;
