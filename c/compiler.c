@@ -553,7 +553,27 @@ static void dot(bool canAssign) {
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(&parser.previous);
 
-    if (canAssign && match(TOKEN_EQUAL)) {
+    if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_ADD);
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_SUBTRACT);
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_MULTIPLY);
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (canAssign && match(TOKEN_DIVIDE_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_DIVIDE);
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
@@ -696,48 +716,38 @@ static void namedVariable(Token name, bool canAssign) {
         setOp = OP_SET_GLOBAL;
     }
 
-    if (canAssign && match(TOKEN_EQUAL)) {
+    if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_ADD);
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_SUBTRACT);
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_MULTIPLY);
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_DIVIDE_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_DIVIDE);
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(setOp, (uint8_t) arg);
+        return;
     } else {
         emitBytes(getOp, (uint8_t) arg);
+        return;
     }
 }
 
 static void variable(bool canAssign) {
-    if (parser.current.type == TOKEN_IDENTIFIER || parser.current.type == TOKEN_EQUAL) {
-        namedVariable(parser.previous, canAssign);
-    } else {
-        Token name = parser.previous;
-        uint8_t setOp;
-        namedVariable(name, false);
-
-        if (match(TOKEN_PLUS_EQUALS)) {
-            expression();
-            emitByte(OP_ADD);
-        } else if (match(TOKEN_MINUS_EQUALS)) {
-            expression();
-            emitByte(OP_SUBTRACT);
-        } else if (match(TOKEN_MULTIPLY_EQUALS)) {
-            expression();
-            emitByte(OP_MULTIPLY);
-        } else if (match(TOKEN_DIVIDE_EQUALS)) {
-            expression();
-            emitByte(OP_DIVIDE);
-        }
-
-        int arg = resolveLocal(current, &name, false);
-        if (arg != -1) {
-            setOp = OP_SET_LOCAL;
-        } else if ((arg = resolveUpvalue(current, &name)) != -1) {
-            setOp = OP_SET_UPVALUE;
-        } else {
-            arg = identifierConstant(&name);
-            setOp = OP_SET_GLOBAL;
-        }
-
-        emitBytes(setOp, (uint8_t) arg);
-    }
+    namedVariable(parser.previous, canAssign);
 }
 
 static Token syntheticToken(const char *text) {
@@ -812,7 +822,19 @@ static void unary(bool canAssign) {
 
 static void prefix(bool canAssign) {
     TokenType operatorType = parser.previous.type;
-    parsePrecedence(PREC_PREFIX);
+    Token cur = parser.current;
+    consume(TOKEN_IDENTIFIER, "Expected variable");
+    namedVariable(parser.previous, true);
+
+    int arg;
+    bool instance = false;
+
+    if (match(TOKEN_DOT)) {
+        consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+        arg = identifierConstant(&parser.previous);
+        emitBytes(OP_GET_PROPERTY_NO_POP, arg);
+        instance = true;
+    }
 
     switch (operatorType) {
         case TOKEN_INCREMENT: {
@@ -826,20 +848,22 @@ static void prefix(bool canAssign) {
             return;
     }
 
-    uint8_t setOp;
-    Token name = parser.previous;
-
-    int arg = resolveLocal(current, &name, false);
-    if (arg != -1) {
-        setOp = OP_SET_LOCAL;
-    } else if ((arg = resolveUpvalue(current, &name)) != -1) {
-        setOp = OP_SET_UPVALUE;
+    if (instance) {
+        emitBytes(OP_SET_PROPERTY, arg);
     } else {
-        arg = identifierConstant(&name);
-        setOp = OP_SET_GLOBAL;
-    }
+        uint8_t setOp;
+        int arg = resolveLocal(current, &cur, false);
+        if (arg != -1) {
+            setOp = OP_SET_LOCAL;
+        } else if ((arg = resolveUpvalue(current, &cur)) != -1) {
+            setOp = OP_SET_UPVALUE;
+        } else {
+            arg = identifierConstant(&cur);
+            setOp = OP_SET_GLOBAL;
+        }
 
-    emitBytes(setOp, (uint8_t) arg);
+        emitBytes(setOp, (uint8_t) arg);
+    }
 }
 
 ParseRule rules[] = {
