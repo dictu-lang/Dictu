@@ -547,6 +547,27 @@ static InterpretResult run() {
                 break;
             }
 
+            case OP_GET_PROPERTY_NO_POP: {
+                if (!IS_INSTANCE(peek(0))) {
+                    runtimeError("Only instances have properties.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                ObjInstance *instance = AS_INSTANCE(peek(0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&instance->fields, name, &value)) {
+                    push(value);
+                    break;
+                }
+
+                if (!bindMethod(instance->klass, name)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                break;
+            }
+
             case OP_SET_PROPERTY: {
                 if (!IS_INSTANCE(peek(1))) {
                     runtimeError("Only instances have fields.");
@@ -555,9 +576,9 @@ static InterpretResult run() {
 
                 ObjInstance *instance = AS_INSTANCE(peek(1));
                 tableSet(&instance->fields, READ_STRING(), peek(0));
-                Value value = pop();
                 pop();
-                push(value);
+                pop();
+                push(NIL_VAL);
                 break;
             }
 
