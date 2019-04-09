@@ -2,6 +2,9 @@
 #include "vm.h"
 #include "memory.h"
 
+// This is needed for list deepCopy
+ObjDict *copyDict(ObjDict *oldDict, bool shallow);
+
 static bool pushListItem(int argCount) {
     if (argCount != 2) {
         runtimeError("push() takes 2 arguments (%d given)", argCount);
@@ -111,7 +114,6 @@ static bool popListItem(int argCount) {
         }
     }
     list->values.count--;
-
     push(last);
 
     return true;
@@ -140,6 +142,51 @@ static bool containsListItem(int argCount) {
     return true;
 }
 
+ObjList* copyList(ObjList *oldList, bool shallow) {
+    ObjList *newList = initList();
+
+    for (int i = 0; i < oldList->values.count; ++i) {
+        Value val = oldList->values.values[i];
+
+        if (!shallow) {
+            if (IS_DICT(val)) {
+                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+            } else if (IS_LIST(val)) {
+                val = OBJ_VAL(copyList(AS_LIST(val), false));
+            }
+        }
+
+        writeValueArray(&newList->values, val);
+    }
+
+    return newList;
+}
+
+static bool copyListShallow(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjList *oldList = AS_LIST(pop());
+    push(OBJ_VAL(copyList(oldList, true)));
+
+    return true;
+}
+
+
+static bool copyListDeep(int argCount) {
+    if (argCount != 1) {
+        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjList *oldList = AS_LIST(pop());
+    push(OBJ_VAL(copyList(oldList, false)));
+
+    return true;
+}
+
 bool listMethods(char *method, int argCount) {
     if (strcmp(method, "push") == 0) {
         return pushListItem(argCount);
@@ -149,6 +196,10 @@ bool listMethods(char *method, int argCount) {
         return popListItem(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsListItem(argCount);
+    } else if (strcmp(method, "copy") == 0) {
+        return copyListShallow(argCount);
+    } else if (strcmp(method, "deepCopy") == 0) {
+        return copyListDeep(argCount);
     }
 
     runtimeError("List has no method %s()", method);
@@ -241,6 +292,54 @@ static bool dictItemExists(int argCount) {
     return true;
 }
 
+ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
+    ObjDict *newDict = initDict();
+
+    for (int i = 0; i < oldDict->capacity; ++i) {
+        if (oldDict->items[i] == NULL) {
+            continue;
+        }
+
+        Value val = oldDict->items[i]->item;
+
+        if (!shallow) {
+            if (IS_DICT(val)) {
+                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+            } else if (IS_LIST(val)) {
+                val = OBJ_VAL(copyList(AS_LIST(val), false));
+            }
+        }
+
+        insertDict(newDict, oldDict->items[i]->key, val);
+    }
+
+    return newDict;
+}
+
+static bool copyDictShallow(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjDict *oldDict = AS_DICT(pop());
+    push(OBJ_VAL(copyDict(oldDict, true)));
+
+    return true;
+}
+
+static bool copyDictDeep(int argCount) {
+    if (argCount != 1) {
+        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjDict *oldDict = AS_DICT(pop());
+    push(OBJ_VAL(copyDict(oldDict, false)));
+
+    return true;
+}
+
 bool dictMethods(char *method, int argCount) {
     if (strcmp(method, "get") == 0) {
         return getDictItem(argCount);
@@ -248,6 +347,10 @@ bool dictMethods(char *method, int argCount) {
         return removeDictItem(argCount);
     } else if (strcmp(method, "exists") == 0) {
         return dictItemExists(argCount);
+    } else if (strcmp(method, "copy") == 0) {
+        return copyDictShallow(argCount);
+    } else if (strcmp(method, "deepCopy") == 0) {
+        return copyDictDeep(argCount);
     }
 
     runtimeError("Dict has no method %s()", method);

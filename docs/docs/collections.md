@@ -66,6 +66,38 @@ myList.pop(0); // 1
 myList; // [2]
 ```
 
+### Copying lists
+When you are working with a mutable datatype taking a reference of a list when creating a new variable will modify the original list.
+```js
+var list1 = [1, 2];
+var list2 = list1;
+list2[0] = 10;
+print(list1); // [10, 2]
+```
+To get around this we can make copies of the list. Dictu offers the ability to both shallow and deep copy a list.
+```js
+var list1 = [1, 2];
+var list2 = list1.copy(); // shallow copy
+list2[0] = 10;
+print(list1); // [1, 2]
+print(list2); // [10, 2]
+```
+This works fine, however if you have a mutable datatype within the array on a shallow copy, you're back to square one.
+```js
+var list1 = [[1, 2];
+var list2 = list1.copy();
+list2[0][0] = 10;
+print(list1); // [[10, 2]]
+```
+To get around this, we can deepCopy the list.
+```js
+var list1 = [[1, 2];
+var list2 = list1.deepCopy();
+list2[0][0] = 10;
+print(list1); // [[1, 2]]
+print(list2); // [[10, 2]]
+```
+
 ## Dictionaries
 
 Dictionaries are a key:value pair data type. Currently Dictu requires that the dictionary key be a string, however the value can be any type.
@@ -120,4 +152,14 @@ var myDict = {"key": 1, "key1": true};
 myDict.remove("key");
 myDict; // {'key1': true}
 myDict.remove("unknown key"); // [line 1] in script: Key 'unknown key' passed to remove() does not exist
+```
+
+### Copying dictionaries
+
+This is the exact same scenario as lists, so refer to [copying Lists](#copying-lists) for information as to what is happening.
+
+```js
+var myDict = {"key": {"test": 10}};
+var myDict1 = myDict.copy(); // Shallow copy
+var myDict2 = myDict.deepCopy(); // Deep copy
 ```

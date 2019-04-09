@@ -116,6 +116,7 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     if (dict->items[index]) {
         free(dict->items[index]->key);
         free(dict->items[index]);
+        dict->count--;
     }
 
     dict->items[index] = item;
