@@ -114,7 +114,6 @@ static bool popListItem(int argCount) {
         }
     }
     list->values.count--;
-
     push(last);
 
     return true;
@@ -170,7 +169,6 @@ static bool copyListShallow(int argCount) {
     }
 
     ObjList *oldList = AS_LIST(pop());
-
     push(OBJ_VAL(copyList(oldList, true)));
 
     return true;
@@ -184,7 +182,6 @@ static bool copyListDeep(int argCount) {
     }
 
     ObjList *oldList = AS_LIST(pop());
-
     push(OBJ_VAL(copyList(oldList, false)));
 
     return true;
