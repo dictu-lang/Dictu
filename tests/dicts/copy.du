@@ -1,0 +1,29 @@
+var myDict = {"key": 1, "key1": true};
+
+// First check the dictionary was created properly
+assert(myDict == {"key": 1, "key1": true});
+
+var myDictCopy = myDict.copy(); // shallow copy
+
+assert(myDictCopy == {"key": 1, "key1": true});
+
+myDictCopy["key"] = 10;
+
+assert(myDict == {"key": 1, "key1": true});
+assert(myDictCopy == {"key": 10, "key1": true});
+
+var newDict = {"key": [1, "hey"], "key1": {"test": 10}};
+var deepCopy = newDict.deepCopy();
+
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
+assert(deepCopy == {"key": [1, "hey"], "key1": {"test": 10}});
+
+deepCopy["key"][1] = "test";
+
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
+assert(deepCopy == {"key": [1, "test"], "key1": {"test": 10}});
+
+deepCopy["key1"]["test"] = 20;
+
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
+assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}});

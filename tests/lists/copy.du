@@ -1,0 +1,24 @@
+var x = [1, 2, 3, 4, 5];
+
+// First check the list was created properly
+assert(x == [1, 2, 3, 4, 5]);
+
+var y = x.copy(); // shallow copy
+assert(y == [1, 2, 3, 4, 5]);
+
+y[0] = 10;
+
+assert(x == [1, 2, 3, 4, 5]);
+assert(y == [10, 2, 3, 4, 5]);
+
+var newList = [[1, "hello"], {"test": 10}];
+assert(newList == [[1, "hello"], {"test": 10}]);
+
+var deepCopy = newList.deepCopy();
+assert(deepCopy == [[1, "hello"], {"test": 10}]);
+
+deepCopy[0][0] = 10;
+deepCopy[1]["test"] = 11;
+
+assert(newList == [[1, "hello"], {"test": 10}]);
+assert(deepCopy == [[10, "hello"], {"test": 11}]);

@@ -3,3 +3,4 @@ import "tests/lists/contains.du";
 import "tests/lists/push.du";
 import "tests/lists/insert.du";
 import "tests/lists/pop.du";
+import "tests/lists/copy.du";
