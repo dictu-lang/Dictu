@@ -2,6 +2,9 @@
 #include "vm.h"
 #include "memory.h"
 
+// This is needed for list deepCopy
+ObjDict *copyDict(ObjDict *oldDict, bool shallow);
+
 static bool pushListItem(int argCount) {
     if (argCount != 2) {
         runtimeError("push() takes 2 arguments (%d given)", argCount);
@@ -140,21 +143,49 @@ static bool containsListItem(int argCount) {
     return true;
 }
 
-static bool copyList(int argCount) {
+ObjList* copyList(ObjList *oldList, bool shallow) {
+    ObjList *newList = initList();
+
+    for (int i = 0; i < oldList->values.count; ++i) {
+        Value val = oldList->values.values[i];
+
+        if (!shallow) {
+            if (IS_DICT(val)) {
+                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+            } else if (IS_LIST(val)) {
+                val = OBJ_VAL(copyList(AS_LIST(val), false));
+            }
+        }
+
+        writeValueArray(&newList->values, val);
+    }
+
+    return newList;
+}
+
+static bool copyListShallow(int argCount) {
     if (argCount != 1) {
         runtimeError("copy() takes 1 argument (%d  given)", argCount);
         return false;
     }
 
     ObjList *oldList = AS_LIST(pop());
-    ObjList *newList = initList();
 
-    for (int i = 0; i < oldList->values.count; ++i) {
-        Value val = oldList->values.values[i];
-        writeValueArray(&newList->values, val);
+    push(OBJ_VAL(copyList(oldList, true)));
+
+    return true;
+}
+
+
+static bool copyListDeep(int argCount) {
+    if (argCount != 1) {
+        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        return false;
     }
 
-    push(OBJ_VAL(newList));
+    ObjList *oldList = AS_LIST(pop());
+
+    push(OBJ_VAL(copyList(oldList, false)));
 
     return true;
 }
@@ -169,7 +200,9 @@ bool listMethods(char *method, int argCount) {
     } else if (strcmp(method, "contains") == 0) {
         return containsListItem(argCount);
     } else if (strcmp(method, "copy") == 0) {
-        return copyList(argCount);
+        return copyListShallow(argCount);
+    } else if (strcmp(method, "deepCopy") == 0) {
+        return copyListDeep(argCount);
     }
 
     runtimeError("List has no method %s()", method);
@@ -262,13 +295,7 @@ static bool dictItemExists(int argCount) {
     return true;
 }
 
-static bool copyDict(int argCount) {
-    if (argCount != 1) {
-        runtimeError("copy() takes 1 argument (%d  given)", argCount);
-        return false;
-    }
-
-    ObjDict *oldDict = AS_DICT(pop());
+ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
     ObjDict *newDict = initDict();
 
     for (int i = 0; i < oldDict->capacity; ++i) {
@@ -276,10 +303,42 @@ static bool copyDict(int argCount) {
             continue;
         }
 
-        insertDict(newDict, oldDict->items[i]->key, oldDict->items[i]->item);
+        Value val = oldDict->items[i]->item;
+
+        if (!shallow) {
+            if (IS_DICT(val)) {
+                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+            } else if (IS_LIST(val)) {
+                val = OBJ_VAL(copyList(AS_LIST(val), false));
+            }
+        }
+
+        insertDict(newDict, oldDict->items[i]->key, val);
     }
 
-    push(OBJ_VAL(newDict));
+    return newDict;
+}
+
+static bool copyDictShallow(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjDict *oldDict = AS_DICT(pop());
+    push(OBJ_VAL(copyDict(oldDict, true)));
+
+    return true;
+}
+
+static bool copyDictDeep(int argCount) {
+    if (argCount != 1) {
+        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjDict *oldDict = AS_DICT(pop());
+    push(OBJ_VAL(copyDict(oldDict, false)));
 
     return true;
 }
@@ -292,7 +351,9 @@ bool dictMethods(char *method, int argCount) {
     } else if (strcmp(method, "exists") == 0) {
         return dictItemExists(argCount);
     } else if (strcmp(method, "copy") == 0) {
-        return copyDict(argCount);
+        return copyDictShallow(argCount);
+    } else if (strcmp(method, "deepCopy") == 0) {
+        return copyDictDeep(argCount);
     }
 
     runtimeError("Dict has no method %s()", method);
