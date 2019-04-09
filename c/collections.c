@@ -140,6 +140,25 @@ static bool containsListItem(int argCount) {
     return true;
 }
 
+static bool copyList(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjList *oldList = AS_LIST(pop());
+    ObjList *newList = initList();
+
+    for (int i = 0; i < oldList->values.count; ++i) {
+        Value val = oldList->values.values[i];
+        writeValueArray(&newList->values, val);
+    }
+
+    push(OBJ_VAL(newList));
+
+    return true;
+}
+
 bool listMethods(char *method, int argCount) {
     if (strcmp(method, "push") == 0) {
         return pushListItem(argCount);
@@ -149,6 +168,8 @@ bool listMethods(char *method, int argCount) {
         return popListItem(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsListItem(argCount);
+    } else if (strcmp(method, "copy") == 0) {
+        return copyList(argCount);
     }
 
     runtimeError("List has no method %s()", method);
@@ -241,6 +262,28 @@ static bool dictItemExists(int argCount) {
     return true;
 }
 
+static bool copyDict(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjDict *oldDict = AS_DICT(pop());
+    ObjDict *newDict = initDict();
+
+    for (int i = 0; i < oldDict->capacity; ++i) {
+        if (oldDict->items[i] == NULL) {
+            continue;
+        }
+
+        insertDict(newDict, oldDict->items[i]->key, oldDict->items[i]->item);
+    }
+
+    push(OBJ_VAL(newDict));
+
+    return true;
+}
+
 bool dictMethods(char *method, int argCount) {
     if (strcmp(method, "get") == 0) {
         return getDictItem(argCount);
@@ -248,6 +291,8 @@ bool dictMethods(char *method, int argCount) {
         return removeDictItem(argCount);
     } else if (strcmp(method, "exists") == 0) {
         return dictItemExists(argCount);
+    } else if (strcmp(method, "copy") == 0) {
+        return copyDict(argCount);
     }
 
     runtimeError("Dict has no method %s()", method);
