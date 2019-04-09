@@ -1,3 +1,5 @@
 import "tests/dicts/subscript.du";
 import "tests/dicts/get.du";
 import "tests/dicts/exists.du";
+import "tests/dicts/remove.du";
+import "tests/dicts/copy.du";
