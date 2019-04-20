@@ -271,7 +271,7 @@ char *objectToString(Value value) {
              */
             int size = 5;
             ObjList *list = AS_LIST(value);
-            char *listString = malloc(sizeof(char) * size);
+            char *listString = calloc(size, sizeof(char) * size);
             strncpy(listString, "[", 1);
 
             for (int i = 0; i < list->values.count; ++i) {

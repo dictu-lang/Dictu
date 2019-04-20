@@ -414,8 +414,9 @@ static bool collectNative(int argCount, Value *args) {
 }
 
 static bool testNative(int argCount, Value *args) {
-    printf("%s\n", valueToString(args[0]));
-    // need to free string here
+    char *output = valueToString(args[0]);
+    printf("%s\n", output);
+    free(output);
     return true;
 }
 
