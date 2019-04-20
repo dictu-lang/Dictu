@@ -415,13 +415,6 @@ static bool collectNative(int argCount, Value *args) {
     return true;
 }
 
-static bool testNative(int argCount, Value *args) {
-    char *output = valueToString(args[0]);
-    printf("%s\n", output);
-    free(output);
-    return true;
-}
-
 // End of natives
 
 void defineAllNatives() {
@@ -467,16 +460,14 @@ void defineAllNatives() {
             "sleep",
             "print",
             "assert",
-            "collect",
-            "test"
+            "collect"
     };
 
     NativeFnVoid nativeVoidFunctions[] = {
             sleepNative,
             printNative,
             assertNative,
-            collectNative,
-            testNative
+            collectNative
     };
 
 
