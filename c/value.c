@@ -171,25 +171,36 @@ Value searchDict(ObjDict *dict, char *key) {
     return NIL_VAL;
 }
 
-void printValue(Value value) {
-#ifdef NAN_TAGGING
+// Calling function needs to free memory
+char *valueToString(Value value) {
     if (IS_BOOL(value)) {
-        printf(AS_BOOL(value) ? "true" : "false");
+        char *str = AS_BOOL(value) ? "true" : "false";
+        char *boolString = malloc(sizeof(char) * (strlen(str) + 1));
+        snprintf(boolString, strlen(str) + 1, "%s", str);
+        return boolString;
     } else if (IS_NIL(value)) {
-        printf("nil");
+        char *nilString = malloc(sizeof(char) * 4);
+        snprintf(nilString, 4, "%s", "nil");
+        return nilString;
     } else if (IS_NUMBER(value)) {
-        printf("%.15g", AS_NUMBER(value));
+        double number = AS_NUMBER(value);
+        int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
+        char *numberString = malloc(sizeof(char) * numberStringLength);
+        snprintf(numberString, numberStringLength, "%.15g", number);
+        return numberString;
     } else if (IS_OBJ(value)) {
-        printObject(value);
+        return objectToString(value);
     }
-#else
-    switch (value.type) {
-      case VAL_BOOL:   printf(AS_BOOL(value) ? "true" : "false"); break;
-      case VAL_NIL:    printf("nil"); break;
-      case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
-      case VAL_OBJ:    printObject(value); break;
-    }
-#endif
+
+    char *unknown = malloc(sizeof(char) * 8);
+    snprintf(unknown, 7, "%s", "unknown");
+    return unknown;
+}
+
+void printValue(Value value) {
+    char *output = valueToString(value);
+    printf("%s", output);
+    free(output);
 }
 
 static bool dictComparison(Value a, Value b) {

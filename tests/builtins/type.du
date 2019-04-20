@@ -1,0 +1,15 @@
+assert(type(10) == "number");
+assert(type("test") == "string");
+assert(type([1, 2]) == "list");
+assert(type({"hi": 10}) == "dict");
+
+def testing() {}
+
+assert(type(testing) == "function");
+
+class Test {
+    test() {}
+}
+
+assert(type(Test) == "class");
+assert(type(Test().test) == "method");
