@@ -127,6 +127,8 @@ Value searchDict(ObjDict *dict, char *key);
 
 void freeDict(ObjDict *dict);
 
+char *valueToString(Value value);
+
 void printValue(Value value);
 
 #endif

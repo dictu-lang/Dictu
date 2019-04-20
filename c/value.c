@@ -171,6 +171,30 @@ Value searchDict(ObjDict *dict, char *key) {
     return NIL_VAL;
 }
 
+// Calling function needs to free memory
+char *valueToString(Value value) {
+    if (IS_BOOL(value)) {
+        char *str = AS_BOOL(value) ? "true" : "false";
+        char *boolString = malloc(sizeof(char) * (strlen(str) + 1));
+        strncpy(boolString, str, strlen(str));
+        return boolString;
+    } else if (IS_NIL(value)) {
+        char *nilString = malloc(sizeof(char) * 4);
+        strncpy(nilString, "nil", 3);
+        return nilString;
+    } else if (IS_NUMBER(value)) {
+        double number = AS_NUMBER(value);
+        int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
+        char *numberString = malloc(sizeof(char) * numberStringLength);
+        snprintf(numberString, numberStringLength, "%.15g", number);
+        return numberString;
+    } else if (IS_OBJ(value)) {
+        return objectToString(value);
+    }
+
+    return "unknown";
+}
+
 void printValue(Value value) {
 #ifdef NAN_TAGGING
     if (IS_BOOL(value)) {
@@ -180,7 +204,7 @@ void printValue(Value value) {
     } else if (IS_NUMBER(value)) {
         printf("%.15g", AS_NUMBER(value));
     } else if (IS_OBJ(value)) {
-        printObject(value);
+        // printObject(value);
     }
 #else
     switch (value.type) {

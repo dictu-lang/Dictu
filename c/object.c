@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "memory.h"
@@ -183,71 +184,150 @@ ObjUpvalue *newUpvalue(Value *slot) {
     return upvalue;
 }
 
-void printObject(Value value) {
+char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
-        case OBJ_CLASS:
-            printf("<cls %s>", AS_CLASS(value)->name->chars);
-            break;
+        case OBJ_CLASS: {
+            ObjClass *klass = AS_CLASS(value);
+            char *classString = malloc(sizeof(char) * (klass->name->length + 8));
+            snprintf(classString, klass->name->length + 7, "<cls %s>", klass->name->chars);
+            return classString;
+        }
 
-        case OBJ_BOUND_METHOD:
-            if (AS_BOUND_METHOD(value)->method->function->staticMethod)
-                printf("<static method %s>",
-                       AS_BOUND_METHOD(value)->method->function->name->chars);
-            else
-                printf("<bound method %s>",
-                       AS_BOUND_METHOD(value)->method->function->name->chars);
+        case OBJ_BOUND_METHOD: {
+            ObjBoundMethod *method = AS_BOUND_METHOD(value);
+            char *methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
+            char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
+            snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+            return methodString;
+        }
 
-            break;
+        case OBJ_CLOSURE: {
+            ObjClosure *closure = AS_CLOSURE(value);
+            char *closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
+            snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+            return closureString;
+        }
 
-        case OBJ_CLOSURE:
-            printf("<fn %s>", AS_CLOSURE(value)->function->name->chars);
-            break;
+        case OBJ_FUNCTION: {
+            ObjFunction *function = AS_FUNCTION(value);
+            char *functionString = malloc(sizeof(char) * (function->name->length + 6));
+            snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+            return functionString;
+        }
 
-        case OBJ_FUNCTION:
-            printf("<fn %s>", AS_FUNCTION(value)->name->chars);
-            break;
-
-        case OBJ_INSTANCE:
-            printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
-            break;
+        case OBJ_INSTANCE: {
+            ObjInstance *instance = AS_INSTANCE(value);
+            char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
+            snprintf(instanceString, instance->klass->name->length + 12, "<%s instance>", instance->klass->name->chars);
+            return instanceString;
+        }
 
         case OBJ_NATIVE_VOID:
-        case OBJ_NATIVE:
-            printf("<native fn>");
-            break;
+        case OBJ_NATIVE: {
+            char *nativeString = malloc(sizeof(char) * 12);
+            strncpy(nativeString, "<native fn>", 11);
+            return nativeString;
+        }
 
-        case OBJ_STRING:
-            printf("'%s'", AS_CSTRING(value));
-            break;
+        case OBJ_STRING: {
+            ObjString *stringObj = AS_STRING(value);
+            char *string = malloc(sizeof(char) * stringObj->length + 3);
+            snprintf(string, stringObj->length + 3, "'%s'", stringObj->chars);
+            return string;
+        }
 
         case OBJ_FILE: {
             ObjFile *file = AS_FILE(value);
-            printf("<file: %s>", file->path);
-            break;
+            char *fileString = malloc(sizeof(char) * (strlen(file->path) + 8));
+            snprintf(fileString, strlen(file->path) + 8, "<file %s>", file->path);
+            return fileString;
         }
 
         case OBJ_LIST: {
+            /*
+            int size = 50;
             ObjList *list = AS_LIST(value);
-            printf("[");
+            char *listString = malloc(sizeof(char) * size);
+            strncpy(listString, "[", 1);
+
             for (int i = 0; i < list->values.count; ++i) {
-                printValue(list->values.values[i]);
+                char *element = valueToString(list->values.values[i]);
+
+                if (strlen(element) > (size - strlen(listString))) {
+                    printf("realloc\n");
+                    size += strlen(element) * 2 + 5;
+                    listString = realloc(listString, sizeof(char) * size);
+                }
+
+                strncat(listString, element, strlen(element));
+
                 if (i != list->values.count - 1)
-                    printf(", ");
+                    strncat(listString, ", ", 2);
+
+                free(element);
             }
-            printf("]");
-            break;
+            strncat(listString, "]", 1);
+            return listString;
+             */
+            int size = 5;
+            ObjList *list = AS_LIST(value);
+            char *listString = malloc(sizeof(char) * size);
+            strncpy(listString, "[", 1);
+
+            for (int i = 0; i < list->values.count; ++i) {
+                char *element = valueToString(list->values.values[i]);
+
+                int elementSize = strlen(element);
+                int listStringSize = strlen(listString);
+
+                if (elementSize > (size - listStringSize - 1)) {
+                    if (elementSize > size * 2) {
+                        size += elementSize * 2;
+                    } else {
+                        size *= 2;
+                    }
+
+                    char *newB = realloc(listString, sizeof(char) * size);
+
+                    if (newB == NULL) {
+                        printf("Error!!\n");
+                    }
+
+                    listString = newB;
+                }
+
+                strncat(listString, element, size - listStringSize - 1);
+
+                if (i != list->values.count - 1)
+                    strncat(listString, ", ", size - listStringSize - 1);
+
+                free(element);
+            }
+
+            strncat(listString, "]", size - strlen(listString) - 1);
+            return listString;
         }
 
         case OBJ_DICT: {
             int count = 0;
             ObjDict *dict = AS_DICT(value);
-            printf("{");
+            char *dictString = malloc(sizeof(char) * 10);
+            strncpy(dictString, "{", 1);
+
+
             for (int i = 0; i < dict->capacity; ++i) {
                 dictItem *item = dict->items[i];
                 if (!item || item->deleted)
                     continue;
 
                 count++;
+
+                //if (strlen(item->key) > strlen(listString)) {
+                //
+                //    listString = realloc(listString, sizeof(char) * (strlen(element) * 2 + 4));
+                //}
+
+
                 printf("'%s': ", item->key);
                 printValue(item->item);
                 if (count != dict->count)
@@ -261,4 +341,5 @@ void printObject(Value value) {
             printf("upvalue");
             break;
     }
+    return "hi";
 }
