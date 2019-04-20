@@ -363,4 +363,8 @@ char *objectToString(Value value) {
             return nativeString;
         }
     }
+
+    char *unknown = malloc(sizeof(char) * 8);
+    snprintf(unknown, 7, "%s", "unknown");
+    return unknown;
 }
