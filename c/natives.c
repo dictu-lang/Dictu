@@ -63,21 +63,16 @@ static Value strNative(int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    if (!IS_NUMBER(args[0])) {
-        runtimeError("str() only takes a number as an argument");
-        return NIL_VAL;
+    if (!IS_STRING(args[0])) {
+        char *valueString = valueToString(args[0]);
+
+        ObjString *string = copyString(valueString, strlen(valueString));
+        free(valueString);
+
+        return OBJ_VAL(string);
     }
 
-    double number = AS_NUMBER(args[0]);
-
-    int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
-    char *numberString = malloc(sizeof(char) * numberStringLength);
-    snprintf(numberString, numberStringLength, "%.15g", number);
-
-    ObjString *string = copyString(numberString, numberStringLength - 1);
-    free(numberString);
-
-    return OBJ_VAL(string);
+    return args[0];
 }
 
 static Value typeNative(int argCount, Value *args) {
@@ -96,10 +91,17 @@ static Value typeNative(int argCount, Value *args) {
         switch (OBJ_TYPE(args[0])) {
             case OBJ_CLASS:
                 return OBJ_VAL(copyString("class", 5));
+            case OBJ_BOUND_METHOD:
+                return OBJ_VAL(copyString("method", 6));
+            case OBJ_CLOSURE:
             case OBJ_FUNCTION:
                 return OBJ_VAL(copyString("function", 8));
             case OBJ_STRING:
                 return OBJ_VAL(copyString("string", 6));
+            case OBJ_LIST:
+                return OBJ_VAL(copyString("list", 4));
+            case OBJ_DICT:
+                return OBJ_VAL(copyString("dict", 4));
             case OBJ_NATIVE_VOID:
             case OBJ_NATIVE:
                 return OBJ_VAL(copyString("native", 6));

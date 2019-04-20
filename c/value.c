@@ -176,11 +176,11 @@ char *valueToString(Value value) {
     if (IS_BOOL(value)) {
         char *str = AS_BOOL(value) ? "true" : "false";
         char *boolString = malloc(sizeof(char) * (strlen(str) + 1));
-        strncpy(boolString, str, strlen(str));
+        snprintf(boolString, strlen(str) + 1, "%s", str);
         return boolString;
     } else if (IS_NIL(value)) {
         char *nilString = malloc(sizeof(char) * 4);
-        strncpy(nilString, "nil", 3);
+        snprintf(nilString, 4, "%s", "nil");
         return nilString;
     } else if (IS_NUMBER(value)) {
         double number = AS_NUMBER(value);
@@ -192,28 +192,15 @@ char *valueToString(Value value) {
         return objectToString(value);
     }
 
-    return "unknown";
+    char *unknown = malloc(sizeof(char) * 8);
+    snprintf(unknown, 7, "%s", "unknown");
+    return unknown;
 }
 
 void printValue(Value value) {
-#ifdef NAN_TAGGING
-    if (IS_BOOL(value)) {
-        printf(AS_BOOL(value) ? "true" : "false");
-    } else if (IS_NIL(value)) {
-        printf("nil");
-    } else if (IS_NUMBER(value)) {
-        printf("%.15g", AS_NUMBER(value));
-    } else if (IS_OBJ(value)) {
-        // printObject(value);
-    }
-#else
-    switch (value.type) {
-      case VAL_BOOL:   printf(AS_BOOL(value) ? "true" : "false"); break;
-      case VAL_NIL:    printf("nil"); break;
-      case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
-      case VAL_OBJ:    printObject(value); break;
-    }
-#endif
+    char *output = valueToString(value);
+    printf("%s", output);
+    free(output);
 }
 
 static bool dictComparison(Value a, Value b) {

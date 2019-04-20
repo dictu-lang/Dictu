@@ -1,0 +1,5 @@
+var start = time();
+
+sleep(2);
+
+assert(time() - start == 2);
