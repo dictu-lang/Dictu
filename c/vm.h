@@ -61,4 +61,6 @@ void runtimeError(const char *format, ...);
 
 Value pop();
 
+bool isFalsey(Value value);
+
 #endif

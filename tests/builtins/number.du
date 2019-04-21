@@ -1,0 +1,4 @@
+assert(number("10") == 10);
+assert(number("10.2") == 10.2);
+assert(number("10.123456") == 10.123456);
+assert(number("1000000") == 1000000);

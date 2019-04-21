@@ -1,0 +1,13 @@
+assert(min(1, 2, 3) == 1);
+assert(min([1, 2, 3]) == 1);
+assert(max(1, 2, 3) == 3);
+assert(max([1, 2, 3]) == 3);
+assert(average(1, 2, 3) == 2);
+assert(average([1, 2, 3]) == 2);
+assert(sum(1, 2, 3) == 6);
+assert(sum([1, 2, 3]) == 6);
+assert(floor(17.999) == 17);
+assert(round(17.5) == 18);
+assert(ceil(17.0001) == 18);
+assert(abs(18) == 18);
+assert(abs(-18) == 18);
