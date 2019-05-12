@@ -352,6 +352,13 @@ static bool formatString(int argCount) {
 
     if (count != argCount - 1) {
         runtimeError("format() arguments does not match placeholders");
+
+        for (int i = 0; i < argCount - 1; ++i) {
+            free(replace_strings[i]);
+        }
+
+        free(replace_strings);
+
         return false;
     }
 
