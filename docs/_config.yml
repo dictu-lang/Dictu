@@ -16,6 +16,9 @@
 # Enable or disable the site search
 search_enabled: true
 
+ga_tracking: "UA-109828853-2"
+url: "https://jason2605.github.io/Dictu/"
+
 # Aux links for the upper right navigation
 aux_links:
   "View Dictu on GitHub":
