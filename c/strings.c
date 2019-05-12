@@ -327,8 +327,8 @@ static bool stripString(int argCount) {
 }
 
 static bool formatString(int argCount) {
-    if (argCount == 0) {
-        runtimeError("format() takes at least 1 argument (%d given)", argCount);
+    if (argCount == 1) {
+        runtimeError("format() takes at least 2 arguments (%d given)", argCount);
         return false;
     }
 
