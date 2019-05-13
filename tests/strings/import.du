@@ -7,3 +7,4 @@ import "tests/strings/endsWith.du";
 import "tests/strings/find.du";
 import "tests/strings/contains.du";
 import "tests/strings/strip.du";
+import "tests/strings/format.du";

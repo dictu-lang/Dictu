@@ -1,0 +1,5 @@
+assert("hello {}".format("jason") == "hello jason");
+assert("hello {}".format(10) == "hello 10");
+assert("hello {}".format([10]) == "hello [10]");
+assert("hello {}. {} {}".format("jason", 10, [10]) == "hello jason. 10 [10]");
+assert("{}".format("jason") == "jason");

@@ -335,23 +335,28 @@ static bool formatString(int argCount) {
     int length = 0;
     char **replace_strings = malloc((argCount - 1) * sizeof(char*));
 
-    for (int j = 0; j < argCount - 1; ++j) {
+    for (int j = argCount - 2; j >= 0; --j) {
         replace_strings[j] = valueToString(pop());
         length += strlen(replace_strings[j]);
     }
 
     char *string = AS_CSTRING(pop());
 
+    char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
+    strcpy(tmp, string);
+
     int count = 0;
-    const char *tmp = string;
     while((tmp = strstr(tmp, "{}")))
     {
         count++;
         tmp++;
     }
 
+    free(tmpFree);
+
     if (count != argCount - 1) {
-        runtimeError("format() arguments does not match placeholders");
+        runtimeError("format() placeholders do not match arguments");
 
         for (int i = 0; i < argCount - 1; ++i) {
             free(replace_strings[i]);
@@ -364,7 +369,9 @@ static bool formatString(int argCount) {
 
     int fullLength = strlen(string) - count * 2 + length + 1;
     char *pos;
-    const char *tmp1 = string;
+    char *tmp1 = malloc(strlen(string) + 1);
+    char *tmp1Free = tmp1;
+    strcpy(tmp1, string);
     char *newStr = malloc(sizeof(char) * fullLength);
 
     for (int i = 0; i < argCount - 1; ++i) {
@@ -390,6 +397,7 @@ static bool formatString(int argCount) {
     push(OBJ_VAL(newString));
 
     free(newStr);
+    free(tmp1Free);
 
     return true;
 }
