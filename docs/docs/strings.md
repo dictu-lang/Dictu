@@ -119,3 +119,14 @@ To strip whitespace at the beginning and end of a string, use the `.strip()` met
 ```py
 "    hello    ".strip(); // "hello"
 ```
+
+### .format(...args...)
+
+To format a string with any type of value `.format()` can be used. This will convert any type
+to a string and swap placeholders `{}` for values.
+
+```py
+"Hello {}".format("Jason"); // "Hello Jason"
+
+"{} {} {} {}".format(10, "hi", [10, 20], {"test": 10}) // '10 hi [10, 20] {"test": 10}'
+```
