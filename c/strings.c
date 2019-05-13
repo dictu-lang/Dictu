@@ -114,7 +114,7 @@ static bool findString(int argCount) {
 
 static bool replaceString(int argCount) {
     if (argCount != 3) {
-        runtimeError("replace() takes 3 arguments (%d  given)", argCount);
+        runtimeError("replace() takes 3 arguments (%d given)", argCount);
         return false;
     }
 
@@ -326,6 +326,82 @@ static bool stripString(int argCount) {
     return true;
 }
 
+static bool formatString(int argCount) {
+    if (argCount == 1) {
+        runtimeError("format() takes at least 2 arguments (%d given)", argCount);
+        return false;
+    }
+
+    int length = 0;
+    char **replace_strings = malloc((argCount - 1) * sizeof(char*));
+
+    for (int j = argCount - 2; j >= 0; --j) {
+        replace_strings[j] = valueToString(pop());
+        length += strlen(replace_strings[j]);
+    }
+
+    char *string = AS_CSTRING(pop());
+
+    char *tmp = malloc(strlen(string) + 1);
+    char *tmpFree = tmp;
+    strcpy(tmp, string);
+
+    int count = 0;
+    while((tmp = strstr(tmp, "{}")))
+    {
+        count++;
+        tmp++;
+    }
+
+    free(tmpFree);
+
+    if (count != argCount - 1) {
+        runtimeError("format() placeholders do not match arguments");
+
+        for (int i = 0; i < argCount - 1; ++i) {
+            free(replace_strings[i]);
+        }
+
+        free(replace_strings);
+
+        return false;
+    }
+
+    int fullLength = strlen(string) - count * 2 + length + 1;
+    char *pos;
+    char *tmp1 = malloc(strlen(string) + 1);
+    char *tmp1Free = tmp1;
+    strcpy(tmp1, string);
+    char *newStr = malloc(sizeof(char) * fullLength);
+
+    for (int i = 0; i < argCount - 1; ++i) {
+        pos = strstr(tmp1, "{}");
+        if (pos != NULL)
+            *pos = '\0';
+
+        if (i == 0)
+            snprintf(newStr, fullLength, "%s", tmp1);
+        else
+            strncat(newStr, tmp1, strlen(tmp1));
+
+        strncat(newStr, replace_strings[i], strlen(replace_strings[i]));
+        tmp1 = pos + 2;
+
+        free(replace_strings[i]);
+    }
+
+    free(replace_strings);
+
+    strncat(newStr, tmp1, strlen(tmp1));
+    ObjString *newString = copyString(newStr, fullLength - 1);
+    push(OBJ_VAL(newString));
+
+    free(newStr);
+    free(tmp1Free);
+
+    return true;
+}
+
 bool stringMethods(char *method, int argCount) {
     if (strcmp(method, "split") == 0) {
         return splitString(argCount);
@@ -349,6 +425,8 @@ bool stringMethods(char *method, int argCount) {
         return rightStripString(argCount);
     } else if (strcmp(method, "strip") == 0) {
         return stripString(argCount);
+    } else if (strcmp(method, "format") == 0) {
+        return formatString(argCount);
     }
 
     runtimeError("String has no method %s()", method);

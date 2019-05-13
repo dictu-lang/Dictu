@@ -232,7 +232,7 @@ char *objectToString(Value value) {
         case OBJ_STRING: {
             ObjString *stringObj = AS_STRING(value);
             char *string = malloc(sizeof(char) * stringObj->length + 3);
-            snprintf(string, stringObj->length + 3, "'%s'", stringObj->chars);
+            snprintf(string, stringObj->length + 1, "%s", stringObj->chars);
             return string;
         }
 
