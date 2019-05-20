@@ -367,705 +367,725 @@ static InterpretResult run() {
 
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
 
-#define READ_BYTE() (*frame->ip++)
-#define READ_SHORT() \
-        (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+    #define READ_BYTE() (*frame->ip++)
+    #define READ_SHORT() \
+                (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
-#define READ_CONSTANT() \
-        (frame->closure->function->chunk.constants.values[READ_BYTE()])
+    #define READ_CONSTANT() \
+                (frame->closure->function->chunk.constants.values[READ_BYTE()])
 
-#define READ_STRING() AS_STRING(READ_CONSTANT())
+    #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-#define BINARY_OP(valueType, op) \
-    do { \
-      if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-        runtimeError("Operands must be numbers."); \
-        return INTERPRET_RUNTIME_ERROR; \
-      } \
-      \
-      double b = AS_NUMBER(pop()); \
-      double a = AS_NUMBER(pop()); \
-      push(valueType(a op b)); \
-    } while (false)
+    #define BINARY_OP(valueType, op) \
+        do { \
+          if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            runtimeError("Operands must be numbers."); \
+            return INTERPRET_RUNTIME_ERROR; \
+          } \
+          \
+          double b = AS_NUMBER(pop()); \
+          double a = AS_NUMBER(pop()); \
+          push(valueType(a op b)); \
+        } while (false)
 
-    for (;;) {
+    #if COMPUTED_GOTO
 
-#ifdef DEBUG_TRACE_EXECUTION
+    static void* dispatchTable[] = {
+        #define OPCODE(name) &&code_##name,
+        #include "opcodes.h"
+        #undef OPCODE
+    };
 
-        printf("          ");
-        for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
-          printf("[ ");
-          printValue(*slot);
-          printf(" ]");
+    #define INTERPRET_LOOP    DISPATCH();
+    #define CASE_CODE(name)   code_##name
+
+    #define DISPATCH()                                            \
+        do                                                        \
+        {                                                         \
+            goto *dispatchTable[instruction = READ_BYTE()];       \
+        }                                                         \
+        while (false)
+
+    #else
+
+    #define INTERPRET_LOOP                                        \
+            loop:                                                 \
+                switch (instruction = READ_BYTE())
+
+    #define DISPATCH() goto loop
+
+    #define CASE_CODE(name) case OP_##name
+
+    #endif
+
+
+
+    uint8_t instruction;
+    INTERPRET_LOOP
+    {
+        CASE_CODE(CONSTANT): {
+            Value constant = READ_CONSTANT();
+            push(constant);
+            DISPATCH();
         }
-        printf("\n");
 
-        disassembleInstruction(&frame->closure->function->chunk,
-            (int)(frame->ip - frame->closure->function->chunk.code));
-#endif
-        uint8_t instruction = READ_BYTE();
-        switch (instruction) {
-            case OP_CONSTANT: {
-                Value constant = READ_CONSTANT();
-                push(constant);
-                break;
-            }
+        CASE_CODE(NIL):
+            push(NIL_VAL);
+            DISPATCH();
 
-            case OP_NIL:
-                push(NIL_VAL);
-                break;
+        CASE_CODE(TRUE):
+            push(BOOL_VAL(true));
+            DISPATCH();
 
-            case OP_TRUE:
-                push(BOOL_VAL(true));
-                break;
+        CASE_CODE(FALSE):
+            push(BOOL_VAL(false));
+            DISPATCH();
 
-            case OP_FALSE:
-                push(BOOL_VAL(false));
-                break;
-
-            case OP_POP_REPL: {
-                if (vm.repl) {
-                    Value v = pop();
-                    if (!IS_NIL(v)) {
-                        setReplVar(v);
-                        printValue(v);
-                        printf("\n");
-                    }
-                } else {
-                    pop();
+        CASE_CODE(POP_REPL): {
+            if (vm.repl) {
+                Value v = pop();
+                if (!IS_NIL(v)) {
+                    setReplVar(v);
+                    printValue(v);
+                    printf("\n");
                 }
-                break;
-            }
-
-            case OP_POP: {
-                if (IS_FILE(peek(0))) {
-                    ObjFile *file = AS_FILE(peek(0));
-                    fclose(file->file);
-                    collectGarbage();
-                }
-
+            } else {
                 pop();
-                break;
+            }
+            DISPATCH();
+        }
+
+        CASE_CODE(POP): {
+            if (IS_FILE(peek(0))) {
+                ObjFile *file = AS_FILE(peek(0));
+                fclose(file->file);
+                collectGarbage();
             }
 
-            case OP_GET_LOCAL: {
-                uint8_t slot = READ_BYTE();
-                push(frame->slots[slot]);
-                break;
+            pop();
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_LOCAL): {
+            uint8_t slot = READ_BYTE();
+            push(frame->slots[slot]);
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_LOCAL): {
+            uint8_t slot = READ_BYTE();
+            frame->slots[slot] = peek(0);
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_GLOBAL): {
+            ObjString *name = READ_STRING();
+            Value value;
+            if (!tableGet(&vm.globals, name, &value)) {
+                runtimeError("Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(value);
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_GLOBAL): {
+            ObjString *name = READ_STRING();
+            tableSet(&vm.globals, name, peek(0));
+            pop();
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_GLOBAL): {
+            ObjString *name = READ_STRING();
+            if (tableSet(&vm.globals, name, peek(0))) {
+                runtimeError("Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_UPVALUE): {
+            uint8_t slot = READ_BYTE();
+            push(*frame->closure->upvalues[slot]->value);
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_UPVALUE): {
+            uint8_t slot = READ_BYTE();
+            *frame->closure->upvalues[slot]->value = peek(0);
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_PROPERTY): {
+            if (!IS_INSTANCE(peek(0))) {
+                runtimeError("Only instances have properties.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_SET_LOCAL: {
-                uint8_t slot = READ_BYTE();
-                frame->slots[slot] = peek(0);
-                break;
-            }
-
-            case OP_GET_GLOBAL: {
-                ObjString *name = READ_STRING();
-                Value value;
-                if (!tableGet(&vm.globals, name, &value)) {
-                    runtimeError("Undefined variable '%s'.", name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+            ObjInstance *instance = AS_INSTANCE(peek(0));
+            ObjString *name = READ_STRING();
+            Value value;
+            if (tableGet(&instance->fields, name, &value)) {
+                pop(); // Instance.
                 push(value);
-                break;
+                DISPATCH();
             }
 
-            case OP_DEFINE_GLOBAL: {
-                ObjString *name = READ_STRING();
-                tableSet(&vm.globals, name, peek(0));
-                pop();
-                break;
+            if (!bindMethod(instance->klass, name)) {
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_SET_GLOBAL: {
-                ObjString *name = READ_STRING();
-                if (tableSet(&vm.globals, name, peek(0))) {
-                    runtimeError("Undefined variable '%s'.", name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                break;
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_PROPERTY_NO_POP): {
+            if (!IS_INSTANCE(peek(0))) {
+                runtimeError("Only instances have properties.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_GET_UPVALUE: {
-                uint8_t slot = READ_BYTE();
-                push(*frame->closure->upvalues[slot]->value);
-                break;
+            ObjInstance *instance = AS_INSTANCE(peek(0));
+            ObjString *name = READ_STRING();
+            Value value;
+            if (tableGet(&instance->fields, name, &value)) {
+                push(value);
+                DISPATCH();
             }
 
-            case OP_SET_UPVALUE: {
-                uint8_t slot = READ_BYTE();
-                *frame->closure->upvalues[slot]->value = peek(0);
-                break;
+            if (!bindMethod(instance->klass, name)) {
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_GET_PROPERTY: {
-                if (!IS_INSTANCE(peek(0))) {
-                    runtimeError("Only instances have properties.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+            DISPATCH();
+        }
 
-                ObjInstance *instance = AS_INSTANCE(peek(0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&instance->fields, name, &value)) {
-                    pop(); // Instance.
-                    push(value);
-                    break;
-                }
-
-                if (!bindMethod(instance->klass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                break;
+        CASE_CODE(SET_PROPERTY): {
+            if (!IS_INSTANCE(peek(1))) {
+                runtimeError("Only instances have fields.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_GET_PROPERTY_NO_POP: {
-                if (!IS_INSTANCE(peek(0))) {
-                    runtimeError("Only instances have properties.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+            ObjInstance *instance = AS_INSTANCE(peek(1));
+            tableSet(&instance->fields, READ_STRING(), peek(0));
+            pop();
+            pop();
+            push(NIL_VAL);
+            DISPATCH();
+        }
 
-                ObjInstance *instance = AS_INSTANCE(peek(0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&instance->fields, name, &value)) {
-                    push(value);
-                    break;
-                }
-
-                if (!bindMethod(instance->klass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                break;
+        CASE_CODE(GET_SUPER): {
+            ObjString *name = READ_STRING();
+            ObjClass *superclass = AS_CLASS(pop());
+            if (!bindMethod(superclass, name)) {
+                return INTERPRET_RUNTIME_ERROR;
             }
+            DISPATCH();
+        }
 
-            case OP_SET_PROPERTY: {
-                if (!IS_INSTANCE(peek(1))) {
-                    runtimeError("Only instances have fields.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+        CASE_CODE(EQUAL): {
+            Value b = pop();
+            Value a = pop();
+            push(BOOL_VAL(valuesEqual(a, b)));
+            DISPATCH();
+        }
 
-                ObjInstance *instance = AS_INSTANCE(peek(1));
-                tableSet(&instance->fields, READ_STRING(), peek(0));
-                pop();
-                pop();
-                push(NIL_VAL);
-                break;
-            }
+        CASE_CODE(GREATER):
+            BINARY_OP(BOOL_VAL, >);
+            DISPATCH();
 
-            case OP_GET_SUPER: {
-                ObjString *name = READ_STRING();
-                ObjClass *superclass = AS_CLASS(pop());
-                if (!bindMethod(superclass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                break;
-            }
+        CASE_CODE(LESS):
+            BINARY_OP(BOOL_VAL, <);
+            DISPATCH();
 
-            case OP_EQUAL: {
-                Value b = pop();
-                Value a = pop();
-                push(BOOL_VAL(valuesEqual(a, b)));
-                break;
-            }
-
-            case OP_GREATER:
-                BINARY_OP(BOOL_VAL, >);
-                break;
-
-            case OP_LESS:
-                BINARY_OP(BOOL_VAL, <);
-                break;
-
-            case OP_ADD: {
-                if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
-                    concatenate();
-                } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-                    double b = AS_NUMBER(pop());
-                    double a = AS_NUMBER(pop());
-                    push(NUMBER_VAL(a + b));
-                } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
-                    Value listToAddValue = pop();
-                    Value listValue = pop();
-
-                    ObjList *list = AS_LIST(listValue);
-                    ObjList *listToAdd = AS_LIST(listToAddValue);
-
-                    for (int i = 0; i < listToAdd->values.count; ++i) {
-                        writeValueArray(&list->values, listToAdd->values.values[i]);
-                    }
-
-                    push(NIL_VAL);
-                } else {
-                    runtimeError("Unsupported operand types.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                break;
-            }
-
-            case OP_SUBTRACT:
-                BINARY_OP(NUMBER_VAL, -);
-                break;
-
-            case OP_INCREMENT: {
-                if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Operand must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
-                break;
-            }
-
-            case OP_DECREMENT: {
-                if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Operand must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
-                break;
-            }
-
-            case OP_MULTIPLY:
-                BINARY_OP(NUMBER_VAL, *);
-                break;
-
-            case OP_DIVIDE:
-                BINARY_OP(NUMBER_VAL, /);
-                break;
-
-            case OP_MOD: {
+        CASE_CODE(ADD): {
+            if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+                concatenate();
+            } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
                 double b = AS_NUMBER(pop());
                 double a = AS_NUMBER(pop());
-
-                push(NUMBER_VAL(fmod(a, b)));
-                break;
-            }
-
-            case OP_NOT:
-                push(BOOL_VAL(isFalsey(pop())));
-                break;
-
-            case OP_NEGATE:
-                if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Operand must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                push(NUMBER_VAL(-AS_NUMBER(pop())));
-                break;
-
-            case OP_JUMP: {
-                uint16_t offset = READ_SHORT();
-                frame->ip += offset;
-                break;
-            }
-
-            case OP_JUMP_IF_FALSE: {
-                uint16_t offset = READ_SHORT();
-                if (isFalsey(peek(0))) frame->ip += offset;
-                break;
-            }
-
-            case OP_LOOP: {
-                uint16_t offset = READ_SHORT();
-                frame->ip -= offset;
-                break;
-            }
-
-            case OP_BREAK: {
-
-                break;
-            }
-
-            case OP_IMPORT: {
-                ObjString *fileName = AS_STRING(pop());
-                char *s = readFile(fileName->chars);
-                vm.currentScriptName = fileName->chars;
-
-                ObjFunction *function = compile(s);
-                if (function == NULL) return INTERPRET_COMPILE_ERROR;
-                push(OBJ_VAL(function));
-                ObjClosure *closure = newClosure(function);
-                pop();
-
-                vm.currentFrameCount = vm.frameCount;
-
-                frame = &vm.frames[vm.frameCount++];
-                frame->ip = closure->function->chunk.code;
-                frame->closure = closure;
-                frame->slots = vm.stackTop - 1;
-                free(s);
-                break;
-            }
-
-            case OP_NEW_LIST: {
-                ObjList *list = initList();
-                push(OBJ_VAL(list));
-                break;
-            }
-
-            case OP_ADD_LIST: {
-                Value addValue = pop();
+                push(NUMBER_VAL(a + b));
+            } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
+                Value listToAddValue = pop();
                 Value listValue = pop();
 
                 ObjList *list = AS_LIST(listValue);
-                writeValueArray(&list->values, addValue);
+                ObjList *listToAdd = AS_LIST(listToAddValue);
 
-                push(OBJ_VAL(list));
-                break;
-            }
-
-            case OP_NEW_DICT: {
-                ObjDict *dict = initDict();
-                push(OBJ_VAL(dict));
-                break;
-            }
-
-            case OP_ADD_DICT: {
-                Value value = pop();
-                Value key = pop();
-                Value dictValue = pop();
-
-                if (!IS_STRING(key)) {
-                    runtimeError("Dictionary key must be a string.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                ObjDict *dict = AS_DICT(dictValue);
-                char *keyString = AS_CSTRING(key);
-
-                insertDict(dict, keyString, value);
-
-                push(OBJ_VAL(dict));
-                break;
-            }
-
-            case OP_SUBSCRIPT: {
-                Value indexValue = pop();
-                Value listValue = pop();
-
-                if (!IS_NUMBER(indexValue)) {
-                    runtimeError("Array index must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                ObjList *list = AS_LIST(listValue);
-                int index = AS_NUMBER(indexValue);
-
-                if (index < 0)
-                    index = list->values.count + index;
-
-                if (index >= 0 && index < list->values.count) {
-                    push(list->values.values[index]);
-                    break;
-                }
-
-                runtimeError("Array index out of bounds.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            case OP_SUBSCRIPT_ASSIGN: {
-                Value assignValue = pop();
-                Value indexValue = pop();
-                Value listValue = pop();
-
-                if (!IS_NUMBER(indexValue)) {
-                    runtimeError("Array index must be a number.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                ObjList *list = AS_LIST(listValue);
-                int index = AS_NUMBER(indexValue);
-
-                if (index < 0)
-                    index = list->values.count + index;
-
-                if (index >= 0 && index < list->values.count) {
-                    list->values.values[index] = assignValue;
-                    push(NIL_VAL);
-                    break;
+                for (int i = 0; i < listToAdd->values.count; ++i) {
+                    writeValueArray(&list->values, listToAdd->values.values[i]);
                 }
 
                 push(NIL_VAL);
+            } else {
+                runtimeError("Unsupported operand types.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            DISPATCH();
+        }
 
-                runtimeError("Array index out of bounds.");
+        CASE_CODE(SUBTRACT):
+            BINARY_OP(NUMBER_VAL, -);
+            DISPATCH();
+
+        CASE_CODE(INCREMENT): {
+            if (!IS_NUMBER(peek(0))) {
+                runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_SUBSCRIPT_DICT: {
-                Value indexValue = pop();
-                Value dictValue = pop();
+            push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
+            DISPATCH();
+        }
 
-                if (!IS_STRING(indexValue)) {
-                    runtimeError("Dictionary key must be a string.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                ObjDict *dict = AS_DICT(dictValue);
-                char *key = AS_CSTRING(indexValue);
-
-                push(searchDict(dict, key));
-
-                break;
+        CASE_CODE(DECREMENT): {
+            if (!IS_NUMBER(peek(0))) {
+                runtimeError("Operand must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_SUBSCRIPT_DICT_ASSIGN: {
-                Value value = pop();
-                Value key = pop();
-                Value dictValue = pop();
+            push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
+            DISPATCH();
+        }
 
-                if (!IS_STRING(key)) {
-                    runtimeError("Dictionary key must be a string.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+        CASE_CODE(MULTIPLY):
+            BINARY_OP(NUMBER_VAL, *);
+            DISPATCH();
 
-                ObjDict *dict = AS_DICT(dictValue);
-                char *keyString = AS_CSTRING(key);
+        CASE_CODE(DIVIDE):
+            BINARY_OP(NUMBER_VAL, /);
+            DISPATCH();
 
-                insertDict(dict, keyString, value);
+        CASE_CODE(MOD): {
+            double b = AS_NUMBER(pop());
+            double a = AS_NUMBER(pop());
 
+            push(NUMBER_VAL(fmod(a, b)));
+            DISPATCH();
+        }
+
+        CASE_CODE(NOT):
+            push(BOOL_VAL(isFalsey(pop())));
+            DISPATCH();
+
+        CASE_CODE(NEGATE):
+            if (!IS_NUMBER(peek(0))) {
+                runtimeError("Operand must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            push(NUMBER_VAL(-AS_NUMBER(pop())));
+            DISPATCH();
+
+        CASE_CODE(JUMP): {
+            uint16_t offset = READ_SHORT();
+            frame->ip += offset;
+            DISPATCH();
+        }
+
+        CASE_CODE(JUMP_IF_FALSE): {
+            uint16_t offset = READ_SHORT();
+            if (isFalsey(peek(0))) frame->ip += offset;
+            DISPATCH();
+        }
+
+        CASE_CODE(LOOP): {
+            uint16_t offset = READ_SHORT();
+            frame->ip -= offset;
+            DISPATCH();
+        }
+
+        CASE_CODE(BREAK): {
+
+            DISPATCH();
+        }
+
+        CASE_CODE(IMPORT): {
+            ObjString *fileName = AS_STRING(pop());
+            char *s = readFile(fileName->chars);
+            vm.currentScriptName = fileName->chars;
+
+            ObjFunction *function = compile(s);
+            if (function == NULL) return INTERPRET_COMPILE_ERROR;
+            push(OBJ_VAL(function));
+            ObjClosure *closure = newClosure(function);
+            pop();
+
+            vm.currentFrameCount = vm.frameCount;
+
+            frame = &vm.frames[vm.frameCount++];
+            frame->ip = closure->function->chunk.code;
+            frame->closure = closure;
+            frame->slots = vm.stackTop - 1;
+            free(s);
+            DISPATCH();
+        }
+
+        CASE_CODE(NEW_LIST): {
+            ObjList *list = initList();
+            push(OBJ_VAL(list));
+            DISPATCH();
+        }
+
+        CASE_CODE(ADD_LIST): {
+            Value addValue = pop();
+            Value listValue = pop();
+
+            ObjList *list = AS_LIST(listValue);
+            writeValueArray(&list->values, addValue);
+
+            push(OBJ_VAL(list));
+            DISPATCH();
+        }
+
+        CASE_CODE(NEW_DICT): {
+            ObjDict *dict = initDict();
+            push(OBJ_VAL(dict));
+            DISPATCH();
+        }
+
+        CASE_CODE(ADD_DICT): {
+            Value value = pop();
+            Value key = pop();
+            Value dictValue = pop();
+
+            if (!IS_STRING(key)) {
+                runtimeError("Dictionary key must be a string.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjDict *dict = AS_DICT(dictValue);
+            char *keyString = AS_CSTRING(key);
+
+            insertDict(dict, keyString, value);
+
+            push(OBJ_VAL(dict));
+            DISPATCH();
+        }
+
+        CASE_CODE(SUBSCRIPT): {
+            Value indexValue = pop();
+            Value listValue = pop();
+
+            if (!IS_NUMBER(indexValue)) {
+                runtimeError("Array index must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjList *list = AS_LIST(listValue);
+            int index = AS_NUMBER(indexValue);
+
+            if (index < 0)
+                index = list->values.count + index;
+
+            if (index >= 0 && index < list->values.count) {
+                push(list->values.values[index]);
+                DISPATCH();
+            }
+
+            runtimeError("Array index out of bounds.");
+            return INTERPRET_RUNTIME_ERROR;
+        }
+
+        CASE_CODE(SUBSCRIPT_ASSIGN): {
+            Value assignValue = pop();
+            Value indexValue = pop();
+            Value listValue = pop();
+
+            if (!IS_NUMBER(indexValue)) {
+                runtimeError("Array index must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjList *list = AS_LIST(listValue);
+            int index = AS_NUMBER(indexValue);
+
+            if (index < 0)
+                index = list->values.count + index;
+
+            if (index >= 0 && index < list->values.count) {
+                list->values.values[index] = assignValue;
                 push(NIL_VAL);
-                break;
+                DISPATCH();
             }
 
-            case OP_CALL_0:
-            case OP_CALL_1:
-            case OP_CALL_2:
-            case OP_CALL_3:
-            case OP_CALL_4:
-            case OP_CALL_5:
-            case OP_CALL_6:
-            case OP_CALL_7:
-            case OP_CALL_8:
-            case OP_CALL_9:
-            case OP_CALL_10:
-            case OP_CALL_11:
-            case OP_CALL_12:
-            case OP_CALL_13:
-            case OP_CALL_14:
-            case OP_CALL_15:
-            case OP_CALL_16:
-            case OP_CALL_17:
-            case OP_CALL_18:
-            case OP_CALL_19:
-            case OP_CALL_20:
-            case OP_CALL_21:
-            case OP_CALL_22:
-            case OP_CALL_23:
-            case OP_CALL_24:
-            case OP_CALL_25:
-            case OP_CALL_26:
-            case OP_CALL_27:
-            case OP_CALL_28:
-            case OP_CALL_29:
-            case OP_CALL_30:
-            case OP_CALL_31: {
-                int argCount = instruction - OP_CALL_0;
-                if (!callValue(peek(argCount), argCount)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                frame = &vm.frames[vm.frameCount - 1];
-                break;
+            push(NIL_VAL);
+
+            runtimeError("Array index out of bounds.");
+            return INTERPRET_RUNTIME_ERROR;
+        }
+
+        CASE_CODE(SUBSCRIPT_DICT): {
+            Value indexValue = pop();
+            Value dictValue = pop();
+
+            if (!IS_STRING(indexValue)) {
+                runtimeError("Dictionary key must be a string.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_INVOKE_0:
-            case OP_INVOKE_1:
-            case OP_INVOKE_2:
-            case OP_INVOKE_3:
-            case OP_INVOKE_4:
-            case OP_INVOKE_5:
-            case OP_INVOKE_6:
-            case OP_INVOKE_7:
-            case OP_INVOKE_8:
-            case OP_INVOKE_9:
-            case OP_INVOKE_10:
-            case OP_INVOKE_11:
-            case OP_INVOKE_12:
-            case OP_INVOKE_13:
-            case OP_INVOKE_14:
-            case OP_INVOKE_15:
-            case OP_INVOKE_16:
-            case OP_INVOKE_17:
-            case OP_INVOKE_18:
-            case OP_INVOKE_19:
-            case OP_INVOKE_20:
-            case OP_INVOKE_21:
-            case OP_INVOKE_22:
-            case OP_INVOKE_23:
-            case OP_INVOKE_24:
-            case OP_INVOKE_25:
-            case OP_INVOKE_26:
-            case OP_INVOKE_27:
-            case OP_INVOKE_28:
-            case OP_INVOKE_29:
-            case OP_INVOKE_30:
-            case OP_INVOKE_31: {
-                ObjString *method = READ_STRING();
-                int argCount = instruction - OP_INVOKE_0;
-                if (!invoke(method, argCount)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                frame = &vm.frames[vm.frameCount - 1];
-                break;
+            ObjDict *dict = AS_DICT(dictValue);
+            char *key = AS_CSTRING(indexValue);
+
+            push(searchDict(dict, key));
+
+            DISPATCH();
+        }
+
+        CASE_CODE(SUBSCRIPT_DICT_ASSIGN): {
+            Value value = pop();
+            Value key = pop();
+            Value dictValue = pop();
+
+            if (!IS_STRING(key)) {
+                runtimeError("Dictionary key must be a string.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_SUPER_0:
-            case OP_SUPER_1:
-            case OP_SUPER_2:
-            case OP_SUPER_3:
-            case OP_SUPER_4:
-            case OP_SUPER_5:
-            case OP_SUPER_6:
-            case OP_SUPER_7:
-            case OP_SUPER_8:
-            case OP_SUPER_9:
-            case OP_SUPER_10:
-            case OP_SUPER_11:
-            case OP_SUPER_12:
-            case OP_SUPER_13:
-            case OP_SUPER_14:
-            case OP_SUPER_15:
-            case OP_SUPER_16:
-            case OP_SUPER_17:
-            case OP_SUPER_18:
-            case OP_SUPER_19:
-            case OP_SUPER_20:
-            case OP_SUPER_21:
-            case OP_SUPER_22:
-            case OP_SUPER_23:
-            case OP_SUPER_24:
-            case OP_SUPER_25:
-            case OP_SUPER_26:
-            case OP_SUPER_27:
-            case OP_SUPER_28:
-            case OP_SUPER_29:
-            case OP_SUPER_30:
-            case OP_SUPER_31: {
-                ObjString *method = READ_STRING();
-                int argCount = instruction - OP_SUPER_0;
-                ObjClass *superclass = AS_CLASS(pop());
-                if (!invokeFromClass(superclass, method, argCount)) {
-                    return INTERPRET_RUNTIME_ERROR;
+            ObjDict *dict = AS_DICT(dictValue);
+            char *keyString = AS_CSTRING(key);
+
+            insertDict(dict, keyString, value);
+
+            push(NIL_VAL);
+            DISPATCH();
+        }
+
+        CASE_CODE(CALL_0):
+        CASE_CODE(CALL_1):
+        CASE_CODE(CALL_2):
+        CASE_CODE(CALL_3):
+        CASE_CODE(CALL_4):
+        CASE_CODE(CALL_5):
+        CASE_CODE(CALL_6):
+        CASE_CODE(CALL_7):
+        CASE_CODE(CALL_8):
+        CASE_CODE(CALL_9):
+        CASE_CODE(CALL_10):
+        CASE_CODE(CALL_11):
+        CASE_CODE(CALL_12):
+        CASE_CODE(CALL_13):
+        CASE_CODE(CALL_14):
+        CASE_CODE(CALL_15):
+        CASE_CODE(CALL_16):
+        CASE_CODE(CALL_17):
+        CASE_CODE(CALL_18):
+        CASE_CODE(CALL_19):
+        CASE_CODE(CALL_20):
+        CASE_CODE(CALL_21):
+        CASE_CODE(CALL_22):
+        CASE_CODE(CALL_23):
+        CASE_CODE(CALL_24):
+        CASE_CODE(CALL_25):
+        CASE_CODE(CALL_26):
+        CASE_CODE(CALL_27):
+        CASE_CODE(CALL_28):
+        CASE_CODE(CALL_29):
+        CASE_CODE(CALL_30):
+        CASE_CODE(CALL_31): {
+            int argCount = instruction - OP_CALL_0;
+            if (!callValue(peek(argCount), argCount)) {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frameCount - 1];
+            DISPATCH();
+        }
+
+        CASE_CODE(INVOKE_0):
+        CASE_CODE(INVOKE_1):
+        CASE_CODE(INVOKE_2):
+        CASE_CODE(INVOKE_3):
+        CASE_CODE(INVOKE_4):
+        CASE_CODE(INVOKE_5):
+        CASE_CODE(INVOKE_6):
+        CASE_CODE(INVOKE_7):
+        CASE_CODE(INVOKE_8):
+        CASE_CODE(INVOKE_9):
+        CASE_CODE(INVOKE_10):
+        CASE_CODE(INVOKE_11):
+        CASE_CODE(INVOKE_12):
+        CASE_CODE(INVOKE_13):
+        CASE_CODE(INVOKE_14):
+        CASE_CODE(INVOKE_15):
+        CASE_CODE(INVOKE_16):
+        CASE_CODE(INVOKE_17):
+        CASE_CODE(INVOKE_18):
+        CASE_CODE(INVOKE_19):
+        CASE_CODE(INVOKE_20):
+        CASE_CODE(INVOKE_21):
+        CASE_CODE(INVOKE_22):
+        CASE_CODE(INVOKE_23):
+        CASE_CODE(INVOKE_24):
+        CASE_CODE(INVOKE_25):
+        CASE_CODE(INVOKE_26):
+        CASE_CODE(INVOKE_27):
+        CASE_CODE(INVOKE_28):
+        CASE_CODE(INVOKE_29):
+        CASE_CODE(INVOKE_30):
+        CASE_CODE(INVOKE_31): {
+            ObjString *method = READ_STRING();
+            int argCount = instruction - OP_INVOKE_0;
+            if (!invoke(method, argCount)) {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frameCount - 1];
+            DISPATCH();
+        }
+
+        CASE_CODE(SUPER_0):
+        CASE_CODE(SUPER_1):
+        CASE_CODE(SUPER_2):
+        CASE_CODE(SUPER_3):
+        CASE_CODE(SUPER_4):
+        CASE_CODE(SUPER_5):
+        CASE_CODE(SUPER_6):
+        CASE_CODE(SUPER_7):
+        CASE_CODE(SUPER_8):
+        CASE_CODE(SUPER_9):
+        CASE_CODE(SUPER_10):
+        CASE_CODE(SUPER_11):
+        CASE_CODE(SUPER_12):
+        CASE_CODE(SUPER_13):
+        CASE_CODE(SUPER_14):
+        CASE_CODE(SUPER_15):
+        CASE_CODE(SUPER_16):
+        CASE_CODE(SUPER_17):
+        CASE_CODE(SUPER_18):
+        CASE_CODE(SUPER_19):
+        CASE_CODE(SUPER_20):
+        CASE_CODE(SUPER_21):
+        CASE_CODE(SUPER_22):
+        CASE_CODE(SUPER_23):
+        CASE_CODE(SUPER_24):
+        CASE_CODE(SUPER_25):
+        CASE_CODE(SUPER_26):
+        CASE_CODE(SUPER_27):
+        CASE_CODE(SUPER_28):
+        CASE_CODE(SUPER_29):
+        CASE_CODE(SUPER_30):
+        CASE_CODE(SUPER_31): {
+            ObjString *method = READ_STRING();
+            int argCount = instruction - OP_SUPER_0;
+            ObjClass *superclass = AS_CLASS(pop());
+            if (!invokeFromClass(superclass, method, argCount)) {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frameCount - 1];
+            DISPATCH();
+        }
+
+        CASE_CODE(CLOSURE): {
+            ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+
+            // Create the closure and push it on the stack before creating
+            // upvalues so that it doesn't get collected.
+            ObjClosure *closure = newClosure(function);
+            push(OBJ_VAL(closure));
+
+            // Capture upvalues.
+            for (int i = 0; i < closure->upvalueCount; i++) {
+                uint8_t isLocal = READ_BYTE();
+                uint8_t index = READ_BYTE();
+                if (isLocal) {
+                    // Make an new upvalue to close over the parent's local
+                    // variable.
+                    closure->upvalues[i] = captureUpvalue(frame->slots + index);
+                } else {
+                    // Use the same upvalue as the current call frame.
+                    closure->upvalues[i] = frame->closure->upvalues[index];
                 }
-                frame = &vm.frames[vm.frameCount - 1];
-                break;
             }
 
-            case OP_CLOSURE: {
-                ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            DISPATCH();
+        }
 
-                // Create the closure and push it on the stack before creating
-                // upvalues so that it doesn't get collected.
-                ObjClosure *closure = newClosure(function);
-                push(OBJ_VAL(closure));
+        CASE_CODE(CLOSE_UPVALUE): {
+            closeUpvalues(vm.stackTop - 1);
+            pop();
+            DISPATCH();
+        }
 
-                // Capture upvalues.
-                for (int i = 0; i < closure->upvalueCount; i++) {
-                    uint8_t isLocal = READ_BYTE();
-                    uint8_t index = READ_BYTE();
-                    if (isLocal) {
-                        // Make an new upvalue to close over the parent's local
-                        // variable.
-                        closure->upvalues[i] = captureUpvalue(frame->slots + index);
-                    } else {
-                        // Use the same upvalue as the current call frame.
-                        closure->upvalues[i] = frame->closure->upvalues[index];
-                    }
-                }
+        CASE_CODE(RETURN): {
+            Value result = pop();
 
-                break;
+            // Close any upvalues still in scope.
+            closeUpvalues(frame->slots);
+
+            vm.frameCount--;
+
+            if (vm.frameCount == vm.currentFrameCount) {
+                vm.currentScriptName = vm.scriptName;
+                vm.currentFrameCount = -1;
             }
 
-            case OP_CLOSE_UPVALUE: {
-                closeUpvalues(vm.stackTop - 1);
-                pop();
-                break;
+            if (vm.frameCount == 0) return INTERPRET_OK;
+
+            vm.stackTop = frame->slots;
+            push(result);
+
+            frame = &vm.frames[vm.frameCount - 1];
+            DISPATCH();
+        }
+
+        CASE_CODE(CLASS):
+            createClass(READ_STRING(), NULL);
+            DISPATCH();
+
+        CASE_CODE(SUBCLASS): {
+            Value superclass = peek(0);
+            if (!IS_CLASS(superclass)) {
+                runtimeError("Superclass must be a class.");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_RETURN: {
-                Value result = pop();
+            createClass(READ_STRING(), AS_CLASS(superclass));
+            DISPATCH();
+        }
 
-                // Close any upvalues still in scope.
-                closeUpvalues(frame->slots);
+        CASE_CODE(METHOD):
+            defineMethod(READ_STRING());
+            DISPATCH();
 
-                vm.frameCount--;
+        CASE_CODE(OPEN_FILE): {
+            Value openType = pop();
+            Value fileName = pop();
 
-                if (vm.frameCount == vm.currentFrameCount) {
-                    vm.currentScriptName = vm.scriptName;
-                    vm.currentFrameCount = -1;
-                }
-
-                if (vm.frameCount == 0) return INTERPRET_OK;
-
-                vm.stackTop = frame->slots;
-                push(result);
-
-                frame = &vm.frames[vm.frameCount - 1];
-                break;
+            if (!IS_STRING(openType)) {
+                runtimeError("File open type must be a string");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_CLASS:
-                createClass(READ_STRING(), NULL);
-                break;
-
-            case OP_SUBCLASS: {
-                Value superclass = peek(0);
-                if (!IS_CLASS(superclass)) {
-                    runtimeError("Superclass must be a class.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                createClass(READ_STRING(), AS_CLASS(superclass));
-                break;
+            if (!IS_STRING(fileName)) {
+                runtimeError("Filename must be a string");
+                return INTERPRET_RUNTIME_ERROR;
             }
 
-            case OP_METHOD:
-                defineMethod(READ_STRING());
-                break;
+            ObjString *openTypeString = AS_STRING(openType);
+            ObjString *fileNameString = AS_STRING(fileName);
 
-            case OP_OPEN_FILE: {
-                Value openType = pop();
-                Value fileName = pop();
+            ObjFile *file = initFile();
+            file->file = fopen(fileNameString->chars, openTypeString->chars);
+            file->path = fileNameString->chars;
+            file->openType = openTypeString->chars;
 
-                if (!IS_STRING(openType)) {
-                    runtimeError("File open type must be a string");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                if (!IS_STRING(fileName)) {
-                    runtimeError("Filename must be a string");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                ObjString *openTypeString = AS_STRING(openType);
-                ObjString *fileNameString = AS_STRING(fileName);
-
-                ObjFile *file = initFile();
-                file->file = fopen(fileNameString->chars, openTypeString->chars);
-                file->path = fileNameString->chars;
-                file->openType = openTypeString->chars;
-
-                if (file->file == NULL) {
-                    runtimeError("Unable to open file");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                push(OBJ_VAL(file));
-                break;
+            if (file->file == NULL) {
+                runtimeError("Unable to open file");
+                return INTERPRET_RUNTIME_ERROR;
             }
+
+            push(OBJ_VAL(file));
+            DISPATCH();
         }
     }
+    //}
 
 #undef READ_BYTE
 #undef READ_SHORT
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+
+    return INTERPRET_RUNTIME_ERROR;
 
 }
 
