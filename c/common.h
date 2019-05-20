@@ -10,7 +10,7 @@
 #define DEBUG_TRACE_EXECUTION
 #define DEBUG_TRACE_GC
 
-#define COMPUTED_GOTO true
+#define COMPUTED_GOTO
 
 
 #undef DEBUG_PRINT_CODE

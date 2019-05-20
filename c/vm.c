@@ -388,16 +388,16 @@ static InterpretResult run() {
           push(valueType(a op b)); \
         } while (false)
 
-    #if COMPUTED_GOTO
+    #ifdef COMPUTED_GOTO
 
     static void* dispatchTable[] = {
-        #define OPCODE(name) &&code_##name,
+        #define OPCODE(name) &&op_##name,
         #include "opcodes.h"
         #undef OPCODE
     };
 
     #define INTERPRET_LOOP    DISPATCH();
-    #define CASE_CODE(name)   code_##name
+    #define CASE_CODE(name)   op_##name
 
     #define DISPATCH()                                            \
         do                                                        \
@@ -417,8 +417,6 @@ static InterpretResult run() {
     #define CASE_CODE(name) case OP_##name
 
     #endif
-
-
 
     uint8_t instruction;
     INTERPRET_LOOP
