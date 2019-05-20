@@ -1361,9 +1361,6 @@ static void whileStatement() {
     // Jump out of the loop if the condition is false.
     int exitJump = emitJump(OP_JUMP_IF_FALSE);
 
-    if (vm.repl)
-        emitByte(OP_NO_PRINT);
-
     // Compile the body.
     emitByte(OP_POP); // Condition.
     statement();
