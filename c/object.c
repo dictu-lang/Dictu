@@ -114,7 +114,7 @@ ObjList *initList() {
 }
 
 ObjDict *initDict() {
-    ObjDict *dict = initDictValues(8);
+    ObjDict *dict = initDictValues(1000001);
     return dict;
 }
 

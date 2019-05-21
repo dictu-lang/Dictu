@@ -59,9 +59,9 @@ ObjDict *initDictValues(uint32_t capacity) {
     dict->count = 0;
     dict->items = malloc(capacity * sizeof(*dict->items));
 
-    for (int i = 0; i < dict->capacity; i++) {
-        dict->items[i] = NULL;
-    }
+    //for (int i = 0; i < dict->capacity; i++) {
+    //    dict->items[i] = NULL;
+    //}
 
     return dict;
 }
@@ -77,9 +77,12 @@ static uint32_t hash(char *str) {
 }
 
 void insertDict(ObjDict *dict, char *key, Value value) {
+    if (dict->count * 100 / dict->capacity >= 50) {
+        resizeDict(dict, true);
+    }
+
     uint32_t hashValue = hash(key);
     int index = hashValue % dict->capacity;
-
     char *key_m = ALLOCATE(char, strlen(key) + 1);
 
     if (!key_m) {
@@ -101,21 +104,18 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     item->deleted = false;
     item->hash = hashValue;
 
-    if (dict->count * 100 / dict->capacity >= 70) {
-        resizeDict(dict);
-    }
-
     while (index < dict->capacity &&
            dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
         index++;
-        if (index == dict->capacity)
+        if (index == dict->capacity) {
             index = 0;
+        }
     }
-
 
     if (dict->items[index]) {
         free(dict->items[index]->key);
         free(dict->items[index]);
+        dict->items[index] = NULL;
         dict->count--;
     }
 
@@ -123,8 +123,13 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     dict->count++;
 }
 
-void resizeDict(ObjDict *dict) {
-    int newSize = dict->capacity << 1; // Grow by a factor of 2
+void resizeDict(ObjDict *dict, bool grow) {
+    int newSize;
+
+    if (grow)
+        newSize = dict->capacity << 1; // Grow by a factor of 2
+    else
+        newSize = dict->capacity >> 1; // Shrink by a factor of 2
 
     dictItem **items = malloc(newSize * sizeof(*dict->items));
 
@@ -163,6 +168,14 @@ Value searchDict(ObjDict *dict, char *key) {
 
     if (!dict->items[index])
         return NIL_VAL;
+
+    while (index < dict->capacity &&
+           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+        index++;
+        if (index == dict->capacity) {
+            index = 0;
+        }
+    }
 
     if (strcmp(dict->items[index]->key, key) == 0) {
         return dict->items[index]->item;

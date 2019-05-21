@@ -1,0 +1,9 @@
+var start = clock();
+
+var dict = {};
+
+for (var i = 1; i < 1000001; ++i) {
+  dict[str(i)] = i;
+}
+
+print(clock() - start);
