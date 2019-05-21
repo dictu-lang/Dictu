@@ -1,0 +1,21 @@
+var start = clock();
+
+var dict = {};
+
+for (var i = 1; i < 1000001; ++i) {
+  dict[str(i)] = i;
+}
+
+var sum = 0;
+for (var i = 1; i < 1000001; ++i) {
+    sum = sum + dict[str(i)];
+}
+
+print(sum);
+
+for (var i = 1; i < 1000001; ++i) {
+  dict.remove(str(i));
+}
+
+print("Elapsed: {}".format(clock() - start));
+
