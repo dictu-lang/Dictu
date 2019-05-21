@@ -73,7 +73,7 @@ static uint32_t hash(char *str) {
 }
 
 void insertDict(ObjDict *dict, char *key, Value value) {
-    if (dict->count * 100 / dict->capacity >= 50) {
+    if (dict->count * 100 / dict->capacity >= 60) {
         resizeDict(dict, true);
     }
 
@@ -100,8 +100,7 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     item->deleted = false;
     item->hash = hashValue;
 
-    while (index < dict->capacity &&
-           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
         index++;
         if (index == dict->capacity) {
             index = 0;
@@ -111,7 +110,6 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     if (dict->items[index]) {
         free(dict->items[index]->key);
         free(dict->items[index]);
-        dict->items[index] = NULL;
         dict->count--;
     }
 
