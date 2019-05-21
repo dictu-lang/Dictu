@@ -272,7 +272,7 @@ static bool removeDictItem(int argCount) {
         dict->count--;
         push(NIL_VAL);
 
-        if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 20) {
+        if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 35) {
             resizeDict(dict, false);
         }
 
