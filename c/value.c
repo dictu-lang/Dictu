@@ -57,11 +57,7 @@ ObjDict *initDictValues(uint32_t capacity) {
     ObjDict *dict = ALLOCATE_OBJ_LIST(ObjDict, OBJ_DICT);
     dict->capacity = capacity;
     dict->count = 0;
-    dict->items = malloc(capacity * sizeof(*dict->items));
-
-    //for (int i = 0; i < dict->capacity; i++) {
-    //    dict->items[i] = NULL;
-    //}
+    dict->items = calloc(capacity, sizeof(*dict->items));
 
     return dict;
 }
@@ -131,30 +127,33 @@ void resizeDict(ObjDict *dict, bool grow) {
     else
         newSize = dict->capacity >> 1; // Shrink by a factor of 2
 
-    dictItem **items = malloc(newSize * sizeof(*dict->items));
-
-    for (int i = 0; i < newSize; ++i) {
-        items[i] = NULL;
-    }
+    dictItem **items = calloc(newSize, sizeof(*dict->items));
 
     for (int j = 0; j < dict->capacity; ++j) {
         if (!dict->items[j])
             continue;
 
         if (dict->items[j]->deleted) {
-            freeDictValue(dict->items[j]);
             continue;
         }
 
         int index = dict->items[j]->hash % newSize;
 
-        while (index < newSize && items[index]) {
-            index++;
-            if (index == newSize)
-                index = 0;
+        while (items[index]) {
+            index = (index + 1) % newSize;
         }
 
         items[index] = dict->items[j];
+    }
+
+    // Free deleted values
+    for (int j = 0; j < dict->capacity; ++j) {
+        if (!dict->items[j])
+            continue;
+
+        if (dict->items[j]->deleted) {
+            freeDictValue(dict->items[j]);
+        }
     }
 
     free(dict->items);
@@ -177,7 +176,7 @@ Value searchDict(ObjDict *dict, char *key) {
         }
     }
 
-    if (strcmp(dict->items[index]->key, key) == 0) {
+    if (dict->items[index] && !dict->items[index]->deleted) {
         return dict->items[index]->item;
     }
 

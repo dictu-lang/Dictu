@@ -260,8 +260,7 @@ static bool removeDictItem(int argCount) {
 
     int index = hash(key) % dict->capacity;
 
-    while (index < dict->capacity &&
-           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+    while (dict->items[index] && strcmp(dict->items[index]->key, key) != 0) {
         index++;
         if (index == dict->capacity) {
             index = 0;
@@ -273,8 +272,8 @@ static bool removeDictItem(int argCount) {
         dict->count--;
         push(NIL_VAL);
 
-        if (dict->count * 100 / dict->capacity <= 30) {
-        //    resizeDict(dict, false);
+        if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 20) {
+            resizeDict(dict, false);
         }
 
         return true;

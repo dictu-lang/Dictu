@@ -114,7 +114,7 @@ ObjList *initList() {
 }
 
 ObjDict *initDict() {
-    ObjDict *dict = initDictValues(1000001);
+    ObjDict *dict = initDictValues(8);
     return dict;
 }
 
@@ -246,7 +246,7 @@ char *objectToString(Value value) {
         case OBJ_LIST: {
             int size = 50;
             ObjList *list = AS_LIST(value);
-            char *listString = calloc(size, sizeof(char) * size);
+            char *listString = calloc(size, sizeof(char));
             snprintf(listString, 2, "%s", "[");
 
             for (int i = 0; i < list->values.count; ++i) {
