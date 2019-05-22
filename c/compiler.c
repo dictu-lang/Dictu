@@ -1370,7 +1370,10 @@ static void breakStatement() {
 static void whileStatement() {
     current->loopDepth++;
 
-    int loopStart = currentChunk()->count;
+    int surroundingLoopStart = innermostLoopStart;
+    int surroundingLoopScopeDepth = innermostLoopScopeDepth;
+    innermostLoopStart = currentChunk()->count;
+    innermostLoopScopeDepth = current->scopeDepth;
 
     if (check(TOKEN_LEFT_BRACE)) {
         emitByte(OP_TRUE);
@@ -1390,10 +1393,13 @@ static void whileStatement() {
     statement();
 
     // Loop back to the start.
-    emitLoop(loopStart);
+    emitLoop(innermostLoopStart);
 
     patchJump(exitJump);
     emitByte(OP_POP); // Condition.
+
+    innermostLoopStart = surroundingLoopStart;
+    innermostLoopScopeDepth = surroundingLoopScopeDepth;
 
     current->loopDepth--;
 }

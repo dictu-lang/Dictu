@@ -9,3 +9,15 @@ for (var i = 0; i < 10; ++i) {
 
 assert(x == [1, 3, 5, 7, 9]);
 
+var i = 0;
+var y = [];
+
+while (i < 10) {
+    ++i;
+    if (i % 2 == 0)
+        continue;
+
+    y.push(i);
+}
+
+assert(y == [1, 3, 5, 7, 9]);
