@@ -336,7 +336,16 @@ static bool formatString(int argCount) {
     char **replace_strings = malloc((argCount - 1) * sizeof(char*));
 
     for (int j = argCount - 2; j >= 0; --j) {
-        replace_strings[j] = valueToString(pop());
+        Value value = pop();
+        if (!IS_STRING(value))
+            replace_strings[j] = valueToString(value);
+        else {
+            ObjString *strObj = AS_STRING(value);
+            char *str = malloc(strObj->length + 1);
+            snprintf(str, strObj->length + 1, "%s", strObj->chars);
+            replace_strings[j] = str;
+        }
+
         length += strlen(replace_strings[j]);
     }
 

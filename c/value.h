@@ -121,7 +121,7 @@ ObjFile *initFile();
 
 void insertDict(ObjDict *dict, char *key, Value value);
 
-void resizeDict(ObjDict *dict);
+void resizeDict(ObjDict *dict, bool grow);
 
 Value searchDict(ObjDict *dict, char *key);
 

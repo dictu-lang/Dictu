@@ -233,6 +233,17 @@ static bool getDictItem(int argCount) {
     return true;
 }
 
+
+static uint32_t hash(char *str) {
+    uint32_t hash = 5381;
+    int c;
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c;
+
+    return hash;
+}
+
 static bool removeDictItem(int argCount) {
     if (argCount != 2) {
         runtimeError("remove() takes 2 arguments (%d  given)", argCount);
@@ -247,17 +258,25 @@ static bool removeDictItem(int argCount) {
     char *key = AS_CSTRING(pop());
     ObjDict *dict = AS_DICT(pop());
 
-    for (int i = 0; i < dict->capacity; ++i) {
-        if (!dict->items[i])
-            continue;
+    int index = hash(key) % dict->capacity;
 
-        if (strcmp(dict->items[i]->key, key) == 0) {
-            dict->items[i]->deleted = true;
-            dict->count--;
-            push(NIL_VAL);
-
-            return true;
+    while (dict->items[index] && strcmp(dict->items[index]->key, key) != 0) {
+        index++;
+        if (index == dict->capacity) {
+            index = 0;
         }
+    }
+
+    if (dict->items[index]) {
+        dict->items[index]->deleted = true;
+        dict->count--;
+        push(NIL_VAL);
+
+        if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 35) {
+            resizeDict(dict, false);
+        }
+
+        return true;
     }
 
     runtimeError("Key '%s' passed to remove() does not exist", key);
