@@ -1,0 +1,2 @@
+import "tests/loops/loop.du";
+import "tests/loops/continue.du";
