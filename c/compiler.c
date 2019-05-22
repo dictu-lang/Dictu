@@ -104,6 +104,10 @@ ClassCompiler *currentClass = NULL;
 
 bool staticMethod = false;
 
+// Used for "continue" statements
+int innermostLoopStart = -1;
+int innermostLoopScopeDepth = 0;
+
 static Chunk *currentChunk() {
     return &current->function->chunk;
 }
@@ -916,6 +920,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_WHILE
         {NULL,     NULL,         PREC_NONE},               // TOKEN_BREAK
         {NULL,     NULL,         PREC_NONE},               // TOKEN_RETURN
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_CONTINUE
         {NULL,     NULL,         PREC_NONE},               // TOKEN_WITH
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EOF
         {NULL,     NULL,         PREC_NONE},               // TOKEN_IMPORT
@@ -1211,7 +1216,10 @@ static void forStatement() {
         expressionStatement();
     }
 
-    int loopStart = currentChunk()->count;
+    int surroundingLoopStart = innermostLoopStart;
+    int surroundingLoopScopeDepth = innermostLoopScopeDepth;
+    innermostLoopStart = currentChunk()->count;
+    innermostLoopScopeDepth = current->scopeDepth;
 
     // The exit condition.
     int exitJump = -1;
@@ -1236,12 +1244,8 @@ static void forStatement() {
         emitByte(OP_POP);
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
-        // After the increment, start the whole loop over.
-        emitLoop(loopStart);
-
-        // At the end of the body, we want to jump to the increment, not
-        // the top of the loop.
-        loopStart = incrementStart;
+        emitLoop(innermostLoopStart);
+        innermostLoopStart = incrementStart;
 
         patchJump(bodyJump);
     }
@@ -1250,17 +1254,37 @@ static void forStatement() {
     statement();
 
     // Jump back to the beginning (or the increment).
-    emitLoop(loopStart);
+    emitLoop(innermostLoopStart);
 
     if (exitJump != -1) {
         patchJump(exitJump);
         emitByte(OP_POP); // Condition.
     }
 
+    innermostLoopStart = surroundingLoopStart;
+    innermostLoopScopeDepth = surroundingLoopScopeDepth;
+
     endScope(); // Loop variable.
     current->loopDepth--;
 }
 
+static void continueStatement() {
+    if (innermostLoopStart == -1) {
+        error("Cannot use 'continue' outside of a loop.");
+    }
+
+    consume(TOKEN_SEMICOLON, "Expect ';' after 'continue'.");
+
+    // Discard any locals created inside the loop.
+    for (int i = current->localCount - 1;
+         i >= 0 && current->locals[i].depth > innermostLoopScopeDepth;
+         i--) {
+        emitByte(OP_POP);
+    }
+
+    // Jump to top of current innermost loop.
+    emitLoop(innermostLoopStart);
+}
 
 static void ifStatement() {
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
@@ -1458,6 +1482,8 @@ static void statement() {
         beginScope();
         block();
         endScope();
+    }  else if (match(TOKEN_CONTINUE)) {
+        continueStatement();
     } else {
         expressionStatement();
     }
