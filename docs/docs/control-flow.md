@@ -72,6 +72,20 @@ for (var i = 0; i < 10; ++i) {
 }
 ```
 
+## Continue statement
+
+Continue allows execution of a loop to restart prematurely.
+
+```js
+// For loop
+for (var i = 0; i < 10; ++i) {
+    if (i % 2 == 0)
+        continue; // Skip all even numbers
+
+    print(i); // Only odd numbers will be printed
+}
+```
+
 ## Functions
 
 ```python
