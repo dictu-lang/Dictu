@@ -224,9 +224,9 @@ void freeObject(Obj *object) {
         }
 
         case OBJ_LIST: {
-            ObjList *list = (ObjList *) object;
-            freeValueArray(&list->values);
-            FREE(ObjList, list);
+            // ObjList *list = (ObjList *) object;
+            // freeValueArray(&list->values);
+            // FREE(ObjList, list);
             break;
         }
 

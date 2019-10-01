@@ -195,23 +195,48 @@ char *objectToString(Value value) {
 
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *method = AS_BOUND_METHOD(value);
-            char *methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-            char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
-            snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+            char *methodString;
+
+            if (method->method->function->name != NULL) {
+                methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
+                char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
+                snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+            } else {
+                methodString = malloc(sizeof(char) * 16);
+                char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
+                snprintf(methodString, 16, "%s", methodType);
+            }
+
             return methodString;
         }
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = AS_CLOSURE(value);
-            char *closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
-            snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+            char *closureString;
+
+            if (closure->function->name != NULL) {
+                closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
+                snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+            } else {
+                closureString = malloc(sizeof(char) * 9);
+                snprintf(closureString, 9, "%s", "<script>");
+            }
+
             return closureString;
         }
 
         case OBJ_FUNCTION: {
             ObjFunction *function = AS_FUNCTION(value);
-            char *functionString = malloc(sizeof(char) * (function->name->length + 6));
-            snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+            char *functionString;
+
+            if (function->name != NULL) {
+                functionString = malloc(sizeof(char) * (function->name->length + 6));
+                snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+            } else {
+                functionString = malloc(sizeof(char) * 5);
+                snprintf(functionString, 5, "%s", "<fn>");
+            }
+
             return functionString;
         }
 
@@ -364,7 +389,7 @@ char *objectToString(Value value) {
         }
     }
 
-    char *unknown = malloc(sizeof(char) * 8);
-    snprintf(unknown, 7, "%s", "unknown");
+    char *unknown = malloc(sizeof(char) * 9);
+    snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }

@@ -60,6 +60,7 @@ static bool readFile(int argCount) {
 
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, file->file);
     if (bytesRead < fileSize) {
+        free(buffer);
         runtimeError("Could not read file \"%s\".\n", file->path);
         return false;
     }
