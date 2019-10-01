@@ -29,7 +29,18 @@ static bool splitString(int argCount) {
             *token = '\0';
 
         ObjString *str = copyString(tmp, strlen(tmp));
-        writeValueArray(&list->values, OBJ_VAL(str));
+        ValueArray *array = &list->values;
+
+        if (array->capacity < array->count + 1) {
+            int oldCapacity = array->capacity;
+            array->capacity = GROW_CAPACITY(oldCapacity);
+            vm.bytesAllocated += sizeof(Value) * (array->capacity) - sizeof(Value) * (oldCapacity);
+            array->values = realloc(array->values, sizeof(Value) * (array->capacity));
+        }
+
+        array->values[array->count] = OBJ_VAL(str);
+        array->count++;
+
         tmp = token + strlen(delimiter);
     } while (token != NULL);
 

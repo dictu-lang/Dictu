@@ -156,7 +156,17 @@ ObjList* copyList(ObjList *oldList, bool shallow) {
             }
         }
 
-        writeValueArray(&newList->values, val);
+        ValueArray *array = &newList->values;
+
+        if (array->capacity < array->count + 1) {
+            int oldCapacity = array->capacity;
+            array->capacity = GROW_CAPACITY(oldCapacity);
+            vm.bytesAllocated += sizeof(Value) * (array->capacity) - sizeof(Value) * (oldCapacity);
+            array->values = realloc(array->values, sizeof(Value) * (array->capacity));
+        }
+
+        array->values[array->count] = val;
+        array->count++;
     }
 
     return newList;
@@ -168,8 +178,10 @@ static bool copyListShallow(int argCount) {
         return false;
     }
 
-    ObjList *oldList = AS_LIST(pop());
-    push(OBJ_VAL(copyList(oldList, true)));
+    ObjList *oldList = AS_LIST(peek(0));
+    ObjList *newList = copyList(oldList, true);
+    pop();
+    push(OBJ_VAL(newList));
 
     return true;
 }
