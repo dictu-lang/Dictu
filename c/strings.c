@@ -21,7 +21,7 @@ static bool splitString(int argCount) {
 
     char *token;
 
-    ObjList *list = initList();
+    ObjList *list = initList(false);
 
     do {
         token = strstr(tmp, delimiter);

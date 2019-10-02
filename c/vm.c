@@ -723,7 +723,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList();
+            ObjList *list = initList(true);
             push(OBJ_VAL(list));
             DISPATCH();
         }

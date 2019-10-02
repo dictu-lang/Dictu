@@ -174,7 +174,7 @@ ObjString *takeString(char *chars, int length);
 
 ObjString *copyString(const char *chars, int length);
 
-ObjList *initList();
+ObjList *initList(bool garbageCollect);
 
 ObjDict *initDict();
 

@@ -143,7 +143,7 @@ static bool containsListItem(int argCount) {
 }
 
 ObjList* copyList(ObjList *oldList, bool shallow) {
-    ObjList *newList = initList();
+    ObjList *newList = initList(false);
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];

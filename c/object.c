@@ -9,13 +9,23 @@
 #include "vm.h"
 
 #define ALLOCATE_OBJ_LIST(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, true)
+    (type*)allocateObject(sizeof(type), objectType, true, true)
 
 #define ALLOCATE_OBJ(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, false)
+    (type*)allocateObject(sizeof(type), objectType, false, true)
 
-static Obj *allocateObject(size_t size, ObjType type, bool isList) {
-    Obj *object = (Obj *) reallocate(NULL, 0, size);
+#define ALLOCATE_OBJ_NO_GC(type, objectType) \
+    (type*)allocateObject(sizeof(type), objectType, false, false)
+
+static Obj *allocateObject(size_t size, ObjType type, bool isList, bool garbageCollect) {
+    Obj *object;
+
+    if (garbageCollect) {
+        object = (Obj *) reallocate(NULL, 0, size);
+    } else {
+        object = (Obj *) realloc(NULL, size);
+    }
+
     object->type = type;
     object->isDark = false;
 
@@ -107,8 +117,13 @@ static ObjString *allocateString(char *chars, int length,
     return string;
 }
 
-ObjList *initList() {
-    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+ObjList *initList(bool garbageCollect) {
+    ObjList *list;
+    if (garbageCollect) {
+        list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    } else {
+        list = ALLOCATE_OBJ_NO_GC(ObjList, OBJ_LIST);
+    }
     initValueArray(&list->values);
     return list;
 }
