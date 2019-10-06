@@ -231,8 +231,7 @@ void freeObject(Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            free(dict->items);
-            free(dict);
+            freeDict(dict);
             break;
         }
 
