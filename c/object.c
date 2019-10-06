@@ -8,16 +8,13 @@
 #include "value.h"
 #include "vm.h"
 
-#define ALLOCATE_OBJ_LIST(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, true, true)
-
 #define ALLOCATE_OBJ(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, false, true)
+    (type*)allocateObject(sizeof(type), objectType, true)
 
 #define ALLOCATE_OBJ_NO_GC(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, false, false)
+    (type*)allocateObject(sizeof(type), objectType, false)
 
-static Obj *allocateObject(size_t size, ObjType type, bool isList, bool garbageCollect) {
+static Obj *allocateObject(size_t size, ObjType type, bool garbageCollect) {
     Obj *object;
 
     if (garbageCollect) {
@@ -28,14 +25,8 @@ static Obj *allocateObject(size_t size, ObjType type, bool isList, bool garbageC
 
     object->type = type;
     object->isDark = false;
-
-    if (!isList) {
-        object->next = vm.objects;
-        vm.objects = object;
-    } else {
-        object->next = vm.listObjects;
-        vm.listObjects = object;
-    }
+    object->next = vm.objects;
+    vm.objects = object;
 
 #ifdef DEBUG_TRACE_GC
     printf("%p allocate %ld for %d\n", (void *)object, size, type);
@@ -128,8 +119,15 @@ ObjList *initList(bool garbageCollect) {
     return list;
 }
 
-ObjDict *initDict() {
-    ObjDict *dict = initDictValues(8);
+ObjDict *initDict(bool garbageCollect) {
+    ObjDict *dict;
+    if (garbageCollect) {
+        dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    } else {
+        dict = ALLOCATE_OBJ_NO_GC(ObjDict, OBJ_DICT);
+    }
+
+    initDictValues(dict, 8);
     return dict;
 }
 

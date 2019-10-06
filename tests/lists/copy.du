@@ -21,9 +21,6 @@ deepCopy[3][0] = 10;
 assert(someList != deepCopy);
 assert(deepCopy == [1, 2, 3, [10, [5, 6]]]);
 
-/*
-To uncomment when copying of dictionaries works correctly
-
 var newList = [[1, "hello"], {"test": 10}];
 assert(newList == [[1, "hello"], {"test": 10}]);
 
@@ -35,4 +32,3 @@ deepCopy[1]["test"] = 11;
 
 assert(newList == [[1, "hello"], {"test": 10}]);
 assert(deepCopy == [[10, "hello"], {"test": 11}]);
-*/

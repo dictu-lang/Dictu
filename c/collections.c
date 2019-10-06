@@ -324,7 +324,7 @@ static bool dictItemExists(int argCount) {
 }
 
 ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
-    ObjDict *newDict = initDict();
+    ObjDict *newDict = initDict(false);
 
     for (int i = 0; i < oldDict->capacity; ++i) {
         if (oldDict->items[i] == NULL) {
@@ -341,7 +341,55 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
             }
         }
 
-        insertDict(newDict, oldDict->items[i]->key, val);
+        ObjDict *dict = newDict;
+        char *key = oldDict->items[i]->key;
+
+        if (dict->count * 100 / dict->capacity >= 60) {
+            resizeDict(dict, true);
+        }
+
+        uint32_t hashValue = hash(key);
+        int index = hashValue % dict->capacity;
+
+        size_t keySize = sizeof(char) * (strlen(key) + 1);
+        char *key_m = realloc(NULL, keySize);
+        vm.bytesAllocated += keySize;
+
+        if (key_m == NULL) {
+            printf("Unable to allocate memory\n");
+            exit(71);
+        }
+
+        strcpy(key_m, key);
+        size_t dictSize = sizeof(dictItem) * (sizeof(dictItem));
+        dictItem *item = realloc(NULL, dictSize);
+        vm.bytesAllocated += dictSize;
+
+        if (item == NULL) {
+            printf("Unable to allocate memory\n");
+            exit(71);
+        }
+
+        item->key = key_m;
+        item->item = val;
+        item->deleted = false;
+        item->hash = hashValue;
+
+        while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+            index++;
+            if (index == dict->capacity) {
+                index = 0;
+            }
+        }
+
+        if (dict->items[index]) {
+            free(dict->items[index]->key);
+            free(dict->items[index]);
+            dict->count--;
+        }
+
+        dict->items[index] = item;
+        dict->count++;
     }
 
     return newDict;

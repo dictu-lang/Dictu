@@ -59,7 +59,6 @@ void runtimeError(const char *format, ...) {
 void initVM(bool repl, const char *scriptName) {
     resetStack();
     vm.objects = NULL;
-    vm.listObjects = NULL;
     vm.repl = repl;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
@@ -81,7 +80,6 @@ void freeVM() {
     vm.initString = NULL;
     vm.replVar = NULL;
     freeObjects();
-    freeLists();
 }
 
 void push(Value value) {
@@ -743,7 +741,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict();
+            ObjDict *dict = initDict(true);
             push(OBJ_VAL(dict));
             DISPATCH();
         }

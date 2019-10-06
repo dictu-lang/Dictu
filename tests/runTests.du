@@ -1,7 +1,7 @@
 import "tests/strings/import.du";
 import "tests/variables/import.du";
-import "tests/lists/import.du";        // Todo: Issue with list deep copies
-// import "tests/dicts/import.du";     // Todo: Issue with dictionary copies
+import "tests/lists/import.du";
+import "tests/dicts/import.du";
 import "tests/operators/import.du";
 import "tests/functions/import.du";
 import "tests/classes/import.du";

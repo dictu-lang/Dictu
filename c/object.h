@@ -176,7 +176,7 @@ ObjString *copyString(const char *chars, int length);
 
 ObjList *initList(bool garbageCollect);
 
-ObjDict *initDict();
+ObjDict *initDict(bool garbageCollect);
 
 ObjUpvalue *newUpvalue(Value *slot);
 
