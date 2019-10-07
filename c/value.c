@@ -7,29 +7,6 @@
 #include "value.h"
 #include "vm.h"
 
-static Obj *allocateObject(size_t size, ObjType type, bool isList) {
-    Obj *object = (Obj *) reallocate(NULL, 0, size);
-    object->type = type;
-    object->isDark = false;
-
-    if (!isList) {
-        object->next = vm.objects;
-        vm.objects = object;
-    } else {
-        object->next = vm.listObjects;
-        vm.listObjects = object;
-    }
-
-#ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", (void *)object, size, type);
-#endif
-
-    return object;
-}
-
-#define ALLOCATE_OBJ_LIST(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, true)
-
 void initValueArray(ValueArray *array) {
     array->values = NULL;
     array->capacity = 0;
@@ -53,13 +30,10 @@ void freeValueArray(ValueArray *array) {
     initValueArray(array);
 }
 
-ObjDict *initDictValues(uint32_t capacity) {
-    ObjDict *dict = ALLOCATE_OBJ_LIST(ObjDict, OBJ_DICT);
+void initDictValues(ObjDict *dict, uint32_t capacity) {
     dict->capacity = capacity;
     dict->count = 0;
     dict->items = calloc(capacity, sizeof(*dict->items));
-
-    return dict;
 }
 
 static uint32_t hash(char *str) {
@@ -79,6 +53,7 @@ void insertDict(ObjDict *dict, char *key, Value value) {
 
     uint32_t hashValue = hash(key);
     int index = hashValue % dict->capacity;
+
     char *key_m = ALLOCATE(char, strlen(key) + 1);
 
     if (!key_m) {

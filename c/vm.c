@@ -59,7 +59,6 @@ void runtimeError(const char *format, ...) {
 void initVM(bool repl, const char *scriptName) {
     resetStack();
     vm.objects = NULL;
-    vm.listObjects = NULL;
     vm.repl = repl;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
@@ -81,7 +80,6 @@ void freeVM() {
     vm.initString = NULL;
     vm.replVar = NULL;
     freeObjects();
-    freeLists();
 }
 
 void push(Value value) {
@@ -604,8 +602,8 @@ static InterpretResult run() {
                 double a = AS_NUMBER(pop());
                 push(NUMBER_VAL(a + b));
             } else if (IS_LIST(peek(0)) && IS_LIST(peek(1))) {
-                Value listToAddValue = pop();
-                Value listValue = pop();
+                Value listToAddValue = peek(0);
+                Value listValue = peek(1);
 
                 ObjList *list = AS_LIST(listValue);
                 ObjList *listToAdd = AS_LIST(listToAddValue);
@@ -613,6 +611,9 @@ static InterpretResult run() {
                 for (int i = 0; i < listToAdd->values.count; ++i) {
                     writeValueArray(&list->values, listToAdd->values.values[i]);
                 }
+
+                pop();
+                pop();
 
                 push(NIL_VAL);
             } else {
@@ -720,32 +721,35 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList();
+            ObjList *list = initList(true);
             push(OBJ_VAL(list));
             DISPATCH();
         }
 
         CASE_CODE(ADD_LIST): {
-            Value addValue = pop();
-            Value listValue = pop();
+            Value addValue = peek(0);
+            Value listValue = peek(1);
 
             ObjList *list = AS_LIST(listValue);
             writeValueArray(&list->values, addValue);
+
+            pop();
+            pop();
 
             push(OBJ_VAL(list));
             DISPATCH();
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict();
+            ObjDict *dict = initDict(true);
             push(OBJ_VAL(dict));
             DISPATCH();
         }
 
         CASE_CODE(ADD_DICT): {
-            Value value = pop();
-            Value key = pop();
-            Value dictValue = pop();
+            Value value = peek(0);
+            Value key = peek(1);
+            Value dictValue = peek(2);
 
             if (!IS_STRING(key)) {
                 runtimeError("Dictionary key must be a string.");
@@ -756,6 +760,10 @@ static InterpretResult run() {
             char *keyString = AS_CSTRING(key);
 
             insertDict(dict, keyString, value);
+
+            pop();
+            pop();
+            pop();
 
             push(OBJ_VAL(dict));
             DISPATCH();

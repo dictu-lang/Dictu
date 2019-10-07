@@ -142,7 +142,6 @@ static void blackenObject(Obj *object) {
             break;
         }
 
-
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
             for (int i = 0; i < dict->capacity; ++i) {
@@ -231,7 +230,8 @@ void freeObject(Obj *object) {
         }
 
         case OBJ_DICT: {
-            // TODO: Free dicts via the GC
+            ObjDict *dict = (ObjDict *) object;
+            freeDict(dict);
             break;
         }
 
@@ -321,24 +321,4 @@ void freeObjects() {
     }
 
     free(vm.grayStack);
-}
-
-void freeLists() {
-    Obj *object = vm.listObjects;
-    while (object != NULL) {
-        Obj *next = object->next;
-        freeList(object);
-        object = next;
-    }
-}
-
-void freeList(Obj *object) {
-    if (object->type == OBJ_LIST) {
-        ObjList *list = (ObjList *) object;
-        freeValueArray(&list->values);
-        FREE(ObjList, list);
-    } else {
-        ObjDict *dict = (ObjDict *) object;
-        freeDict(dict);
-    }
 }

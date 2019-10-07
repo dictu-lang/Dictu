@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 bool listMethods(char *method, int argCount);
 

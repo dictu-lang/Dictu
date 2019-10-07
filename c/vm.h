@@ -33,7 +33,6 @@ typedef struct {
     size_t bytesAllocated;
     size_t nextGC;
     Obj *objects;
-    Obj *listObjects;
     int grayCount;
     int grayCapacity;
     Obj **grayStack;

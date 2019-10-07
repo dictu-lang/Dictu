@@ -115,7 +115,7 @@ void writeValueArray(ValueArray *array, Value value);
 
 void freeValueArray(ValueArray *array);
 
-ObjDict *initDictValues(uint32_t capacity);
+void initDictValues(ObjDict *dict, uint32_t capacity);
 
 ObjFile *initFile();
 

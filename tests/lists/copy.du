@@ -11,6 +11,16 @@ y[0] = 10;
 assert(x == [1, 2, 3, 4, 5]);
 assert(y == [10, 2, 3, 4, 5]);
 
+var someList = [1, 2, 3, [4, [5, 6]]];
+assert(someList == [1, 2, 3, [4, [5, 6]]]);
+
+var deepCopy = someList.deepCopy();
+assert(someList == deepCopy);
+
+deepCopy[3][0] = 10;
+assert(someList != deepCopy);
+assert(deepCopy == [1, 2, 3, [10, [5, 6]]]);
+
 var newList = [[1, "hello"], {"test": 10}];
 assert(newList == [[1, "hello"], {"test": 10}]);
 
