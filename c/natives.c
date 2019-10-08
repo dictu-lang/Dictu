@@ -42,7 +42,7 @@ static Value clockNative(int argCount, Value *args) {
 
 static Value numberNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("number() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("number() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -59,7 +59,7 @@ static Value numberNative(int argCount, Value *args) {
 
 static Value strNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("str() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("str() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -77,7 +77,7 @@ static Value strNative(int argCount, Value *args) {
 
 static Value typeNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("type() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("type() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -117,7 +117,7 @@ static Value typeNative(int argCount, Value *args) {
 
 static Value lenNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("len() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("len() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -239,7 +239,7 @@ static Value averageNative(int argCount, Value *args) {
 
 static Value floorNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("floor() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("floor() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -254,7 +254,7 @@ static Value floorNative(int argCount, Value *args) {
 
 static Value roundNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("round() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("round() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -269,7 +269,7 @@ static Value roundNative(int argCount, Value *args) {
 
 static Value ceilNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("ceil() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("ceil() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -284,7 +284,7 @@ static Value ceilNative(int argCount, Value *args) {
 
 static Value absNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("abs() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("abs() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -303,7 +303,7 @@ static Value absNative(int argCount, Value *args) {
 
 static Value boolNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("bool() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("bool() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -313,7 +313,7 @@ static Value boolNative(int argCount, Value *args) {
 
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError("input() takes exactly 1 argument (%d given).", argCount);
+        runtimeError("input() takes 1 argument (%d given).", argCount);
         return NIL_VAL;
     }
 
@@ -362,7 +362,7 @@ static Value inputNative(int argCount, Value *args) {
 
 static bool sleepNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("sleep() takes exactly 1 argument (%d given)", argCount);
+        runtimeError("sleep() takes 1 argument (%d given)", argCount);
         return false;
     }
 

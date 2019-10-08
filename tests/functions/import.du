@@ -1,2 +1,8 @@
+/**
+* import.du
+*
+* General import file for all the function tests
+*/
+
 import "tests/functions/parameters.du";
 import "tests/functions/return.du";

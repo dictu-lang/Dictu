@@ -1,3 +1,12 @@
+/**
+* copy.du
+*
+* Testing the list.copy() and list.deepCopy() methods
+*
+* .copy() returns a shallow copy of the list
+* .deepCopy() returns a deep copy of the list
+*/
+
 var x = [1, 2, 3, 4, 5];
 
 // First check the list was created properly

@@ -82,6 +82,8 @@ static bool readLineFile(int argCount) {
 
     ObjFile *file = AS_FILE(pop());
     if (fgets(line, 4096, file->file) != NULL) {
+        // Remove newline char
+        line[strcspn(line, "\n")] = '\0';
         push(OBJ_VAL(copyString(line, strlen(line))));
     } else {
         push(OBJ_VAL(copyString("", 0)));
@@ -90,7 +92,7 @@ static bool readLineFile(int argCount) {
 }
 
 static bool seekFile(int argCount) {
-    if (argCount < 2 || argCount > 3) {
+    if (argCount != 2 && argCount != 3) {
         runtimeError("seek() takes 2 or 3 arguments (%d given)", argCount);
         return false;
     }

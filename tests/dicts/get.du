@@ -1,10 +1,20 @@
+/**
+* get.du
+*
+* Testing the dict.exists() method
+*
+* .exists() returns a boolean based on whether the given key exists
+*/
+
 var myDict = {"key": 1, "key1": true};
 
 // First check the dictionary was created properly
 assert(myDict == {"key": 1, "key1": true});
 
-assert(myDict.get("key", nil) == 1);
-assert(myDict.get("key1", nil));
+assert(myDict.get("key") == 1);
+
+// Explicit compare to true to make the test more obvious
+assert(myDict.get("key1") == true);
 
 // Return a default value if key is not found
 assert(myDict.get("unknown", 10) == 10);

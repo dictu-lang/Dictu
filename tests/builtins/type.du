@@ -1,3 +1,11 @@
+/**
+* type.du
+*
+* Testing the builtin type() function
+*
+* type() returns the type of a value as a string
+*/
+
 assert(type(10) == "number");
 assert(type("test") == "string");
 assert(type([1, 2]) == "list");

@@ -1,3 +1,9 @@
+/**
+* parameters.du
+*
+* Testing the parameters of a function
+*/
+
 def test(a) {
     assert(a == 10);
 }
