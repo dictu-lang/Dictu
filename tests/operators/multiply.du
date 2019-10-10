@@ -1,3 +1,9 @@
+/**
+* multiply.du
+*
+* Testing multiplication
+*/
+
 var x = 10;
 
 assert(x * 10 == 100);

@@ -1,3 +1,11 @@
+/**
+* lower.du
+*
+* Testing the str.lower() method
+*
+* .lower() returns a lowercase version of the given string
+*/
+
 assert("DiCtU".lower() == "dictu");
 assert("dictu".lower() == "dictu");
 assert("DICTU".lower() == "dictu");

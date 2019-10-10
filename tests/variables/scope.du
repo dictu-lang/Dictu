@@ -1,3 +1,9 @@
+/**
+* scope.du
+*
+* Testing variable assignment within a scoped context
+*/
+
 // Test scope
 var x = 10;
 {

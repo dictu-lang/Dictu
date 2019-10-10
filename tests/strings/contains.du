@@ -1,2 +1,10 @@
+/**
+* contains.du
+*
+* Testing the str.contains() method
+*
+* .contains() returns a boolean depending on whether a substring exists
+*/
+
 assert("Dictu is great!".contains("is"));
 assert(!("Dictu is great!".contains("test")));
