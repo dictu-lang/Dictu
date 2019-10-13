@@ -1,3 +1,11 @@
+/**
+* insert.du
+*
+* Testing the list.insert() method
+*
+* .insert() will insert a new value into a list at a given index without replacing
+*/
+
 var x = [1, 2, 3, 4, 6];
 
 // First check the list was created properly

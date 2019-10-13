@@ -1,3 +1,11 @@
+/**
+* remove.du
+*
+* Testing the dict.remove() method
+*
+* .remove() mutates the dictionary to remove a key:value pair
+*/
+
 var myDict = {"key": 1, "key1": true};
 
 // First check the dictionary was created properly

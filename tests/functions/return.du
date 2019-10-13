@@ -1,3 +1,9 @@
+/**
+* return.du
+*
+* Testing returning from a function
+*/
+
 def test() {
     return 10;
 }

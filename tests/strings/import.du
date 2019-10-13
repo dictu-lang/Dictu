@@ -1,3 +1,9 @@
+/**
+* import.du
+*
+* General import file for all the operator tests
+*/
+
 import "tests/strings/replace.du";
 import "tests/strings/split.du";
 import "tests/strings/upper.du";

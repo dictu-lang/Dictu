@@ -1,1 +1,7 @@
+/**
+* concat.du
+*
+* Testing string concatenation
+*/
+
 assert("Dictu" + " is " + "great!" == "Dictu is great!");

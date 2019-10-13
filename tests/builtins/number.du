@@ -1,3 +1,11 @@
+/**
+* number.du
+*
+* Testing the builtin number() function
+*
+* number() converts a string to a number
+*/
+
 assert(number("10") == 10);
 assert(number("10.2") == 10.2);
 assert(number("10.123456") == 10.123456);

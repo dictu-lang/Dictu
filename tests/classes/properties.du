@@ -1,3 +1,9 @@
+/**
+* properties.du
+*
+* Testing class properties
+*/
+
 class Test {
     init() {
         this.x = 10;

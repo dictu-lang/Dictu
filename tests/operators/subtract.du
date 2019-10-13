@@ -1,3 +1,9 @@
+/**
+* subtract.du
+*
+* Testing subtraction
+*/
+
 var x = 10;
 
 assert(x - 1 == 9);

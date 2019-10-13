@@ -1,3 +1,11 @@
+/**
+* exists.du
+*
+* Testing the dict.exists() method
+*
+* .exists() returns a boolean based on whether the given key exists
+*/
+
 var myDict = {"key": 1, "key1": true};
 
 // First check the dictionary was created properly

@@ -1,3 +1,9 @@
+/**
+* import.du
+*
+* General import file for all the function tests
+*/
+
 import "tests/lists/subscript.du";
 import "tests/lists/contains.du";
 import "tests/lists/push.du";

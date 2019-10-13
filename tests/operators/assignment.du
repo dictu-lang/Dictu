@@ -1,3 +1,9 @@
+/**
+* assignment.du
+*
+* Testing variable assignment
+*/
+
 var x = 10;
 
 x += 10;

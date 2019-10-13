@@ -1,3 +1,9 @@
+/**
+* methodCall.du
+*
+* Testing class method calls
+*/
+
 class Test {
     func() {
         return 10;

@@ -1,3 +1,11 @@
+/**
+* endsWith.du
+*
+* Testing the str.endsWith() method
+*
+* .endsWith() returns a boolean based on whether the string ends with a given substring
+*/
+
 assert("test".endsWith("t"));
 assert("test".endsWith("st"));
 assert("test".endsWith("test"));

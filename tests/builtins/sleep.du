@@ -1,3 +1,11 @@
+/**
+* sleep.du
+*
+* Testing the builtin sleep() function
+*
+* sleep() pauses execution for a given amount of seconds
+*/
+
 var start = time();
 
 sleep(2);

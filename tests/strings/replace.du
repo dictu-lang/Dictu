@@ -1,3 +1,11 @@
+/**
+* replace.du
+*
+* Testing the str.replace() method
+*
+* .replace() returns a new string with a given substring replaced with another
+*/
+
 assert("a".replace("a", "b") == "b");
 assert("aa".replace("aa", "b") == "b");
 assert("aaa".replace("aaa", "b") == "b");

@@ -1,3 +1,11 @@
+/**
+* push.du
+*
+* Testing the list.push() method
+*
+* .push() will insert a new value at the end of a list
+*/
+
 var x = [1, 2, 3, 4, 5];
 
 // First check the list was created properly

@@ -219,12 +219,15 @@ bool listMethods(char *method, int argCount) {
 }
 
 static bool getDictItem(int argCount) {
-    if (argCount != 3) {
-        runtimeError("get() takes 3 arguments (%d  given)", argCount);
+    if (argCount != 2 && argCount != 3) {
+        runtimeError("get() takes 2 or 3 arguments (%d  given)", argCount);
         return false;
     }
 
-    Value defaultValue = pop();
+    Value defaultValue = NIL_VAL;
+    if (argCount == 3) {
+        defaultValue = pop();
+    }
 
     if (!IS_STRING(peek(0))) {
         runtimeError("Key passed to get() must be a string");
