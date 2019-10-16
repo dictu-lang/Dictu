@@ -1,0 +1,6 @@
+with("tests/files/read.txt", "r") {
+    var line;
+     while (line = file.readLine()) {
+         assert(line == "Dictu is great!");
+     }
+ }

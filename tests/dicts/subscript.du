@@ -1,3 +1,9 @@
+/**
+* subscript.du
+*
+* Testing dictionary subscripts
+*/
+
 var myDict = {"key": 1, "key1": true};
 
 // First check the dictionary was created properly

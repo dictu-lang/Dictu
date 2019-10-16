@@ -1,3 +1,11 @@
+/**
+* pop.du
+*
+* Testing the list.pop() method
+*
+* .pop() will remove an element from a list and return the value
+*/
+
 var x = [1, 2, 3, 4, 5];
 
 // First check the list was created properly

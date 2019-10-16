@@ -1,3 +1,9 @@
+/**
+* inherit.du
+*
+* Testing class inheritance
+*/
+
 class Base {
     func() {
         return 10;

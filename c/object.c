@@ -8,24 +8,25 @@
 #include "value.h"
 #include "vm.h"
 
-#define ALLOCATE_OBJ_LIST(type, objectType) \
+#define ALLOCATE_OBJ(type, objectType) \
     (type*)allocateObject(sizeof(type), objectType, true)
 
-#define ALLOCATE_OBJ(type, objectType) \
+#define ALLOCATE_OBJ_NO_GC(type, objectType) \
     (type*)allocateObject(sizeof(type), objectType, false)
 
-static Obj *allocateObject(size_t size, ObjType type, bool isList) {
-    Obj *object = (Obj *) reallocate(NULL, 0, size);
+static Obj *allocateObject(size_t size, ObjType type, bool garbageCollect) {
+    Obj *object;
+
+    if (garbageCollect) {
+        object = (Obj *) reallocate(NULL, 0, size);
+    } else {
+        object = (Obj *) realloc(NULL, size);
+    }
+
     object->type = type;
     object->isDark = false;
-
-    if (!isList) {
-        object->next = vm.objects;
-        vm.objects = object;
-    } else {
-        object->next = vm.listObjects;
-        vm.listObjects = object;
-    }
+    object->next = vm.objects;
+    vm.objects = object;
 
 #ifdef DEBUG_TRACE_GC
     printf("%p allocate %ld for %d\n", (void *)object, size, type);
@@ -107,14 +108,26 @@ static ObjString *allocateString(char *chars, int length,
     return string;
 }
 
-ObjList *initList() {
-    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+ObjList *initList(bool garbageCollect) {
+    ObjList *list;
+    if (garbageCollect) {
+        list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    } else {
+        list = ALLOCATE_OBJ_NO_GC(ObjList, OBJ_LIST);
+    }
     initValueArray(&list->values);
     return list;
 }
 
-ObjDict *initDict() {
-    ObjDict *dict = initDictValues(8);
+ObjDict *initDict(bool garbageCollect) {
+    ObjDict *dict;
+    if (garbageCollect) {
+        dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    } else {
+        dict = ALLOCATE_OBJ_NO_GC(ObjDict, OBJ_DICT);
+    }
+
+    initDictValues(dict, 8);
     return dict;
 }
 
@@ -195,23 +208,48 @@ char *objectToString(Value value) {
 
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *method = AS_BOUND_METHOD(value);
-            char *methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-            char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
-            snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+            char *methodString;
+
+            if (method->method->function->name != NULL) {
+                methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
+                char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
+                snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+            } else {
+                methodString = malloc(sizeof(char) * 16);
+                char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
+                snprintf(methodString, 16, "%s", methodType);
+            }
+
             return methodString;
         }
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = AS_CLOSURE(value);
-            char *closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
-            snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+            char *closureString;
+
+            if (closure->function->name != NULL) {
+                closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
+                snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+            } else {
+                closureString = malloc(sizeof(char) * 9);
+                snprintf(closureString, 9, "%s", "<script>");
+            }
+
             return closureString;
         }
 
         case OBJ_FUNCTION: {
             ObjFunction *function = AS_FUNCTION(value);
-            char *functionString = malloc(sizeof(char) * (function->name->length + 6));
-            snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+            char *functionString;
+
+            if (function->name != NULL) {
+                functionString = malloc(sizeof(char) * (function->name->length + 6));
+                snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+            } else {
+                functionString = malloc(sizeof(char) * 5);
+                snprintf(functionString, 5, "%s", "<fn>");
+            }
+
             return functionString;
         }
 
@@ -364,7 +402,7 @@ char *objectToString(Value value) {
         }
     }
 
-    char *unknown = malloc(sizeof(char) * 8);
-    snprintf(unknown, 7, "%s", "unknown");
+    char *unknown = malloc(sizeof(char) * 9);
+    snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }

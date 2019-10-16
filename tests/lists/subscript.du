@@ -1,3 +1,9 @@
+/**
+* subscript.du
+*
+* Testing list subscripts
+*/
+
 var x = [1, 2, 3, 4, 5];
 
 // First check the list was created properly

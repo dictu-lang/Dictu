@@ -1,3 +1,11 @@
+/**
+* str.du
+*
+* Testing the builtin str() function
+*
+* str() returns a value as a string
+*/
+
 assert(str(10) == "10");
 assert(str(10.2) == "10.2");
 assert(str("hello") == "hello");

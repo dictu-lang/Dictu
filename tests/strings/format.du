@@ -1,3 +1,11 @@
+/**
+* format.du
+*
+* Testing the str.format() method
+*
+* .format() interpolates values into a string
+*/
+
 assert("hello {}".format("jason") == "hello jason");
 assert("hello {}".format(10) == "hello 10");
 assert("hello {}".format([10]) == "hello [10]");

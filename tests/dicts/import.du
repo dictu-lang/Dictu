@@ -1,3 +1,9 @@
+/**
+* import.du
+*
+* General import file for all the dictionary tests
+*/
+
 import "tests/dicts/subscript.du";
 import "tests/dicts/get.du";
 import "tests/dicts/exists.du";

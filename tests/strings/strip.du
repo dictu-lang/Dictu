@@ -1,3 +1,13 @@
+/**
+* strip.du
+*
+* Testing the str.leftStrip() method
+* Testing the str.strip() method
+* Testing the str.rightStrip() method
+*
+* .(left/right)strip() returns a new string with whitespace characters removed from the start, end, or both of a string
+*/
+
 // Left strip
 assert("  Dictu is great!".leftStrip() == "Dictu is great!");
 assert("Dictu is great!  ".leftStrip() == "Dictu is great!  ");

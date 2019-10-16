@@ -1,3 +1,11 @@
+/**
+* upper.du
+*
+* Testing the str.upper() method
+*
+* .upper() returns an uppercase version of the given string
+*/
+
 assert("DiCtU".upper() == "DICTU");
 assert("DICTU".upper() == "DICTU");
 assert("dictu".upper() == "DICTU");

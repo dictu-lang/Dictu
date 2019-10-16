@@ -143,7 +143,7 @@ static bool containsListItem(int argCount) {
 }
 
 ObjList* copyList(ObjList *oldList, bool shallow) {
-    ObjList *newList = initList();
+    ObjList *newList = initList(false);
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];
@@ -156,7 +156,17 @@ ObjList* copyList(ObjList *oldList, bool shallow) {
             }
         }
 
-        writeValueArray(&newList->values, val);
+        ValueArray *array = &newList->values;
+
+        if (array->capacity < array->count + 1) {
+            int oldCapacity = array->capacity;
+            array->capacity = GROW_CAPACITY(oldCapacity);
+            vm.bytesAllocated += sizeof(Value) * (array->capacity) - sizeof(Value) * (oldCapacity);
+            array->values = realloc(array->values, sizeof(Value) * (array->capacity));
+        }
+
+        array->values[array->count] = val;
+        array->count++;
     }
 
     return newList;
@@ -168,8 +178,10 @@ static bool copyListShallow(int argCount) {
         return false;
     }
 
-    ObjList *oldList = AS_LIST(pop());
-    push(OBJ_VAL(copyList(oldList, true)));
+    ObjList *oldList = AS_LIST(peek(0));
+    ObjList *newList = copyList(oldList, true);
+    pop();
+    push(OBJ_VAL(newList));
 
     return true;
 }
@@ -207,12 +219,15 @@ bool listMethods(char *method, int argCount) {
 }
 
 static bool getDictItem(int argCount) {
-    if (argCount != 3) {
-        runtimeError("get() takes 3 arguments (%d  given)", argCount);
+    if (argCount != 2 && argCount != 3) {
+        runtimeError("get() takes 2 or 3 arguments (%d  given)", argCount);
         return false;
     }
 
-    Value defaultValue = pop();
+    Value defaultValue = NIL_VAL;
+    if (argCount == 3) {
+        defaultValue = pop();
+    }
 
     if (!IS_STRING(peek(0))) {
         runtimeError("Key passed to get() must be a string");
@@ -312,7 +327,7 @@ static bool dictItemExists(int argCount) {
 }
 
 ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
-    ObjDict *newDict = initDict();
+    ObjDict *newDict = initDict(false);
 
     for (int i = 0; i < oldDict->capacity; ++i) {
         if (oldDict->items[i] == NULL) {
@@ -329,7 +344,55 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
             }
         }
 
-        insertDict(newDict, oldDict->items[i]->key, val);
+        ObjDict *dict = newDict;
+        char *key = oldDict->items[i]->key;
+
+        if (dict->count * 100 / dict->capacity >= 60) {
+            resizeDict(dict, true);
+        }
+
+        uint32_t hashValue = hash(key);
+        int index = hashValue % dict->capacity;
+
+        size_t keySize = sizeof(char) * (strlen(key) + 1);
+        char *key_m = realloc(NULL, keySize);
+        vm.bytesAllocated += keySize;
+
+        if (key_m == NULL) {
+            printf("Unable to allocate memory\n");
+            exit(71);
+        }
+
+        strcpy(key_m, key);
+        size_t dictSize = sizeof(dictItem) * (sizeof(dictItem));
+        dictItem *item = realloc(NULL, dictSize);
+        vm.bytesAllocated += dictSize;
+
+        if (item == NULL) {
+            printf("Unable to allocate memory\n");
+            exit(71);
+        }
+
+        item->key = key_m;
+        item->item = val;
+        item->deleted = false;
+        item->hash = hashValue;
+
+        while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+            index++;
+            if (index == dict->capacity) {
+                index = 0;
+            }
+        }
+
+        if (dict->items[index]) {
+            free(dict->items[index]->key);
+            free(dict->items[index]);
+            dict->count--;
+        }
+
+        dict->items[index] = item;
+        dict->count++;
     }
 
     return newDict;
