@@ -2,7 +2,8 @@ BUILD_DIR := build
 
 # Compile a debug build of dictu.
 debug:
-	@ $(MAKE) -f c.make NAME=dictud MODE=debug SOURCE_DIR=c
+	@ $(MAKE) -f c.make NAME=dictu MODE=debug SOURCE_DIR=c
+	@ cp build/dictu dictu # For convenience, copy the interpreter to the top level.
 
 # Remove all build outputs and intermediate files.
 clean:
