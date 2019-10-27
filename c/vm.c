@@ -205,45 +205,56 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 static bool invoke(ObjString *name, int argCount) {
     Value receiver = peek(argCount);
 
-    if (IS_CLASS(receiver)) {
-        ObjClass *instance = AS_CLASS(receiver);
-        Value method;
-        if (!tableGet(&instance->methods, name, &method)) {
-            runtimeError("Undefined property '%s'.", name->chars);
-            return false;
+    switch (getObjType(receiver)) {
+        case OBJ_CLASS: {
+            ObjClass *instance = AS_CLASS(receiver);
+            Value method;
+            if (!tableGet(&instance->methods, name, &method)) {
+                runtimeError("Undefined property '%s'.", name->chars);
+                return false;
+            }
+
+            if (!AS_CLOSURE(method)->function->staticMethod) {
+                runtimeError("'%s' is not static. Only static methods can be invoked directly from a class.", name->chars);
+                return false;
+            }
+
+            return callValue(method, argCount);
         }
 
-        if (!AS_CLOSURE(method)->function->staticMethod) {
-            runtimeError("'%s' is not static. Only static methods can be invoked directly from a class.", name->chars);
-            return false;
+        case OBJ_STRING: {
+            return stringMethods(name->chars, argCount + 1);
         }
 
-        return callValue(method, argCount);
-    } else if (IS_LIST(receiver)) {
-        return listMethods(name->chars, argCount + 1);
-    } else if (IS_DICT(receiver)) {
-        return dictMethods(name->chars, argCount + 1);
-    } else if (IS_STRING(receiver)) {
-        return stringMethods(name->chars, argCount + 1);
-    } else if (IS_FILE(receiver)) {
-        return fileMethods(name->chars, argCount + 1);
+        case OBJ_LIST: {
+            return listMethods(name->chars, argCount + 1);
+        }
+
+        case OBJ_DICT: {
+            return dictMethods(name->chars, argCount + 1);
+        }
+
+        case OBJ_FILE: {
+            return fileMethods(name->chars, argCount + 1);
+        }
+
+        case OBJ_INSTANCE: {
+            ObjInstance *instance = AS_INSTANCE(receiver);
+
+            // First look for a field which may shadow a method.
+            Value value;
+            if (tableGet(&instance->fields, name, &value)) {
+                vm.stackTop[-argCount] = value;
+                return callValue(value, argCount);
+            }
+
+            return invokeFromClass(instance->klass, name, argCount);
+        }
+
+        default:
+            runtimeError("Only instances have methods.");
+            return false;
     }
-
-    if (!IS_INSTANCE(receiver)) {
-        runtimeError("Only instances have methods.");
-        return false;
-    }
-
-    ObjInstance *instance = AS_INSTANCE(receiver);
-
-    // First look for a field which may shadow a method.
-    Value value;
-    if (tableGet(&instance->fields, name, &value)) {
-        vm.stackTop[-argCount] = value;
-        return callValue(value, argCount);
-    }
-
-    return invokeFromClass(instance->klass, name, argCount);
 }
 
 static bool bindMethod(ObjClass *klass, ObjString *name) {
