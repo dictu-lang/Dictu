@@ -375,10 +375,11 @@ static void setReplVar(Value value) {
 static InterpretResult run() {
 
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
+    register uint8_t* ip = frame->ip;
 
-    #define READ_BYTE() (*frame->ip++)
+    #define READ_BYTE() (*ip++)
     #define READ_SHORT() \
-                (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
+        (ip += 2, (uint16_t)((ip[-2] << 8) | ip[-1]))
 
     #define READ_CONSTANT() \
                 (frame->closure->function->chunk.constants.values[READ_BYTE()])
@@ -388,6 +389,7 @@ static InterpretResult run() {
     #define BINARY_OP(valueType, op) \
         do { \
           if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            frame->ip = ip; \
             runtimeError("Operands must be numbers."); \
             return INTERPRET_RUNTIME_ERROR; \
           } \
@@ -489,6 +491,7 @@ static InterpretResult run() {
             ObjString *name = READ_STRING();
             Value value;
             if (!tableGet(&vm.globals, name, &value)) {
+                frame->ip = ip;
                 runtimeError("Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -506,6 +509,7 @@ static InterpretResult run() {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(&vm.globals, name, peek(0))) {
+                frame->ip = ip;
                 runtimeError("Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -628,6 +632,7 @@ static InterpretResult run() {
 
                 push(NIL_VAL);
             } else {
+                frame->ip = ip;
                 runtimeError("Unsupported operand types.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -680,6 +685,7 @@ static InterpretResult run() {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(0))) {
+                frame->ip = ip;
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -689,19 +695,19 @@ static InterpretResult run() {
 
         CASE_CODE(JUMP): {
             uint16_t offset = READ_SHORT();
-            frame->ip += offset;
+            ip += offset;
             DISPATCH();
         }
 
         CASE_CODE(JUMP_IF_FALSE): {
             uint16_t offset = READ_SHORT();
-            if (isFalsey(peek(0))) frame->ip += offset;
+            if (isFalsey(peek(0))) ip += offset;
             DISPATCH();
         }
 
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
-            frame->ip -= offset;
+            ip -= offset;
             DISPATCH();
         }
 
@@ -711,6 +717,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(IMPORT): {
+
             ObjString *fileName = AS_STRING(pop());
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
@@ -721,12 +728,10 @@ static InterpretResult run() {
             ObjClosure *closure = newClosure(function);
             pop();
 
-            vm.currentFrameCount = vm.frameCount;
+            frame->ip = ip;
+            call(closure, 0);
+            ip = frame->ip;
 
-            frame = &vm.frames[vm.frameCount++];
-            frame->ip = closure->function->chunk.code;
-            frame->closure = closure;
-            frame->slots = vm.stackTop - 1;
             free(s);
             DISPATCH();
         }
@@ -763,6 +768,7 @@ static InterpretResult run() {
             Value dictValue = peek(2);
 
             if (!IS_STRING(key)) {
+                frame->ip = ip;
                 runtimeError("Dictionary key must be a string.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -785,6 +791,7 @@ static InterpretResult run() {
             Value listValue = pop();
 
             if (!IS_NUMBER(indexValue)) {
+                frame->ip = ip;
                 runtimeError("Array index must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -800,6 +807,7 @@ static InterpretResult run() {
                 DISPATCH();
             }
 
+            frame->ip = ip;
             runtimeError("Array index out of bounds.");
             return INTERPRET_RUNTIME_ERROR;
         }
@@ -810,6 +818,7 @@ static InterpretResult run() {
             Value listValue = pop();
 
             if (!IS_NUMBER(indexValue)) {
+                frame->ip = ip;
                 runtimeError("Array index must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -828,6 +837,7 @@ static InterpretResult run() {
 
             push(NIL_VAL);
 
+            frame->ip = ip;
             runtimeError("Array index out of bounds.");
             return INTERPRET_RUNTIME_ERROR;
         }
@@ -837,6 +847,7 @@ static InterpretResult run() {
             Value dictValue = pop();
 
             if (!IS_STRING(indexValue)) {
+                frame->ip = ip;
                 runtimeError("Dictionary key must be a string.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -855,6 +866,7 @@ static InterpretResult run() {
             Value dictValue = pop();
 
             if (!IS_STRING(key)) {
+                frame->ip = ip;
                 runtimeError("Dictionary key must be a string.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -901,10 +913,12 @@ static InterpretResult run() {
         CASE_CODE(CALL_30):
         CASE_CODE(CALL_31): {
             int argCount = instruction - OP_CALL_0;
+            frame->ip = ip;
             if (!callValue(peek(argCount), argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm.frames[vm.frameCount - 1];
+            ip = frame->ip;
             DISPATCH();
         }
 
@@ -941,11 +955,13 @@ static InterpretResult run() {
         CASE_CODE(INVOKE_30):
         CASE_CODE(INVOKE_31): {
             ObjString *method = READ_STRING();
+            frame->ip = ip;
             int argCount = instruction - OP_INVOKE_0;
             if (!invoke(method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm.frames[vm.frameCount - 1];
+            ip = frame->ip;
             DISPATCH();
         }
 
@@ -982,12 +998,14 @@ static InterpretResult run() {
         CASE_CODE(SUPER_30):
         CASE_CODE(SUPER_31): {
             ObjString *method = READ_STRING();
+            frame->ip = ip;
             int argCount = instruction - OP_SUPER_0;
             ObjClass *superclass = AS_CLASS(pop());
             if (!invokeFromClass(superclass, method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm.frames[vm.frameCount - 1];
+            ip = frame->ip;
             DISPATCH();
         }
 
@@ -1041,6 +1059,7 @@ static InterpretResult run() {
             push(result);
 
             frame = &vm.frames[vm.frameCount - 1];
+            ip = frame->ip;
             DISPATCH();
         }
 
@@ -1051,6 +1070,7 @@ static InterpretResult run() {
         CASE_CODE(SUBCLASS): {
             Value superclass = peek(0);
             if (!IS_CLASS(superclass)) {
+                frame->ip = ip;
                 runtimeError("Superclass must be a class.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1068,11 +1088,13 @@ static InterpretResult run() {
             Value fileName = pop();
 
             if (!IS_STRING(openType)) {
+                frame->ip = ip;
                 runtimeError("File open type must be a string");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             if (!IS_STRING(fileName)) {
+                frame->ip = ip;
                 runtimeError("Filename must be a string");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1086,6 +1108,7 @@ static InterpretResult run() {
             file->openType = openTypeString->chars;
 
             if (file->file == NULL) {
+                frame->ip = ip;
                 runtimeError("Unable to open file");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1094,7 +1117,6 @@ static InterpretResult run() {
             DISPATCH();
         }
     }
-    //}
 
 #undef READ_BYTE
 #undef READ_SHORT
