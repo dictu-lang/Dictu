@@ -712,12 +712,10 @@ static InterpretResult run() {
         }
 
         CASE_CODE(BREAK): {
-
             DISPATCH();
         }
 
         CASE_CODE(IMPORT): {
-
             ObjString *fileName = AS_STRING(pop());
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
@@ -730,6 +728,7 @@ static InterpretResult run() {
 
             frame->ip = ip;
             call(closure, 0);
+            frame = &vm.frames[vm.frameCount - 1];
             ip = frame->ip;
 
             free(s);
