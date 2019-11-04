@@ -301,6 +301,8 @@ Token scanToken() {
         case '*': {
             if (match('=')) {
                 return makeToken(TOKEN_MULTIPLY_EQUALS);
+            } else if (match('*')) {
+                return makeToken(TOKEN_STAR_STAR);
             } else {
                 return makeToken(TOKEN_STAR);
             }
@@ -309,7 +311,7 @@ Token scanToken() {
             return makeToken(TOKEN_PERCENT);
         case '-': {
             if (match('-')) {
-                return makeToken(TOKEN_DECREMENT);
+                return makeToken(TOKEN_MINUS_MINUS);
             } else if (match('=')) {
                 return makeToken(TOKEN_MINUS_EQUALS);
             } else {
@@ -318,7 +320,7 @@ Token scanToken() {
         }
         case '+': {
             if (match('+')) {
-                return makeToken(TOKEN_INCREMENT);
+                return makeToken(TOKEN_PLUS_PLUS);
             } else if (match('=')) {
                 return makeToken(TOKEN_PLUS_EQUALS);
             } else {

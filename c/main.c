@@ -10,7 +10,7 @@
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.1.4\n"
+#define VERSION "Dictu Version: 0.1.5\n"
 
 static void repl() {
     printf(VERSION);

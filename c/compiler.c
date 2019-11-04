@@ -27,6 +27,7 @@ typedef enum {
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
+    PREC_INDICES,     // **
     PREC_UNARY,       // ! -
     PREC_PREFIX,      // ++ --
     PREC_CALL,        // . () []
@@ -537,6 +538,9 @@ static void binary(bool canAssign) {
         case TOKEN_STAR:
             emitByte(OP_MULTIPLY);
             break;
+        case TOKEN_STAR_STAR:
+            emitByte(OP_POW);
+            break;
         case TOKEN_SLASH:
             emitByte(OP_DIVIDE);
             break;
@@ -841,11 +845,11 @@ static void prefix(bool canAssign) {
     }
 
     switch (operatorType) {
-        case TOKEN_INCREMENT: {
+        case TOKEN_PLUS_PLUS: {
             emitByte(OP_INCREMENT);
             break;
         }
-        case TOKEN_DECREMENT:
+        case TOKEN_MINUS_MINUS:
             emitByte(OP_DECREMENT);
             break;
         default:
@@ -881,8 +885,8 @@ ParseRule rules[] = {
         {NULL,     dot,          PREC_CALL},               // TOKEN_DOT
         {unary,    binary,       PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,       PREC_TERM},               // TOKEN_PLUS
-        {prefix,   NULL,         PREC_NONE},               // TOKEN_INCREMENT
-        {prefix,   NULL,         PREC_NONE},               // TOKEN_DECREMENT
+        {prefix,   NULL,         PREC_NONE},               // TOKEN_PLUS_PLUS
+        {prefix,   NULL,         PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
@@ -891,6 +895,7 @@ ParseRule rules[] = {
         {NULL,     NULL,         PREC_NONE},               // TOKEN_COLON
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_SLASH
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
+        {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
         {unary,    NULL,         PREC_NONE},               // TOKEN_BANG
         {NULL,     binary,       PREC_EQUALITY},           // TOKEN_BANG_EQUAL
