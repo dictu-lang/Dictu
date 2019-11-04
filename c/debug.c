@@ -75,6 +75,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_FALSE", offset);
         case OP_POP:
             return simpleInstruction("OP_POP", offset);
+        case OP_POP_REPL:
+            return simpleInstruction("OP_POP_REPL", offset);
         case OP_GET_LOCAL:
             return byteInstruction("OP_GET_LOCAL", chunk, offset);
         case OP_SET_LOCAL:
@@ -91,6 +93,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return byteInstruction("OP_SET_UPVALUE", chunk, offset);
         case OP_GET_PROPERTY:
             return constantInstruction("OP_GET_PROPERTY", chunk, offset);
+        case OP_GET_PROPERTY_NO_POP:
+            return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
         case OP_SET_PROPERTY:
             return constantInstruction("OP_SET_PROPERTY", chunk, offset);
         case OP_GET_SUPER:
@@ -105,10 +109,16 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_ADD", offset);
         case OP_SUBTRACT:
             return simpleInstruction("OP_SUBTRACT", offset);
+        case OP_INCREMENT:
+            return simpleInstruction("OP_INCREMENT", offset);
+        case OP_DECREMENT:
+            return simpleInstruction("OP_INCREMENT", offset);
         case OP_MULTIPLY:
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
             return simpleInstruction("OP_DIVIDE", offset);
+        case OP_MOD:
+            return simpleInstruction("OP_MOD", offset);
         case OP_NOT:
             return simpleInstruction("OP_NOT", offset);
         case OP_NEGATE:
@@ -119,6 +129,24 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
         case OP_LOOP:
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
+        case OP_IMPORT:
+            return simpleInstruction("OP_IMPORT", offset);
+        case OP_NEW_LIST:
+            return simpleInstruction("OP_NEW_LIST", offset);
+        case OP_ADD_LIST:
+            return simpleInstruction("OP_ADD_LIST", offset);
+        case OP_SUBSCRIPT:
+            return simpleInstruction("OP_SUBSCRIPT", offset);
+        case OP_SUBSCRIPT_ASSIGN:
+            return simpleInstruction("OP_SUBSCRIPT_ASSIGN", offset);
+        case OP_NEW_DICT:
+            return simpleInstruction("OP_NEW_LIST", offset);
+        case OP_ADD_DICT:
+            return simpleInstruction("OP_ADD_LIST", offset);
+        case OP_SUBSCRIPT_DICT:
+            return simpleInstruction("OP_SUBSCRIPT_DICT", offset);
+        case OP_SUBSCRIPT_DICT_ASSIGN:
+            return simpleInstruction("OP_SUBSCRIPT_DICT_ASSIGN", offset);
         case OP_CALL_0:
         case OP_CALL_1:
         case OP_CALL_2:
@@ -128,6 +156,29 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_CALL_6:
         case OP_CALL_7:
         case OP_CALL_8:
+        case OP_CALL_9:
+        case OP_CALL_10:
+        case OP_CALL_11:
+        case OP_CALL_12:
+        case OP_CALL_13:
+        case OP_CALL_14:
+        case OP_CALL_15:
+        case OP_CALL_16:
+        case OP_CALL_17:
+        case OP_CALL_18:
+        case OP_CALL_19:
+        case OP_CALL_20:
+        case OP_CALL_21:
+        case OP_CALL_22:
+        case OP_CALL_23:
+        case OP_CALL_24:
+        case OP_CALL_25:
+        case OP_CALL_26:
+        case OP_CALL_27:
+        case OP_CALL_28:
+        case OP_CALL_29:
+        case OP_CALL_30:
+        case OP_CALL_31:
             return simpleInstructionN("OP_CALL", instruction - OP_CALL_0,
                                       offset);
         case OP_INVOKE_0:
@@ -139,6 +190,29 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_INVOKE_6:
         case OP_INVOKE_7:
         case OP_INVOKE_8:
+        case OP_INVOKE_9:
+        case OP_INVOKE_10:
+        case OP_INVOKE_11:
+        case OP_INVOKE_12:
+        case OP_INVOKE_13:
+        case OP_INVOKE_14:
+        case OP_INVOKE_15:
+        case OP_INVOKE_16:
+        case OP_INVOKE_17:
+        case OP_INVOKE_18:
+        case OP_INVOKE_19:
+        case OP_INVOKE_20:
+        case OP_INVOKE_21:
+        case OP_INVOKE_22:
+        case OP_INVOKE_23:
+        case OP_INVOKE_24:
+        case OP_INVOKE_25:
+        case OP_INVOKE_26:
+        case OP_INVOKE_27:
+        case OP_INVOKE_28:
+        case OP_INVOKE_29:
+        case OP_INVOKE_30:
+        case OP_INVOKE_31:
             return constantInstructionN(
                     "OP_INVOKE_", instruction - OP_INVOKE_0, chunk, offset);
         case OP_SUPER_0:
@@ -150,6 +224,29 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_SUPER_6:
         case OP_SUPER_7:
         case OP_SUPER_8:
+        case OP_SUPER_9:
+        case OP_SUPER_10:
+        case OP_SUPER_11:
+        case OP_SUPER_12:
+        case OP_SUPER_13:
+        case OP_SUPER_14:
+        case OP_SUPER_15:
+        case OP_SUPER_16:
+        case OP_SUPER_17:
+        case OP_SUPER_18:
+        case OP_SUPER_19:
+        case OP_SUPER_20:
+        case OP_SUPER_21:
+        case OP_SUPER_22:
+        case OP_SUPER_23:
+        case OP_SUPER_24:
+        case OP_SUPER_25:
+        case OP_SUPER_26:
+        case OP_SUPER_27:
+        case OP_SUPER_28:
+        case OP_SUPER_29:
+        case OP_SUPER_30:
+        case OP_SUPER_31:
             return constantInstructionN(
                     "OP_SUPER_", instruction - OP_SUPER_0, chunk, offset);
         case OP_CLOSURE: {
