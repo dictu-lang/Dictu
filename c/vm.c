@@ -690,6 +690,12 @@ static InterpretResult run() {
             DISPATCH();
 
         CASE_CODE(POW): {
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+                frame->ip = ip;
+                runtimeError("Operands must be numbers.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             double b = AS_NUMBER(pop());
             double a = AS_NUMBER(pop());
 
@@ -698,6 +704,12 @@ static InterpretResult run() {
         }
 
         CASE_CODE(MOD): {
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+                frame->ip = ip;
+                runtimeError("Operands must be numbers.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             double b = AS_NUMBER(pop());
             double a = AS_NUMBER(pop());
 
