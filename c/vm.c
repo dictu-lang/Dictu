@@ -689,6 +689,14 @@ static InterpretResult run() {
             BINARY_OP(NUMBER_VAL, /);
             DISPATCH();
 
+        CASE_CODE(POW): {
+            double b = AS_NUMBER(pop());
+            double a = AS_NUMBER(pop());
+
+            push(NUMBER_VAL(powf(a, b)));
+            DISPATCH();
+        }
+
         CASE_CODE(MOD): {
             double b = AS_NUMBER(pop());
             double a = AS_NUMBER(pop());
