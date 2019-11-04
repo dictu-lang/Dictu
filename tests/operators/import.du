@@ -8,6 +8,7 @@ import "tests/operators/plus.du";
 import "tests/operators/subtract.du";
 import "tests/operators/multiply.du";
 import "tests/operators/divide.du";
+import "tests/operators/pow.du";
 import "tests/operators/modulo.du";
 import "tests/operators/prefix.du";
 import "tests/operators/assignment.du";

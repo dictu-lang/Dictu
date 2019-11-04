@@ -689,7 +689,27 @@ static InterpretResult run() {
             BINARY_OP(NUMBER_VAL, /);
             DISPATCH();
 
+        CASE_CODE(POW): {
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+                frame->ip = ip;
+                runtimeError("Operands must be numbers.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            double b = AS_NUMBER(pop());
+            double a = AS_NUMBER(pop());
+
+            push(NUMBER_VAL(powf(a, b)));
+            DISPATCH();
+        }
+
         CASE_CODE(MOD): {
+            if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+                frame->ip = ip;
+                runtimeError("Operands must be numbers.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             double b = AS_NUMBER(pop());
             double a = AS_NUMBER(pop());
 
