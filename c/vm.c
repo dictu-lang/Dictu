@@ -410,12 +410,30 @@ static InterpretResult run() {
     #define INTERPRET_LOOP    DISPATCH();
     #define CASE_CODE(name)   op_##name
 
-    #define DISPATCH()                                            \
-        do                                                        \
-        {                                                         \
-            goto *dispatchTable[instruction = READ_BYTE()];       \
-        }                                                         \
-        while (false)
+    #ifdef DEBUG_TRACE_EXECUTION
+        #define DISPATCH()                                                         \
+            do                                                                     \
+            {                                                                      \
+                printf("          ");                                              \
+                for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {         \
+                    printf("[ ");                                                  \
+                    printValue(*slot);                                             \
+                    printf(" ]");                                                  \
+                }                                                                  \
+                printf("\n");                                                      \
+                disassembleInstruction(&frame->closure->function->chunk,           \
+                        (int) (frame->ip - frame->closure->function->chunk.code)); \
+                goto *dispatchTable[instruction = READ_BYTE()];                    \
+            }                                                                      \
+            while (false)
+    #else
+        #define DISPATCH()                                            \
+            do                                                        \
+            {                                                         \
+                goto *dispatchTable[instruction = READ_BYTE()];       \
+            }                                                         \
+            while (false)
+    #endif
 
     #else
 
