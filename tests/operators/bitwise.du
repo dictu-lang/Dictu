@@ -1,0 +1,20 @@
+/**
+ * bitwise.du
+ *
+ * Testing bitwise operators
+ */
+
+// Bitwise and
+assert(10 & 2 == 2);
+assert(100 & 15 == 4);
+assert(5 & 2 != 1);
+
+// Bitwise or
+assert(10 | 2 == 10);
+assert(100 | 15 == 111);
+assert(5 | 2 != 1);
+
+// Bitwise xor
+assert(10 ^ 2 == 8);
+assert(100 ^ 15 == 107);
+assert(5 ^ 2 != 1);
