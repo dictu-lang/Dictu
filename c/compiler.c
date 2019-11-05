@@ -23,6 +23,9 @@ typedef enum {
     PREC_ASSIGNMENT,  // =
     PREC_OR,          // or
     PREC_AND,         // and
+    PREC_BITWISE_OR,  // bitwise or
+    PREC_BITWISE_XOR, // bitwise xor
+    PREC_BITWISE_AND, // bitwise and
     PREC_EQUALITY,    // == !=
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
@@ -547,6 +550,15 @@ static void binary(bool canAssign) {
         case TOKEN_PERCENT:
             emitByte(OP_MOD);
             break;
+        case TOKEN_AMPERSAND:
+            emitByte(OP_BITWISE_AND);
+            break;
+        case TOKEN_CARET:
+            emitByte(OP_BITWISE_XOR);
+            break;
+        case TOKEN_PIPE:
+            emitByte(OP_BITWISE_OR);
+            break;
         default:
             return;
     }
@@ -897,6 +909,9 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
+        {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
+        {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
         {unary,    NULL,         PREC_NONE},               // TOKEN_BANG
         {NULL,     binary,       PREC_EQUALITY},           // TOKEN_BANG_EQUAL
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EQUAL

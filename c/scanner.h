@@ -16,6 +16,9 @@ typedef enum {
     TOKEN_STAR, TOKEN_STAR_STAR,
     TOKEN_PERCENT,
 
+    // Bitwise
+    TOKEN_AMPERSAND, TOKEN_CARET, TOKEN_PIPE,
+
     // One or two character tokens.
     TOKEN_BANG, TOKEN_BANG_EQUAL,
     TOKEN_EQUAL, TOKEN_EQUAL_EQUAL,

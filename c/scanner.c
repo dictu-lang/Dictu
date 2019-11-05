@@ -327,6 +327,12 @@ Token scanToken() {
                 return makeToken(TOKEN_PLUS);
             }
         }
+        case '&':
+            return makeToken(TOKEN_AMPERSAND);
+        case '^':
+            return makeToken(TOKEN_CARET);
+        case '|':
+            return makeToken(TOKEN_PIPE);
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':

@@ -399,6 +399,20 @@ static InterpretResult run() {
           push(valueType(a op b)); \
         } while (false)
 
+
+    #define BITWISE_OP(valueType, op) \
+        do { \
+          if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            frame->ip = ip; \
+            runtimeError("Operands must be numbers."); \
+            return INTERPRET_RUNTIME_ERROR; \
+          } \
+          \
+          int b = AS_NUMBER(pop()); \
+          int a = AS_NUMBER(pop()); \
+          push(valueType(a op b)); \
+        } while (false)
+
     #ifdef COMPUTED_GOTO
 
     static void* dispatchTable[] = {
@@ -716,6 +730,18 @@ static InterpretResult run() {
             push(NUMBER_VAL(fmod(a, b)));
             DISPATCH();
         }
+
+        CASE_CODE(BITWISE_AND):
+            BITWISE_OP(NUMBER_VAL, &);
+            DISPATCH();
+
+        CASE_CODE(BITWISE_XOR):
+            BITWISE_OP(NUMBER_VAL, ^);
+            DISPATCH();
+
+        CASE_CODE(BITWISE_OR):
+            BITWISE_OP(NUMBER_VAL, |);
+            DISPATCH();
 
         CASE_CODE(NOT):
             push(BOOL_VAL(isFalsey(pop())));
