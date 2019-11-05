@@ -16,6 +16,9 @@ nav_order: 6
 | \-\- Prefix  | Decrements the value of a variable by 1                        | \-\-x                      |
 | %            | Modulo of values on either side of the operator                | 10 % 2                     |
 | **           | Exponent (power) of the values                                 | 2 ** 2                     |
+| &            | Bitwise AND of the values                                      | 10 & 2                     |
+| ^            | Bitwise XOR of the values                                      | 10 ^ 2                     |
+| |            | Bitwise OR of the values                                       | 10 | 2                     |
 | +=           | Same as +, however its shorthand to assign too                 | x += 10 Same as x = x + 10 |
 | -=           | Same as -, however its shorthand to assign too                 | x -= 10 Same as x = x - 10 |
 | *=           | Same as *, however its shorthand to assign too                 | x *= 10 Same as x = x * 10 |
