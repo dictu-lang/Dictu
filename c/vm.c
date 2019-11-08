@@ -943,39 +943,8 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(CALL_0):
-        CASE_CODE(CALL_1):
-        CASE_CODE(CALL_2):
-        CASE_CODE(CALL_3):
-        CASE_CODE(CALL_4):
-        CASE_CODE(CALL_5):
-        CASE_CODE(CALL_6):
-        CASE_CODE(CALL_7):
-        CASE_CODE(CALL_8):
-        CASE_CODE(CALL_9):
-        CASE_CODE(CALL_10):
-        CASE_CODE(CALL_11):
-        CASE_CODE(CALL_12):
-        CASE_CODE(CALL_13):
-        CASE_CODE(CALL_14):
-        CASE_CODE(CALL_15):
-        CASE_CODE(CALL_16):
-        CASE_CODE(CALL_17):
-        CASE_CODE(CALL_18):
-        CASE_CODE(CALL_19):
-        CASE_CODE(CALL_20):
-        CASE_CODE(CALL_21):
-        CASE_CODE(CALL_22):
-        CASE_CODE(CALL_23):
-        CASE_CODE(CALL_24):
-        CASE_CODE(CALL_25):
-        CASE_CODE(CALL_26):
-        CASE_CODE(CALL_27):
-        CASE_CODE(CALL_28):
-        CASE_CODE(CALL_29):
-        CASE_CODE(CALL_30):
-        CASE_CODE(CALL_31): {
-            int argCount = instruction - OP_CALL_0;
+        CASE_CODE(CALL): {
+            int argCount = READ_BYTE();
             frame->ip = ip;
             if (!callValue(peek(argCount), argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
@@ -985,41 +954,10 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(INVOKE_0):
-        CASE_CODE(INVOKE_1):
-        CASE_CODE(INVOKE_2):
-        CASE_CODE(INVOKE_3):
-        CASE_CODE(INVOKE_4):
-        CASE_CODE(INVOKE_5):
-        CASE_CODE(INVOKE_6):
-        CASE_CODE(INVOKE_7):
-        CASE_CODE(INVOKE_8):
-        CASE_CODE(INVOKE_9):
-        CASE_CODE(INVOKE_10):
-        CASE_CODE(INVOKE_11):
-        CASE_CODE(INVOKE_12):
-        CASE_CODE(INVOKE_13):
-        CASE_CODE(INVOKE_14):
-        CASE_CODE(INVOKE_15):
-        CASE_CODE(INVOKE_16):
-        CASE_CODE(INVOKE_17):
-        CASE_CODE(INVOKE_18):
-        CASE_CODE(INVOKE_19):
-        CASE_CODE(INVOKE_20):
-        CASE_CODE(INVOKE_21):
-        CASE_CODE(INVOKE_22):
-        CASE_CODE(INVOKE_23):
-        CASE_CODE(INVOKE_24):
-        CASE_CODE(INVOKE_25):
-        CASE_CODE(INVOKE_26):
-        CASE_CODE(INVOKE_27):
-        CASE_CODE(INVOKE_28):
-        CASE_CODE(INVOKE_29):
-        CASE_CODE(INVOKE_30):
-        CASE_CODE(INVOKE_31): {
+        CASE_CODE(INVOKE): {
+            int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             frame->ip = ip;
-            int argCount = instruction - OP_INVOKE_0;
             if (!invoke(method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1028,41 +966,10 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(SUPER_0):
-        CASE_CODE(SUPER_1):
-        CASE_CODE(SUPER_2):
-        CASE_CODE(SUPER_3):
-        CASE_CODE(SUPER_4):
-        CASE_CODE(SUPER_5):
-        CASE_CODE(SUPER_6):
-        CASE_CODE(SUPER_7):
-        CASE_CODE(SUPER_8):
-        CASE_CODE(SUPER_9):
-        CASE_CODE(SUPER_10):
-        CASE_CODE(SUPER_11):
-        CASE_CODE(SUPER_12):
-        CASE_CODE(SUPER_13):
-        CASE_CODE(SUPER_14):
-        CASE_CODE(SUPER_15):
-        CASE_CODE(SUPER_16):
-        CASE_CODE(SUPER_17):
-        CASE_CODE(SUPER_18):
-        CASE_CODE(SUPER_19):
-        CASE_CODE(SUPER_20):
-        CASE_CODE(SUPER_21):
-        CASE_CODE(SUPER_22):
-        CASE_CODE(SUPER_23):
-        CASE_CODE(SUPER_24):
-        CASE_CODE(SUPER_25):
-        CASE_CODE(SUPER_26):
-        CASE_CODE(SUPER_27):
-        CASE_CODE(SUPER_28):
-        CASE_CODE(SUPER_29):
-        CASE_CODE(SUPER_30):
-        CASE_CODE(SUPER_31): {
+        CASE_CODE(SUPER): {
+            int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             frame->ip = ip;
-            int argCount = instruction - OP_SUPER_0;
             ObjClass *superclass = AS_CLASS(pop());
             if (!invokeFromClass(superclass, method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
