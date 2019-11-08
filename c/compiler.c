@@ -566,7 +566,7 @@ static void binary(bool canAssign) {
 
 static void call(bool canAssign) {
     uint8_t argCount = argumentList();
-    emitByte(OP_CALL_0 + argCount);
+    emitBytes(OP_CALL, argCount);
 }
 
 static void dot(bool canAssign) {
@@ -598,7 +598,8 @@ static void dot(bool canAssign) {
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
         uint8_t argCount = argumentList();
-        emitBytes(OP_INVOKE_0 + argCount, name);
+        emitBytes(OP_INVOKE, argCount);
+        emitByte(name);
     } else {
         emitBytes(OP_GET_PROPERTY, name);
     }
@@ -800,7 +801,8 @@ static void super_(bool canAssign) {
         uint8_t argCount = argumentList();
 
         pushSuperclass();
-        emitBytes(OP_SUPER_0 + argCount, name);
+        emitBytes(OP_SUPER, argCount);
+        emitByte(name);
     } else {
         pushSuperclass();
         emitBytes(OP_GET_SUPER, name);
