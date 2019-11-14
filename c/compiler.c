@@ -703,22 +703,11 @@ static void subscript(bool canAssign) {
 
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
-    // Number means its a list subscript
-    if (type == TOKEN_NUMBER) {
-        if (match(TOKEN_EQUAL)) {
-            expression();
-            emitByte(OP_SUBSCRIPT_ASSIGN);
-        } else {
-            emitByte(OP_SUBSCRIPT);
-        }
+    if (match(TOKEN_EQUAL)) {
+        expression();
+        emitByte(OP_SUBSCRIPT_ASSIGN);
     } else {
-        // Dict subscript
-        if (match(TOKEN_EQUAL)) {
-            expression();
-            emitByte(OP_SUBSCRIPT_DICT_ASSIGN);
-        } else {
-            emitByte(OP_SUBSCRIPT_DICT);
-        }
+        emitByte(OP_SUBSCRIPT);
     }
 }
 
