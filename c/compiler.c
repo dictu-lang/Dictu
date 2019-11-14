@@ -693,14 +693,6 @@ static void dict(bool canAssign) {
 
 static void subscript(bool canAssign) {
     expression();
-
-    TokenType type;
-    if (parser.previous.type == TOKEN_NUMBER) {
-        type = TOKEN_NUMBER;
-    } else {
-        type = TOKEN_STRING;
-    }
-
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
     if (match(TOKEN_EQUAL)) {
