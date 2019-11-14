@@ -851,96 +851,128 @@ static InterpretResult run() {
 
         CASE_CODE(SUBSCRIPT): {
             Value indexValue = pop();
-            Value listValue = pop();
+            Value subscriptValue = pop();
 
-            if (!IS_NUMBER(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Array index must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Array index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        push(list->values.values[index]);
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_STRING: {
+                    ObjString *string = AS_STRING(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = string->length + index;
+
+                    if (index >= 0 && index < string->length) {
+                        push(OBJ_VAL(copyString(&string->chars[index], 1)));
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *key = AS_CSTRING(indexValue);
+
+                    push(searchDict(dict, key));
+
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Can only subscript on lists, strings or dictionaries.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
-
-            ObjList *list = AS_LIST(listValue);
-            int index = AS_NUMBER(indexValue);
-
-            if (index < 0)
-                index = list->values.count + index;
-
-            if (index >= 0 && index < list->values.count) {
-                push(list->values.values[index]);
-                DISPATCH();
-            }
-
-            frame->ip = ip;
-            runtimeError("Array index out of bounds.");
-            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
             Value assignValue = pop();
             Value indexValue = pop();
-            Value listValue = pop();
+            Value subscriptValue = pop();
 
-            if (!IS_NUMBER(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Array index must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Array index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        list->values.values[index] = assignValue;
+                        push(NIL_VAL);
+                        DISPATCH();
+                    }
+
+                    push(NIL_VAL);
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *keyString = AS_CSTRING(indexValue);
+
+                    insertDict(dict, keyString, assignValue);
+
+                    push(NIL_VAL);
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Only lists and dictionaries support subscript assignment.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
-
-            ObjList *list = AS_LIST(listValue);
-            int index = AS_NUMBER(indexValue);
-
-            if (index < 0)
-                index = list->values.count + index;
-
-            if (index >= 0 && index < list->values.count) {
-                list->values.values[index] = assignValue;
-                push(NIL_VAL);
-                DISPATCH();
-            }
-
-            push(NIL_VAL);
-
-            frame->ip = ip;
-            runtimeError("Array index out of bounds.");
-            return INTERPRET_RUNTIME_ERROR;
-        }
-
-        CASE_CODE(SUBSCRIPT_DICT): {
-            Value indexValue = pop();
-            Value dictValue = pop();
-
-            if (!IS_STRING(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Dictionary key must be a string.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            ObjDict *dict = AS_DICT(dictValue);
-            char *key = AS_CSTRING(indexValue);
-
-            push(searchDict(dict, key));
-
-            DISPATCH();
-        }
-
-        CASE_CODE(SUBSCRIPT_DICT_ASSIGN): {
-            Value value = pop();
-            Value key = pop();
-            Value dictValue = pop();
-
-            if (!IS_STRING(key)) {
-                frame->ip = ip;
-                runtimeError("Dictionary key must be a string.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            ObjDict *dict = AS_DICT(dictValue);
-            char *keyString = AS_CSTRING(key);
-
-            insertDict(dict, keyString, value);
-
-            push(NIL_VAL);
-            DISPATCH();
         }
 
         CASE_CODE(CALL): {

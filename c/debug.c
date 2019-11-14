@@ -147,10 +147,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_NEW_LIST", offset);
         case OP_ADD_DICT:
             return simpleInstruction("OP_ADD_LIST", offset);
-        case OP_SUBSCRIPT_DICT:
-            return simpleInstruction("OP_SUBSCRIPT_DICT", offset);
-        case OP_SUBSCRIPT_DICT_ASSIGN:
-            return simpleInstruction("OP_SUBSCRIPT_DICT_ASSIGN", offset);
         case OP_CALL:
             return byteInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE:
