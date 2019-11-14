@@ -899,7 +899,7 @@ static InterpretResult run() {
                 case OBJ_DICT: {
                     if (!IS_STRING(indexValue)) {
                         frame->ip = ip;
-                        runtimeError("Dictionary key must be a string2.");
+                        runtimeError("Dictionary key must be a string.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
