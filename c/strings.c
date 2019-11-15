@@ -14,11 +14,11 @@ static bool splitString(int argCount) {
     }
 
     char *delimiter = AS_CSTRING(pop());
-    char *string = AS_CSTRING(pop());
-    char *tmp = malloc(strlen(string) + 1);
+    ObjString *string = AS_STRING(pop());
+    char *tmp = malloc(string->length + 1);
     char *tmpFree = tmp;
-    strcpy(tmp, string);
-
+    memcpy(tmp, string->chars, string->length + 1);
+    int delimiterLength = strlen(delimiter);
     char *token;
 
     ObjList *list = initList(false);
@@ -41,7 +41,7 @@ static bool splitString(int argCount) {
         array->values[array->count] = OBJ_VAL(str);
         array->count++;
 
-        tmp = token + strlen(delimiter);
+        tmp = token + delimiterLength;
     } while (token != NULL);
 
     free(tmpFree);
