@@ -205,6 +205,11 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 static bool invoke(ObjString *name, int argCount) {
     Value receiver = peek(argCount);
 
+    if (!IS_OBJ(receiver)) {
+        runtimeError("Can only invoke on objects.");
+        return false;
+    }
+
     switch (getObjType(receiver)) {
         case OBJ_CLASS: {
             ObjClass *instance = AS_CLASS(receiver);
