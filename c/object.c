@@ -380,6 +380,8 @@ char *objectToString(Value value) {
 
                 dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s", element);
 
+                free(element);
+
                 if (count != dict->count) {
                     dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
                 }
