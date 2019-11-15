@@ -293,10 +293,9 @@ static bool rightStripString(int argCount) {
         runtimeError("rightStrip() takes 1 argument (%d  given)", argCount);
         return false;
     }
+
     ObjString *string = AS_STRING(pop());
-
     int length;
-
     char *temp = malloc(sizeof(char) * (string->length + 1));
 
     for (length = string->length - 1; length > 0; --length) {
@@ -305,9 +304,8 @@ static bool rightStripString(int argCount) {
         }
     }
 
-    snprintf(temp, string->length + 1, "%s", string->chars);
-    temp[length + 1] = '\0';
-    push(OBJ_VAL(copyString(temp, strlen(temp))));
+    memcpy(temp, string->chars, length + 1);
+    push(OBJ_VAL(copyString(temp, length + 1)));
     free(temp);
     return true;
 }
