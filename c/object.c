@@ -29,7 +29,7 @@ static Obj *allocateObject(size_t size, ObjType type, bool garbageCollect) {
     vm.objects = object;
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", (void *)object, size, type);
+    printf("%p allocate %zd for %d\n", (void *)object, size, type);
 #endif
 
     return object;
@@ -283,6 +283,7 @@ char *objectToString(Value value) {
 
         case OBJ_LIST: {
             int size = 50;
+            int listStringSize;
             ObjList *list = AS_LIST(value);
             char *listString = calloc(size, sizeof(char));
             snprintf(listString, 2, "%s", "[");
@@ -291,13 +292,13 @@ char *objectToString(Value value) {
                 char *element = valueToString(list->values.values[i]);
 
                 int elementSize = strlen(element);
-                int listStringSize = strlen(listString);
+                listStringSize = strlen(listString);
 
-                if (elementSize > (size - listStringSize - 1)) {
+                if (elementSize > (size - listStringSize - 3)) {
                     if (elementSize > size * 2) {
-                        size += elementSize * 2;
+                        size += elementSize * 2 + 3;
                     } else {
-                        size *= 2;
+                        size = size * 2 + 3;
                     }
 
                     char *newB = realloc(listString, sizeof(char) * size);
@@ -310,15 +311,18 @@ char *objectToString(Value value) {
                     listString = newB;
                 }
 
-                strncat(listString, element, size - listStringSize - 1);
+                snprintf(listString + listStringSize, size - listStringSize, "%s", element);
 
                 free(element);
 
-                if (i != list->values.count - 1)
-                    strncat(listString, ", ", size - listStringSize - 1);
+                if (i != list->values.count - 1) {
+                    listStringSize = strlen(listString);
+                    snprintf(listString + listStringSize, size - listStringSize, ", ");
+                }
             }
 
-            strncat(listString, "]", size - strlen(listString) - 1);
+            listStringSize = strlen(listString);
+            snprintf(listString + listStringSize, size - listStringSize, "]");
             return listString;
         }
 
