@@ -143,7 +143,7 @@ static bool replaceString(int argCount) {
     // Make a copy of the string so we do not modify the original
     char *tmp = malloc(stringLen);
     char *tmpFree = tmp;
-    snprintf(tmp, stringLen, "%s", string);
+    memcpy(tmp, string, stringLen);
 
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
@@ -157,8 +157,6 @@ static bool replaceString(int argCount) {
         push(stringValue);
         return true;
     }
-
-    // snprintf(tmp, stringLen, "%s", string);
 
     int length = strlen(tmp) - count * (len - strlen(replace)) + 1;
     char *pos;
@@ -341,7 +339,7 @@ static bool formatString(int argCount) {
         else {
             ObjString *strObj = AS_STRING(value);
             char *str = malloc(strObj->length + 1);
-            snprintf(str, strObj->length + 1, "%s", strObj->chars);
+            memcpy(str, strObj->chars, strObj->length + 1);
             replace_strings[j] = str;
         }
 
@@ -353,7 +351,7 @@ static bool formatString(int argCount) {
     int stringLen = strlen(string) + 1;
     char *tmp = malloc(stringLen);
     char *tmpFree = tmp;
-    snprintf(tmp, stringLen, "%s", string);
+    memcpy(tmp, string, stringLen);
 
     int count = 0;
     while((tmp = strstr(tmp, "{}")))
