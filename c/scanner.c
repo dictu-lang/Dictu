@@ -91,12 +91,12 @@ static void skipWhitespace() {
 
             case '/':
                 if (peekNext() == '*') {
-                    char c;
                     // Multiline comments
                     advance();
                     advance();
                     while (true) {
                         while (peek() != '*' && !isAtEnd()) {
+                            char c;
                             if ((c = advance()) == '\n') {
                                 scanner.line++;
                             }

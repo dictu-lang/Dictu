@@ -319,7 +319,7 @@ static bool rightStripString(int argCount) {
         }
     }
 
-    strncpy(temp, string->chars, length + 1);
+    snprintf(temp, string->length + 1, "%s", string->chars);
     temp[length + 1] = '\0';
     push(OBJ_VAL(copyString(temp, strlen(temp))));
     free(temp);
@@ -383,7 +383,6 @@ static bool formatString(int argCount) {
         }
 
         free(replace_strings);
-
         return false;
     }
 
@@ -393,20 +392,15 @@ static bool formatString(int argCount) {
     char *tmp1Free = tmp1;
     strcpy(tmp1, string);
     char *newStr = malloc(sizeof(char) * fullLength);
+    int stringLength = 0;
 
     for (int i = 0; i < argCount - 1; ++i) {
         pos = strstr(tmp1, "{}");
         if (pos != NULL)
             *pos = '\0';
 
-        if (i == 0)
-            snprintf(newStr, fullLength, "%s", tmp1);
-        else
-            strncat(newStr, tmp1, strlen(tmp1));
-
-        strncat(newStr, replace_strings[i], strlen(replace_strings[i]));
+        stringLength += snprintf(newStr + stringLength, fullLength - stringLength, "%s%s", tmp1, replace_strings[i]);
         tmp1 = pos + 2;
-
         free(replace_strings[i]);
     }
 
@@ -423,7 +417,9 @@ static bool formatString(int argCount) {
 }
 
 bool stringMethods(char *method, int argCount) {
-    if (strcmp(method, "split") == 0) {
+    if (strcmp(method, "format") == 0) {
+        return formatString(argCount);
+    } else if (strcmp(method, "split") == 0) {
         return splitString(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsString(argCount);
@@ -445,8 +441,6 @@ bool stringMethods(char *method, int argCount) {
         return rightStripString(argCount);
     } else if (strcmp(method, "strip") == 0) {
         return stripString(argCount);
-    } else if (strcmp(method, "format") == 0) {
-        return formatString(argCount);
     }
 
     runtimeError("String has no method %s()", method);
