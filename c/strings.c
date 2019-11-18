@@ -133,6 +133,7 @@ static bool replaceString(int argCount) {
 
     int count = 0;
     int len = strlen(to_replace);
+    int replaceLen = strlen(replace);
     int stringLen = strlen(string) + 1;
 
     // Make a copy of the string so we do not modify the original
@@ -156,7 +157,7 @@ static bool replaceString(int argCount) {
         return true;
     }
 
-    int length = strlen(tmp) - count * (len - strlen(replace)) + 1;
+    int length = strlen(tmp) - count * (len - replaceLen) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
     int stringLength = 0;
@@ -170,7 +171,7 @@ static bool replaceString(int argCount) {
         tmpLength = strlen(tmp);
         memcpy(newStr + stringLength, tmp, length - stringLength);
         memcpy(newStr + stringLength + tmpLength, replace, length - stringLength - tmpLength);
-        stringLength += tmpLength + len;
+        stringLength += replaceLen;
         tmp = pos + len;
     }
 
