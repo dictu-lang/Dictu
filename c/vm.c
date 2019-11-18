@@ -676,10 +676,6 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(SUBTRACT):
-            BINARY_OP(NUMBER_VAL, -);
-            DISPATCH();
-
         CASE_CODE(INCREMENT): {
             if (!IS_NUMBER(peek(0))) {
                 runtimeError("Operand must be a number.");

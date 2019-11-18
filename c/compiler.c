@@ -536,7 +536,7 @@ static void binary(bool canAssign) {
             emitByte(OP_ADD);
             break;
         case TOKEN_MINUS:
-            emitByte(OP_SUBTRACT);
+            emitBytes(OP_NEGATE, OP_ADD);
             break;
         case TOKEN_STAR:
             emitByte(OP_MULTIPLY);
@@ -581,7 +581,7 @@ static void dot(bool canAssign) {
     } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
         emitBytes(OP_GET_PROPERTY_NO_POP, name);
         expression();
-        emitByte(OP_SUBTRACT);
+        emitBytes(OP_NEGATE, OP_ADD);
         emitBytes(OP_SET_PROPERTY, name);
     } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
         emitBytes(OP_GET_PROPERTY_NO_POP, name);
@@ -726,7 +726,7 @@ static void namedVariable(Token name, bool canAssign) {
     } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
         namedVariable(name, false);
         expression();
-        emitByte(OP_SUBTRACT);
+        emitBytes(OP_NEGATE, OP_ADD);
         emitBytes(setOp, (uint8_t) arg);
     } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
         namedVariable(name, false);
@@ -741,10 +741,8 @@ static void namedVariable(Token name, bool canAssign) {
     } else if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(setOp, (uint8_t) arg);
-        return;
     } else {
         emitBytes(getOp, (uint8_t) arg);
-        return;
     }
 }
 
