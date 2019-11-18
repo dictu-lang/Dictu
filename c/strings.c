@@ -125,6 +125,7 @@ static bool replaceString(int argCount) {
         return false;
     }
 
+    // Pop values off the stack
     char *replace = AS_CSTRING(pop());
     char *to_replace = AS_CSTRING(pop());
     Value stringValue = pop();
@@ -139,6 +140,8 @@ static bool replaceString(int argCount) {
     char *tmpFree = tmp;
     memcpy(tmp, string, stringLen);
 
+    // Count the occurrences of the needle so we can determine the size
+    // of the string we need to allocate
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
         tmp += len;
@@ -165,10 +168,9 @@ static bool replaceString(int argCount) {
             *pos = '\0';
 
         tmpLength = strlen(tmp);
-
         memcpy(newStr + stringLength, tmp, length - stringLength);
         memcpy(newStr + stringLength + tmpLength, replace, length - stringLength - tmpLength);
-        stringLength = strlen(newStr);
+        stringLength += tmpLength + len;
         tmp = pos + len;
     }
 
