@@ -169,13 +169,13 @@ static bool replaceString(int argCount) {
             *pos = '\0';
 
         tmpLength = strlen(tmp);
-        memcpy(newStr + stringLength, tmp, length - stringLength);
-        memcpy(newStr + stringLength + tmpLength, replace, length - stringLength - tmpLength);
-        stringLength += replaceLen;
+        memcpy(newStr + stringLength, tmp, tmpLength);
+        memcpy(newStr + stringLength + tmpLength, replace, replaceLen);
+        stringLength += tmpLength + replaceLen;
         tmp = pos + len;
     }
 
-    memcpy(newStr + stringLength, tmp, length - stringLength);
+    memcpy(newStr + stringLength, tmp, tmpLength);
     ObjString *newString = copyString(newStr, length - 1);
     push(OBJ_VAL(newString));
 
