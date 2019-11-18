@@ -120,16 +120,10 @@ static bool replaceString(int argCount) {
         return false;
     }
 
-    if (!IS_STRING(peek(0))) {
+    if (!IS_STRING(peek(0)) || !IS_STRING(peek(1))) {
         runtimeError("Argument passed to replace() must be a string");
         return false;
     }
-
-    if (!IS_STRING(peek(1))) {
-        runtimeError("Argument passed to replace() must be a string");
-        return false;
-    }
-
 
     char *replace = AS_CSTRING(pop());
     char *to_replace = AS_CSTRING(pop());
@@ -154,6 +148,7 @@ static bool replaceString(int argCount) {
     tmp = tmpFree;
 
     if (count == 0) {
+        free(tmpFree);
         push(stringValue);
         return true;
     }
@@ -162,17 +157,22 @@ static bool replaceString(int argCount) {
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
     int stringLength = 0;
+    int tmpLength;
 
     for (int i = 0; i < count; ++i) {
         pos = strstr(tmp, to_replace);
         if (pos != NULL)
             *pos = '\0';
 
-        stringLength += snprintf(newStr + stringLength, length - stringLength, "%s%s", tmp, replace);
+        tmpLength = strlen(tmp);
+
+        memcpy(newStr + stringLength, tmp, length - stringLength);
+        memcpy(newStr + stringLength + tmpLength, replace, length - stringLength - tmpLength);
+        stringLength = strlen(newStr);
         tmp = pos + len;
     }
 
-    snprintf(newStr + stringLength, length - stringLength, "%s", tmp);
+    memcpy(newStr + stringLength, tmp, length - stringLength);
     ObjString *newString = copyString(newStr, length - 1);
     push(OBJ_VAL(newString));
 
