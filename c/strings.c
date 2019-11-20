@@ -161,14 +161,13 @@ static bool replaceString(int argCount) {
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
     int stringLength = 0;
-    int tmpLength = 0;
 
     for (int i = 0; i < count; ++i) {
         pos = strstr(tmp, to_replace);
         if (pos != NULL)
             *pos = '\0';
 
-        tmpLength = strlen(tmp);
+        int tmpLength = strlen(tmp);
         memcpy(newStr + stringLength, tmp, tmpLength);
         memcpy(newStr + stringLength + tmpLength, replace, replaceLen);
         stringLength += tmpLength + replaceLen;
@@ -379,16 +378,14 @@ static bool formatString(int argCount) {
     char *pos;
     char *newStr = malloc(sizeof(char) * fullLength);
     int stringLength = 0;
-    int tmpLength = 0;
-    int replaceLength = 0;
 
     for (int i = 0; i < argCount - 1; ++i) {
         pos = strstr(tmp, "{}");
         if (pos != NULL)
             *pos = '\0';
 
-        tmpLength = strlen(tmp);
-        replaceLength = strlen(replaceStrings[i]);
+        int tmpLength = strlen(tmp);
+        int replaceLength = strlen(replaceStrings[i]);
         memcpy(newStr + stringLength, tmp, tmpLength);
         memcpy(newStr + stringLength + tmpLength, replaceStrings[i], replaceLength);
         stringLength += tmpLength + replaceLength;
