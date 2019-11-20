@@ -14,11 +14,11 @@ static bool splitString(int argCount) {
     }
 
     char *delimiter = AS_CSTRING(pop());
-    char *string = AS_CSTRING(pop());
-    char *tmp = malloc(strlen(string) + 1);
+    ObjString *string = AS_STRING(pop());
+    char *tmp = malloc(string->length + 1);
     char *tmpFree = tmp;
-    strcpy(tmp, string);
-
+    memcpy(tmp, string->chars, string->length + 1);
+    int delimiterLength = strlen(delimiter);
     char *token;
 
     ObjList *list = initList(false);
@@ -41,7 +41,7 @@ static bool splitString(int argCount) {
         array->values[array->count] = OBJ_VAL(str);
         array->count++;
 
-        tmp = token + strlen(delimiter);
+        tmp = token + delimiterLength;
     } while (token != NULL);
 
     free(tmpFree);
@@ -62,18 +62,13 @@ static bool containsString(int argCount) {
 
     char *delimiter = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
-    char *tmp = malloc(strlen(string) + 1);
-    char *tmpFree = tmp;
-    strcpy(tmp, string);
 
-    if (!strstr(tmp, delimiter)) {
+    if (!strstr(string, delimiter)) {
         push(FALSE_VAL);
-        free(tmp);
         return true;
     }
 
     push(TRUE_VAL);
-    free(tmpFree);
     return true;
 }
 
@@ -101,25 +96,21 @@ static bool findString(int argCount) {
 
     char *substr = AS_CSTRING(pop());
     char *string = AS_CSTRING(pop());
-    char *tmp = malloc(strlen(string) + 1);
-    char *tmpFree = tmp;
-    strcpy(tmp, string);
 
     int position = 0;
 
     for (int i = 0; i < index; ++i) {
-        char *result = strstr(tmp, substr);
+        char *result = strstr(string, substr);
         if (!result) {
             position = -1;
             break;
         }
 
-        position += (result - tmp) + (i * strlen(substr));
-        tmp = result + strlen(substr);
+        position += (result - string) + (i * strlen(substr));
+        string = result + strlen(substr);
     }
 
     push(NUMBER_VAL(position));
-    free(tmpFree);
     return true;
 }
 
@@ -129,69 +120,66 @@ static bool replaceString(int argCount) {
         return false;
     }
 
-    if (!IS_STRING(peek(0))) {
+    if (!IS_STRING(peek(0)) || !IS_STRING(peek(1))) {
         runtimeError("Argument passed to replace() must be a string");
         return false;
     }
 
-    if (!IS_STRING(peek(1))) {
-        runtimeError("Argument passed to replace() must be a string");
-        return false;
-    }
-
-
+    // Pop values off the stack
     char *replace = AS_CSTRING(pop());
     char *to_replace = AS_CSTRING(pop());
     Value stringValue = pop();
     char *string = AS_CSTRING(stringValue);
 
     int count = 0;
-    size_t len = strlen(to_replace);
+    int len = strlen(to_replace);
+    int replaceLen = strlen(replace);
+    int stringLen = strlen(string) + 1;
 
     // Make a copy of the string so we do not modify the original
-    char *tmp = malloc(strlen(string) + 1);
+    char *tmp = malloc(stringLen);
     char *tmpFree = tmp;
-    char *tmp1 = malloc(strlen(string) + 1);
-    char *tmp1Free = tmp1;
-    strcpy(tmp, string);
-    strcpy(tmp1, string);
+    memcpy(tmp, string, stringLen);
 
+    // Count the occurrences of the needle so we can determine the size
+    // of the string we need to allocate
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
         tmp += len;
     }
 
-    free(tmpFree);
+    // Reset the pointer
+    tmp = tmpFree;
 
     if (count == 0) {
+        free(tmpFree);
         push(stringValue);
-        free(tmp1Free); // We're exiting early so remember to free
         return true;
     }
 
-    int length = strlen(tmp1) - count * (len - strlen(replace)) + 1;
+    int length = strlen(tmp) - count * (len - replaceLen) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
+    int stringLength = 0;
 
     for (int i = 0; i < count; ++i) {
-        pos = strstr(tmp1, to_replace);
+        pos = strstr(tmp, to_replace);
         if (pos != NULL)
             *pos = '\0';
 
-        if (i == 0)
-            snprintf(newStr, length, "%s", tmp1);
-        else
-            strncat(newStr, tmp1, strlen(tmp1));
-
-        strncat(newStr, replace, strlen(replace));
-        tmp1 = pos + len;
+        int tmpLength = strlen(tmp);
+        memcpy(newStr + stringLength, tmp, tmpLength);
+        memcpy(newStr + stringLength + tmpLength, replace, replaceLen);
+        stringLength += tmpLength + replaceLen;
+        tmp = pos + len;
     }
 
-    strncat(newStr, tmp1, strlen(tmp1));
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, length - 1);
-    free(newStr);
-    free(tmp1Free);
     push(OBJ_VAL(newString));
+
+    free(newStr);
+    free(tmpFree);
     return true;
 }
 
@@ -307,10 +295,9 @@ static bool rightStripString(int argCount) {
         runtimeError("rightStrip() takes 1 argument (%d  given)", argCount);
         return false;
     }
+
     ObjString *string = AS_STRING(pop());
-
     int length;
-
     char *temp = malloc(sizeof(char) * (string->length + 1));
 
     for (length = string->length - 1; length > 0; --length) {
@@ -319,9 +306,8 @@ static bool rightStripString(int argCount) {
         }
     }
 
-    strncpy(temp, string->chars, length + 1);
-    temp[length + 1] = '\0';
-    push(OBJ_VAL(copyString(temp, strlen(temp))));
+    memcpy(temp, string->chars, length + 1);
+    push(OBJ_VAL(copyString(temp, length + 1)));
     free(temp);
     return true;
 }
@@ -344,27 +330,28 @@ static bool formatString(int argCount) {
     }
 
     int length = 0;
-    char **replace_strings = malloc((argCount - 1) * sizeof(char*));
+    char **replaceStrings = malloc((argCount - 1) * sizeof(char*));
 
     for (int j = argCount - 2; j >= 0; --j) {
         Value value = pop();
         if (!IS_STRING(value))
-            replace_strings[j] = valueToString(value);
+            replaceStrings[j] = valueToString(value);
         else {
             ObjString *strObj = AS_STRING(value);
             char *str = malloc(strObj->length + 1);
-            snprintf(str, strObj->length + 1, "%s", strObj->chars);
-            replace_strings[j] = str;
+            memcpy(str, strObj->chars, strObj->length + 1);
+            replaceStrings[j] = str;
         }
 
-        length += strlen(replace_strings[j]);
+        length += strlen(replaceStrings[j]);
     }
 
     char *string = AS_CSTRING(pop());
 
-    char *tmp = malloc(strlen(string) + 1);
+    int stringLen = strlen(string) + 1;
+    char *tmp = malloc(stringLen);
     char *tmpFree = tmp;
-    strcpy(tmp, string);
+    memcpy(tmp, string, stringLen);
 
     int count = 0;
     while((tmp = strstr(tmp, "{}")))
@@ -373,57 +360,53 @@ static bool formatString(int argCount) {
         tmp++;
     }
 
-    free(tmpFree);
+    tmp = tmpFree;
 
     if (count != argCount - 1) {
         runtimeError("format() placeholders do not match arguments");
 
         for (int i = 0; i < argCount - 1; ++i) {
-            free(replace_strings[i]);
+            free(replaceStrings[i]);
         }
 
-        free(replace_strings);
-
+        free(tmp);
+        free(replaceStrings);
         return false;
     }
 
     int fullLength = strlen(string) - count * 2 + length + 1;
     char *pos;
-    char *tmp1 = malloc(strlen(string) + 1);
-    char *tmp1Free = tmp1;
-    strcpy(tmp1, string);
     char *newStr = malloc(sizeof(char) * fullLength);
+    int stringLength = 0;
 
     for (int i = 0; i < argCount - 1; ++i) {
-        pos = strstr(tmp1, "{}");
+        pos = strstr(tmp, "{}");
         if (pos != NULL)
             *pos = '\0';
 
-        if (i == 0)
-            snprintf(newStr, fullLength, "%s", tmp1);
-        else
-            strncat(newStr, tmp1, strlen(tmp1));
-
-        strncat(newStr, replace_strings[i], strlen(replace_strings[i]));
-        tmp1 = pos + 2;
-
-        free(replace_strings[i]);
+        int tmpLength = strlen(tmp);
+        int replaceLength = strlen(replaceStrings[i]);
+        memcpy(newStr + stringLength, tmp, tmpLength);
+        memcpy(newStr + stringLength + tmpLength, replaceStrings[i], replaceLength);
+        stringLength += tmpLength + replaceLength;
+        tmp = pos + 2;
+        free(replaceStrings[i]);
     }
 
-    free(replace_strings);
-
-    strncat(newStr, tmp1, strlen(tmp1));
+    free(replaceStrings);
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, fullLength - 1);
     push(OBJ_VAL(newString));
 
     free(newStr);
-    free(tmp1Free);
-
+    free(tmpFree);
     return true;
 }
 
 bool stringMethods(char *method, int argCount) {
-    if (strcmp(method, "split") == 0) {
+    if (strcmp(method, "format") == 0) {
+        return formatString(argCount);
+    } else if (strcmp(method, "split") == 0) {
         return splitString(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsString(argCount);
@@ -445,8 +428,6 @@ bool stringMethods(char *method, int argCount) {
         return rightStripString(argCount);
     } else if (strcmp(method, "strip") == 0) {
         return stripString(argCount);
-    } else if (strcmp(method, "format") == 0) {
-        return formatString(argCount);
     }
 
     runtimeError("String has no method %s()", method);

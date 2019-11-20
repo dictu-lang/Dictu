@@ -1,0 +1,20 @@
+/**
+ * subscript.du
+ *
+ * Testing string indexing
+ */
+
+var string = "Dictu is great!";
+var stringList = ['D', 'i', 'c', 't', 'u', ' ', 'i', 's', ' ', 'g', 'r', 'e', 'a', 't', '!'];
+
+assert(string[0] == "D");
+assert(string[1] == "i");
+assert(string[2] == "c");
+
+assert(string[-1] == "!");
+assert(string[-2] == "t");
+assert(string[-3] == "a");
+
+for (var i = 0; i < len(string); ++i) {
+    assert(string[i] == stringList[i]);
+}

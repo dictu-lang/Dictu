@@ -205,6 +205,11 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 static bool invoke(ObjString *name, int argCount) {
     Value receiver = peek(argCount);
 
+    if (!IS_OBJ(receiver)) {
+        runtimeError("Can only invoke on objects.");
+        return false;
+    }
+
     switch (getObjType(receiver)) {
         case OBJ_CLASS: {
             ObjClass *instance = AS_CLASS(receiver);
@@ -396,6 +401,20 @@ static InterpretResult run() {
           \
           double b = AS_NUMBER(pop()); \
           double a = AS_NUMBER(pop()); \
+          push(valueType(a op b)); \
+        } while (false)
+
+
+    #define BITWISE_OP(valueType, op) \
+        do { \
+          if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            frame->ip = ip; \
+            runtimeError("Operands must be numbers."); \
+            return INTERPRET_RUNTIME_ERROR; \
+          } \
+          \
+          int b = AS_NUMBER(pop()); \
+          int a = AS_NUMBER(pop()); \
           push(valueType(a op b)); \
         } while (false)
 
@@ -657,10 +676,6 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(SUBTRACT):
-            BINARY_OP(NUMBER_VAL, -);
-            DISPATCH();
-
         CASE_CODE(INCREMENT): {
             if (!IS_NUMBER(peek(0))) {
                 runtimeError("Operand must be a number.");
@@ -716,6 +731,18 @@ static InterpretResult run() {
             push(NUMBER_VAL(fmod(a, b)));
             DISPATCH();
         }
+
+        CASE_CODE(BITWISE_AND):
+            BITWISE_OP(NUMBER_VAL, &);
+            DISPATCH();
+
+        CASE_CODE(BITWISE_XOR):
+            BITWISE_OP(NUMBER_VAL, ^);
+            DISPATCH();
+
+        CASE_CODE(BITWISE_OR):
+            BITWISE_OP(NUMBER_VAL, |);
+            DISPATCH();
 
         CASE_CODE(NOT):
             push(BOOL_VAL(isFalsey(pop())));
@@ -825,131 +852,132 @@ static InterpretResult run() {
 
         CASE_CODE(SUBSCRIPT): {
             Value indexValue = pop();
-            Value listValue = pop();
+            Value subscriptValue = pop();
 
-            if (!IS_NUMBER(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Array index must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Array index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        push(list->values.values[index]);
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_STRING: {
+                    ObjString *string = AS_STRING(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = string->length + index;
+
+                    if (index >= 0 && index < string->length) {
+                        push(OBJ_VAL(copyString(&string->chars[index], 1)));
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *key = AS_CSTRING(indexValue);
+
+                    push(searchDict(dict, key));
+
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Can only subscript on lists, strings or dictionaries.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
-
-            ObjList *list = AS_LIST(listValue);
-            int index = AS_NUMBER(indexValue);
-
-            if (index < 0)
-                index = list->values.count + index;
-
-            if (index >= 0 && index < list->values.count) {
-                push(list->values.values[index]);
-                DISPATCH();
-            }
-
-            frame->ip = ip;
-            runtimeError("Array index out of bounds.");
-            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
             Value assignValue = pop();
             Value indexValue = pop();
-            Value listValue = pop();
+            Value subscriptValue = pop();
 
-            if (!IS_NUMBER(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Array index must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Array index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        list->values.values[index] = assignValue;
+                        push(NIL_VAL);
+                        DISPATCH();
+                    }
+
+                    push(NIL_VAL);
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *keyString = AS_CSTRING(indexValue);
+
+                    insertDict(dict, keyString, assignValue);
+
+                    push(NIL_VAL);
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Only lists and dictionaries support subscript assignment.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
-
-            ObjList *list = AS_LIST(listValue);
-            int index = AS_NUMBER(indexValue);
-
-            if (index < 0)
-                index = list->values.count + index;
-
-            if (index >= 0 && index < list->values.count) {
-                list->values.values[index] = assignValue;
-                push(NIL_VAL);
-                DISPATCH();
-            }
-
-            push(NIL_VAL);
-
-            frame->ip = ip;
-            runtimeError("Array index out of bounds.");
-            return INTERPRET_RUNTIME_ERROR;
         }
 
-        CASE_CODE(SUBSCRIPT_DICT): {
-            Value indexValue = pop();
-            Value dictValue = pop();
-
-            if (!IS_STRING(indexValue)) {
-                frame->ip = ip;
-                runtimeError("Dictionary key must be a string.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            ObjDict *dict = AS_DICT(dictValue);
-            char *key = AS_CSTRING(indexValue);
-
-            push(searchDict(dict, key));
-
-            DISPATCH();
-        }
-
-        CASE_CODE(SUBSCRIPT_DICT_ASSIGN): {
-            Value value = pop();
-            Value key = pop();
-            Value dictValue = pop();
-
-            if (!IS_STRING(key)) {
-                frame->ip = ip;
-                runtimeError("Dictionary key must be a string.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            ObjDict *dict = AS_DICT(dictValue);
-            char *keyString = AS_CSTRING(key);
-
-            insertDict(dict, keyString, value);
-
-            push(NIL_VAL);
-            DISPATCH();
-        }
-
-        CASE_CODE(CALL_0):
-        CASE_CODE(CALL_1):
-        CASE_CODE(CALL_2):
-        CASE_CODE(CALL_3):
-        CASE_CODE(CALL_4):
-        CASE_CODE(CALL_5):
-        CASE_CODE(CALL_6):
-        CASE_CODE(CALL_7):
-        CASE_CODE(CALL_8):
-        CASE_CODE(CALL_9):
-        CASE_CODE(CALL_10):
-        CASE_CODE(CALL_11):
-        CASE_CODE(CALL_12):
-        CASE_CODE(CALL_13):
-        CASE_CODE(CALL_14):
-        CASE_CODE(CALL_15):
-        CASE_CODE(CALL_16):
-        CASE_CODE(CALL_17):
-        CASE_CODE(CALL_18):
-        CASE_CODE(CALL_19):
-        CASE_CODE(CALL_20):
-        CASE_CODE(CALL_21):
-        CASE_CODE(CALL_22):
-        CASE_CODE(CALL_23):
-        CASE_CODE(CALL_24):
-        CASE_CODE(CALL_25):
-        CASE_CODE(CALL_26):
-        CASE_CODE(CALL_27):
-        CASE_CODE(CALL_28):
-        CASE_CODE(CALL_29):
-        CASE_CODE(CALL_30):
-        CASE_CODE(CALL_31): {
-            int argCount = instruction - OP_CALL_0;
+        CASE_CODE(CALL): {
+            int argCount = READ_BYTE();
             frame->ip = ip;
             if (!callValue(peek(argCount), argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
@@ -959,41 +987,10 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(INVOKE_0):
-        CASE_CODE(INVOKE_1):
-        CASE_CODE(INVOKE_2):
-        CASE_CODE(INVOKE_3):
-        CASE_CODE(INVOKE_4):
-        CASE_CODE(INVOKE_5):
-        CASE_CODE(INVOKE_6):
-        CASE_CODE(INVOKE_7):
-        CASE_CODE(INVOKE_8):
-        CASE_CODE(INVOKE_9):
-        CASE_CODE(INVOKE_10):
-        CASE_CODE(INVOKE_11):
-        CASE_CODE(INVOKE_12):
-        CASE_CODE(INVOKE_13):
-        CASE_CODE(INVOKE_14):
-        CASE_CODE(INVOKE_15):
-        CASE_CODE(INVOKE_16):
-        CASE_CODE(INVOKE_17):
-        CASE_CODE(INVOKE_18):
-        CASE_CODE(INVOKE_19):
-        CASE_CODE(INVOKE_20):
-        CASE_CODE(INVOKE_21):
-        CASE_CODE(INVOKE_22):
-        CASE_CODE(INVOKE_23):
-        CASE_CODE(INVOKE_24):
-        CASE_CODE(INVOKE_25):
-        CASE_CODE(INVOKE_26):
-        CASE_CODE(INVOKE_27):
-        CASE_CODE(INVOKE_28):
-        CASE_CODE(INVOKE_29):
-        CASE_CODE(INVOKE_30):
-        CASE_CODE(INVOKE_31): {
+        CASE_CODE(INVOKE): {
+            int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             frame->ip = ip;
-            int argCount = instruction - OP_INVOKE_0;
             if (!invoke(method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1002,41 +999,10 @@ static InterpretResult run() {
             DISPATCH();
         }
 
-        CASE_CODE(SUPER_0):
-        CASE_CODE(SUPER_1):
-        CASE_CODE(SUPER_2):
-        CASE_CODE(SUPER_3):
-        CASE_CODE(SUPER_4):
-        CASE_CODE(SUPER_5):
-        CASE_CODE(SUPER_6):
-        CASE_CODE(SUPER_7):
-        CASE_CODE(SUPER_8):
-        CASE_CODE(SUPER_9):
-        CASE_CODE(SUPER_10):
-        CASE_CODE(SUPER_11):
-        CASE_CODE(SUPER_12):
-        CASE_CODE(SUPER_13):
-        CASE_CODE(SUPER_14):
-        CASE_CODE(SUPER_15):
-        CASE_CODE(SUPER_16):
-        CASE_CODE(SUPER_17):
-        CASE_CODE(SUPER_18):
-        CASE_CODE(SUPER_19):
-        CASE_CODE(SUPER_20):
-        CASE_CODE(SUPER_21):
-        CASE_CODE(SUPER_22):
-        CASE_CODE(SUPER_23):
-        CASE_CODE(SUPER_24):
-        CASE_CODE(SUPER_25):
-        CASE_CODE(SUPER_26):
-        CASE_CODE(SUPER_27):
-        CASE_CODE(SUPER_28):
-        CASE_CODE(SUPER_29):
-        CASE_CODE(SUPER_30):
-        CASE_CODE(SUPER_31): {
+        CASE_CODE(SUPER): {
+            int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             frame->ip = ip;
-            int argCount = instruction - OP_SUPER_0;
             ObjClass *superclass = AS_CLASS(pop());
             if (!invokeFromClass(superclass, method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;

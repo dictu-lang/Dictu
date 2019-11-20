@@ -25,6 +25,9 @@ typedef enum {
     PREC_AND,         // and
     PREC_EQUALITY,    // == !=
     PREC_COMPARISON,  // < > <= >=
+    PREC_BITWISE_OR,  // bitwise or
+    PREC_BITWISE_XOR, // bitwise xor
+    PREC_BITWISE_AND, // bitwise and
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
     PREC_INDICES,     // **
@@ -533,7 +536,7 @@ static void binary(bool canAssign) {
             emitByte(OP_ADD);
             break;
         case TOKEN_MINUS:
-            emitByte(OP_SUBTRACT);
+            emitBytes(OP_NEGATE, OP_ADD);
             break;
         case TOKEN_STAR:
             emitByte(OP_MULTIPLY);
@@ -547,6 +550,15 @@ static void binary(bool canAssign) {
         case TOKEN_PERCENT:
             emitByte(OP_MOD);
             break;
+        case TOKEN_AMPERSAND:
+            emitByte(OP_BITWISE_AND);
+            break;
+        case TOKEN_CARET:
+            emitByte(OP_BITWISE_XOR);
+            break;
+        case TOKEN_PIPE:
+            emitByte(OP_BITWISE_OR);
+            break;
         default:
             return;
     }
@@ -554,7 +566,7 @@ static void binary(bool canAssign) {
 
 static void call(bool canAssign) {
     uint8_t argCount = argumentList();
-    emitByte(OP_CALL_0 + argCount);
+    emitBytes(OP_CALL, argCount);
 }
 
 static void dot(bool canAssign) {
@@ -569,7 +581,7 @@ static void dot(bool canAssign) {
     } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
         emitBytes(OP_GET_PROPERTY_NO_POP, name);
         expression();
-        emitByte(OP_SUBTRACT);
+        emitBytes(OP_NEGATE, OP_ADD);
         emitBytes(OP_SET_PROPERTY, name);
     } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
         emitBytes(OP_GET_PROPERTY_NO_POP, name);
@@ -586,7 +598,8 @@ static void dot(bool canAssign) {
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
         uint8_t argCount = argumentList();
-        emitBytes(OP_INVOKE_0 + argCount, name);
+        emitBytes(OP_INVOKE, argCount);
+        emitByte(name);
     } else {
         emitBytes(OP_GET_PROPERTY, name);
     }
@@ -680,32 +693,13 @@ static void dict(bool canAssign) {
 
 static void subscript(bool canAssign) {
     expression();
-
-    TokenType type;
-    if (parser.previous.type == TOKEN_NUMBER) {
-        type = TOKEN_NUMBER;
-    } else {
-        type = TOKEN_STRING;
-    }
-
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
-    // Number means its a list subscript
-    if (type == TOKEN_NUMBER) {
-        if (match(TOKEN_EQUAL)) {
-            expression();
-            emitByte(OP_SUBSCRIPT_ASSIGN);
-        } else {
-            emitByte(OP_SUBSCRIPT);
-        }
+    if (match(TOKEN_EQUAL)) {
+        expression();
+        emitByte(OP_SUBSCRIPT_ASSIGN);
     } else {
-        // Dict subscript
-        if (match(TOKEN_EQUAL)) {
-            expression();
-            emitByte(OP_SUBSCRIPT_DICT_ASSIGN);
-        } else {
-            emitByte(OP_SUBSCRIPT_DICT);
-        }
+        emitByte(OP_SUBSCRIPT);
     }
 }
 
@@ -732,7 +726,7 @@ static void namedVariable(Token name, bool canAssign) {
     } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
         namedVariable(name, false);
         expression();
-        emitByte(OP_SUBTRACT);
+        emitBytes(OP_NEGATE, OP_ADD);
         emitBytes(setOp, (uint8_t) arg);
     } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
         namedVariable(name, false);
@@ -747,10 +741,8 @@ static void namedVariable(Token name, bool canAssign) {
     } else if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(setOp, (uint8_t) arg);
-        return;
     } else {
         emitBytes(getOp, (uint8_t) arg);
-        return;
     }
 }
 
@@ -788,7 +780,8 @@ static void super_(bool canAssign) {
         uint8_t argCount = argumentList();
 
         pushSuperclass();
-        emitBytes(OP_SUPER_0 + argCount, name);
+        emitBytes(OP_SUPER, argCount);
+        emitByte(name);
     } else {
         pushSuperclass();
         emitBytes(OP_GET_SUPER, name);
@@ -897,6 +890,9 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
+        {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
+        {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
         {unary,    NULL,         PREC_NONE},               // TOKEN_BANG
         {NULL,     binary,       PREC_EQUALITY},           // TOKEN_BANG_EQUAL
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EQUAL

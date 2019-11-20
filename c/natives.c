@@ -157,8 +157,6 @@ static Value sumNative(int argCount, Value *args) {
 }
 
 static Value minNative(int argCount, Value *args) {
-    double current;
-
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -176,7 +174,7 @@ static Value minNative(int argCount, Value *args) {
             return NIL_VAL;
         }
 
-        current = AS_NUMBER(value);
+        double current = AS_NUMBER(value);
 
         if (minimum > current) {
             minimum = current;
@@ -345,6 +343,11 @@ static Value inputNative(int argCount, Value *args) {
         if (i == current_size) {
             current_size = i + len_max;
             line = realloc(line, current_size);
+
+            if (line == NULL) {
+                printf("Unable to allocate memory\n");
+                exit(71);
+            }
         }
     }
 

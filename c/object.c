@@ -29,7 +29,7 @@ static Obj *allocateObject(size_t size, ObjType type, bool garbageCollect) {
     vm.objects = object;
 
 #ifdef DEBUG_TRACE_GC
-    printf("%p allocate %ld for %d\n", (void *)object, size, type);
+    printf("%p allocate %zd for %d\n", (void *)object, size, type);
 #endif
 
     return object;
@@ -285,19 +285,18 @@ char *objectToString(Value value) {
             int size = 50;
             ObjList *list = AS_LIST(value);
             char *listString = calloc(size, sizeof(char));
-            snprintf(listString, 2, "%s", "[");
+            int listStringLength = snprintf(listString, 2, "%s", "[");
 
             for (int i = 0; i < list->values.count; ++i) {
                 char *element = valueToString(list->values.values[i]);
 
                 int elementSize = strlen(element);
-                int listStringSize = strlen(listString);
 
-                if (elementSize > (size - listStringSize - 1)) {
+                if (elementSize > (size - listStringLength - 3)) {
                     if (elementSize > size * 2) {
-                        size += elementSize * 2;
+                        size += elementSize * 2 + 3;
                     } else {
-                        size *= 2;
+                        size = size * 2 + 3;
                     }
 
                     char *newB = realloc(listString, sizeof(char) * size);
@@ -310,15 +309,16 @@ char *objectToString(Value value) {
                     listString = newB;
                 }
 
-                strncat(listString, element, size - listStringSize - 1);
+                listStringLength += snprintf(listString + listStringLength, size - listStringLength, "%s", element);
 
                 free(element);
 
-                if (i != list->values.count - 1)
-                    strncat(listString, ", ", size - listStringSize - 1);
+                if (i != list->values.count - 1) {
+                    listStringLength += snprintf(listString + listStringLength, size - listStringLength, ", ");
+                }
             }
 
-            strncat(listString, "]", size - strlen(listString) - 1);
+            snprintf(listString + listStringLength, size - listStringLength, "]");
             return listString;
         }
 
@@ -327,7 +327,7 @@ char *objectToString(Value value) {
             int size = 50;
             ObjDict *dict = AS_DICT(value);
             char *dictString = malloc(sizeof(char) * size);
-            snprintf(dictString, 2, "%s", "{");
+            int dictStringLength = snprintf(dictString, size, "%s", "{");
 
             for (int i = 0; i < dict->capacity; ++i) {
                 dictItem *item = dict->items[i];
@@ -337,10 +337,9 @@ char *objectToString(Value value) {
                 count++;
 
 
-                int keySize = strlen(item->key);
-                int dictStringSize = strlen(dictString);
+                int keySize = strlen(item->key) + 5;
 
-                if (keySize > (size - dictStringSize - 1)) {
+                if (keySize > (size - dictStringLength - 1)) {
                     if (keySize > size * 2) {
                         size += keySize * 2;
                     } else {
@@ -357,20 +356,16 @@ char *objectToString(Value value) {
                     dictString = newB;
                 }
 
-                char *dictKeyString = malloc(sizeof(char) * (strlen(item->key) + 5));
-                snprintf(dictKeyString, (strlen(item->key) + 5), "\"%s\": ", item->key);
-
-                strncat(dictString, dictKeyString, size - dictStringSize - 1);
-                free(dictKeyString);
+                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", item->key);
 
                 char *element = valueToString(item->item);
                 int elementSize = strlen(element);
 
-                if (elementSize > (size - dictStringSize - 1)) {
+                if (elementSize > (size - dictStringLength - 3)) {
                     if (elementSize > size * 2) {
-                        size += elementSize * 2;
+                        size += elementSize * 2 + 3;
                     } else {
-                        size *= 2;
+                        size = size * 2 + 3;
                     }
 
                     char *newB = realloc(dictString, sizeof(char) * size);
@@ -383,15 +378,16 @@ char *objectToString(Value value) {
                     dictString = newB;
                 }
 
-                strncat(dictString, element, size - dictStringSize - 1);
+                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s", element);
 
                 free(element);
 
-                if (count != dict->count)
-                    strncat(dictString, ", ", size - dictStringSize - 1);
+                if (count != dict->count) {
+                    dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
+                }
             }
 
-            strncat(dictString, "}", size - strlen(dictString) - 1);
+            snprintf(dictString + dictStringLength, size - dictStringLength, "}");
             return dictString;
         }
 

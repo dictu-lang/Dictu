@@ -91,12 +91,12 @@ static void skipWhitespace() {
 
             case '/':
                 if (peekNext() == '*') {
-                    char c;
                     // Multiline comments
                     advance();
                     advance();
                     while (true) {
                         while (peek() != '*' && !isAtEnd()) {
+                            char c;
                             if ((c = advance()) == '\n') {
                                 scanner.line++;
                             }
@@ -327,6 +327,12 @@ Token scanToken() {
                 return makeToken(TOKEN_PLUS);
             }
         }
+        case '&':
+            return makeToken(TOKEN_AMPERSAND);
+        case '^':
+            return makeToken(TOKEN_CARET);
+        case '|':
+            return makeToken(TOKEN_PIPE);
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
