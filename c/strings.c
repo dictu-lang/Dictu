@@ -161,7 +161,7 @@ static bool replaceString(int argCount) {
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
     int stringLength = 0;
-    int tmpLength;
+    int tmpLength = 0;
 
     for (int i = 0; i < count; ++i) {
         pos = strstr(tmp, to_replace);
@@ -379,8 +379,8 @@ static bool formatString(int argCount) {
     char *pos;
     char *newStr = malloc(sizeof(char) * fullLength);
     int stringLength = 0;
-    int tmpLength;
-    int replaceLength;
+    int tmpLength = 0;
+    int replaceLength = 0;
 
     for (int i = 0; i < argCount - 1; ++i) {
         pos = strstr(tmp, "{}");
