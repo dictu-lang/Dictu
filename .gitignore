@@ -14,3 +14,4 @@ history\.txt
 text\.txt
 
 tests/benchmarks/*\.py
+tests/benchmarks/string-methods/*\.py

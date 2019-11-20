@@ -14,8 +14,10 @@ All benchmarks were ran on a MacBook Pro 2.7GHz Intel Core i5, 8 GB 1867 MHz DDR
 
 | Benchmark            | Time       |
 |:---------------------|:-----------|
-| Binary Tree          | 0.810592s  |
-| Recursive Fibonacci  | 0.259234s  |
-| For loop             | 0.117269s  |
-| Method Call          | 0.26274s   |
-| String Equality      | 0.290374s  |
+| Binary Tree          | 0.745782s  |
+| Recursive Fibonacci  | 0.222256s  |
+| For loop             | 0.085639s  |
+| Method Call          | 0.223597s  |
+| String Equality      | 0.227614s  |
+
+Last update 20th November 2019.
