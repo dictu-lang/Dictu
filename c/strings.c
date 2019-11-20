@@ -175,7 +175,7 @@ static bool replaceString(int argCount) {
         tmp = pos + len;
     }
 
-    memcpy(newStr + stringLength, tmp, tmpLength);
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, length - 1);
     push(OBJ_VAL(newString));
 
@@ -397,7 +397,7 @@ static bool formatString(int argCount) {
     }
 
     free(replaceStrings);
-    memcpy(newStr + stringLength, tmp, tmpLength);
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, fullLength - 1);
     push(OBJ_VAL(newString));
 
