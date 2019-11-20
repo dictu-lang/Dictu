@@ -2,8 +2,8 @@
 
 ### Benchmarks based on:
 
-* (CraftingInterpreters benchmarks)[https://github.com/munificent/craftinginterpreters/tree/master/test/benchmark]
-* (Wren Benchmarks)[https://github.com/wren-lang/wren/tree/master/test/benchmark]
+* [CraftingInterpreters benchmarks](https://github.com/munificent/craftinginterpreters/tree/master/test/benchmark)
+* [Wren Benchmarks](https://github.com/wren-lang/wren/tree/master/test/benchmark)
 
 ### Tests
 [See the tests ran here](https://github.com/Jason2605/Dictu/tree/develop/tests/benchmarks)
@@ -14,8 +14,12 @@ All benchmarks were ran on a MacBook Pro 2.7GHz Intel Core i5, 8 GB 1867 MHz DDR
 
 | Benchmark            | Time       |
 |:---------------------|:-----------|
-| Binary Tree          | 0.810592s  |
-| Recursive Fibonacci  | 0.259234s  |
-| For loop             | 0.117269s  |
-| Method Call          | 0.26274s   |
-| String Equality      | 0.290374s  |
+| Binary Tree          | 0.745782s  |
+| Recursive Fibonacci  | 0.222256s  |
+| For loop             | 0.085639s  |
+| Method Call          | 0.223597s  |
+| String Equality      | 0.227614s  |
+
+Benchmarks for string methods [here](string-methods/README.md)
+
+Last update 20th November 2019.

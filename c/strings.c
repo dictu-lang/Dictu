@@ -120,17 +120,12 @@ static bool replaceString(int argCount) {
         return false;
     }
 
-    if (!IS_STRING(peek(0))) {
+    if (!IS_STRING(peek(0)) || !IS_STRING(peek(1))) {
         runtimeError("Argument passed to replace() must be a string");
         return false;
     }
 
-    if (!IS_STRING(peek(1))) {
-        runtimeError("Argument passed to replace() must be a string");
-        return false;
-    }
-
-
+    // Pop values off the stack
     char *replace = AS_CSTRING(pop());
     char *to_replace = AS_CSTRING(pop());
     Value stringValue = pop();
@@ -138,6 +133,7 @@ static bool replaceString(int argCount) {
 
     int count = 0;
     int len = strlen(to_replace);
+    int replaceLen = strlen(replace);
     int stringLen = strlen(string) + 1;
 
     // Make a copy of the string so we do not modify the original
@@ -145,6 +141,8 @@ static bool replaceString(int argCount) {
     char *tmpFree = tmp;
     memcpy(tmp, string, stringLen);
 
+    // Count the occurrences of the needle so we can determine the size
+    // of the string we need to allocate
     while((tmp = strstr(tmp, to_replace)) != NULL) {
         count++;
         tmp += len;
@@ -154,11 +152,12 @@ static bool replaceString(int argCount) {
     tmp = tmpFree;
 
     if (count == 0) {
+        free(tmpFree);
         push(stringValue);
         return true;
     }
 
-    int length = strlen(tmp) - count * (len - strlen(replace)) + 1;
+    int length = strlen(tmp) - count * (len - replaceLen) + 1;
     char *pos;
     char *newStr = malloc(sizeof(char) * length);
     int stringLength = 0;
@@ -168,11 +167,14 @@ static bool replaceString(int argCount) {
         if (pos != NULL)
             *pos = '\0';
 
-        stringLength += snprintf(newStr + stringLength, length - stringLength, "%s%s", tmp, replace);
+        int tmpLength = strlen(tmp);
+        memcpy(newStr + stringLength, tmp, tmpLength);
+        memcpy(newStr + stringLength + tmpLength, replace, replaceLen);
+        stringLength += tmpLength + replaceLen;
         tmp = pos + len;
     }
 
-    snprintf(newStr + stringLength, length - stringLength, "%s", tmp);
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, length - 1);
     push(OBJ_VAL(newString));
 
@@ -328,20 +330,20 @@ static bool formatString(int argCount) {
     }
 
     int length = 0;
-    char **replace_strings = malloc((argCount - 1) * sizeof(char*));
+    char **replaceStrings = malloc((argCount - 1) * sizeof(char*));
 
     for (int j = argCount - 2; j >= 0; --j) {
         Value value = pop();
         if (!IS_STRING(value))
-            replace_strings[j] = valueToString(value);
+            replaceStrings[j] = valueToString(value);
         else {
             ObjString *strObj = AS_STRING(value);
             char *str = malloc(strObj->length + 1);
             memcpy(str, strObj->chars, strObj->length + 1);
-            replace_strings[j] = str;
+            replaceStrings[j] = str;
         }
 
-        length += strlen(replace_strings[j]);
+        length += strlen(replaceStrings[j]);
     }
 
     char *string = AS_CSTRING(pop());
@@ -364,10 +366,11 @@ static bool formatString(int argCount) {
         runtimeError("format() placeholders do not match arguments");
 
         for (int i = 0; i < argCount - 1; ++i) {
-            free(replace_strings[i]);
+            free(replaceStrings[i]);
         }
 
-        free(replace_strings);
+        free(tmp);
+        free(replaceStrings);
         return false;
     }
 
@@ -381,14 +384,17 @@ static bool formatString(int argCount) {
         if (pos != NULL)
             *pos = '\0';
 
-        stringLength += snprintf(newStr + stringLength, fullLength - stringLength, "%s%s", tmp, replace_strings[i]);
+        int tmpLength = strlen(tmp);
+        int replaceLength = strlen(replaceStrings[i]);
+        memcpy(newStr + stringLength, tmp, tmpLength);
+        memcpy(newStr + stringLength + tmpLength, replaceStrings[i], replaceLength);
+        stringLength += tmpLength + replaceLength;
         tmp = pos + 2;
-        free(replace_strings[i]);
+        free(replaceStrings[i]);
     }
 
-    free(replace_strings);
-
-    snprintf(newStr + stringLength, fullLength - stringLength, "%s", tmp);
+    free(replaceStrings);
+    memcpy(newStr + stringLength, tmp, strlen(tmp));
     ObjString *newString = copyString(newStr, fullLength - 1);
     push(OBJ_VAL(newString));
 
