@@ -15,3 +15,4 @@ import "tests/strings/contains.du";
 import "tests/strings/strip.du";
 import "tests/strings/format.du";
 import "tests/strings/subscript.du";
+import "tests/strings/count.du";
