@@ -96,7 +96,7 @@ Skip is an optional parameter which can be passed to skip the first `n` amount o
 "hello something hello".find("hello", 2); // 16 -- Skipped the first occurance of the word "hello"
 ```
 
-### .leftStrip(string)
+### .leftStrip()
 
 To strip all whitespace at the beginning of a string, use the `.leftStrip()` method.
 
@@ -104,7 +104,7 @@ To strip all whitespace at the beginning of a string, use the `.leftStrip()` met
 "   hello".leftStrip(); // "hello"
 ```
 
-### .rightStrip(string)
+### .rightStrip()
 
 To strip all whitespace at the end of a string, use the `.rightStrip()` method.
 
@@ -112,7 +112,7 @@ To strip all whitespace at the end of a string, use the `.rightStrip()` method.
 "hello   ".rightStrip(); // "hello"
 ```
 
-### .strip(string)
+### .strip()
 
 To strip whitespace at the beginning and end of a string, use the `.strip()` method.
 
@@ -129,4 +129,14 @@ to a string and swap placeholders `{}` for values.
 "Hello {}".format("Jason"); // "Hello Jason"
 
 "{} {} {} {}".format(10, "hi", [10, 20], {"test": 10}) // '10 hi [10, 20] {"test": 10}'
+```
+
+### .count(string)
+
+To count the amount of occurrences of a given substring within another string.
+
+```py
+"Dictu is great!".count("Dictu"); // 1
+
+"Sooooooooooome characters".count("o"); // 11
 ```

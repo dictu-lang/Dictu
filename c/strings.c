@@ -323,6 +323,31 @@ static bool stripString(int argCount) {
     return true;
 }
 
+static bool countString(int argCount) {
+    if (argCount != 2) {
+        runtimeError("count() takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to count() must be a string");
+        return false;
+    }
+
+    char *needle = AS_CSTRING(pop());
+    char *haystack = AS_CSTRING(pop());
+
+    int count = 0;
+    while((haystack = strstr(haystack, needle)))
+    {
+        count++;
+        haystack++;
+    }
+
+    push(NUMBER_VAL(count));
+    return true;
+}
+
 static bool formatString(int argCount) {
     if (argCount == 1) {
         runtimeError("format() takes at least 2 arguments (%d given)", argCount);
@@ -428,6 +453,8 @@ bool stringMethods(char *method, int argCount) {
         return rightStripString(argCount);
     } else if (strcmp(method, "strip") == 0) {
         return stripString(argCount);
+    } else if (strcmp(method, "count") == 0) {
+        return countString(argCount);
     }
 
     runtimeError("String has no method %s()", method);

@@ -1,0 +1,11 @@
+/**
+ * count.du
+ *
+ * Testing the str.count() method
+ *
+ * .count() returns the amount of occurrences of a substring
+ */
+
+assert("Dictu is great!".count("D") == 1);
+assert("Dictu is great!".count("Dictu") == 1);
+assert("Dictu is great! Dictu is great!".count("Dictu is great!") == 2);
