@@ -18,6 +18,7 @@ typedef enum {
 
     // Bitwise
     TOKEN_AMPERSAND, TOKEN_CARET, TOKEN_PIPE,
+    TOKEN_AMPERSAND_EQUALS, TOKEN_CARET_EQUALS, TOKEN_PIPE_EQUALS,
 
     // One or two character tokens.
     TOKEN_BANG, TOKEN_BANG_EQUAL,
