@@ -328,11 +328,11 @@ Token scanToken() {
             }
         }
         case '&':
-            return makeToken(TOKEN_AMPERSAND);
+            return makeToken(match('=') ? TOKEN_AMPERSAND_EQUALS : TOKEN_AMPERSAND);
         case '^':
-            return makeToken(TOKEN_CARET);
+            return makeToken(match('=') ? TOKEN_CARET_EQUALS : TOKEN_CARET);
         case '|':
-            return makeToken(TOKEN_PIPE);
+            return makeToken(match('=') ? TOKEN_PIPE_EQUALS : TOKEN_PIPE);
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':

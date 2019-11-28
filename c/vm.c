@@ -976,6 +976,66 @@ static InterpretResult run() {
             }
         }
 
+        CASE_CODE(PUSH): {
+            Value value = pop();
+            Value indexValue = pop();
+            Value subscriptValue = pop();
+
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Array index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        push(subscriptValue);
+                        push(indexValue);
+                        push(list->values.values[index]);
+                        push(value);
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("Array index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *key = AS_CSTRING(indexValue);
+
+                    push(subscriptValue);
+                    push(indexValue);
+                    push(searchDict(dict, key));
+                    push(value);
+
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Only lists and dictionaries support subscript assignment.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
+            DISPATCH();
+        }
+
         CASE_CODE(CALL): {
             int argCount = READ_BYTE();
             frame->ip = ip;
