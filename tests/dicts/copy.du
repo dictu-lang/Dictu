@@ -1,5 +1,5 @@
 /**
-* copy.du
+* shallowCopy.du
 *
 * Testing the dict.copy() and dict.deepCopy() methods
 *

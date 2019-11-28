@@ -1,5 +1,5 @@
 /**
-* copy.du
+* shallowCopy.du
 *
 * Testing the list.copy() and list.deepCopy() methods
 *
