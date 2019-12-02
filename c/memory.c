@@ -248,6 +248,10 @@ void freeObject(Obj *object) {
 }
 
 void collectGarbage() {
+    if (!vm.gc) {
+        return;
+    }
+
 #ifdef DEBUG_TRACE_GC
     printf("-- gc begin\n");
     size_t before = vm.bytesAllocated;
