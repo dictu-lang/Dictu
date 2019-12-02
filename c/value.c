@@ -193,7 +193,7 @@ static bool dictComparison(Value a, Value b) {
     ObjDict *dictB = AS_DICT(b);
 
     // Different lengths, not the same
-    if (dict->capacity != dictB->capacity)
+    if (dict->count != dictB->count)
         return false;
 
     // Lengths are the same, and dict 1 has 0 length
