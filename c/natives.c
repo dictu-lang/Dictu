@@ -91,6 +91,10 @@ static Value typeNative(int argCount, Value *args) {
         switch (OBJ_TYPE(args[0])) {
             case OBJ_CLASS:
                 return OBJ_VAL(copyString("class", 5));
+            case OBJ_INSTANCE: {
+                ObjString *className = AS_INSTANCE(args[0])->klass->name;
+                return OBJ_VAL(copyString(className->chars, className->length));
+            }
             case OBJ_BOUND_METHOD:
                 return OBJ_VAL(copyString("method", 6));
             case OBJ_CLOSURE:

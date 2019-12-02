@@ -691,6 +691,10 @@ int parseString(char *string, int length) {
                     string[i + 1] = '\v';
                     break;
                 }
+                case '\'':
+                case '"': {
+                    break;
+                }
                 default: {
                     continue;
                 }

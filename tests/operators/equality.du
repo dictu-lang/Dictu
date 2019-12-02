@@ -1,0 +1,43 @@
+/**
+ * equality.du
+ *
+ * Testing equality for different value types
+ */
+
+assert(10 == 10);
+assert(11 != 10);
+
+assert("test" == "test");
+assert("test" != "testing");
+
+// Ensure escape codes are working correctly
+assert("test\n" == "test\n");
+assert(len("test\"") == 5);
+assert(len("test\n") == 5);
+assert(len("test\t") == 5);
+assert(len("test\r") == 5);
+assert(len("test\v") == 5);
+
+assert([] == []);
+assert([10] == [10]);
+assert([] != [10]);
+assert([10] != [100]);
+
+assert({} == {});
+assert({"test": 10} == {"test": 10});
+assert({} != {"test": 10});
+assert({"test": 10} != {"test": 100});
+
+def test() {}
+def test1() {}
+
+assert(test == test);
+assert(test != test1);
+
+class Test {}
+
+var obj1 = Test();
+var obj2 = Test();
+
+assert(obj1 != obj2);
+assert(type(obj1) == type(obj2));
