@@ -710,6 +710,8 @@ static void string(bool canAssign) {
     string[length] = '\0';
 
     emitConstant(OBJ_VAL(copyString(string, length)));
+
+    free(string);
 }
 
 static void list(bool canAssign) {
