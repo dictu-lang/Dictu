@@ -9,19 +9,11 @@
 #include "vm.h"
 
 #define ALLOCATE_OBJ(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, true)
+    (type*)allocateObject(sizeof(type), objectType)
 
-#define ALLOCATE_OBJ_NO_GC(type, objectType) \
-    (type*)allocateObject(sizeof(type), objectType, false)
-
-static Obj *allocateObject(size_t size, ObjType type, bool garbageCollect) {
+static Obj *allocateObject(size_t size, ObjType type) {
     Obj *object;
-
-    if (garbageCollect) {
-        object = (Obj *) reallocate(NULL, 0, size);
-    } else {
-        object = (Obj *) realloc(NULL, size);
-    }
+    object = (Obj *) reallocate(NULL, 0, size);
 
     object->type = type;
     object->isDark = false;
@@ -108,25 +100,16 @@ static ObjString *allocateString(char *chars, int length,
     return string;
 }
 
-ObjList *initList(bool garbageCollect) {
+ObjList *initList() {
     ObjList *list;
-    if (garbageCollect) {
-        list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
-    } else {
-        list = ALLOCATE_OBJ_NO_GC(ObjList, OBJ_LIST);
-    }
+    list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
-ObjDict *initDict(bool garbageCollect) {
+ObjDict *initDict() {
     ObjDict *dict;
-    if (garbageCollect) {
-        dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
-    } else {
-        dict = ALLOCATE_OBJ_NO_GC(ObjDict, OBJ_DICT);
-    }
-
+    dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
     initDictValues(dict, 8);
     return dict;
 }
@@ -159,27 +142,11 @@ ObjString *takeString(char *chars, int length) {
     return allocateString(chars, length, hash);
 }
 
-char *removeBackslash(char *string, char c) {
-    int write = 0, read = 0;
-    while (string[read]) {
-        if (string[read] != c) {
-            string[write++] = string[read];
-        }
-
-        read++;
-    }
-    string[write] = '\0';
-
-    return string;
-}
-
 ObjString *copyString(const char *chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString *interned = tableFindString(&vm.strings, chars, length,
                                           hash);
     if (interned != NULL) return interned;
-
-    //removeBackslash(chars, '\\');
 
     char *heapChars = ALLOCATE(char, length + 1);
     memcpy(heapChars, chars, length);

@@ -671,9 +671,47 @@ static void or_(bool canAssign) {
     patchJump(endJump);
 }
 
+int parseString(char *string, int length) {
+    for (int i = 0; i < length - 1; i++) {
+        if (string[i] == '\\') {
+            switch (string[i + 1]) {
+                case 'n': {
+                    string[i + 1] = '\n';
+                    break;
+                }
+                case 't': {
+                    string[i + 1] = '\t';
+                    break;
+                }
+                case 'r': {
+                    string[i + 1] = '\r';
+                    break;
+                }
+                case 'v': {
+                    string[i + 1] = '\v';
+                    break;
+                }
+                default: {
+                    continue;
+                }
+            }
+            memmove(&string[i], &string[i + 1], length - i);
+            length -= 1;
+        }
+    }
+
+    return length;
+}
+
 static void string(bool canAssign) {
-    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
-                                    parser.previous.length - 2)));
+    char *string = malloc(sizeof(char) * parser.previous.length - 1);
+    memcpy(string, parser.previous.start + 1, parser.previous.length - 2);
+    int length = parseString(string, parser.previous.length - 2);
+    string[length] = '\0';
+
+    emitConstant(OBJ_VAL(copyString(string, length)));
+
+    free(string);
 }
 
 static void list(bool canAssign) {

@@ -143,7 +143,10 @@ static bool containsListItem(int argCount) {
 }
 
 ObjList* copyList(ObjList *oldList, bool shallow) {
-    ObjList *newList = initList(false);
+    // Ensure the GC does *not* run while we are creating the list
+    vm.gc = false;
+
+    ObjList *newList = initList();
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];
@@ -169,6 +172,7 @@ ObjList* copyList(ObjList *oldList, bool shallow) {
         array->count++;
     }
 
+    vm.gc = true;
     return newList;
 }
 
@@ -327,7 +331,10 @@ static bool dictItemExists(int argCount) {
 }
 
 ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
-    ObjDict *newDict = initDict(false);
+    // Ensure the GC does *not* run while we are creating the list
+    vm.gc = false;
+
+    ObjDict *newDict = initDict();
 
     for (int i = 0; i < oldDict->capacity; ++i) {
         if (oldDict->items[i] == NULL) {
@@ -395,6 +402,7 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
         dict->count++;
     }
 
+    vm.gc = true;
     return newDict;
 }
 

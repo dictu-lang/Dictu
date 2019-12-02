@@ -385,6 +385,11 @@ static bool sleepNative(int argCount, Value *args) {
 }
 
 static bool printNative(int argCount, Value *args) {
+    if (argCount == 0) {
+        printf("\n");
+        return true;
+    }
+
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         printValue(value);
