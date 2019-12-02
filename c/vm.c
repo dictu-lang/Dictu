@@ -60,6 +60,7 @@ void initVM(bool repl, const char *scriptName) {
     resetStack();
     vm.objects = NULL;
     vm.repl = repl;
+    vm.gc = true;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
     vm.bytesAllocated = 0;
@@ -79,6 +80,7 @@ void freeVM() {
     freeTable(&vm.strings);
     vm.initString = NULL;
     vm.replVar = NULL;
+    vm.gc = NULL;
     freeObjects();
 }
 
@@ -801,7 +803,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList(true);
+            ObjList *list = initList();
             push(OBJ_VAL(list));
             DISPATCH();
         }
@@ -821,7 +823,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict(true);
+            ObjDict *dict = initDict();
             push(OBJ_VAL(dict));
             DISPATCH();
         }
