@@ -82,7 +82,7 @@ list2[0] = 10;
 print(list1); // [1, 2]
 print(list2); // [10, 2]
 ```
-This works fine, however if you have a mutable datatype within the array on a shallow copy, you're back to square one.
+This works fine, however if you have a mutable datatype within the list on a shallow copy, you're back to square one.
 ```js
 var list1 = [[1, 2];
 var list2 = list1.copy();
