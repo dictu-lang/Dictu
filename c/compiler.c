@@ -1482,8 +1482,6 @@ static void whileStatement() {
 
     if (check(TOKEN_LEFT_BRACE)) {
         emitByte(OP_TRUE);
-
-        //emitByte(OP_POP);
     } else {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
         expression();
@@ -1570,16 +1568,11 @@ static void statement() {
     } else if (match(TOKEN_LEFT_BRACE)) {
         Token previous = parser.previous;
         Token current = parser.current;
-        if (check(TOKEN_STRING)) {
-            for (int i = 0; i < parser.current.length - parser.previous.length + 1; ++i) {
-                backTrack();
-            }
 
-            parser.current = previous;
-            expressionStatement();
-            return;
-        } else if (check(TOKEN_RIGHT_BRACE)) {
-            advance();
+        // Advance the parser to the next token
+        advance();
+
+        if (check(TOKEN_RIGHT_BRACE)) {
             if (check(TOKEN_SEMICOLON)) {
                 backTrack();
                 backTrack();
@@ -1588,6 +1581,24 @@ static void statement() {
                 return;
             }
         }
+
+        if (check(TOKEN_COLON)) {
+            for (int i = 0; i < parser.current.length + parser.previous.length; ++i) {
+                backTrack();
+            }
+
+            parser.current = previous;
+            expressionStatement();
+            return;
+        }
+
+        // Reset the scanner to the previous position
+        for (int i = 0; i < parser.current.length; ++i) {
+            backTrack();
+        }
+
+        // Reset the parser
+        parser.previous = previous;
         parser.current = current;
 
         beginScope();
