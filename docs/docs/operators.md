@@ -23,3 +23,6 @@ nav_order: 6
 | -=           | Same as -, however its shorthand to assign too                 | x -= 10 Same as x = x - 10 |
 | *=           | Same as *, however its shorthand to assign too                 | x *= 10 Same as x = x * 10 |
 | /=           | Same as /, however its shorthand to assign too                 | x /= 10 Same as x = x / 10 |
+| &=           | Same as &, however its shorthand to assign too                 | x &= 10 Same as x = x & 10 |
+| ^=           | Same as ^, however its shorthand to assign too                 | x ^= 10 Same as x = x ^ 10 |
+| |=           | Same as |, however its shorthand to assign too                 | x |= 10 Same as x = x | 10 |

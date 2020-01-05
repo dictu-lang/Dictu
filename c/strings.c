@@ -13,6 +13,9 @@ static bool splitString(int argCount) {
         return false;
     }
 
+    // Ensure the GC does *not* run while we are creating the list
+    vm.gc = false;
+
     char *delimiter = AS_CSTRING(pop());
     ObjString *string = AS_STRING(pop());
     char *tmp = malloc(string->length + 1);
@@ -21,15 +24,15 @@ static bool splitString(int argCount) {
     int delimiterLength = strlen(delimiter);
     char *token;
 
-    ObjList *list = initList(false);
+    ObjList *list = initList();
 
     do {
         token = strstr(tmp, delimiter);
         if (token)
             *token = '\0';
 
-        ObjString *str = copyString(tmp, strlen(tmp));
         ValueArray *array = &list->values;
+        ObjString *str = copyString(tmp, strlen(tmp));
 
         if (array->capacity < array->count + 1) {
             int oldCapacity = array->capacity;
@@ -46,6 +49,8 @@ static bool splitString(int argCount) {
 
     free(tmpFree);
     push(OBJ_VAL(list));
+    vm.gc = true;
+
     return true;
 }
 
@@ -323,6 +328,31 @@ static bool stripString(int argCount) {
     return true;
 }
 
+static bool countString(int argCount) {
+    if (argCount != 2) {
+        runtimeError("count() takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to count() must be a string");
+        return false;
+    }
+
+    char *needle = AS_CSTRING(pop());
+    char *haystack = AS_CSTRING(pop());
+
+    int count = 0;
+    while((haystack = strstr(haystack, needle)))
+    {
+        count++;
+        haystack++;
+    }
+
+    push(NUMBER_VAL(count));
+    return true;
+}
+
 static bool formatString(int argCount) {
     if (argCount == 1) {
         runtimeError("format() takes at least 2 arguments (%d given)", argCount);
@@ -428,6 +458,8 @@ bool stringMethods(char *method, int argCount) {
         return rightStripString(argCount);
     } else if (strcmp(method, "strip") == 0) {
         return stripString(argCount);
+    } else if (strcmp(method, "count") == 0) {
+        return countString(argCount);
     }
 
     runtimeError("String has no method %s()", method);

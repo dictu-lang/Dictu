@@ -1,0 +1,13 @@
+var x = [];
+
+for (var i = 0; i < 10000; ++i) {
+    x.push("Dictu is great!");
+}
+
+var start = clock();
+
+for (var i = 0; i < 10000; ++i) {
+    x.pop();
+}
+
+print(clock() - start);

@@ -573,7 +573,14 @@ static void dot(bool canAssign) {
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(&parser.previous);
 
-    if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+    if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (match(TOKEN_LEFT_PAREN)) {
+        uint8_t argCount = argumentList();
+        emitBytes(OP_INVOKE, argCount);
+        emitByte(name);
+    } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
         emitBytes(OP_GET_PROPERTY_NO_POP, name);
         expression();
         emitByte(OP_ADD);
@@ -593,13 +600,21 @@ static void dot(bool canAssign) {
         expression();
         emitByte(OP_DIVIDE);
         emitBytes(OP_SET_PROPERTY, name);
-    } else if (canAssign && match(TOKEN_EQUAL)) {
+    } else if (canAssign && match(TOKEN_AMPERSAND_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
         expression();
+        emitByte(OP_BITWISE_AND);
         emitBytes(OP_SET_PROPERTY, name);
-    } else if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argumentList();
-        emitBytes(OP_INVOKE, argCount);
-        emitByte(name);
+    } else if (canAssign && match(TOKEN_CARET_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_BITWISE_XOR);
+        emitBytes(OP_SET_PROPERTY, name);
+    } else if (canAssign && match(TOKEN_PIPE_EQUALS)) {
+        emitBytes(OP_GET_PROPERTY_NO_POP, name);
+        expression();
+        emitByte(OP_BITWISE_OR);
+        emitBytes(OP_SET_PROPERTY, name);
     } else {
         emitBytes(OP_GET_PROPERTY, name);
     }
@@ -656,9 +671,51 @@ static void or_(bool canAssign) {
     patchJump(endJump);
 }
 
+int parseString(char *string, int length) {
+    for (int i = 0; i < length - 1; i++) {
+        if (string[i] == '\\') {
+            switch (string[i + 1]) {
+                case 'n': {
+                    string[i + 1] = '\n';
+                    break;
+                }
+                case 't': {
+                    string[i + 1] = '\t';
+                    break;
+                }
+                case 'r': {
+                    string[i + 1] = '\r';
+                    break;
+                }
+                case 'v': {
+                    string[i + 1] = '\v';
+                    break;
+                }
+                case '\'':
+                case '"': {
+                    break;
+                }
+                default: {
+                    continue;
+                }
+            }
+            memmove(&string[i], &string[i + 1], length - i);
+            length -= 1;
+        }
+    }
+
+    return length;
+}
+
 static void string(bool canAssign) {
-    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
-                                    parser.previous.length - 2)));
+    char *string = malloc(sizeof(char) * parser.previous.length - 1);
+    memcpy(string, parser.previous.start + 1, parser.previous.length - 2);
+    int length = parseString(string, parser.previous.length - 2);
+    string[length] = '\0';
+
+    emitConstant(OBJ_VAL(copyString(string, length)));
+
+    free(string);
 }
 
 static void list(bool canAssign) {
@@ -695,8 +752,37 @@ static void subscript(bool canAssign) {
     expression();
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
-    if (match(TOKEN_EQUAL)) {
+    if (canAssign && match(TOKEN_EQUAL)) {
         expression();
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_ADD);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
+        expression();
+        emitByte(OP_PUSH);
+        emitBytes(OP_NEGATE, OP_ADD);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_MULTIPLY);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_DIVIDE_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_DIVIDE);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_AMPERSAND_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_BITWISE_AND);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_CARET_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_BITWISE_XOR);
+        emitByte(OP_SUBSCRIPT_ASSIGN);
+    } else if (canAssign && match(TOKEN_PIPE_EQUALS)) {
+        expression();
+        emitBytes(OP_PUSH, OP_BITWISE_OR);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else {
         emitByte(OP_SUBSCRIPT);
@@ -718,7 +804,10 @@ static void namedVariable(Token name, bool canAssign) {
         setOp = OP_SET_GLOBAL;
     }
 
-    if (canAssign && match(TOKEN_PLUS_EQUALS)) {
+    if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
         namedVariable(name, false);
         expression();
         emitByte(OP_ADD);
@@ -738,10 +827,22 @@ static void namedVariable(Token name, bool canAssign) {
         expression();
         emitByte(OP_DIVIDE);
         emitBytes(setOp, (uint8_t) arg);
-    } else if (canAssign && match(TOKEN_EQUAL)) {
+    } else if (canAssign && match(TOKEN_AMPERSAND_EQUALS)) {
+        namedVariable(name, false);
         expression();
+        emitByte(OP_BITWISE_AND);
         emitBytes(setOp, (uint8_t) arg);
-    } else {
+    } else if (canAssign && match(TOKEN_CARET_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_BITWISE_XOR);
+        emitBytes(setOp, (uint8_t) arg);
+    } else if (canAssign && match(TOKEN_PIPE_EQUALS)) {
+        namedVariable(name, false);
+        expression();
+        emitByte(OP_BITWISE_OR);
+        emitBytes(setOp, (uint8_t) arg);
+    }  else {
         emitBytes(getOp, (uint8_t) arg);
     }
 }
@@ -893,6 +994,9 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_AMPERSAND_EQUALS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_CARET_EQUALS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_PIPE_EQUALS
         {unary,    NULL,         PREC_NONE},               // TOKEN_BANG
         {NULL,     binary,       PREC_EQUALITY},           // TOKEN_BANG_EQUAL
         {NULL,     NULL,         PREC_NONE},               // TOKEN_EQUAL
@@ -1378,8 +1482,6 @@ static void whileStatement() {
 
     if (check(TOKEN_LEFT_BRACE)) {
         emitByte(OP_TRUE);
-
-        //emitByte(OP_POP);
     } else {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
         expression();
@@ -1466,16 +1568,11 @@ static void statement() {
     } else if (match(TOKEN_LEFT_BRACE)) {
         Token previous = parser.previous;
         Token current = parser.current;
-        if (check(TOKEN_STRING)) {
-            for (int i = 0; i < parser.current.length - parser.previous.length + 1; ++i) {
-                backTrack();
-            }
 
-            parser.current = previous;
-            expressionStatement();
-            return;
-        } else if (check(TOKEN_RIGHT_BRACE)) {
-            advance();
+        // Advance the parser to the next token
+        advance();
+
+        if (check(TOKEN_RIGHT_BRACE)) {
             if (check(TOKEN_SEMICOLON)) {
                 backTrack();
                 backTrack();
@@ -1484,6 +1581,24 @@ static void statement() {
                 return;
             }
         }
+
+        if (check(TOKEN_COLON)) {
+            for (int i = 0; i < parser.current.length + parser.previous.length; ++i) {
+                backTrack();
+            }
+
+            parser.current = previous;
+            expressionStatement();
+            return;
+        }
+
+        // Reset the scanner to the previous position
+        for (int i = 0; i < parser.current.length; ++i) {
+            backTrack();
+        }
+
+        // Reset the parser
+        parser.previous = previous;
         parser.current = current;
 
         beginScope();

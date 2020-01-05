@@ -60,6 +60,7 @@ void initVM(bool repl, const char *scriptName) {
     resetStack();
     vm.objects = NULL;
     vm.repl = repl;
+    vm.gc = true;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
     vm.bytesAllocated = 0;
@@ -79,6 +80,7 @@ void freeVM() {
     freeTable(&vm.strings);
     vm.initString = NULL;
     vm.replVar = NULL;
+    vm.gc = NULL;
     freeObjects();
 }
 
@@ -352,7 +354,9 @@ bool isFalsey(Value value) {
     return IS_NIL(value) ||
            (IS_BOOL(value) && !AS_BOOL(value)) ||
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
-           (IS_STRING(value) && AS_CSTRING(value)[0] == '\0');
+           (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
+           (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
+           (IS_DICT(value) && AS_DICT(value)->count == 0);
 }
 
 static void concatenate() {
@@ -801,7 +805,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList(true);
+            ObjList *list = initList();
             push(OBJ_VAL(list));
             DISPATCH();
         }
@@ -821,7 +825,7 @@ static InterpretResult run() {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict(true);
+            ObjDict *dict = initDict();
             push(OBJ_VAL(dict));
             DISPATCH();
         }
@@ -854,11 +858,17 @@ static InterpretResult run() {
             Value indexValue = pop();
             Value subscriptValue = pop();
 
+            if (!IS_OBJ(subscriptValue)) {
+                frame->ip = ip;
+                runtimeError("Can only subscript on lists, strings or dictionaries.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
                         frame->ip = ip;
-                        runtimeError("Array index must be a number.");
+                        runtimeError("List index must be a number.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
@@ -875,7 +885,7 @@ static InterpretResult run() {
                     }
 
                     frame->ip = ip;
-                    runtimeError("Array index out of bounds.");
+                    runtimeError("List index out of bounds.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -893,7 +903,7 @@ static InterpretResult run() {
                     }
 
                     frame->ip = ip;
-                    runtimeError("Array index out of bounds.");
+                    runtimeError("String index out of bounds.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -925,11 +935,17 @@ static InterpretResult run() {
             Value indexValue = pop();
             Value subscriptValue = pop();
 
+            if (!IS_OBJ(subscriptValue)) {
+                frame->ip = ip;
+                runtimeError("Can only subscript on lists, strings or dictionaries.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
                         frame->ip = ip;
-                        runtimeError("Array index must be a number.");
+                        runtimeError("List index must be a number.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
@@ -948,7 +964,7 @@ static InterpretResult run() {
                     push(NIL_VAL);
 
                     frame->ip = ip;
-                    runtimeError("Array index out of bounds.");
+                    runtimeError("List index out of bounds.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
 
@@ -974,6 +990,72 @@ static InterpretResult run() {
                     return INTERPRET_RUNTIME_ERROR;
                 }
             }
+        }
+
+        CASE_CODE(PUSH): {
+            Value value = pop();
+            Value indexValue = pop();
+            Value subscriptValue = pop();
+
+            if (!IS_OBJ(subscriptValue)) {
+                frame->ip = ip;
+                runtimeError("Can only subscript on lists, strings or dictionaries.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("List index must be a number.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        push(subscriptValue);
+                        push(indexValue);
+                        push(list->values.values[index]);
+                        push(value);
+                        DISPATCH();
+                    }
+
+                    frame->ip = ip;
+                    runtimeError("List index out of bounds.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                case OBJ_DICT: {
+                    if (!IS_STRING(indexValue)) {
+                        frame->ip = ip;
+                        runtimeError("Dictionary key must be a string.");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    char *key = AS_CSTRING(indexValue);
+
+                    push(subscriptValue);
+                    push(indexValue);
+                    push(searchDict(dict, key));
+                    push(value);
+
+                    DISPATCH();
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Only lists and dictionaries support subscript assignment.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
+            DISPATCH();
         }
 
         CASE_CODE(CALL): {

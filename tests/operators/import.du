@@ -4,6 +4,7 @@
 * General import file for all the operator tests
 */
 
+import "tests/operators/equality.du";
 import "tests/operators/plus.du";
 import "tests/operators/subtract.du";
 import "tests/operators/multiply.du";
