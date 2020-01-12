@@ -12,7 +12,6 @@
 
 #define VERSION "Dictu Version: 0.1.7\n"
 
-// TODO: Ignore braces in strings
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
     int rightBraces = 0;
@@ -37,6 +36,31 @@ static bool replCountBraces(char *line) {
     return leftBraces == rightBraces;
 }
 
+static bool replCountQuotes(char *line) {
+    int singleQuotes = 0;
+    int doubleQuotes = 0;
+    char quote = '\0';
+
+    for (int i = 0; line[i]; i++) {
+        if (line[i] == '\'' && quote != '"') {
+            singleQuotes++;
+
+            if (quote == '\0') {
+                quote = '\'';
+            }
+        } else if (line[i] == '"' && quote != '\'') {
+            doubleQuotes++;
+            if (quote == '\0') {
+                quote = '"';
+            }
+        } else if (line[i] == '\\') {
+            line++;
+        }
+    }
+
+    return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
+}
+
 static void repl() {
     printf(VERSION);
     char *line;
@@ -51,7 +75,7 @@ static void repl() {
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
 
-        while (!replCountBraces(fullLine)) {
+        while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
             free(line);
             line = linenoise("... ");
 
