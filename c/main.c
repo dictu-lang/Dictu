@@ -64,12 +64,11 @@ static bool replCountQuotes(char *line) {
 static void repl() {
     printf(VERSION);
     char *line;
-    char *fullLine;
 
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        fullLine = malloc(sizeof(char) * (strlen(line) + 1));
+        char *fullLine = malloc(sizeof(char) * (strlen(line) + 1));
         snprintf(fullLine, strlen(line) + 1, "%s", line);
 
         linenoiseHistoryAdd(line);
