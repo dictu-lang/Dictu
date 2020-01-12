@@ -50,8 +50,15 @@ static void repl() {
                 return;
             }
 
-            fullLine = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
-            snprintf(fullLine, strlen(fullLine) + strlen(line) + 1, "%s%s", fullLine, line);
+            char *temp = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
+
+            if (temp == NULL) {
+                printf("Unable to allocate memory");
+                exit(71);
+            }
+
+            fullLine = temp;
+            memcpy(fullLine + strlen(fullLine), line, strlen(line) + 1);
 
             linenoiseHistoryAdd(line);
             linenoiseHistorySave("history.txt");
