@@ -12,17 +12,55 @@
 
 #define VERSION "Dictu Version: 0.1.7\n"
 
+
+static bool replCountBraces(char *line) {
+    int leftBraces = 0;
+    int rightBraces = 0;
+
+    for (int i = 0; line[i]; i++) {
+        if (line[i] == '{') {
+            leftBraces++;
+        } else if (line[i] == '}') {
+            rightBraces++;
+        }
+    }
+
+    return leftBraces == rightBraces;
+}
+
 static void repl() {
     printf(VERSION);
     char *line;
+    char *fullLine;
 
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        interpret(line);
+        fullLine = malloc(sizeof(char) * (strlen(line) + 1));
+        snprintf(fullLine, strlen(line) + 1, "%s", line);
+
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
+
+        while (!replCountBraces(fullLine)) {
+            free(line);
+            line = linenoise("... ");
+
+            if (line == NULL) {
+                return;
+            }
+
+            fullLine = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
+            snprintf(fullLine, strlen(fullLine) + strlen(line) + 1, "%s%s", fullLine, line);
+
+            linenoiseHistoryAdd(line);
+            linenoiseHistorySave("history.txt");
+        }
+
+        interpret(fullLine);
+
         free(line);
+        free(fullLine);
     }
 }
 
