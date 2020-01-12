@@ -12,12 +12,21 @@
 
 #define VERSION "Dictu Version: 0.1.7\n"
 
-
+// TODO: Ignore braces in strings
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
     int rightBraces = 0;
+    bool inString = false;
 
     for (int i = 0; line[i]; i++) {
+        if (line[i] == '\'' || line[i] == '"') {
+            inString = !inString;
+        }
+
+        if (inString) {
+            continue;
+        }
+
         if (line[i] == '{') {
             leftBraces++;
         } else if (line[i] == '}') {
