@@ -36,6 +36,12 @@ void initDictValues(ObjDict *dict, uint32_t capacity) {
     dict->items = calloc(capacity, sizeof(*dict->items));
 }
 
+void initSetValues(ObjSet *set, uint32_t capacity) {
+    set->capacity = capacity;
+    set->count = 0;
+    set->items = calloc(capacity, sizeof(*set->items));
+}
+
 static uint32_t hash(char *str) {
     uint32_t hash = 5381;
     int c;

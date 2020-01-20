@@ -101,17 +101,21 @@ static ObjString *allocateString(char *chars, int length,
 }
 
 ObjList *initList() {
-    ObjList *list;
-    list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
 ObjDict *initDict() {
-    ObjDict *dict;
-    dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    ObjDict *dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
     initDictValues(dict, 8);
     return dict;
+}
+
+ObjSet *initSet() {
+    ObjSet *set = ALLOCATE_OBJ(ObjSet, OBJ_SET);
+    initSetValues(set, 8);
+    return set;
 }
 
 ObjFile *initFile() {
@@ -356,6 +360,11 @@ char *objectToString(Value value) {
 
             snprintf(dictString + dictStringLength, size - dictStringLength, "}");
             return dictString;
+        }
+
+        case OBJ_SET: {
+            // TODO: Handle set -> string
+            break;
         }
 
         case OBJ_UPVALUE: {

@@ -153,12 +153,16 @@ static void blackenObject(Obj *object) {
             break;
         }
 
+        case OBJ_SET: {
+            // TODO: Handle cleanup
+            break;
+        }
+
 
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
         case OBJ_FILE:
-        //case OBJ_DICT:
             break;
     }
 }
@@ -232,6 +236,11 @@ void freeObject(Obj *object) {
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
             freeDict(dict);
+            break;
+        }
+
+        case OBJ_SET: {
+            // TODO: Handle cleanup
             break;
         }
 

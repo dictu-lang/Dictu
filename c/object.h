@@ -21,6 +21,7 @@
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_LIST(value)          isObjType(value, OBJ_LIST)
 #define IS_DICT(value)          isObjType(value, OBJ_DICT)
+#define IS_SET(value)          isObjType(value, OBJ_SET)
 #define IS_FILE(value)          isObjType(value, OBJ_FILE)
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
@@ -34,6 +35,7 @@
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
 #define AS_DICT(value)          ((ObjDict*)AS_OBJ(value))
+#define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 
 typedef enum {
@@ -47,6 +49,7 @@ typedef enum {
     OBJ_STRING,
     OBJ_LIST,
     OBJ_DICT,
+    OBJ_SET,
     OBJ_FILE,
     OBJ_UPVALUE
 } ObjType;
@@ -104,6 +107,19 @@ struct sObjDict {
     int capacity;
     int count;
     dictItem **items;
+};
+
+struct setItem {
+    Value item;
+    bool deleted;
+    uint32_t hash;
+};
+
+struct sObjSet {
+    Obj obj;
+    int capacity;
+    int count;
+    setItem **items;
 };
 
 struct sObjFile {
@@ -177,6 +193,10 @@ ObjString *copyString(const char *chars, int length);
 ObjList *initList();
 
 ObjDict *initDict();
+
+ObjSet *initSet();
+
+ObjFile *initFile();
 
 ObjUpvalue *newUpvalue(Value *slot);
 
