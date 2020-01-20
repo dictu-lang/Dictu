@@ -119,15 +119,17 @@ void freeValueArray(ValueArray *array);
 
 void initDictValues(ObjDict *dict, uint32_t capacity);
 
+void initSetValues(ObjSet *set, uint32_t capacity);
+
 void insertDict(ObjDict *dict, char *key, Value value);
 
 void resizeDict(ObjDict *dict, bool grow);
 
 Value searchDict(ObjDict *dict, char *key);
 
-void freeDict(ObjDict *dict);
+void insertSet(ObjSet *set, Value value);
 
-void initSetValues(ObjSet *set, uint32_t capacity);
+void freeDict(ObjDict *dict);
 
 char *valueToString(Value value);
 

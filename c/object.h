@@ -110,7 +110,7 @@ struct sObjDict {
 };
 
 struct setItem {
-    Value item;
+    ObjString *item;
     bool deleted;
     uint32_t hash;
 };

@@ -162,6 +162,33 @@ Value searchDict(ObjDict *dict, char *key) {
     return NIL_VAL;
 }
 
+void insertSet(ObjSet *set, Value value) {
+    if (OBJ_TYPE(value) != OBJ_STRING) {
+        printf("Sets can only store string values!"); // TODO: To be revised as more values support hashing
+        return;
+    }
+
+    ObjString *string = AS_STRING(value);
+
+    int index = string->hash % set->capacity;
+
+    setItem *item = ALLOCATE(setItem, sizeof(setItem));
+
+    item->item = string;
+    item->hash = string->hash;
+    item->deleted = false;
+
+    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+        index++;
+        if (index == set->capacity) {
+            index = 0;
+        }
+    }
+
+    set->items[index] = item;
+    set->count++;
+}
+
 // Calling function needs to free memory
 char *valueToString(Value value) {
     if (IS_BOOL(value)) {
