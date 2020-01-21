@@ -362,7 +362,8 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0);
+           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
 static void concatenate() {

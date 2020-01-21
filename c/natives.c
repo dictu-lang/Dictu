@@ -137,6 +137,8 @@ static Value lenNative(int argCount, Value *args) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
     } else if (IS_DICT(args[0])) {
         return NUMBER_VAL(AS_DICT(args[0])->count);
+    } else if (IS_SET(args[0])) {
+        return NUMBER_VAL(AS_SET(args[0])->count);
     }
 
     runtimeError("Unsupported type passed to len()", argCount);
