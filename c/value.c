@@ -162,7 +162,7 @@ Value searchDict(ObjDict *dict, char *key) {
 }
 
 void insertSet(ObjSet *set, Value value) {
-    if (OBJ_TYPE(value) != OBJ_STRING) {
+    if (!IS_STRING(value)) {
         printf("Sets can only store string values!"); // TODO: To be revised as more values support hashing
         return;
     }
