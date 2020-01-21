@@ -363,8 +363,48 @@ char *objectToString(Value value) {
         }
 
         case OBJ_SET: {
-            // TODO: Handle set -> string
-            break;
+            int count = 0;
+            int size = 50;
+            ObjSet *set = AS_SET(value);
+            char *setString = malloc(sizeof(char) * size);
+            int setStringLength = snprintf(setString, size, "%s", "{");
+
+            for (int i = 0; i < set->capacity; ++i) {
+                setItem *item = set->items[i];
+                if (!item || item->deleted)
+                    continue;
+
+                count++;
+
+                char *element = item->item->chars;
+                int elementSize = item->item->length;
+
+                if (elementSize > (size - setStringLength - 3)) {
+                    if (elementSize > size * 2) {
+                        size += elementSize * 2 + 3;
+                    } else {
+                        size = size * 2 + 3;
+                    }
+
+                    char *newB = realloc(setString, sizeof(char) * size);
+
+                    if (newB == NULL) {
+                        printf("Unable to allocate memory\n");
+                        exit(71);
+                    }
+
+                    setString = newB;
+                }
+
+                setStringLength += snprintf(setString + setStringLength, size - setStringLength, "'%s'", element);
+
+                if (count != set->count) {
+                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
+                }
+            }
+
+            snprintf(setString + setStringLength, size - setStringLength, "}");
+            return setString;
         }
 
         case OBJ_UPVALUE: {

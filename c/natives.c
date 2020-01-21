@@ -124,6 +124,12 @@ static Value typeNative(int argCount, Value *args) {
 static Value setNative(int argCount, Value *args) {
     ObjSet *set = initSet();
 
+    insertSet(set, OBJ_VAL(copyString("test", 4)));
+    insertSet(set, OBJ_VAL(copyString("test", 4)));
+    insertSet(set, OBJ_VAL(copyString("test1", 5)));
+
+    printf("Size: %d\n", set->count);
+
     return OBJ_VAL(set);
 }
 

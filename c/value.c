@@ -147,8 +147,7 @@ Value searchDict(ObjDict *dict, char *key) {
     if (!dict->items[index])
         return NIL_VAL;
 
-    while (index < dict->capacity &&
-           dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
         index++;
         if (index == dict->capacity) {
             index = 0;
@@ -170,9 +169,16 @@ void insertSet(ObjSet *set, Value value) {
 
     ObjString *string = AS_STRING(value);
 
+    // If the value is already in the set, exit
+    if (searchSet(set, string)) {
+        return;
+    }
+
     int index = string->hash % set->capacity;
 
     setItem *item = ALLOCATE(setItem, sizeof(setItem));
+
+    // TODO: Handle set resizing
 
     item->item = string;
     item->hash = string->hash;
@@ -187,6 +193,19 @@ void insertSet(ObjSet *set, Value value) {
 
     set->items[index] = item;
     set->count++;
+}
+
+bool searchSet(ObjSet *set, ObjString *string) {
+    int index = string->hash % set->capacity;
+
+    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+        index++;
+        if (index == set->capacity) {
+            index = 0;
+        }
+    }
+
+    return set->items[index] && !set->items[index]->deleted;
 }
 
 // Calling function needs to free memory

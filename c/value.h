@@ -129,6 +129,8 @@ Value searchDict(ObjDict *dict, char *key);
 
 void insertSet(ObjSet *set, Value value);
 
+bool searchSet(ObjSet *set, ObjString *string);
+
 void freeDict(ObjDict *dict);
 
 char *valueToString(Value value);

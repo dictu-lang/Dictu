@@ -11,9 +11,11 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
-#include "collections.h"
-#include "strings.h"
-#include "files.h"
+#include "datatypes/sets.h"
+#include "datatypes/dicts.h"
+#include "datatypes/lists.h"
+#include "datatypes/strings.h"
+#include "datatypes/files.h"
 #include "natives.h"
 
 VM vm; // [one]
@@ -243,6 +245,10 @@ static bool invoke(ObjString *name, int argCount) {
 
         case OBJ_FILE: {
             return fileMethods(name->chars, argCount + 1);
+        }
+
+        case OBJ_SET: {
+            return setMethods(name->chars, argCount + 1);
         }
 
         case OBJ_INSTANCE: {
