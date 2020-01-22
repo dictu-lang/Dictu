@@ -1,0 +1,21 @@
+/**
+* remove.du
+*
+* Testing the set.add() method
+*
+* .add() mutates the set to add a value
+*/
+
+var mySet = set();
+
+mySet.add("dictu");
+assert(mySet.contains("dictu"));
+assert(len(mySet) == 1);
+
+mySet.add("is");
+assert(mySet.contains("is"));
+assert(len(mySet) == 2);
+
+mySet.add("great!");
+assert(mySet.contains("great!"));
+assert(len(mySet) == 3);

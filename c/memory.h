@@ -33,4 +33,8 @@ void freeObject(Obj *object);
 
 void freeDictValue(dictItem *dictItem);
 
+void freeDict(ObjDict *dict);
+
+void freeSetValue (setItem *setItem);
+
 #endif

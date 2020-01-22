@@ -10,7 +10,56 @@
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.1.7\n"
+#define VERSION "Dictu Version: 0.1.8\n"
+
+static bool replCountBraces(char *line) {
+    int leftBraces = 0;
+    int rightBraces = 0;
+    bool inString = false;
+
+    for (int i = 0; line[i]; i++) {
+        if (line[i] == '\'' || line[i] == '"') {
+            inString = !inString;
+        }
+
+        if (inString) {
+            continue;
+        }
+
+        if (line[i] == '{') {
+            leftBraces++;
+        } else if (line[i] == '}') {
+            rightBraces++;
+        }
+    }
+
+    return leftBraces == rightBraces;
+}
+
+static bool replCountQuotes(char *line) {
+    int singleQuotes = 0;
+    int doubleQuotes = 0;
+    char quote = '\0';
+
+    for (int i = 0; line[i]; i++) {
+        if (line[i] == '\'' && quote != '"') {
+            singleQuotes++;
+
+            if (quote == '\0') {
+                quote = '\'';
+            }
+        } else if (line[i] == '"' && quote != '\'') {
+            doubleQuotes++;
+            if (quote == '\0') {
+                quote = '"';
+            }
+        } else if (line[i] == '\\') {
+            line++;
+        }
+    }
+
+    return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
+}
 
 static void repl() {
     printf(VERSION);
@@ -19,10 +68,38 @@ static void repl() {
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        interpret(line);
+        char *fullLine = malloc(sizeof(char) * (strlen(line) + 1));
+        snprintf(fullLine, strlen(line) + 1, "%s", line);
+
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
+
+        while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
+            free(line);
+            line = linenoise("... ");
+
+            if (line == NULL) {
+                return;
+            }
+
+            char *temp = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
+
+            if (temp == NULL) {
+                printf("Unable to allocate memory");
+                exit(71);
+            }
+
+            fullLine = temp;
+            memcpy(fullLine + strlen(fullLine), line, strlen(line) + 1);
+
+            linenoiseHistoryAdd(line);
+            linenoiseHistorySave("history.txt");
+        }
+
+        interpret(fullLine);
+
         free(line);
+        free(fullLine);
     }
 }
 

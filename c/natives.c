@@ -106,6 +106,8 @@ static Value typeNative(int argCount, Value *args) {
                 return OBJ_VAL(copyString("list", 4));
             case OBJ_DICT:
                 return OBJ_VAL(copyString("dict", 4));
+            case OBJ_SET:
+                return OBJ_VAL(copyString("set", 3));
             case OBJ_NATIVE_VOID:
             case OBJ_NATIVE:
                 return OBJ_VAL(copyString("native", 6));
@@ -117,6 +119,10 @@ static Value typeNative(int argCount, Value *args) {
     }
 
     return OBJ_VAL(copyString("Unknown Type", 12));
+}
+
+static Value setNative(int argCount, Value *args) {
+    return OBJ_VAL(initSet());
 }
 
 static Value lenNative(int argCount, Value *args) {
@@ -131,6 +137,8 @@ static Value lenNative(int argCount, Value *args) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
     } else if (IS_DICT(args[0])) {
         return NUMBER_VAL(AS_DICT(args[0])->count);
+    } else if (IS_SET(args[0])) {
+        return NUMBER_VAL(AS_SET(args[0])->count);
     }
 
     runtimeError("Unsupported type passed to len()", argCount);
@@ -444,7 +452,8 @@ void defineAllNatives() {
             "input",
             "number",
             "str",
-            "type"
+            "type",
+            "set"
     };
 
     NativeFn nativeFunctions[] = {
@@ -463,7 +472,8 @@ void defineAllNatives() {
             inputNative,
             numberNative,
             strNative,
-            typeNative
+            typeNative,
+            setNative
     };
 
     char *nativeVoidNames[] = {

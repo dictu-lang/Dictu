@@ -101,17 +101,21 @@ static ObjString *allocateString(char *chars, int length,
 }
 
 ObjList *initList() {
-    ObjList *list;
-    list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
+    ObjList *list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
 ObjDict *initDict() {
-    ObjDict *dict;
-    dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
+    ObjDict *dict = ALLOCATE_OBJ(ObjDict, OBJ_DICT);
     initDictValues(dict, 8);
     return dict;
+}
+
+ObjSet *initSet() {
+    ObjSet *set = ALLOCATE_OBJ(ObjSet, OBJ_SET);
+    initSetValues(set, 8);
+    return set;
 }
 
 ObjFile *initFile() {
@@ -356,6 +360,51 @@ char *objectToString(Value value) {
 
             snprintf(dictString + dictStringLength, size - dictStringLength, "}");
             return dictString;
+        }
+
+        case OBJ_SET: {
+            int count = 0;
+            int size = 50;
+            ObjSet *set = AS_SET(value);
+            char *setString = malloc(sizeof(char) * size);
+            int setStringLength = snprintf(setString, size, "%s", "{");
+
+            for (int i = 0; i < set->capacity; ++i) {
+                setItem *item = set->items[i];
+                if (!item || item->deleted)
+                    continue;
+
+                count++;
+
+                char *element = item->item->chars;
+                int elementSize = item->item->length;
+
+                if (elementSize > (size - setStringLength - 5)) {
+                    if (elementSize > size * 2) {
+                        size += elementSize * 2 + 5;
+                    } else {
+                        size = size * 2 + 5;
+                    }
+
+                    char *newB = realloc(setString, sizeof(char) * size);
+
+                    if (newB == NULL) {
+                        printf("Unable to allocate memory\n");
+                        exit(71);
+                    }
+
+                    setString = newB;
+                }
+
+                setStringLength += snprintf(setString + setStringLength, size - setStringLength, "'%s'", element);
+
+                if (count != set->count) {
+                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
+                }
+            }
+
+            snprintf(setString + setStringLength, size - setStringLength, "}");
+            return setString;
         }
 
         case OBJ_UPVALUE: {
