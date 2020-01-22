@@ -169,9 +169,13 @@ static void blackenObject(Obj *object) {
         }
 
         case OBJ_SET: {
-            // TODO: Set "values" are not a conventional "value"
-            // they are ObjStrings - Worth testing this to find
-            // out what will happen
+            ObjSet *set = (ObjSet *) object;
+            for (int i = 0; i < set->capacity; ++i) {
+                if (!set->items[i])
+                    continue;
+
+                grayObject((Obj *) set->items[i]->item);
+            }
             break;
         }
 
@@ -234,7 +238,6 @@ void freeObject(Obj *object) {
             FREE(ObjNativeVoid, object);
             break;
         }
-
 
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
