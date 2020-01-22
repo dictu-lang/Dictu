@@ -170,7 +170,7 @@ void insertSet(ObjSet *set, Value value) {
     ObjString *string = AS_STRING(value);
 
     // If the value is already in the set, exit
-    if (searchSet(set, string)) {
+    if (searchSetMarkActive(set, string)) {
         return;
     }
 
@@ -206,6 +206,28 @@ bool searchSet(ObjSet *set, ObjString *string) {
     }
 
     return set->items[index] && !set->items[index]->deleted;
+}
+
+bool searchSetMarkActive(ObjSet *set, ObjString *string) {
+    int index = string->hash % set->capacity;
+
+    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+        index++;
+        if (index == set->capacity) {
+            index = 0;
+        }
+    }
+
+    if (set->items[index]) {
+        // If we found the value but it's been "deleted" mark it as active
+        if (set->items[index]->deleted) {
+            set->items[index]->deleted = false;
+            set->count++;
+        }
+        return true;
+    }
+
+    return false;
 }
 
 // Calling function needs to free memory

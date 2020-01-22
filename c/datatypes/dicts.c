@@ -56,16 +56,16 @@ static bool removeDictItem(int argCount) {
     if (dict->items[index]) {
         dict->items[index]->deleted = true;
         dict->count--;
-        push(NIL_VAL);
 
         if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 35) {
             resizeDict(dict, false);
         }
 
+        push(NIL_VAL);
         return true;
     }
 
-    runtimeError("Key '%s' passed to remove() does not exist", key);
+    runtimeError("Key '%s' passed to remove() does not exist within the dictionary", key);
     return false;
 }
 

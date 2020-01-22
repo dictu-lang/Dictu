@@ -19,13 +19,72 @@ static bool addSetItem(int argCount) {
     return true;
 }
 
+static bool removeSetItem(int argCount) {
+    if (argCount != 2) {
+        runtimeError("remove() takes 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to remove() must be a string");
+        return false;
+    }
+
+    ObjString *string = AS_STRING(pop());
+    ObjSet *set = AS_SET(pop());
+    int index = string->hash % set->capacity;
+
+    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+        index++;
+        if (index == set->capacity) {
+            index = 0;
+        }
+    }
+
+    if (set->items[index]) {
+        set->items[index]->deleted = true;
+        set->count--;
+
+        // TODO: Resize set
+
+        push(NIL_VAL);
+        return true;
+    }
+
+    runtimeError("Value '%s' passed to remove() does not exist within the set", string->chars);
+    return false;
+}
+
+static bool containsSetItem(int argCount) {
+    if (argCount != 2) {
+        runtimeError("contains() takes 2 arguments (%d given)", argCount);
+        return false;
+    }
+
+    if (!IS_STRING(peek(0))) {
+        runtimeError("Argument passed to contains() must be a string", argCount);
+        return false;
+    }
+
+    ObjString *string = AS_STRING(pop());
+    ObjSet *set = AS_SET(pop());
+
+    if (searchSet(set, string)) {
+        push(TRUE_VAL);
+    } else {
+        push(FALSE_VAL);
+    }
+
+    return true;
+}
+
 bool setMethods(char *method, int argCount) {
     if (strcmp(method, "add") == 0) {
         return addSetItem(argCount);
     } else if (strcmp(method, "remove") == 0) {
-        // TODO: Remove method for sets
+        return removeSetItem(argCount);
     } else if (strcmp(method, "contains") == 0) {
-        // TODO: Contains method for sets
+        return containsSetItem(argCount);
     }
 
     runtimeError("Set has no method %s()", method);
