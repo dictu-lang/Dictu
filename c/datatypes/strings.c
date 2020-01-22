@@ -1,6 +1,6 @@
 #include "strings.h"
-#include "vm.h"
-#include "memory.h"
+#include "../vm.h"
+#include "../memory.h"
 
 static bool splitString(int argCount) {
     if (argCount != 2) {

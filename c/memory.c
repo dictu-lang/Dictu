@@ -49,6 +49,21 @@ void freeDict(ObjDict *dict) {
     free(dict);
 }
 
+void freeSetValue (setItem *setItem) {
+    free(setItem);
+}
+
+void freeSet(ObjSet *set) {
+    for (int i = 0; i < set->capacity; i++) {
+        setItem *item = set->items[i];
+        if (item != NULL) {
+            freeSetValue(item);
+        }
+    }
+    free(set->items);
+    free(set);
+}
+
 void grayObject(Obj *object) {
     if (object == NULL) return;
 
@@ -153,12 +168,22 @@ static void blackenObject(Obj *object) {
             break;
         }
 
+        case OBJ_SET: {
+            ObjSet *set = (ObjSet *) object;
+            for (int i = 0; i < set->capacity; ++i) {
+                if (!set->items[i])
+                    continue;
+
+                grayObject((Obj *) set->items[i]->item);
+            }
+            break;
+        }
+
 
         case OBJ_NATIVE:
         case OBJ_NATIVE_VOID:
         case OBJ_STRING:
         case OBJ_FILE:
-        //case OBJ_DICT:
             break;
     }
 }
@@ -214,7 +239,6 @@ void freeObject(Obj *object) {
             break;
         }
 
-
         case OBJ_STRING: {
             ObjString *string = (ObjString *) object;
             FREE_ARRAY(char, string->chars, string->length + 1);
@@ -232,6 +256,12 @@ void freeObject(Obj *object) {
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
             freeDict(dict);
+            break;
+        }
+
+        case OBJ_SET: {
+            ObjSet *set = (ObjSet *) object;
+            freeSet(set);
             break;
         }
 

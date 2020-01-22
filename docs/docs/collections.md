@@ -163,3 +163,39 @@ var myDict = {"key": {"test": 10}};
 var myDict1 = myDict.copy(); // Shallow copy
 var myDict2 = myDict.deepCopy(); // Deep copy
 ```
+
+## Sets
+
+Sets are an unordered collection of unique hashable values. Currently Dictu requires that the hashable value be a string.
+
+```js
+var mySet = set();
+```
+
+### Adding to sets
+
+Adding to sets is just a case of passing a value to .add()
+
+```js
+var mySet = set();
+mySet.add("Dictu!");
+```
+
+### Checking a value exists
+
+```js
+var mySet = set();
+mySet.add("Dictu!");
+print(mySet.contains("Dictu!")); // true
+print(mySet.contains("Other!")); // false
+```
+
+### Removing a value from a set
+
+Note: Attempting to remove a value from a set that does not exist is a runtime error, ensure the value exists before attempting to remove.
+
+```js
+var mySet = set();
+mySet.add("Dictu!");
+mySet.remove("Dictu!");
+```

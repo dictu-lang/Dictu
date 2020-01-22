@@ -1,0 +1,25 @@
+/**
+* remove.du
+*
+* Testing the set.remove() method
+*
+* .remove() mutates the set to remove a value
+*/
+
+var mySet = set();
+
+mySet.add("dictu");
+mySet.add("is");
+mySet.add("great!");
+
+assert(mySet.contains("dictu"));
+assert(mySet.contains("is"));
+assert(mySet.contains("great!"));
+
+mySet.remove("dictu");
+
+assert(len(mySet) == 2);
+
+assert(!mySet.contains("dictu"));
+assert(mySet.contains("is"));
+assert(mySet.contains("great!"));

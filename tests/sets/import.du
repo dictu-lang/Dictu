@@ -1,0 +1,11 @@
+/**
+* import.du
+*
+* General import file for all the set tests
+*
+* Note: .contains() is part of both add and remove tests, so there will be no
+* explicit test for this method.
+*/
+
+import "tests/sets/add.du";
+import "tests/sets/remove.du";

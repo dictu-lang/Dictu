@@ -1,6 +1,6 @@
 #include "files.h"
-#include "vm.h"
-#include "memory.h"
+#include "../vm.h"
+#include "../memory.h"
 
 static bool writeFile(int argCount, bool newLine) {
     if (argCount != 2) {

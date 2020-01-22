@@ -11,9 +11,11 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
-#include "collections.h"
-#include "strings.h"
-#include "files.h"
+#include "datatypes/sets.h"
+#include "datatypes/dicts.h"
+#include "datatypes/lists.h"
+#include "datatypes/strings.h"
+#include "datatypes/files.h"
 #include "natives.h"
 
 VM vm; // [one]
@@ -245,6 +247,10 @@ static bool invoke(ObjString *name, int argCount) {
             return fileMethods(name->chars, argCount + 1);
         }
 
+        case OBJ_SET: {
+            return setMethods(name->chars, argCount + 1);
+        }
+
         case OBJ_INSTANCE: {
             ObjInstance *instance = AS_INSTANCE(receiver);
 
@@ -356,7 +362,8 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0);
+           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
 static void concatenate() {
@@ -931,9 +938,9 @@ static InterpretResult run() {
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
-            Value assignValue = pop();
-            Value indexValue = pop();
-            Value subscriptValue = pop();
+            Value assignValue = peek(0);
+            Value indexValue = peek(1);
+            Value subscriptValue = peek(2);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -961,6 +968,11 @@ static InterpretResult run() {
                         DISPATCH();
                     }
 
+                    // Pop after the values have been inserted to stop GC cleanup
+                    pop();
+                    pop();
+                    pop();
+
                     push(NIL_VAL);
 
                     frame->ip = ip;
@@ -980,11 +992,20 @@ static InterpretResult run() {
 
                     insertDict(dict, keyString, assignValue);
 
+                    // Pop after the values have been inserted to stop GC cleanup
+                    pop();
+                    pop();
+                    pop();
+
                     push(NIL_VAL);
                     DISPATCH();
                 }
 
                 default: {
+                    pop();
+                    pop();
+                    pop();
+
                     frame->ip = ip;
                     runtimeError("Only lists and dictionaries support subscript assignment.");
                     return INTERPRET_RUNTIME_ERROR;
