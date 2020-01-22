@@ -123,11 +123,8 @@ static bool containsListItem(int argCount) {
     Value search = pop();
     ObjList *list = AS_LIST(pop());
 
-    for (int i = 0; i < list->values.capacity; ++i) {
-        if (!list->values.values[i])
-            continue;
-
-        if (list->values.values[i] == search) {
+    for (int i = 0; i < list->values.count; ++i) {
+        if (valuesEqual(list->values.values[i], search)) {
             push(TRUE_VAL);
             return true;
         }
