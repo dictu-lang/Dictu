@@ -87,7 +87,7 @@ static bool dictItemExists(int argCount) {
         if (!dict->items[i])
             continue;
 
-        if (strcmp(dict->items[i]->key, key) == 0) {
+        if (strcmp(dict->items[i]->key, key) == 0 && !dict->items[i]->deleted) {
             push(TRUE_VAL);
             return true;
         }
