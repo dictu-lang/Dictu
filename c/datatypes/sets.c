@@ -34,7 +34,7 @@ static bool removeSetItem(int argCount) {
     ObjSet *set = AS_SET(pop());
     int index = string->hash % set->capacity;
 
-    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+    while (set->items[index] && !(strcmp(set->items[index]->item->chars, string->chars) == 0 && !set->items[index]->deleted)) {
         index++;
         if (index == set->capacity) {
             index = 0;

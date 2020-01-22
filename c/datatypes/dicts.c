@@ -46,7 +46,7 @@ static bool removeDictItem(int argCount) {
 
     int index = hash(key) % dict->capacity;
 
-    while (dict->items[index] && strcmp(dict->items[index]->key, key) != 0) {
+    while (dict->items[index] && !(strcmp(dict->items[index]->key, key) == 0 && !dict->items[index]->deleted)) {
         index++;
         if (index == dict->capacity) {
             index = 0;

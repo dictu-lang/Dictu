@@ -81,17 +81,17 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     item->deleted = false;
     item->hash = hashValue;
 
-    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
+    while (dict->items[index] && strcmp(dict->items[index]->key, key) != 0) {
         index++;
         if (index == dict->capacity) {
             index = 0;
         }
     }
 
+    // If there is a "deleted" key, free and swap with new k-v
     if (dict->items[index]) {
         free(dict->items[index]->key);
         free(dict->items[index]);
-        dict->count--;
     }
 
     dict->items[index] = item;
@@ -178,7 +178,7 @@ void insertSet(ObjSet *set, Value value) {
     item->hash = string->hash;
     item->deleted = false;
 
-    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
         index++;
         if (index == set->capacity) {
             index = 0;
