@@ -88,8 +88,14 @@ void insertDict(ObjDict *dict, char *key, Value value) {
         }
     }
 
-    // If there is a "deleted" key, free and swap with new k-v
+    // Replace the value
     if (dict->items[index]) {
+        // If the key is not "deleted", we are updating the value, not inserting
+        // a new entry, therefore count should not change
+        if (!dict->items[index]->deleted) {
+            dict->count--;
+        }
+
         free(dict->items[index]->key);
         free(dict->items[index]);
     }
