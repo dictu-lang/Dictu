@@ -938,9 +938,9 @@ static InterpretResult run() {
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
-            Value assignValue = pop();
-            Value indexValue = pop();
-            Value subscriptValue = pop();
+            Value assignValue = peek(0);
+            Value indexValue = peek(1);
+            Value subscriptValue = peek(2);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -968,6 +968,11 @@ static InterpretResult run() {
                         DISPATCH();
                     }
 
+                    // Pop after the values have been inserted to stop GC cleanup
+                    pop();
+                    pop();
+                    pop();
+
                     push(NIL_VAL);
 
                     frame->ip = ip;
@@ -987,11 +992,20 @@ static InterpretResult run() {
 
                     insertDict(dict, keyString, assignValue);
 
+                    // Pop after the values have been inserted to stop GC cleanup
+                    pop();
+                    pop();
+                    pop();
+
                     push(NIL_VAL);
                     DISPATCH();
                 }
 
                 default: {
+                    pop();
+                    pop();
+                    pop();
+
                     frame->ip = ip;
                     runtimeError("Only lists and dictionaries support subscript assignment.");
                     return INTERPRET_RUNTIME_ERROR;
