@@ -296,6 +296,21 @@ void printValue(Value value) {
     free(output);
 }
 
+static bool listComparison(Value a, Value b) {
+    ObjList *list = AS_LIST(a);
+    ObjList *listB = AS_LIST(b);
+
+    if (list->values.count != listB->values.count)
+        return false;
+
+    for (int i = 0; i < list->values.count; ++i) {
+        if (!valuesEqual(list->values.values[i], listB->values.values[i]))
+            return false;
+    }
+
+    return true;
+}
+
 static bool dictComparison(Value a, Value b) {
     ObjDict *dict = AS_DICT(a);
     ObjDict *dictB = AS_DICT(b);
@@ -327,15 +342,15 @@ static bool dictComparison(Value a, Value b) {
     return true;
 }
 
-static bool listComparison(Value a, Value b) {
-    ObjList *list = AS_LIST(a);
-    ObjList *listB = AS_LIST(b);
+static bool setComparison(Value a, Value b) {
+    ObjSet *set = AS_SET(a);
+    ObjSet *setB = AS_SET(b);
 
-    if (list->values.count != listB->values.count)
+    if (set->count != setB->count)
         return false;
 
-    for (int i = 0; i < list->values.count; ++i) {
-        if (!valuesEqual(list->values.values[i], listB->values.values[i]))
+    for (int i = 0; i < set->count; ++i) {
+        if (set->items[i]!= setB->items[i])
             return false;
     }
 
@@ -346,12 +361,16 @@ bool valuesEqual(Value a, Value b) {
 #ifdef NAN_TAGGING
 
     if (IS_OBJ(a) && IS_OBJ(b)) {
+        if (AS_OBJ(a)->type == OBJ_LIST && AS_OBJ(b)->type == OBJ_LIST) {
+            return listComparison(a, b);
+        }
+
         if (AS_OBJ(a)->type == OBJ_DICT && AS_OBJ(b)->type == OBJ_DICT) {
             return dictComparison(a, b);
         }
 
-        if (AS_OBJ(a)->type == OBJ_LIST && AS_OBJ(b)->type == OBJ_LIST) {
-            return listComparison(a, b);
+        if (AS_OBJ(a)->type == OBJ_SET && AS_OBJ(b)->type == OBJ_SET) {
+            return setComparison(a, b);
         }
     }
 
