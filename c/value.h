@@ -133,7 +133,7 @@ bool searchSet(ObjSet *set, ObjString *string);
 
 bool searchSetMarkActive(ObjSet *set, ObjString *string);
 
-void freeDict(ObjDict *dict);
+void resizeSet(ObjSet *set, bool grow);
 
 char *valueToString(Value value);
 

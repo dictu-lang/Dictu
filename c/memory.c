@@ -49,6 +49,21 @@ void freeDict(ObjDict *dict) {
     free(dict);
 }
 
+void freeSetValue (setItem *setItem) {
+    free(setItem);
+}
+
+void freeSet(ObjSet *set) {
+    for (int i = 0; i < set->capacity; i++) {
+        setItem *item = set->items[i];
+        if (item != NULL) {
+            freeSetValue(item);
+        }
+    }
+    free(set->items);
+    free(set);
+}
+
 void grayObject(Obj *object) {
     if (object == NULL) return;
 
@@ -154,7 +169,9 @@ static void blackenObject(Obj *object) {
         }
 
         case OBJ_SET: {
-            // TODO: Handle cleanup
+            // TODO: Set "values" are not a conventional "value"
+            // they are ObjStrings - Worth testing this to find
+            // out what will happen
             break;
         }
 
@@ -240,7 +257,8 @@ void freeObject(Obj *object) {
         }
 
         case OBJ_SET: {
-            // TODO: Handle cleanup
+            ObjSet *set = (ObjSet *) object;
+            freeSet(set);
             break;
         }
 

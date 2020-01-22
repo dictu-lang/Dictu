@@ -45,7 +45,9 @@ static bool removeSetItem(int argCount) {
         set->items[index]->deleted = true;
         set->count--;
 
-        // TODO: Resize set
+        if (set->capacity != 8 && set->count * 100 / set->capacity <= 35) {
+            resizeSet(set, false);
+        }
 
         push(NIL_VAL);
         return true;

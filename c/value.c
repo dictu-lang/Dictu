@@ -113,26 +113,17 @@ void resizeDict(ObjDict *dict, bool grow) {
             continue;
 
         if (dict->items[j]->deleted) {
+            freeDictValue(dict->items[j]);
             continue;
         }
 
         int index = dict->items[j]->hash % newSize;
 
         while (items[index]) {
-            index = (index + 1) % newSize;
+            index = (index + 1) % newSize; // Handles wrap around indexes
         }
 
         items[index] = dict->items[j];
-    }
-
-    // Free deleted values
-    for (int j = 0; j < dict->capacity; ++j) {
-        if (!dict->items[j])
-            continue;
-
-        if (dict->items[j]->deleted) {
-            freeDictValue(dict->items[j]);
-        }
     }
 
     free(dict->items);
@@ -144,8 +135,9 @@ void resizeDict(ObjDict *dict, bool grow) {
 Value searchDict(ObjDict *dict, char *key) {
     int index = hash(key) % dict->capacity;
 
-    if (!dict->items[index])
+    if (!dict->items[index]) {
         return NIL_VAL;
+    }
 
     while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
         index++;
@@ -178,7 +170,9 @@ void insertSet(ObjSet *set, Value value) {
 
     setItem *item = ALLOCATE(setItem, sizeof(setItem));
 
-    // TODO: Handle set resizing
+    if (set->count * 100 / set->capacity >= 60) {
+        resizeSet(set, true);
+    }
 
     item->item = string;
     item->hash = string->hash;
@@ -228,6 +222,40 @@ bool searchSetMarkActive(ObjSet *set, ObjString *string) {
     }
 
     return false;
+}
+
+void resizeSet(ObjSet *set, bool grow) {
+    int newSize;
+
+    if (grow)
+        newSize = set->capacity << 1;
+    else
+        newSize = set->capacity >> 1;
+
+    setItem **items = calloc(newSize, sizeof(*set->items));
+
+    for (int j = 0; j < set->capacity; ++j) {
+        if (!set->items[j])
+            continue;
+
+        if (set->items[j]->deleted) {
+            freeSetValue(set->items[j]);
+            continue;
+        }
+
+        int index = set->items[j]->hash % newSize;
+
+        while (items[index]) {
+            index = (index + 1) % newSize; // Handles wrap around indexes
+        }
+
+        items[index] = set->items[j];
+    }
+
+    free(set->items);
+
+    set->capacity = newSize;
+    set->items = items;
 }
 
 // Calling function needs to free memory

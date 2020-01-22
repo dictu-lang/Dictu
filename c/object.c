@@ -379,11 +379,11 @@ char *objectToString(Value value) {
                 char *element = item->item->chars;
                 int elementSize = item->item->length;
 
-                if (elementSize > (size - setStringLength - 3)) {
+                if (elementSize > (size - setStringLength - 5)) {
                     if (elementSize > size * 2) {
-                        size += elementSize * 2 + 3;
+                        size += elementSize * 2 + 5;
                     } else {
-                        size = size * 2 + 3;
+                        size = size * 2 + 5;
                     }
 
                     char *newB = realloc(setString, sizeof(char) * size);
