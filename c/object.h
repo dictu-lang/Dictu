@@ -21,7 +21,7 @@
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_LIST(value)          isObjType(value, OBJ_LIST)
 #define IS_DICT(value)          isObjType(value, OBJ_DICT)
-#define IS_SET(value)          isObjType(value, OBJ_SET)
+#define IS_SET(value)           isObjType(value, OBJ_SET)
 #define IS_FILE(value)          isObjType(value, OBJ_FILE)
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))

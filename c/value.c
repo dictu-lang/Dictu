@@ -189,6 +189,8 @@ void insertSet(ObjSet *set, Value value) {
         if (index == set->capacity) {
             index = 0;
         }
+
+        printf("skip\n");
     }
 
     set->items[index] = item;
@@ -198,7 +200,7 @@ void insertSet(ObjSet *set, Value value) {
 bool searchSet(ObjSet *set, ObjString *string) {
     int index = string->hash % set->capacity;
 
-    while (set->items[index] && !set->items[index]->deleted && strcmp(set->items[index]->item->chars, string->chars) != 0) {
+    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
         index++;
         if (index == set->capacity) {
             index = 0;
