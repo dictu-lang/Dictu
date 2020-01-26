@@ -189,8 +189,6 @@ void insertSet(ObjSet *set, Value value) {
         if (index == set->capacity) {
             index = 0;
         }
-
-        printf("skip\n");
     }
 
     set->items[index] = item;
