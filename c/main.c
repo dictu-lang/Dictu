@@ -10,7 +10,7 @@
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.1.8\n"
+#define VERSION "Dictu Version: 0.2.0\n"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;

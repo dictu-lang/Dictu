@@ -65,6 +65,8 @@ void initVM(bool repl, const char *scriptName) {
     vm.gc = true;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
+    vm.frameCapacity = 4;
+    vm.frames = realloc(NULL, sizeof(CallFrame) * 4);
     vm.bytesAllocated = 0;
     vm.nextGC = 1024 * 1024;
     vm.grayCount = 0;
@@ -80,6 +82,7 @@ void initVM(bool repl, const char *scriptName) {
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    FREE_ARRAY(CallFrame, vm.frames, vm.frameCapacity);
     vm.initString = NULL;
     vm.replVar = NULL;
     vm.gc = NULL;
@@ -113,9 +116,11 @@ static bool call(ObjClosure *closure, int argCount) {
         return false;
     }
 
-    if (vm.frameCount == FRAMES_MAX) {
-        runtimeError("Stack overflow.");
-        return false;
+    if (vm.frameCount == vm.frameCapacity) {
+        int oldCapacity = vm.frameCapacity;
+        vm.frameCapacity = GROW_CAPACITY(vm.frameCapacity);
+        vm.frames = GROW_ARRAY(vm.frames, CallFrame,
+                                   oldCapacity, vm.frameCapacity);
     }
 
     CallFrame *frame = &vm.frames[vm.frameCount++];
