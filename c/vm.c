@@ -82,6 +82,7 @@ void initVM(bool repl, const char *scriptName) {
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    FREE_ARRAY(CallFrame, vm.frames, vm.frameCapacity);
     vm.initString = NULL;
     vm.replVar = NULL;
     vm.gc = NULL;
