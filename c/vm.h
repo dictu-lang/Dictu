@@ -4,10 +4,8 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
-// TODO: Don't depend on frame count for stack count since we have
-// stack before frames?
-#define FRAMES_MAX 64
-#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+// TODO: Work out the maximum stack size at compilation time
+#define STACK_MAX (64 * UINT8_COUNT)
 
 typedef struct {
     ObjClosure *closure;
@@ -23,8 +21,9 @@ typedef struct {
     bool gc;
     const char *scriptName;
     const char *currentScriptName;
-    CallFrame frames[FRAMES_MAX];
+    CallFrame *frames;
     int frameCount;
+    int frameCapacity;
     int currentFrameCount;
     Table globals;
     Table strings;
