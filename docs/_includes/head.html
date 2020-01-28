@@ -8,6 +8,15 @@
     <title>{{ page.title }} - {{ site.title }}</title>
     <link rel="stylesheet" href="{{ "/assets/css/just-the-docs.css" | absolute_url }}">
 
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            const cssFile = document.querySelector('[rel="stylesheet"]');
+            const originalCssRef = cssFile.getAttribute('href');
+            const darkModeCssRef = originalCssRef.replace('just-the-docs.css', 'dark-mode-preview.css');
+            cssFile.setAttribute('href', darkModeCssRef);
+        }
+    </script>
+
     {% if site.ga_tracking != nil %}
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga_tracking }}"></script>
