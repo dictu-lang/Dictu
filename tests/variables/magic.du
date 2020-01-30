@@ -1,0 +1,11 @@
+/**
+ * magic.du
+ *
+ * Testing "magic" variables are set correctly
+ */
+
+/**
+ * argv is a list of all parameters passed to the interpreter.
+ * The first element is always the script name
+ */
+assert(argv == ["tests/runTests.du"]);
