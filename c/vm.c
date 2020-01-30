@@ -74,6 +74,7 @@ void initVM(bool repl, const char *scriptName) {
     vm.grayStack = NULL;
     initTable(&vm.globals);
     initTable(&vm.strings);
+    initTable(&vm.imports);
     vm.initString = copyString("init", 4);
     vm.replVar = copyString("_", 1);
     defineAllNatives();
@@ -82,6 +83,7 @@ void initVM(bool repl, const char *scriptName) {
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    freeTable(&vm.imports);
     FREE_ARRAY(CallFrame, vm.frames, vm.frameCapacity);
     vm.initString = NULL;
     vm.replVar = NULL;
@@ -798,6 +800,12 @@ static InterpretResult run() {
 
         CASE_CODE(IMPORT): {
             ObjString *fileName = AS_STRING(pop());
+
+            // If we have imported this file already, skip.
+            if (!tableSet(&vm.imports, fileName, NIL_VAL)) {
+                DISPATCH();
+            }
+
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
 
