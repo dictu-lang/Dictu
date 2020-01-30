@@ -1,5 +1,7 @@
 # Dictu
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab84059049bd4ba7b7b8c1fcfaac4ea5)](https://app.codacy.com/manual/jasonhall96686/Dictu?utm_source=github.com&utm_medium=referral&utm_content=Jason2605/Dictu&utm_campaign=Badge_Grade_Dashboard)
+
 *What is Dictu?*  
 Dictu is a very simple dynamically typed programming language 
 built upon the [craftinginterpreters tutorial](http://www.craftinginterpreters.com/contents.html).
