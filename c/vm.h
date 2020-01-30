@@ -27,6 +27,7 @@ typedef struct {
     int currentFrameCount;
     Table globals;
     Table strings;
+    Table imports;
     ObjString *initString;
     ObjString *replVar;
     ObjUpvalue *openUpvalues;
