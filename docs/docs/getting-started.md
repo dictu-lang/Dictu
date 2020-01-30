@@ -77,7 +77,7 @@ Passing arguments to the script via the CLI is very important, especially in a h
 
 `./dictu myFile.du`
 
-```
+```js
 # myFile.du
 
 print(argv); // ["myDile.du"]
