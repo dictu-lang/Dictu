@@ -70,3 +70,29 @@ comment
 ```
 
 {: .no_toc }
+
+## Argv
+
+Passing arguments to the script via the CLI is very important, especially in a headless environment. Dictu allows you to access these arguments very easily with the magic `argv` variable. `argv` is a list of all arguments supplied to the script. This will be more apparent with the following examples. Note - the first element of the argv list is always the script name.
+
+#### CLI
+
+`./dictu myFile.du`
+
+```js
+# myFile.du
+
+print(argv); // ["myDile.du"]
+```
+
+`./dictu myFile.du arg1 arg2 arg3`
+
+```js
+# myFile.du
+
+print(argv); // ["myDile.du", "arg1", "arg2", "arg3"]
+```
+
+
+
+ 

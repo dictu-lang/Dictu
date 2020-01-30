@@ -61,7 +61,7 @@ static bool replCountQuotes(char *line) {
     return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
 }
 
-static void repl() {
+static void repl(int argc, const char *argv[]) {
     printf(VERSION);
     char *line;
 
@@ -96,16 +96,16 @@ static void repl() {
             linenoiseHistorySave("history.txt");
         }
 
-        interpret(fullLine);
+        interpret(fullLine, argc, argv);
 
         free(line);
         free(fullLine);
     }
 }
 
-static void runFile(const char *path) {
-    char *source = readFile(path);
-    InterpretResult result = interpret(source);
+static void runFile(int argc, const char *argv[]) {
+    char *source = readFile(argv[1]);
+    InterpretResult result = interpret(source, argc, argv);
     free(source); // [owner]
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
@@ -113,14 +113,14 @@ static void runFile(const char *path) {
 }
 
 int main(int argc, const char *argv[]) {
-    initVM(argc == 1, argc == 2 ? argv[1] : "repl");
+    initVM(argc == 1, argc >= 2 ? argv[1] : "repl");
 
     if (argc == 1) {
-        repl();
-    } else if (argc == 2) {
-        runFile(argv[1]);
+        repl(argc, argv);
+    } else if (argc >= 2) {
+        runFile(argc, argv);
     } else {
-        fprintf(stderr, "Usage: dictu [path]\n");
+        fprintf(stderr, "Usage: dictu [path] [args]\n");
         exit(64);
     }
 

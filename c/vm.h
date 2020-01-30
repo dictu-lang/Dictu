@@ -30,6 +30,7 @@ typedef struct {
     Table imports;
     ObjString *initString;
     ObjString *replVar;
+    ObjString *argv;
     ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
@@ -51,7 +52,7 @@ void initVM(bool repl, const char *scriptName);
 
 void freeVM();
 
-InterpretResult interpret(const char *source);
+InterpretResult interpret(const char *source, int argc, const char *argv[]);
 
 void push(Value value);
 
