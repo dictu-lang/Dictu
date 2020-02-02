@@ -262,8 +262,32 @@ static bool invoke(ObjString *name, int argCount) {
         case OBJ_INSTANCE: {
             ObjInstance *instance = AS_INSTANCE(receiver);
 
-            // First look for a field which may shadow a method.
             Value value;
+            if (strcmp(name->chars, "hasAttribute") == 0) {
+                if (argCount != 1) {
+                    runtimeError("hasAttribute() takes 1 argument (%d  given)", argCount);
+                    return false;
+                }
+
+                Value value = pop(); // Pop the "attribute"
+                pop(); // Pop the instance
+
+                if (!IS_STRING(value)) {
+                    runtimeError("Argument passed to hasAttribute() must be a string");
+                    return false;
+                }
+
+                if (tableGet(&instance->fields, AS_STRING(value), &value)) {
+                    push(TRUE_VAL);
+                } else {
+                    push(FALSE_VAL);
+                }
+
+                return true;
+            }
+
+            // First look for a field which may shadow a method.
+
             if (tableGet(&instance->fields, name, &value)) {
                 vm.stackTop[-argCount] = value;
                 return callValue(value, argCount);
