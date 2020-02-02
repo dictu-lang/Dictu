@@ -98,6 +98,8 @@ var myObject = Test();
 print(myObject.x); // 10
 ```
 
+### hasAttribute
+
 Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing, you should check
 if the object has the given attribute. This is done via `hasAttribute`.
 
@@ -113,6 +115,41 @@ print(myObject.hasAttribute("x")); // true
 print(myObject.hasAttribute("y")); // false
 
 print(myObject.z); // Undefined property 'z'.
+```
+
+### getAttribute
+
+Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
+This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.getAttribute("x")); // 10
+print(myObject.getAttribute("x", 100)); // 10
+print(myObject.getAttribute("y", 100)); // 100
+print(myObject.getAttribute("y")); // nil
+```
+
+### setAttribute
+
+Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+myObject.setAttribute("x", 100);
+print(myObject.x); // 100
 ```
 
 ## Static methods
