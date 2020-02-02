@@ -1009,6 +1009,7 @@ ParseRule rules[] = {
         {string,   NULL,         PREC_NONE},               // TOKEN_STRING
         {number,   NULL,         PREC_NONE},               // TOKEN_NUMBER
         {NULL,     NULL,         PREC_NONE},               // TOKEN_CLASS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_TRAIT
         {static_,  NULL,         PREC_NONE},               // TOKEN_STATIC
         {this_,    NULL,         PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,         PREC_NONE},               // TOKEN_SUPER
@@ -1119,7 +1120,7 @@ static void function(FunctionType type) {
     }
 }
 
-static void method() {
+static void method(bool trait) {
     FunctionType type;
 
     if (check(TOKEN_STATIC)) {
@@ -1141,7 +1142,11 @@ static void method() {
 
     function(type);
 
-    emitBytes(OP_METHOD, constant);
+    if (trait) {
+        emitBytes(OP_TRAIT_METHOD, constant);
+    } else {
+        emitBytes(OP_METHOD, constant);
+    }
 }
 
 static void classDeclaration() {
@@ -1173,7 +1178,7 @@ static void classDeclaration() {
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
-        method();
+        method(false);
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
 
@@ -1184,6 +1189,22 @@ static void classDeclaration() {
     defineVariable(nameConstant);
 
     currentClass = currentClass->enclosing;
+}
+
+static void traitDeclaration() {
+    consume(TOKEN_IDENTIFIER, "Expect trait name.");
+    uint8_t nameConstant = identifierConstant(&parser.previous);
+    declareVariable();
+
+    emitBytes(OP_TRAIT, nameConstant);
+
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+        method(true);
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
+
+    defineVariable(nameConstant);
 }
 
 static void funDeclaration() {
@@ -1515,6 +1536,7 @@ static void synchronize() {
 
         switch (parser.current.type) {
             case TOKEN_CLASS:
+            case TOKEN_TRAIT:
             case TOKEN_DEF:
             case TOKEN_STATIC:
             case TOKEN_VAR:
@@ -1539,6 +1561,8 @@ static void synchronize() {
 static void declaration() {
     if (match(TOKEN_CLASS)) {
         classDeclaration();
+    } else if (match(TOKEN_TRAIT)) {
+        traitDeclaration();
     } else if (match(TOKEN_DEF)) {
         funDeclaration();
     } else if (match(TOKEN_VAR)) {

@@ -360,6 +360,13 @@ static void defineMethod(ObjString *name) {
     pop();
 }
 
+static void defineTraitMethod(ObjString *name) {
+    Value method = peek(0);
+    ObjTrait *trait = AS_TRAIT(peek(1));
+    tableSet(&trait->methods, name, method);
+    pop();
+}
+
 static void createClass(ObjString *name, ObjClass *superclass) {
     ObjClass *klass = newClass(name, superclass);
     push(OBJ_VAL(klass));
@@ -1205,9 +1212,22 @@ static InterpretResult run() {
             DISPATCH();
         }
 
+        CASE_CODE(TRAIT): {
+            ObjString *name = READ_STRING();
+            ObjTrait *trait = newTrait(name);
+            push(OBJ_VAL(trait));
+            DISPATCH();
+        }
+
         CASE_CODE(METHOD):
             defineMethod(READ_STRING());
             DISPATCH();
+
+        CASE_CODE(TRAIT_METHOD): {
+            ObjString *name = READ_STRING();
+            defineTraitMethod(name);
+            DISPATCH();
+        }
 
         CASE_CODE(OPEN_FILE): {
             Value openType = pop();

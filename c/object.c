@@ -44,6 +44,13 @@ ObjClass *newClass(ObjString *name, ObjClass *superclass) {
     return klass;
 }
 
+ObjTrait *newTrait(ObjString *name) {
+    ObjTrait *trait = ALLOCATE_OBJ(ObjTrait, OBJ_TRAIT);
+    trait->name = name;
+    initTable(&trait->methods);
+    return trait;
+}
+
 ObjClosure *newClosure(ObjFunction *function) {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
@@ -175,6 +182,13 @@ char *objectToString(Value value) {
             char *classString = malloc(sizeof(char) * (klass->name->length + 8));
             snprintf(classString, klass->name->length + 7, "<cls %s>", klass->name->chars);
             return classString;
+        }
+
+        case OBJ_TRAIT: {
+            ObjTrait *trait = AS_TRAIT(value);
+            char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
+            snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
+            return traitString;
         }
 
         case OBJ_BOUND_METHOD: {
