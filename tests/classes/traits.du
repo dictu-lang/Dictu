@@ -1,0 +1,78 @@
+/**
+ * traits.du
+ *
+ * Testing traits
+ */
+
+trait MyTrait {
+    hello(x) {
+        return x;
+    }
+
+    attribute() {
+        return "Hello {}".format(this.name);
+    }
+}
+
+assert(type(MyTrait) == "trait");
+
+class MyClass {
+    use MyTrait;
+
+    init(name) {
+        this.name = name;
+    }
+}
+
+var myObject = MyClass("Jason");
+assert(myObject.name == "Jason");
+assert(myObject.hello(10) == 10);
+assert(myObject.attribute() == "Hello Jason");
+
+trait MyOtherTrait {
+    test() {
+        return 100 + 200;
+    }
+}
+
+class MyOtherClass < MyClass {
+    use MyOtherTrait;
+}
+
+var myOtherObject = MyOtherClass("Jason");
+assert(myOtherObject.name == "Jason");
+assert(myOtherObject.hello(10) == 10);
+assert(myOtherObject.attribute() == "Hello Jason");
+assert(myOtherObject.test() == 300);
+
+trait MyDuplicateTrait {
+    hello(x) {
+        return x * x;
+    }
+}
+
+class MyDuplicateClass < MyClass {
+    use MyOtherTrait, MyDuplicateTrait; // Override the hello method
+}
+
+var myDuplicateObject = MyDuplicateClass("Jason");
+assert(myDuplicateObject.name == "Jason");
+assert(myDuplicateObject.hello(10) == 100);
+assert(myDuplicateObject.attribute() == "Hello Jason");
+assert(myDuplicateObject.test() == 300);
+
+
+class MyDuplicateClassOverride < MyClass {
+    use MyOtherTrait, MyDuplicateTrait; // Override the hello method
+
+    // Override for a third time
+    hello(x) {
+        return x + x;
+    }
+}
+
+var myDuplicateOverrideObject = MyDuplicateClassOverride("Jason");
+assert(myDuplicateOverrideObject.name == "Jason");
+assert(myDuplicateOverrideObject.hello(10) == 20);
+assert(myDuplicateOverrideObject.attribute() == "Hello Jason");
+assert(myDuplicateOverrideObject.test() == 300);
