@@ -82,6 +82,39 @@ var myObject = SomeClass("Some text!");
 myObject.printMessage(); // Some text!
 ```
 
+## Attributes
+
+Attributes in Dictu are instance attributes, and these attributes get defined either inside the methods or on the method directly. There is no concept of attribute access modifiers in python and attributes
+are available directly from the object without the need for getters or setters.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.x); // 10
+```
+
+Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing, you should check
+if the object has the given attribute. This is done via `hasAttribute`.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.hasAttribute("x")); // true
+print(myObject.hasAttribute("y")); // false
+
+print(myObject.z); // Undefined property 'z'.
+```
+
 ## Static methods
 
 Static methods are methods which do not reference an object, and instead belong to a class. If a method is marked as static, `this` is not passed to the object. This means static methods can be invoked without instantiating an object.
