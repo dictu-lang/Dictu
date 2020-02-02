@@ -865,9 +865,9 @@ static void pushSuperclass() {
 
 static void super_(bool canAssign) {
     if (currentClass == NULL) {
-        error("Cannot use 'super' outside of a class.");
+        error("Cannot utilise 'super' outside of a class.");
     } else if (!currentClass->hasSuperclass) {
-        error("Cannot use 'super' in a class with no superclass.");
+        error("Cannot utilise 'super' in a class with no superclass.");
     }
 
     consume(TOKEN_DOT, "Expect '.' after 'super'.");
@@ -891,9 +891,9 @@ static void super_(bool canAssign) {
 
 static void this_(bool canAssign) {
     if (currentClass == NULL) {
-        error("Cannot use 'this' outside of a class.");
+        error("Cannot utilise 'this' outside of a class.");
     } else if (staticMethod) {
-        error("Cannot use 'this' inside a static method.");
+        error("Cannot utilise 'this' inside a static method.");
     } else {
         variable(false);
     }
@@ -901,8 +901,22 @@ static void this_(bool canAssign) {
 
 static void static_(bool canAssign) {
     if (currentClass == NULL) {
-        error("Cannot use 'static' outside of a class.");
+        error("Cannot utilise 'static' outside of a class.");
     }
+}
+
+static void useStatement() {
+    if (currentClass == NULL) {
+        error("Cannot utilise 'use' outside of a class.");
+    }
+
+    do {
+        consume(TOKEN_IDENTIFIER, "Expect trait name after use statement.");
+        namedVariable(parser.previous, false);
+        emitByte(OP_USE);
+    } while (match(TOKEN_COMMA));
+
+    consume(TOKEN_SEMICOLON, "Expect ';' after use statement.");
 }
 
 static void unary(bool canAssign) {
@@ -1009,6 +1023,8 @@ ParseRule rules[] = {
         {string,   NULL,         PREC_NONE},               // TOKEN_STRING
         {number,   NULL,         PREC_NONE},               // TOKEN_NUMBER
         {NULL,     NULL,         PREC_NONE},               // TOKEN_CLASS
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_TRAIT
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_USE
         {static_,  NULL,         PREC_NONE},               // TOKEN_STATIC
         {this_,    NULL,         PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,         PREC_NONE},               // TOKEN_SUPER
@@ -1119,7 +1135,7 @@ static void function(FunctionType type) {
     }
 }
 
-static void method() {
+static void method(bool trait) {
     FunctionType type;
 
     if (check(TOKEN_STATIC)) {
@@ -1141,7 +1157,11 @@ static void method() {
 
     function(type);
 
-    emitBytes(OP_METHOD, constant);
+    if (trait) {
+        emitBytes(OP_TRAIT_METHOD, constant);
+    } else {
+        emitBytes(OP_METHOD, constant);
+    }
 }
 
 static void classDeclaration() {
@@ -1173,13 +1193,41 @@ static void classDeclaration() {
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
-        method();
+        if (match(TOKEN_USE)) {
+            useStatement();
+        } else {
+            method(false);
+        }
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
 
     if (classCompiler.hasSuperclass) {
         endScope();
     }
+
+    defineVariable(nameConstant);
+
+    currentClass = currentClass->enclosing;
+}
+
+static void traitDeclaration() {
+    consume(TOKEN_IDENTIFIER, "Expect trait name.");
+    uint8_t nameConstant = identifierConstant(&parser.previous);
+    declareVariable();
+
+    ClassCompiler classCompiler;
+    classCompiler.name = parser.previous;
+    classCompiler.hasSuperclass = false;
+    classCompiler.enclosing = currentClass;
+    currentClass = &classCompiler;
+
+    emitBytes(OP_TRAIT, nameConstant);
+
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+        method(true);
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(nameConstant);
 
@@ -1375,7 +1423,7 @@ static void forStatement() {
 
 static void continueStatement() {
     if (innermostLoopStart == -1) {
-        error("Cannot use 'continue' outside of a loop.");
+        error("Cannot utilise 'continue' outside of a loop.");
     }
 
     consume(TOKEN_SEMICOLON, "Expect ';' after 'continue'.");
@@ -1464,7 +1512,7 @@ static void importStatement() {
 
 static void breakStatement() {
     if (current->loopDepth == 0) {
-        error("Cannot use 'break' outside of a loop.");
+        error("Cannot utilise 'break' outside of a loop.");
         return;
     }
 
@@ -1515,6 +1563,7 @@ static void synchronize() {
 
         switch (parser.current.type) {
             case TOKEN_CLASS:
+            case TOKEN_TRAIT:
             case TOKEN_DEF:
             case TOKEN_STATIC:
             case TOKEN_VAR:
@@ -1539,6 +1588,8 @@ static void synchronize() {
 static void declaration() {
     if (match(TOKEN_CLASS)) {
         classDeclaration();
+    } else if (match(TOKEN_TRAIT)) {
+        traitDeclaration();
     } else if (match(TOKEN_DEF)) {
         funDeclaration();
     } else if (match(TOKEN_VAR)) {
