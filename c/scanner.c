@@ -206,6 +206,8 @@ static TokenType identifierType() {
                 }
             }
             break;
+        case 'u':
+            return checkKeyword(1, 2, "se", TOKEN_USE);
         case 'v':
             return checkKeyword(1, 2, "ar", TOKEN_VAR);
         case 'w':

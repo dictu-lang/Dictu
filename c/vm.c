@@ -1229,6 +1229,22 @@ static InterpretResult run() {
             DISPATCH();
         }
 
+        CASE_CODE(USE): {
+            Value trait = peek(0);
+            if (!IS_TRAIT(trait)) {
+                frame->ip = ip;
+                runtimeError("Can only 'use' with a trait");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjClass *klass = AS_CLASS(peek(1));
+
+            tableAddAll(&AS_TRAIT(trait)->methods, &klass->methods);
+            pop(); // pop the trait
+
+            DISPATCH();
+        }
+
         CASE_CODE(OPEN_FILE): {
             Value openType = pop();
             Value fileName = pop();
