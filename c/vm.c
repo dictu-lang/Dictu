@@ -16,6 +16,7 @@
 #include "datatypes/lists.h"
 #include "datatypes/strings.h"
 #include "datatypes/files.h"
+#include "datatypes/instance.h"
 #include "natives.h"
 
 VM vm; // [one]
@@ -263,34 +264,15 @@ static bool invoke(ObjString *name, int argCount) {
             ObjInstance *instance = AS_INSTANCE(receiver);
 
             Value value;
-            if (strcmp(name->chars, "hasAttribute") == 0) {
-                if (argCount != 1) {
-                    runtimeError("hasAttribute() takes 1 argument (%d  given)", argCount);
-                    return false;
-                }
-
-                Value value = pop(); // Pop the "attribute"
-                pop(); // Pop the instance
-
-                if (!IS_STRING(value)) {
-                    runtimeError("Argument passed to hasAttribute() must be a string");
-                    return false;
-                }
-
-                if (tableGet(&instance->fields, AS_STRING(value), &value)) {
-                    push(TRUE_VAL);
-                } else {
-                    push(FALSE_VAL);
-                }
-
-                return true;
-            }
-
             // First look for a field which may shadow a method.
-
             if (tableGet(&instance->fields, name, &value)) {
                 vm.stackTop[-argCount] = value;
                 return callValue(value, argCount);
+            }
+
+            // Check for instance methods.
+            if (instanceMethods(name->chars, argCount + 1)) {
+                return true;
             }
 
             return invokeFromClass(instance->klass, name, argCount);
