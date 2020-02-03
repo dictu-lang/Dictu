@@ -195,10 +195,19 @@ static TokenType identifierType() {
                     case 'h':
                         return checkKeyword(2, 2, "is", TOKEN_THIS);
                     case 'r':
-                        return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+                        if (scanner.current - scanner.start > 1) {
+                            switch (scanner.start[2]) {
+                                case 'u':
+                                    return checkKeyword(3, 1, "e", TOKEN_TRUE);
+                                case 'a':
+                                    return checkKeyword(3, 2, "it", TOKEN_TRAIT);
+                            }
+                        }
                 }
             }
             break;
+        case 'u':
+            return checkKeyword(1, 2, "se", TOKEN_USE);
         case 'v':
             return checkKeyword(1, 2, "ar", TOKEN_VAR);
         case 'w':

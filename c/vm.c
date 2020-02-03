@@ -16,6 +16,7 @@
 #include "datatypes/lists.h"
 #include "datatypes/strings.h"
 #include "datatypes/files.h"
+#include "datatypes/instance.h"
 #include "natives.h"
 
 VM vm; // [one]
@@ -74,14 +75,17 @@ void initVM(bool repl, const char *scriptName) {
     vm.grayStack = NULL;
     initTable(&vm.globals);
     initTable(&vm.strings);
+    initTable(&vm.imports);
     vm.initString = copyString("init", 4);
     vm.replVar = copyString("_", 1);
+    vm.argv = copyString("argv", 4);
     defineAllNatives();
 }
 
 void freeVM() {
     freeTable(&vm.globals);
     freeTable(&vm.strings);
+    freeTable(&vm.imports);
     FREE_ARRAY(CallFrame, vm.frames, vm.frameCapacity);
     vm.initString = NULL;
     vm.replVar = NULL;
@@ -259,11 +263,16 @@ static bool invoke(ObjString *name, int argCount) {
         case OBJ_INSTANCE: {
             ObjInstance *instance = AS_INSTANCE(receiver);
 
-            // First look for a field which may shadow a method.
             Value value;
+            // First look for a field which may shadow a method.
             if (tableGet(&instance->fields, name, &value)) {
                 vm.stackTop[-argCount] = value;
                 return callValue(value, argCount);
+            }
+
+            // Check for instance methods.
+            if (instanceMethods(name->chars, argCount + 1)) {
+                return true;
             }
 
             return invokeFromClass(instance->klass, name, argCount);
@@ -348,6 +357,13 @@ static void defineMethod(ObjString *name) {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
     tableSet(&klass->methods, name, method);
+    pop();
+}
+
+static void defineTraitMethod(ObjString *name) {
+    Value method = peek(0);
+    ObjTrait *trait = AS_TRAIT(peek(1));
+    tableSet(&trait->methods, name, method);
     pop();
 }
 
@@ -798,6 +814,12 @@ static InterpretResult run() {
 
         CASE_CODE(IMPORT): {
             ObjString *fileName = AS_STRING(pop());
+
+            // If we have imported this file already, skip.
+            if (!tableSet(&vm.imports, fileName, NIL_VAL)) {
+                DISPATCH();
+            }
+
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
 
@@ -1190,9 +1212,38 @@ static InterpretResult run() {
             DISPATCH();
         }
 
+        CASE_CODE(TRAIT): {
+            ObjString *name = READ_STRING();
+            ObjTrait *trait = newTrait(name);
+            push(OBJ_VAL(trait));
+            DISPATCH();
+        }
+
         CASE_CODE(METHOD):
             defineMethod(READ_STRING());
             DISPATCH();
+
+        CASE_CODE(TRAIT_METHOD): {
+            ObjString *name = READ_STRING();
+            defineTraitMethod(name);
+            DISPATCH();
+        }
+
+        CASE_CODE(USE): {
+            Value trait = peek(0);
+            if (!IS_TRAIT(trait)) {
+                frame->ip = ip;
+                runtimeError("Can only 'use' with a trait");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjClass *klass = AS_CLASS(peek(1));
+
+            tableAddAll(&AS_TRAIT(trait)->methods, &klass->methods);
+            pop(); // pop the trait
+
+            DISPATCH();
+        }
 
         CASE_CODE(OPEN_FILE): {
             Value openType = pop();
@@ -1239,13 +1290,32 @@ static InterpretResult run() {
 
 }
 
-InterpretResult interpret(const char *source) {
+void initArgv(int argc, const char *argv[]) {
+    ObjList *list = initList();
+
+    for (int i = 1; i < argc; i++) {
+        Value arg = OBJ_VAL(copyString(argv[i], strlen(argv[i])));
+        push(arg);
+        writeValueArray(&list->values, arg);
+        pop();
+    }
+
+    tableSet(&vm.globals, vm.argv, OBJ_VAL(list));
+}
+
+InterpretResult interpret(const char *source, int argc, const char *argv[]) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
+
+    if (!vm.repl) {
+        initArgv(argc, argv);
+    }
+
     callValue(OBJ_VAL(closure), 0);
     InterpretResult result = run();
+
     return result;
 }

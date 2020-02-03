@@ -13,6 +13,7 @@
 
 #define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
+#define IS_TRAIT(value)         isObjType(value, OBJ_TRAIT)
 #define IS_CLOSURE(value)       isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
@@ -26,6 +27,7 @@
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
+#define AS_TRAIT(value)         ((ObjTrait*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
@@ -41,6 +43,7 @@
 typedef enum {
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
+    OBJ_TRAIT,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
@@ -160,6 +163,12 @@ typedef struct sObjClass {
     Table methods;
 } ObjClass;
 
+typedef struct sObjTrait {
+    Obj obj;
+    ObjString *name;
+    Table methods;
+} ObjTrait;
+
 typedef struct {
     Obj obj;
     ObjClass *klass;
@@ -175,6 +184,8 @@ typedef struct {
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 
 ObjClass *newClass(ObjString *name, ObjClass *superclass);
+
+ObjTrait *newTrait(ObjString *name);
 
 ObjClosure *newClosure(ObjFunction *function);
 
