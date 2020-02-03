@@ -1,0 +1,58 @@
+// Setup a new trait
+trait PrintNameTrait {
+    printName() {
+        print(this.name);
+    }
+}
+
+// Setup a new class
+class Person {
+    // Use the trait and inherit the methods
+    use PrintNameTrait;
+
+    // Class constructor
+    init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Define a new method
+    printAge() {
+        print("{} is {} years old!".format(this.name, this.age));
+    }
+}
+
+// Setup a new class
+class Car {
+    // Use the trait and inherit the methods
+    use PrintNameTrait;
+
+    // Class constructor
+    init(name, model) {
+        this.name = name;
+        this.model = model;
+    }
+
+    // Define a new method
+    printModel() {
+        print("{} is a {} model".format(this.name, this.model));
+    }
+}
+
+// Instantiate a new Person object
+var jason = Person("Jason", 500);
+
+// Call the method defined in the trait
+jason.printName();
+
+// Call the method defined in the class
+jason.printAge();
+
+// Instantiate a new Car object
+var cayman = Car("Cayman", "Porsche");
+
+// Call the method defined in the trait
+cayman.printName();
+
+// Call the method defined in the class
+cayman.printModel();

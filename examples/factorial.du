@@ -1,0 +1,14 @@
+var amount = number(input("Enter a number: "));
+var num = 1;
+
+if (amount > 0) {
+    for (var i = 1; i < amount + 1; ++i) {
+        num *= i;
+    }
+
+    print("Factorial of {} is {}".format(amount, num));
+} else if (amount == 0) {
+    print("The factorial of 0 is 1");
+} else {
+    print("Can't factorial a negative!");
+}
