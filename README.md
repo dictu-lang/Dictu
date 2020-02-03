@@ -44,3 +44,5 @@ def guessingGame() {
 
 guessingGame();
 ```
+
+More [here.](https://github.com/Jason2605/Dictu/tree/develop/examples)
