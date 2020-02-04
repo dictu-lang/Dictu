@@ -749,7 +749,31 @@ static void dict(bool canAssign) {
 }
 
 static void subscript(bool canAssign) {
+    // slice with no initial index [1, 2, 3][:100]
+    if (match(TOKEN_COLON)) {
+        emitByte(OP_NIL);
+        expression();
+        emitByte(OP_SLICE);
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        return;
+    }
+
     expression();
+
+    if (match(TOKEN_COLON)) {
+        // If we slice with no "ending" push NIL so we know
+        // To go to the end of the iterable
+        // i.e [1, 2, 3][1:]
+        if (check(TOKEN_RIGHT_BRACKET)) {
+            emitByte(OP_NIL);
+        } else {
+            expression();
+        }
+        emitByte(OP_SLICE);
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        return;
+    }
+
     consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 
     if (canAssign && match(TOKEN_EQUAL)) {

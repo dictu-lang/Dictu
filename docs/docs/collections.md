@@ -36,6 +36,20 @@ var myList = [1, 5, 3];
 myList[1] = 2; // [1, 2, 3]
 ```
 
+### Slicing
+
+Slicing is technique used when we wish to return part of a list. It has a syntax of <list>[start:end] where start and end are optional
+as long as one is provided.
+
+E.g `[1, 2, 3, 4, 5][1:]` or `[1, 2, 3, 4, 5][:5]` are both valid. The start index is inclusive but the end index is exclusive.
+
+```py
+[1, 2, 3, 4, 5][1:]; // [2, 3, 4, 5]
+[1, 2, 3, 4, 5][:4]; // [1, 2, 3, 4]
+[1, 2, 3, 4, 5][1:4]; // [2, 3, 4]
+[1, 2, 3, 4, 5][2:4]; // [3, 4]
+```
+
 ### Adding to lists
 
 ```js

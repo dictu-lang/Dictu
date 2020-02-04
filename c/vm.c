@@ -1040,6 +1040,96 @@ static InterpretResult run() {
             }
         }
 
+        CASE_CODE(SLICE): {
+            Value sliceEndIndex = peek(0);
+            Value sliceStartIndex = peek(1);
+            Value objectValue = peek(2);
+
+            if (!IS_OBJ(objectValue)) {
+                frame->ip = ip;
+                runtimeError("Can only slice on lists and strings.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            if ((!IS_NUMBER(sliceStartIndex) && !IS_NIL(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_NIL(sliceEndIndex))) {
+                frame->ip = ip;
+                runtimeError("Slice index must be a number.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            int indexStart;
+            int indexEnd;
+            Value returnVal;
+
+            if (IS_NIL(sliceStartIndex)) {
+                indexStart = 0;
+            } else {
+                indexStart = AS_NUMBER(sliceStartIndex);
+
+                if (indexStart < 0) {
+                    indexStart = 0;
+                }
+            }
+
+            switch (getObjType(objectValue)) {
+                case OBJ_LIST: {
+                    ObjList *newList = initList();
+                    ObjList *list = AS_LIST(objectValue);
+
+                    if (IS_NIL(sliceEndIndex)) {
+                        indexEnd = list->values.count;
+                    } else {
+                        indexEnd = AS_NUMBER(sliceEndIndex);
+
+                        if (indexEnd > list->values.count) {
+                            indexEnd = list->values.count;
+                        }
+                    }
+
+                    for (int i = indexStart; i < indexEnd; i++) {
+                        writeValueArray(&newList->values, list->values.values[i]);
+                    }
+
+                    returnVal = OBJ_VAL(newList);
+
+                    break;
+                }
+
+                case OBJ_STRING: {
+                    ObjString *string = AS_STRING(objectValue);
+
+                    if (IS_NIL(sliceEndIndex)) {
+                        indexEnd = string->length;
+                    } else {
+                        indexEnd = AS_NUMBER(sliceEndIndex);
+
+                        if (indexEnd > string->length) {
+                            indexEnd = string->length;
+                        }
+                    }
+
+                    char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
+                    memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
+                    returnVal = OBJ_VAL(copyString(newString, indexEnd - indexStart));
+                    free(newString);
+                    break;
+                }
+
+                default: {
+                    frame->ip = ip;
+                    runtimeError("Can only slice on lists and strings.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
+
+            pop();
+            pop();
+            pop();
+
+            push(returnVal);
+            DISPATCH();
+        }
+
         CASE_CODE(PUSH): {
             Value value = pop();
             Value indexValue = pop();

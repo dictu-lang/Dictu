@@ -1,0 +1,32 @@
+/**
+ * slicing.du
+ *
+ * Testing string slicing
+ */
+
+var x = "Dictu";
+
+assert(x[0:len(x)] == "Dictu");
+assert(x[0:] == "Dictu");
+assert(x[1:] == "ictu");
+assert(x[2:] == "ctu");
+assert(x[3:] == "tu");
+assert(x[4:] == "u");
+assert(x[5:] == "");
+
+assert(x[:len(x)] == "Dictu");
+assert(x[:5] == "Dictu");
+assert(x[:4] == "Dict");
+assert(x[:3] == "Dic");
+assert(x[:2] == "Di");
+assert(x[:1] == "D");
+assert(x[:0] == "");
+
+assert(x[1:4] == "ict");
+assert(x[1:3] == "ic");
+assert(x[1:2] == "i");
+assert(x[1:1] == "");
+
+assert(x[2:5] == "ctu");
+assert(x[2:4] == "ct");
+assert(x[2:3] == "c");
