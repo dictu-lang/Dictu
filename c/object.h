@@ -66,6 +66,7 @@ struct sObj {
 typedef struct {
     Obj obj;
     int arity;
+    int arityOptional;
     int upvalueCount;
     Chunk chunk;
     ObjString *name;

@@ -355,6 +355,8 @@ Token scanToken() {
             return string('"');
         case '\'':
             return string('\'');
+        case '?':
+            return makeToken(TOKEN_QUESTION_MARK);
     }
 
     return errorToken("Unexpected character.");

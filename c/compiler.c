@@ -478,8 +478,8 @@ static uint8_t argumentList() {
             expression();
             argCount++;
 
-            if (argCount > 32) {
-                error("Cannot have more than 32 arguments.");
+            if (argCount > 255) {
+                error("Cannot have more than 255 arguments.");
             }
         } while (match(TOKEN_COMMA));
     }
@@ -1029,6 +1029,7 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_QUESTION_MARK
         {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
@@ -1125,9 +1126,14 @@ static void function(FunctionType type) {
             uint8_t paramConstant = parseVariable("Expect parameter name.");
             defineVariable(paramConstant);
 
-            current->function->arity++;
-            if (current->function->arity > 32) {
-                error("Cannot have more than 32 parameters.");
+            if (match(TOKEN_QUESTION_MARK)) {
+                current->function->arityOptional++;
+            } else {
+                current->function->arity++;
+            }
+
+            if (current->function->arity + current->function->arityOptional > 255) {
+                error("Cannot have more than 255 parameters.");
             }
         } while (match(TOKEN_COMMA));
     }

@@ -110,14 +110,21 @@ Value peek(int distance) {
 }
 
 static bool call(ObjClosure *closure, int argCount) {
-    if (argCount != closure->function->arity) {
+    if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
         runtimeError("Function '%s' expected %d arguments but got %d.",
                      closure->function->name->chars,
-                     closure->function->arity,
+                     closure->function->arity + closure->function->arityOptional,
                      argCount
         );
 
         return false;
+    }
+
+    int newArgCount = argCount;
+
+    for (int i = 0; i < closure->function->arity + closure->function->arityOptional - argCount; i++) {
+        push(NIL_VAL);
+        newArgCount++;
     }
 
     if (vm.frameCount == vm.frameCapacity) {
@@ -132,7 +139,7 @@ static bool call(ObjClosure *closure, int argCount) {
     frame->ip = closure->function->chunk.code;
 
     // +1 to include either the called function or the receiver.
-    frame->slots = vm.stackTop - (argCount + 1);
+    frame->slots = vm.stackTop - (newArgCount + 1);
     return true;
 }
 
