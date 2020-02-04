@@ -10,3 +10,4 @@ import "tests/lists/push.du";
 import "tests/lists/insert.du";
 import "tests/lists/pop.du";
 import "tests/lists/copy.du";
+import "tests/lists/slicing.du";
