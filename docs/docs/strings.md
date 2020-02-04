@@ -25,6 +25,39 @@ To join strings together use the `+` operator.
 "hello " + "there!"; // "hello there!"
 ```
 
+### Indexing
+
+Strings can be indexed just like you can with lists, to return single characters, or to loop over strings.
+
+```py
+var x = "Dictu";
+
+x[0]; // D
+
+for (var i = 0; i < len(x); ++i) {
+    print(x[i]);
+}
+// D
+// i
+// c
+// t
+// u
+```
+
+### Slicing
+
+Slicing is technique used when we wish to return a substring. It has a syntax of <string>[start:end] where start and end are optional
+as long as one is provided.
+
+E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive but the end index is exclusive.
+
+```py
+"Dictu"[1:]; // ictu
+"Dictu"[:4]; // Dict
+"Dictu"[1:4]; // ict
+"Dictu"[2:4]; // ct
+```
+
 ### .lower()
 
 To make all characters within a string lowercase, use the `.lower()` method.
