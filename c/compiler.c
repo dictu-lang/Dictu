@@ -749,43 +749,81 @@ static void dict(bool canAssign) {
 }
 
 static void subscript(bool canAssign) {
-    expression();
-    consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
-
     if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         expression();
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
         expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        expression();
         emitBytes(OP_PUSH, OP_ADD);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_MINUS_EQUALS)) {
+        expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         expression();
         emitByte(OP_PUSH);
         emitBytes(OP_NEGATE, OP_ADD);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_MULTIPLY_EQUALS)) {
         expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        expression();
         emitBytes(OP_PUSH, OP_MULTIPLY);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_DIVIDE_EQUALS)) {
+        expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         expression();
         emitBytes(OP_PUSH, OP_DIVIDE);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_AMPERSAND_EQUALS)) {
         expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        expression();
         emitBytes(OP_PUSH, OP_BITWISE_AND);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_CARET_EQUALS)) {
+        expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         expression();
         emitBytes(OP_PUSH, OP_BITWISE_XOR);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(TOKEN_PIPE_EQUALS)) {
         expression();
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+        expression();
         emitBytes(OP_PUSH, OP_BITWISE_OR);
         emitByte(OP_SUBSCRIPT_ASSIGN);
     } else {
-        emitByte(OP_SUBSCRIPT);
+
+        // slice with no initial index [1, 2, 3][:100]
+        if (match(TOKEN_COLON)) {
+            emitByte(OP_NIL);
+            expression();
+            emitByte(OP_SLICE);
+            consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+            return;
+        }
+
+        expression();
+
+        if (match(TOKEN_COLON)) {
+            // If we slice with no "ending" push NIL so we know
+            // To go to the end of the iterable
+            // i.e [1, 2, 3][1:]
+            if (check(TOKEN_RIGHT_BRACKET)) {
+                emitByte(OP_NIL);
+            } else {
+                expression();
+            }
+            emitByte(OP_SLICE);
+        } else {
+            emitByte(OP_SUBSCRIPT);
+        }
+        consume(TOKEN_RIGHT_BRACKET, "Expected closing ']'");
     }
 }
 
