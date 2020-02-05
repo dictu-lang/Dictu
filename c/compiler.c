@@ -92,6 +92,8 @@ typedef struct Compiler {
     int scopeDepth;
 
     int loopDepth;
+
+    bool repl;
 } Compiler;
 
 typedef struct ClassCompiler {
@@ -242,7 +244,7 @@ static void patchJump(int offset) {
 }
 
 static void initCompiler(Compiler *compiler, int scopeDepth,
-                         FunctionType type) {
+                         FunctionType type, bool repl) {
     compiler->enclosing = current;
     compiler->function = NULL;
     compiler->type = type;
@@ -250,6 +252,7 @@ static void initCompiler(Compiler *compiler, int scopeDepth,
     compiler->scopeDepth = scopeDepth;
     compiler->loopDepth = 0;
     compiler->function = newFunction(type == TYPE_STATIC);
+    compiler->repl = repl;
     current = compiler;
 
     switch (type) {
@@ -1093,7 +1096,6 @@ static void parsePrecedence(Precedence precedence) {
         // If we get here, we didn't parse the "=" even though we could
         // have, so the LHS must not be a valid lvalue.
         error("Invalid assignment target.");
-        expression();
     }
 }
 
@@ -1115,7 +1117,7 @@ static void block() {
 
 static void function(FunctionType type) {
     Compiler compiler;
-    initCompiler(&compiler, 1, type);
+    initCompiler(&compiler, 1, type, current->repl);
 
     // Compile the parameter list.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
@@ -1282,7 +1284,11 @@ static void varDeclaration() {
 static void expressionStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-    emitByte(OP_POP_REPL);
+    if (current->repl) {
+        emitByte(OP_POP_REPL);
+    } else {
+        emitByte(OP_POP);
+    }
 }
 
 /*
@@ -1686,10 +1692,10 @@ static void statement() {
     }
 }
 
-ObjFunction *compile(const char *source) {
+ObjFunction *compile(const char *source, bool repl) {
     initScanner(source);
     Compiler mainCompiler;
-    initCompiler(&mainCompiler, 0, TYPE_TOP_LEVEL);
+    initCompiler(&mainCompiler, 0, TYPE_TOP_LEVEL, repl);
     parser.hadError = false;
     parser.panicMode = false;
 
