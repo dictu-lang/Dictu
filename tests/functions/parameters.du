@@ -23,3 +23,34 @@ def test2(a, b, c) {
 }
 
 test2(10, "hello", true);
+
+
+def optional(a?, b?) {
+    assert(a == nil);
+    assert(b == nil);
+}
+
+optional();
+
+def oneOptional(a, b?) {
+    assert(a == 10);
+    assert(b == nil);
+}
+
+oneOptional(10);
+
+def twoOptional(a?, b?) {
+    assert(a == 10);
+    assert(b == 20);
+}
+
+twoOptional(10, 20);
+
+def threeOptional(a?, b?, c?) {
+    assert(a == 10);
+    assert(b == 20);
+    assert(c == nil);
+}
+
+threeOptional(10, 20);
+threeOptional(10, 20, nil);

@@ -1117,6 +1117,7 @@ static void block() {
 static void function(FunctionType type) {
     Compiler compiler;
     initCompiler(&compiler, 1, type);
+    bool optional = false;
 
     // Compile the parameter list.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
@@ -1128,8 +1129,13 @@ static void function(FunctionType type) {
 
             if (match(TOKEN_QUESTION_MARK)) {
                 current->function->arityOptional++;
+                optional = true;
             } else {
                 current->function->arity++;
+
+                if (optional) {
+                    error("Cannot have non-optional parameter after optional.");
+                }
             }
 
             if (current->function->arity + current->function->arityOptional > 255) {
