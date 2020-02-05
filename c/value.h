@@ -27,7 +27,7 @@ typedef struct sObjFile ObjFile;
 
 typedef uint64_t Value;
 
-#define IS_BOOL(v)    (((v) & (QNAN | TAG_FALSE)) == (QNAN | TAG_FALSE))
+#define IS_BOOL(v)    (((v) & FALSE_VAL) == FALSE_VAL)
 #define IS_NIL(v)     ((v) == NIL_VAL)
 // If the NaN bits are set, it's not a number.
 #define IS_NUMBER(v)  (((v) & QNAN) != QNAN)

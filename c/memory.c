@@ -71,9 +71,9 @@ void grayObject(Obj *object) {
     if (object->isDark) return;
 
 #ifdef DEBUG_TRACE_GC
-    //printf("%p gray ", (void *)object);
-    //printValue(OBJ_VAL(object));
-    //printf("\n");
+    printf("%p gray ", (void *)object);
+    printValue(OBJ_VAL(object));
+    printf("\n");
 #endif
 
     object->isDark = true;
@@ -103,9 +103,9 @@ static void grayArray(ValueArray *array) {
 
 static void blackenObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    //printf("%p blacken ", (void *)object);
-    //printValue(OBJ_VAL(object));
-    //printf("\n");
+    printf("%p blacken ", (void *)object);
+    printValue(OBJ_VAL(object));
+    printf("\n");
 #endif
 
     switch (object->type) {
@@ -197,9 +197,7 @@ static void blackenObject(Obj *object) {
 
 void freeObject(Obj *object) {
 #ifdef DEBUG_TRACE_GC
-    //printf("%p free ", (void *)object);
-    //printValue(OBJ_VAL(object));
-    //printf("\n");
+    printf("%p free type %d\n", (void*)object, object->type);
 #endif
 
     switch (object->type) {
@@ -224,7 +222,7 @@ void freeObject(Obj *object) {
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
-            FREE_ARRAY(ObjClosure, closure->upvalues, closure->upvalueCount);
+            FREE_ARRAY(Value*, closure->upvalues, closure->upvalueCount);
             FREE(ObjClosure, object);
             break;
         }
