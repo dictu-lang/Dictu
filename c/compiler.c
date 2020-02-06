@@ -1118,13 +1118,13 @@ static void block() {
 static void function(FunctionType type) {
     Compiler compiler;
     initCompiler(&compiler, 1, type);
-    bool optional = false;
 
     // Compile the parameter list.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
 
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
+            bool optional = false;
             uint8_t paramConstant = parseVariable("Expect parameter name.");
             defineVariable(paramConstant);
 
