@@ -110,14 +110,21 @@ Value peek(int distance) {
 }
 
 static bool call(ObjClosure *closure, int argCount) {
-    if (argCount != closure->function->arity) {
+    if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
         runtimeError("Function '%s' expected %d arguments but got %d.",
                      closure->function->name->chars,
-                     closure->function->arity,
+                     closure->function->arity + closure->function->arityOptional,
                      argCount
         );
 
         return false;
+    }
+
+    int newArgCount = argCount;
+
+    for (int i = 0; i < closure->function->arity + closure->function->arityOptional - argCount; i++) {
+        push(NIL_VAL);
+        newArgCount++;
     }
 
     if (vm.frameCount == vm.frameCapacity) {
@@ -132,7 +139,7 @@ static bool call(ObjClosure *closure, int argCount) {
     frame->ip = closure->function->chunk.code;
 
     // +1 to include either the called function or the receiver.
-    frame->slots = vm.stackTop - (argCount + 1);
+    frame->slots = vm.stackTop - (newArgCount + 1);
     return true;
 }
 
@@ -819,7 +826,7 @@ static InterpretResult run() {
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
 
-            ObjFunction *function = compile(s, vm.repl);
+            ObjFunction *function = compile(s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(OBJ_VAL(function));
             ObjClosure *closure = newClosure(function);
@@ -1390,7 +1397,7 @@ void initArgv(int argc, const char *argv[]) {
 }
 
 InterpretResult interpret(const char *source, int argc, const char *argv[]) {
-    ObjFunction *function = compile(source, vm.repl);
+    ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);

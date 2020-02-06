@@ -68,6 +68,7 @@ ObjFunction *newFunction(bool isStatic) {
     ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
+    function->arityOptional = 0;
     function->upvalueCount = 0;
     function->name = NULL;
     function->staticMethod = isStatic;

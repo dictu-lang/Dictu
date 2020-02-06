@@ -148,4 +148,25 @@ def someOtherFunction(parameter) {
 var someList = [someOtherFunction, "Hello!"];
 
 someList[0](someList[1]); // Hello!
-``` 
+```
+
+Functions can also have optional parameters, this is denoted by a question mark after the parameter in the function header.
+If no argument is passed in the function call, then the parameter is implicitly nil.
+
+```
+def someFunction(a, b?) {
+    print(a, b);
+}
+
+someFunction(1, 2); // 1, 2
+someFunction(1); // 1, nil
+
+def someFunction(a, b?) {
+    b = b or "default!";
+
+    print(a, b);
+}
+
+someFunction(1, 2); // 1, 2
+someFunction(1); // 1, "default!"
+```
