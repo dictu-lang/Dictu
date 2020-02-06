@@ -273,7 +273,7 @@ static bool invoke(ObjString *name, int argCount) {
             Value value;
             // First look for a field which may shadow a method.
             if (tableGet(&instance->fields, name, &value)) {
-                vm.stackTop[-argCount] = value;
+                vm.stackTop[-argCount - 1] = value;
                 return callValue(value, argCount);
             }
 
@@ -527,15 +527,11 @@ static InterpretResult run() {
             DISPATCH();
 
         CASE_CODE(POP_REPL): {
-            if (vm.repl) {
-                Value v = pop();
-                if (!IS_NIL(v)) {
-                    setReplVar(v);
-                    printValue(v);
-                    printf("\n");
-                }
-            } else {
-                pop();
+            Value v = pop();
+            if (!IS_NIL(v)) {
+                setReplVar(v);
+                printValue(v);
+                printf("\n");
             }
             DISPATCH();
         }
@@ -830,7 +826,7 @@ static InterpretResult run() {
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
 
-            ObjFunction *function = compile(s);
+            ObjFunction *function = compile(s, vm.repl);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(OBJ_VAL(function));
             ObjClosure *closure = newClosure(function);
@@ -1401,7 +1397,7 @@ void initArgv(int argc, const char *argv[]) {
 }
 
 InterpretResult interpret(const char *source, int argc, const char *argv[]) {
-    ObjFunction *function = compile(source);
+    ObjFunction *function = compile(source, vm.repl);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
