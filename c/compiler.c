@@ -1118,7 +1118,7 @@ static void block() {
 
 static void function(FunctionType type) {
     Compiler compiler;
-    initCompiler(&compiler, 1, type);
+    initCompiler(&compiler, 1, type, vm.repl);
     bool optional = false;
 
     // Compile the parameter list.
