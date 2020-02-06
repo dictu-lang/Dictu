@@ -148,87 +148,48 @@ static bool joinListItem(int argCount) {
             return false;
         }
 
-        delimiter = AS_CSTRING(peek(0));
+        delimiter = AS_CSTRING(pop());
     }
 
-    ObjList *list = AS_LIST(peek(argCount - 1));
-
-    if (list->values.count == 0) {
-        push(OBJ_VAL(copyString("", 0)));
-        return true;
-    } else if (list->values.count == 1) {
-        if (IS_STRING(list->values.values[0])) {
-            push(list->values.values[0]);
-            return true;
-        }
-
-        char *output = valueToString(list->values.values[0]);
-        push(OBJ_VAL(copyString(output, strlen(output))));
-        free(output);
-        return true;
-    }
-
-    int delimiterLength = strlen(delimiter);
+    ObjList *list = AS_LIST(pop());
 
     char *output;
+    char *fullString = NULL;
+    int index = 0;
+    int delimiterLength = strlen(delimiter);
 
-    if (!IS_STRING(list->values.values[0])) {
-        output = valueToString(list->values.values[0]);
-    } else {
-        output = AS_CSTRING(list->values.values[0]);
-    }
-
-    int length = strlen(output);
-    char *finalString = malloc(sizeof(char) * (length + delimiterLength + 1));
-    memcpy(finalString, output, length);
-    memcpy(finalString + length, delimiter, delimiterLength);
-    length += delimiterLength;
-
-    if (!IS_STRING(list->values.values[0])) {
-        free(output);
-    }
-
-    for (int i = 1; i < list->values.count - 1; i++) {
-        if (!IS_STRING(list->values.values[i])) {
-            output = valueToString(list->values.values[i]);
+    for (int j = 0; j < list->values.count - 1; ++j) {
+        if (IS_STRING(list->values.values[j])) {
+            output = AS_CSTRING(list->values.values[j]);
         } else {
-            output = AS_CSTRING(list->values.values[i]);
+            output = valueToString(list->values.values[j]);
         }
         int elementLength = strlen(output);
-        finalString = realloc(finalString, length + elementLength + delimiterLength + 1);
-        memcpy(finalString + length, output, elementLength);
-        length += elementLength;
-        memcpy(finalString + length, delimiter, delimiterLength);
-        length += delimiterLength;
-        if (!IS_STRING(list->values.values[i])) {
+        fullString = realloc(fullString, index + elementLength + delimiterLength + 1);
+
+        memcpy(fullString + index, output, elementLength);
+        if (!IS_STRING(list->values.values[j])) {
             free(output);
         }
+        index += elementLength;
+        memcpy(fullString + index, delimiter, delimiterLength);
+        index += delimiterLength;
     }
 
-    if (!IS_STRING(list->values.values[list->values.count - 1])) {
-        output = valueToString(list->values.values[list->values.count - 1]);
-    } else {
+    // Outside the loop as we do not want the append the delimiter on the last element
+    if (IS_STRING(list->values.values[list->values.count - 1])) {
         output = AS_CSTRING(list->values.values[list->values.count - 1]);
+    } else {
+        output = valueToString(list->values.values[list->values.count - 1]);
     }
 
     int elementLength = strlen(output);
-    finalString = realloc(finalString, length + elementLength);
-    memcpy(finalString + length, output, elementLength);
+    fullString = realloc(fullString, index + elementLength + 1);
+    memcpy(fullString + index, output, elementLength);
+    index += elementLength;
 
-    if (!IS_STRING(list->values.values[list->values.count - 1])) {
-        free(output);
-    }
-
-    finalString[length + elementLength] = '\0';
-
-    // Pop the values off the stack
-    pop();
-    if (argCount == 2) {
-        pop();
-    }
-
-    push(OBJ_VAL(copyString(finalString, strlen(finalString))));
-    free(finalString);
+    fullString[index] = '\0';
+    push(OBJ_VAL(copyString(fullString, index)));
 
     return true;
 }
