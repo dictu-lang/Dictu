@@ -134,6 +134,105 @@ static bool containsListItem(int argCount) {
     return true;
 }
 
+static bool joinListItem(int argCount) {
+    if (argCount < 1 || argCount > 2) {
+        runtimeError("join() takes either 1 or 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    char *delimiter = ", ";
+
+    if (argCount == 2) {
+        if (!IS_STRING(peek(0))) {
+            runtimeError("join() only takes a string as an argument");
+            return false;
+        }
+
+        delimiter = AS_CSTRING(peek(0));
+    }
+
+    ObjList *list = AS_LIST(peek(argCount - 1));
+
+    if (list->values.count == 0) {
+        push(OBJ_VAL(copyString("", 0)));
+        return true;
+    } else if (list->values.count == 1) {
+        if (IS_STRING(list->values.values[0])) {
+            push(list->values.values[0]);
+            return true;
+        }
+
+        char *output = valueToString(list->values.values[0]);
+        push(OBJ_VAL(copyString(output, strlen(output))));
+        free(output);
+        return true;
+    }
+
+    int delimiterLength = strlen(delimiter);
+
+    char *output;
+
+    if (!IS_STRING(list->values.values[0])) {
+        output = valueToString(list->values.values[0]);
+    } else {
+        output = AS_CSTRING(list->values.values[0]);
+    }
+
+    int length = strlen(output);
+    char *finalString = malloc(sizeof(char) * (length + delimiterLength + 1));
+    memcpy(finalString, output, length);
+    memcpy(finalString + length, delimiter, delimiterLength);
+    length += delimiterLength;
+
+    if (!IS_STRING(list->values.values[0])) {
+        free(output);
+    }
+
+    for (int i = 1; i < list->values.count - 1; i++) {
+        if (!IS_STRING(list->values.values[i])) {
+            output = valueToString(list->values.values[i]);
+        } else {
+            output = AS_CSTRING(list->values.values[i]);
+        }
+        int elementLength = strlen(output);
+        finalString = realloc(finalString, length + elementLength + delimiterLength + 1);
+        memcpy(finalString + length, output, elementLength);
+        length += elementLength;
+        memcpy(finalString + length, delimiter, delimiterLength);
+        length += delimiterLength;
+        if (!IS_STRING(list->values.values[i])) {
+            free(output);
+        }
+    }
+
+    if (!IS_STRING(list->values.values[list->values.count - 1])) {
+        output = valueToString(list->values.values[list->values.count - 1]);
+    } else {
+        output = AS_CSTRING(list->values.values[list->values.count - 1]);
+    }
+
+    int elementLength = strlen(output);
+    finalString = realloc(finalString, length + elementLength);
+    memcpy(finalString + length, output, elementLength);
+
+    if (!IS_STRING(list->values.values[list->values.count - 1])) {
+        free(output);
+    }
+
+    finalString[length + elementLength] = '\0';
+
+    // Pop the values off the stack
+    pop();
+    if (argCount == 2) {
+        pop();
+    }
+
+    push(OBJ_VAL(copyString(finalString, strlen(finalString))));
+    free(finalString);
+
+    return true;
+}
+
 static bool copyListShallow(int argCount) {
     if (argCount != 1) {
         runtimeError("copy() takes 1 argument (%d  given)", argCount);
@@ -170,11 +269,15 @@ bool listMethods(char *method, int argCount) {
         return popListItem(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsListItem(argCount);
+    } else if (strcmp(method, "join") == 0) {
+        return joinListItem(argCount);
     } else if (strcmp(method, "copy") == 0) {
         return copyListShallow(argCount);
     } else if (strcmp(method, "deepCopy") == 0) {
         return copyListDeep(argCount);
     }
+
+    printf("method: %s\n", method);
 
     runtimeError("List has no method %s()", method);
     return false;
