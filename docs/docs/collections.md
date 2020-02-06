@@ -76,7 +76,6 @@ If you have a list of elements and you wish to transfer them to a string, you ca
 If a delimiter is not supplied `", "` is the default.
 ```js
 var myList = [1, 2, 3];
-
 print(myList.join()); // "1, 2, 3"
 print(myList.join("")); // "123"
 print(myList.join("-")); // "1-2-3"
