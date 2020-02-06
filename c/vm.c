@@ -826,7 +826,7 @@ static InterpretResult run() {
             char *s = readFile(fileName->chars);
             vm.currentScriptName = fileName->chars;
 
-            ObjFunction *function = compile(s, vm.repl);
+            ObjFunction *function = compile(s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(OBJ_VAL(function));
             ObjClosure *closure = newClosure(function);
@@ -1397,7 +1397,7 @@ void initArgv(int argc, const char *argv[]) {
 }
 
 InterpretResult interpret(const char *source, int argc, const char *argv[]) {
-    ObjFunction *function = compile(source, vm.repl);
+    ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);

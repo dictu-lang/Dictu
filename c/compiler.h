@@ -4,7 +4,7 @@
 #include "object.h"
 #include "vm.h"
 
-ObjFunction *compile(const char *source, bool repl);
+ObjFunction *compile(const char *source);
 
 void grayCompilerRoots();
 

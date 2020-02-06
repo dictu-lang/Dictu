@@ -244,7 +244,7 @@ static void patchJump(int offset) {
 }
 
 static void initCompiler(Compiler *compiler, int scopeDepth,
-                         FunctionType type, bool repl) {
+                         FunctionType type) {
     compiler->enclosing = current;
     compiler->function = NULL;
     compiler->type = type;
@@ -252,7 +252,6 @@ static void initCompiler(Compiler *compiler, int scopeDepth,
     compiler->scopeDepth = scopeDepth;
     compiler->loopDepth = 0;
     compiler->function = newFunction(type == TYPE_STATIC);
-    compiler->repl = repl;
     current = compiler;
 
     switch (type) {
@@ -474,8 +473,8 @@ static void defineVariable(uint8_t global) {
     }
 }
 
-static uint8_t argumentList() {
-    uint8_t argCount = 0;
+static int argumentList() {
+    int argCount = 0;
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             expression();
@@ -568,7 +567,7 @@ static void binary(bool canAssign) {
 }
 
 static void call(bool canAssign) {
-    uint8_t argCount = argumentList();
+    int argCount = argumentList();
     emitBytes(OP_CALL, argCount);
 }
 
@@ -580,7 +579,7 @@ static void dot(bool canAssign) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argumentList();
+        int argCount = argumentList();
         emitBytes(OP_INVOKE, argCount);
         emitByte(name);
     } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
@@ -905,7 +904,7 @@ static void super_(bool canAssign) {
     namedVariable(syntheticToken("this"), false);
 
     if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argumentList();
+        int argCount = argumentList();
 
         pushSuperclass();
         emitBytes(OP_SUPER, argCount);
@@ -1118,7 +1117,7 @@ static void block() {
 
 static void function(FunctionType type) {
     Compiler compiler;
-    initCompiler(&compiler, 1, type, vm.repl);
+    initCompiler(&compiler, 1, type);
     bool optional = false;
 
     // Compile the parameter list.
@@ -1296,7 +1295,7 @@ static void varDeclaration() {
 static void expressionStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (current->repl) {
+    if (vm.repl) {
         emitByte(OP_POP_REPL);
     } else {
         emitByte(OP_POP);
@@ -1704,10 +1703,10 @@ static void statement() {
     }
 }
 
-ObjFunction *compile(const char *source, bool repl) {
+ObjFunction *compile(const char *source) {
     initScanner(source);
     Compiler mainCompiler;
-    initCompiler(&mainCompiler, 0, TYPE_TOP_LEVEL, repl);
+    initCompiler(&mainCompiler, 0, TYPE_TOP_LEVEL);
     parser.hadError = false;
     parser.panicMode = false;
 
