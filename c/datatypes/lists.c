@@ -134,6 +134,66 @@ static bool containsListItem(int argCount) {
     return true;
 }
 
+static bool joinListItem(int argCount) {
+    if (argCount < 1 || argCount > 2) {
+        runtimeError("join() takes either 1 or 2 arguments (%d  given)", argCount);
+        return false;
+    }
+
+    char *delimiter = ", ";
+
+    if (argCount == 2) {
+        if (!IS_STRING(peek(0))) {
+            runtimeError("join() only takes a string as an argument");
+            return false;
+        }
+
+        delimiter = AS_CSTRING(pop());
+    }
+
+    ObjList *list = AS_LIST(pop());
+
+    char *output;
+    char *fullString = NULL;
+    int index = 0;
+    int delimiterLength = strlen(delimiter);
+
+    for (int j = 0; j < list->values.count - 1; ++j) {
+        if (IS_STRING(list->values.values[j])) {
+            output = AS_CSTRING(list->values.values[j]);
+        } else {
+            output = valueToString(list->values.values[j]);
+        }
+        int elementLength = strlen(output);
+        fullString = realloc(fullString, index + elementLength + delimiterLength + 1);
+
+        memcpy(fullString + index, output, elementLength);
+        if (!IS_STRING(list->values.values[j])) {
+            free(output);
+        }
+        index += elementLength;
+        memcpy(fullString + index, delimiter, delimiterLength);
+        index += delimiterLength;
+    }
+
+    // Outside the loop as we do not want the append the delimiter on the last element
+    if (IS_STRING(list->values.values[list->values.count - 1])) {
+        output = AS_CSTRING(list->values.values[list->values.count - 1]);
+    } else {
+        output = valueToString(list->values.values[list->values.count - 1]);
+    }
+
+    int elementLength = strlen(output);
+    fullString = realloc(fullString, index + elementLength + 1);
+    memcpy(fullString + index, output, elementLength);
+    index += elementLength;
+
+    fullString[index] = '\0';
+    push(OBJ_VAL(copyString(fullString, index)));
+
+    return true;
+}
+
 static bool copyListShallow(int argCount) {
     if (argCount != 1) {
         runtimeError("copy() takes 1 argument (%d  given)", argCount);
@@ -170,6 +230,8 @@ bool listMethods(char *method, int argCount) {
         return popListItem(argCount);
     } else if (strcmp(method, "contains") == 0) {
         return containsListItem(argCount);
+    } else if (strcmp(method, "join") == 0) {
+        return joinListItem(argCount);
     } else if (strcmp(method, "copy") == 0) {
         return copyListShallow(argCount);
     } else if (strcmp(method, "deepCopy") == 0) {

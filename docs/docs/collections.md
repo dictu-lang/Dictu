@@ -70,6 +70,17 @@ myList.contains(2); // true
 myList.contains(10); // false
 ```
 
+### Joining list elements
+
+If you have a list of elements and you wish to transfer them to a string, you can `.join()` them by a given delimiter.
+If a delimiter is not supplied `", "` is the default.
+```js
+var myList = [1, 2, 3];
+print(myList.join()); // "1, 2, 3"
+print(myList.join("")); // "123"
+print(myList.join("-")); // "1-2-3"
+```
+
 ### Removing from lists
 ```js
 var myList = [1, 2, 3];
