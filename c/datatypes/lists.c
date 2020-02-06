@@ -238,8 +238,6 @@ bool listMethods(char *method, int argCount) {
         return copyListDeep(argCount);
     }
 
-    printf("method: %s\n", method);
-
     runtimeError("List has no method %s()", method);
     return false;
 }
