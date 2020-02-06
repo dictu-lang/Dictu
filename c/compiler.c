@@ -1118,6 +1118,7 @@ static void block() {
 static void function(FunctionType type) {
     Compiler compiler;
     initCompiler(&compiler, 1, type);
+    beginScope();
 
     // Compile the parameter list.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
@@ -1151,14 +1152,15 @@ static void function(FunctionType type) {
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block();
 
-    // Create the function object.
-    endScope();
-
     if (type == TYPE_STATIC) {
         // Reset 'staticMethod' for next function
         staticMethod = false;
     }
 
+    /**
+     * No need to explicitly reduce the scope here as endCompiler does
+     * it for us.
+     **/
     ObjFunction *function = endCompiler();
 
     // Capture the upvalues in the new closure object.
