@@ -1129,9 +1129,10 @@ static void function(FunctionType type) {
             uint8_t paramConstant = parseVariable("Expect parameter name.");
             defineVariable(paramConstant);
 
-            if (match(TOKEN_QUESTION_MARK)) {
+            if (match(TOKEN_EQUAL)) {
                 current->function->arityOptional++;
                 optional = true;
+                expression();
             } else {
                 current->function->arity++;
 
@@ -1144,12 +1145,17 @@ static void function(FunctionType type) {
                 error("Cannot have more than 255 parameters.");
             }
         } while (match(TOKEN_COMMA));
+
+        if (current->function->arityOptional > 0) {
+            emitByte(OP_TEST);
+        }
     }
 
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
     // The body.
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+
     block();
 
     if (type == TYPE_STATIC) {
