@@ -1,0 +1,14 @@
+/**
+* join.du
+*
+* Testing the list.join() method
+*
+* .join() will return a string of joined list elements by a given delimiter
+*/
+
+var x = [1, 2, 3, 4, 5, 6];
+
+assert(x.join() == "1, 2, 3, 4, 5, 6");
+assert(x.join("") == "123456");
+assert(x.join(",") == "1,2,3,4,5,6");
+assert(x.join("<word>") == "1<word>2<word>3<word>4<word>5<word>6");

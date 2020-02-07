@@ -1,0 +1,7 @@
+var start = clock();
+
+for (var i = 0; i < 10000; ++i) {
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].join("");
+}
+
+print(clock() - start);

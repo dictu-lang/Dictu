@@ -11,3 +11,4 @@ import "tests/lists/insert.du";
 import "tests/lists/pop.du";
 import "tests/lists/copy.du";
 import "tests/lists/slicing.du";
+import "tests/lists/join.du";

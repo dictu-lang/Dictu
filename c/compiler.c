@@ -92,6 +92,8 @@ typedef struct Compiler {
     int scopeDepth;
 
     int loopDepth;
+
+    bool repl;
 } Compiler;
 
 typedef struct ClassCompiler {
@@ -471,15 +473,15 @@ static void defineVariable(uint8_t global) {
     }
 }
 
-static uint8_t argumentList() {
-    uint8_t argCount = 0;
+static int argumentList() {
+    int argCount = 0;
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
             expression();
             argCount++;
 
-            if (argCount > 32) {
-                error("Cannot have more than 32 arguments.");
+            if (argCount > 255) {
+                error("Cannot have more than 255 arguments.");
             }
         } while (match(TOKEN_COMMA));
     }
@@ -565,7 +567,7 @@ static void binary(bool canAssign) {
 }
 
 static void call(bool canAssign) {
-    uint8_t argCount = argumentList();
+    int argCount = argumentList();
     emitBytes(OP_CALL, argCount);
 }
 
@@ -577,7 +579,7 @@ static void dot(bool canAssign) {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argumentList();
+        int argCount = argumentList();
         emitBytes(OP_INVOKE, argCount);
         emitByte(name);
     } else if (canAssign && match(TOKEN_PLUS_EQUALS)) {
@@ -902,7 +904,7 @@ static void super_(bool canAssign) {
     namedVariable(syntheticToken("this"), false);
 
     if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argumentList();
+        int argCount = argumentList();
 
         pushSuperclass();
         emitBytes(OP_SUPER, argCount);
@@ -1029,6 +1031,7 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     NULL,         PREC_NONE},               // TOKEN_QUESTION_MARK
         {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
@@ -1093,7 +1096,6 @@ static void parsePrecedence(Precedence precedence) {
         // If we get here, we didn't parse the "=" even though we could
         // have, so the LHS must not be a valid lvalue.
         error("Invalid assignment target.");
-        expression();
     }
 }
 
@@ -1116,18 +1118,30 @@ static void block() {
 static void function(FunctionType type) {
     Compiler compiler;
     initCompiler(&compiler, 1, type);
+    beginScope();
 
     // Compile the parameter list.
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
 
     if (!check(TOKEN_RIGHT_PAREN)) {
         do {
+            bool optional = false;
             uint8_t paramConstant = parseVariable("Expect parameter name.");
             defineVariable(paramConstant);
 
-            current->function->arity++;
-            if (current->function->arity > 32) {
-                error("Cannot have more than 32 parameters.");
+            if (match(TOKEN_QUESTION_MARK)) {
+                current->function->arityOptional++;
+                optional = true;
+            } else {
+                current->function->arity++;
+
+                if (optional) {
+                    error("Cannot have non-optional parameter after optional.");
+                }
+            }
+
+            if (current->function->arity + current->function->arityOptional > 255) {
+                error("Cannot have more than 255 parameters.");
             }
         } while (match(TOKEN_COMMA));
     }
@@ -1138,14 +1152,15 @@ static void function(FunctionType type) {
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block();
 
-    // Create the function object.
-    endScope();
-
     if (type == TYPE_STATIC) {
         // Reset 'staticMethod' for next function
         staticMethod = false;
     }
 
+    /**
+     * No need to explicitly reduce the scope here as endCompiler does
+     * it for us.
+     **/
     ObjFunction *function = endCompiler();
 
     // Capture the upvalues in the new closure object.
@@ -1282,7 +1297,11 @@ static void varDeclaration() {
 static void expressionStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-    emitByte(OP_POP_REPL);
+    if (vm.repl) {
+        emitByte(OP_POP_REPL);
+    } else {
+        emitByte(OP_POP);
+    }
 }
 
 /*
