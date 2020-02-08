@@ -150,20 +150,18 @@ var someList = [someOtherFunction, "Hello!"];
 someList[0](someList[1]); // Hello!
 ```
 
-Functions can also have optional parameters, this is denoted by a question mark after the parameter in the function header.
-If no argument is passed in the function call, then the parameter is implicitly nil.
+Functions can also have optional parameters. If a value is not passed, the parameter will take the default value
+given in the function header. Note: non-optional parameters **must** be defined before optional parameters.
 
 ```
-def someFunction(a, b?) {
+def someFunction(a, b=10) {
     print(a, b);
 }
 
 someFunction(1, 2); // 1, 2
-someFunction(1); // 1, nil
+someFunction(1); // 1, 10
 
-def someFunction(a, b?) {
-    b = b or "default!";
-
+def someFunction(a, b="default!") {
     print(a, b);
 }
 
