@@ -1031,7 +1031,6 @@ ParseRule rules[] = {
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_QUESTION_MARK
         {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
@@ -1124,14 +1123,15 @@ static void function(FunctionType type) {
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
 
     if (!check(TOKEN_RIGHT_PAREN)) {
+        bool optional = false;
         do {
-            bool optional = false;
             uint8_t paramConstant = parseVariable("Expect parameter name.");
             defineVariable(paramConstant);
 
-            if (match(TOKEN_QUESTION_MARK)) {
+            if (match(TOKEN_EQUAL)) {
                 current->function->arityOptional++;
                 optional = true;
+                expression();
             } else {
                 current->function->arity++;
 
@@ -1144,12 +1144,17 @@ static void function(FunctionType type) {
                 error("Cannot have more than 255 parameters.");
             }
         } while (match(TOKEN_COMMA));
+
+        if (current->function->arityOptional > 0) {
+            emitByte(OP_DEFINE_OPTIONAL);
+        }
     }
 
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
     // The body.
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+
     block();
 
     if (type == TYPE_STATIC) {

@@ -119,14 +119,6 @@ static bool call(ObjClosure *closure, int argCount) {
 
         return false;
     }
-
-    int newArgCount = argCount;
-
-    for (int i = 0; i < closure->function->arity + closure->function->arityOptional - argCount; i++) {
-        push(NIL_VAL);
-        newArgCount++;
-    }
-
     if (vm.frameCount == vm.frameCapacity) {
         int oldCapacity = vm.frameCapacity;
         vm.frameCapacity = GROW_CAPACITY(vm.frameCapacity);
@@ -139,7 +131,8 @@ static bool call(ObjClosure *closure, int argCount) {
     frame->ip = closure->function->chunk.code;
 
     // +1 to include either the called function or the receiver.
-    frame->slots = vm.stackTop - (newArgCount + 1);
+    frame->slots = vm.stackTop - (argCount + 1);
+
     return true;
 }
 
@@ -575,6 +568,45 @@ static InterpretResult run() {
             ObjString *name = READ_STRING();
             tableSet(&vm.globals, name, peek(0));
             pop();
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_OPTIONAL): {
+            // Temp array while we shuffle the stack.
+            // Can not have more than 255 args to a function, so
+            // we can define this with a constant limit
+            Value values[255];
+            int index = 0;
+
+            values[index] = pop();
+
+            // Pop all args and default values a function has
+            while (!IS_CLOSURE(values[index])) {
+                values[++index] = pop();
+            }
+
+            ObjClosure *closure = AS_CLOSURE(values[index--]);
+            ObjFunction *function = closure->function;
+
+            int argCount = index - function->arityOptional + 1;
+
+            // Push the function back onto the stack
+            push(OBJ_VAL(closure));
+
+            // Push all user given options
+            for (int i = 0; i < argCount; i++) {
+                push(values[index - i]);
+            }
+
+            // Calculate how many "default" values are required
+            int remaining = function->arity + function->arityOptional - argCount;
+
+            // Push any "default" values back onto the stack
+            for (int i = remaining; i > 0; i--) {
+                push(values[i - 1]);
+            }
+
+
             DISPATCH();
         }
 
