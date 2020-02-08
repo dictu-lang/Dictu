@@ -102,7 +102,6 @@ void push(Value value) {
 Value pop() {
     vm.stackTop--;
     vm.stackCount--;
-    // printf("POP: %ld\n", vm.stackTop - vm.stack);
     return *vm.stackTop;
 }
 
@@ -167,9 +166,8 @@ static bool callValue(Value callee, int argCount) {
                 return true;
             }
 
-            case OBJ_CLOSURE: {
+            case OBJ_CLOSURE:
                 return call(AS_CLOSURE(callee), argCount);
-            }
 
             case OBJ_NATIVE_VOID: {
                 NativeFnVoid native = AS_NATIVE_VOID(callee);
@@ -574,43 +572,43 @@ static InterpretResult run() {
         }
 
         CASE_CODE(DEFINE_OPTIONAL): {
-        // Temp array while we shuffle the stack.
-        // Can not have more than 255 args to a function, so
-        // we can define this with a constant limit
-        Value values[255];
-        int index = 0;
+            // Temp array while we shuffle the stack.
+            // Can not have more than 255 args to a function, so
+            // we can define this with a constant limit
+            Value values[255];
+            int index = 0;
 
-        values[index] = pop();
+            values[index] = pop();
 
-        // Pop all args and default values a function has
-        while (!IS_CLOSURE(values[index])) {
-            values[++index] = pop();
+            // Pop all args and default values a function has
+            while (!IS_CLOSURE(values[index])) {
+                values[++index] = pop();
+            }
+
+            ObjClosure *closure = AS_CLOSURE(values[index--]);
+            ObjFunction *function = closure->function;
+
+            int argCount = index - function->arityOptional + 1;
+
+            // Push the function back onto the stack
+            push(OBJ_VAL(closure));
+
+            // Push all user given options
+            for (int i = 0; i < argCount; i++) {
+                push(values[index - i]);
+            }
+
+            // Calculate how many "default" values are required
+            int remaining = function->arity + function->arityOptional - argCount;
+
+            // Push any "default" values back onto the stack
+            for (int i = remaining; i > 0; i--) {
+                push(values[i - 1]);
+            }
+
+
+            DISPATCH();
         }
-
-        ObjClosure *closure = AS_CLOSURE(values[index--]);
-        ObjFunction *function = closure->function;
-
-        int argCount = index - function->arityOptional + 1;
-
-        // Push the function back onto the stack
-        push(OBJ_VAL(closure));
-
-        // Push all user given options
-        for (int i = 0; i < argCount; i++) {
-            push(values[index - i]);
-        }
-
-        // Calculate how many "default" values are required
-        int remaining = function->arity + function->arityOptional - argCount;
-
-        // Push any "default" values back onto the stack
-        for (int i = remaining; i > 0; i--) {
-            push(values[i - 1]);
-        }
-
-
-        DISPATCH();
-    }
 
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
@@ -631,7 +629,6 @@ static InterpretResult run() {
         CASE_CODE(SET_UPVALUE): {
             uint8_t slot = READ_BYTE();
             *frame->closure->upvalues[slot]->value = peek(0);
-            printf("set upvalue\n");
             DISPATCH();
         }
 
@@ -1240,10 +1237,8 @@ static InterpretResult run() {
             if (!callValue(peek(argCount), argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            // printf("now?\n");
             frame = &vm.frames[vm.frameCount - 1];
             ip = frame->ip;
-            // printf("now?\n");
             DISPATCH();
         }
 
