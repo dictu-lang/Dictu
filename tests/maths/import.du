@@ -1,0 +1,7 @@
+/**
+ * import.du
+ *
+ * General import file for all the Math methods
+ */
+
+import "tests/maths/maths.du";

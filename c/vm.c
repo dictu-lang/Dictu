@@ -18,6 +18,7 @@
 #include "datatypes/files.h"
 #include "datatypes/instance.h"
 #include "natives.h"
+#include "optionals/optionals.h"
 
 VM vm; // [one]
 
@@ -94,6 +95,7 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm.initString = copyString("init", 4);
     vm.replVar = copyString("_", 1);
     defineAllNatives();
+    createMathsClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);
@@ -120,6 +122,7 @@ void push(Value value) {
 Value pop() {
     vm.stackTop--;
     vm.stackCount--;
+    // printf("%ld\n", vm.stackTop - vm.stack);
     return *vm.stackTop;
 }
 
@@ -242,6 +245,17 @@ static bool invoke(ObjString *name, int argCount) {
     }
 
     switch (getObjType(receiver)) {
+        case OBJ_NATIVE_CLASS: {
+            ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
+            Value function;
+            if (!tableGet(&instance->methods, name, &function)) {
+                runtimeError("Undefined property '%s'.", name->chars);
+                return false;
+            }
+
+            return callValue(function, argCount);
+        }
+
         case OBJ_CLASS: {
             ObjClass *instance = AS_CLASS(receiver);
             Value method;

@@ -7,6 +7,7 @@ import "tests/operators/import.du";
 import "tests/functions/import.du";
 import "tests/classes/import.du";
 import "tests/builtins/import.du";
+import "tests/maths/import.du";
 import "tests/loops/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
