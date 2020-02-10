@@ -79,8 +79,8 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm.objects = NULL;
     vm.repl = repl;
     vm.gc = true;
-    vm.scriptName = argv[1];
-    vm.currentScriptName = argv[1];
+    vm.scriptName = scriptName;
+    vm.currentScriptName = scriptName;
     vm.frameCapacity = 4;
     vm.frames = realloc(NULL, sizeof(CallFrame) * 4);
     vm.bytesAllocated = 0;
