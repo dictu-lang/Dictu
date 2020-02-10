@@ -59,13 +59,28 @@ void runtimeError(const char *format, ...) {
     resetStack();
 }
 
-void initVM(bool repl, const char *scriptName) {
+void initArgv(int argc, const char *argv[]) {
+    ObjList *list = initList();
+    push(OBJ_VAL(list));
+
+    for (int i = 1; i < argc; i++) {
+        Value arg = OBJ_VAL(copyString(argv[i], strlen(argv[i])));
+        push(arg);
+        writeValueArray(&list->values, arg);
+        pop();
+    }
+
+    tableSet(&vm.globals, copyString("argv", 4), OBJ_VAL(list));
+    pop();
+}
+
+void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     resetStack();
     vm.objects = NULL;
     vm.repl = repl;
     vm.gc = true;
-    vm.scriptName = scriptName;
-    vm.currentScriptName = scriptName;
+    vm.scriptName = argv[1];
+    vm.currentScriptName = argv[1];
     vm.frameCapacity = 4;
     vm.frames = realloc(NULL, sizeof(CallFrame) * 4);
     vm.bytesAllocated = 0;
@@ -78,8 +93,11 @@ void initVM(bool repl, const char *scriptName) {
     initTable(&vm.imports);
     vm.initString = copyString("init", 4);
     vm.replVar = copyString("_", 1);
-    vm.argv = copyString("argv", 4);
     defineAllNatives();
+
+    if (!vm.repl) {
+        initArgv(argc, argv);
+    }
 }
 
 void freeVM() {
@@ -1415,29 +1433,12 @@ static InterpretResult run() {
 
 }
 
-void initArgv(int argc, const char *argv[]) {
-    ObjList *list = initList();
-
-    for (int i = 1; i < argc; i++) {
-        Value arg = OBJ_VAL(copyString(argv[i], strlen(argv[i])));
-        push(arg);
-        writeValueArray(&list->values, arg);
-        pop();
-    }
-
-    tableSet(&vm.globals, vm.argv, OBJ_VAL(list));
-}
-
-InterpretResult interpret(const char *source, int argc, const char *argv[]) {
+InterpretResult interpret(const char *source) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
-
-    if (!vm.repl) {
-        initArgv(argc, argv);
-    }
 
     callValue(OBJ_VAL(closure), 0);
     InterpretResult result = run();
