@@ -122,7 +122,6 @@ void push(Value value) {
 Value pop() {
     vm.stackTop--;
     vm.stackCount--;
-    // printf("%ld\n", vm.stackTop - vm.stack);
     return *vm.stackTop;
 }
 

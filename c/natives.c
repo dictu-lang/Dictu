@@ -88,11 +88,9 @@ static Value typeNative(int argCount, Value *args) {
         return OBJ_VAL(copyString("number", 6));
     } else if (IS_OBJ(args[0])) {
         switch (OBJ_TYPE(args[0])) {
+            case OBJ_NATIVE_CLASS:
             case OBJ_CLASS:
                 return OBJ_VAL(copyString("class", 5));
-            case OBJ_NATIVE_CLASS: {
-                return OBJ_VAL(copyString("class", 5));
-            }
             case OBJ_TRAIT:
                 return OBJ_VAL(copyString("trait", 5));
             case OBJ_INSTANCE: {
