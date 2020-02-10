@@ -1140,6 +1140,7 @@ static InterpretResult run() {
             switch (getObjType(objectValue)) {
                 case OBJ_LIST: {
                     ObjList *newList = initList();
+                    push(OBJ_VAL(newList));
                     ObjList *list = AS_LIST(objectValue);
 
                     if (IS_NIL(sliceEndIndex)) {
@@ -1155,6 +1156,8 @@ static InterpretResult run() {
                     for (int i = indexStart; i < indexEnd; i++) {
                         writeValueArray(&newList->values, list->values.values[i]);
                     }
+
+                    pop();
 
                     returnVal = OBJ_VAL(newList);
 
