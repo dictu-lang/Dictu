@@ -8,5 +8,4 @@ import "tests/builtins/str.du";
 import "tests/builtins/number.du";
 import "tests/builtins/type.du";
 import "tests/builtins/len.du";
-import "tests/builtins/maths.du";
 import "tests/builtins/sleep.du";

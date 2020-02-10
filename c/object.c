@@ -44,6 +44,13 @@ ObjClass *newClass(ObjString *name, ObjClass *superclass) {
     return klass;
 }
 
+ObjClassNative *newClassNative(ObjString *name) {
+    ObjClassNative *klass = ALLOCATE_OBJ(ObjClassNative, OBJ_NATIVE_CLASS);
+    klass->name = name;
+    initTable(&klass->methods);
+    return klass;
+}
+
 ObjTrait *newTrait(ObjString *name) {
     ObjTrait *trait = ALLOCATE_OBJ(ObjTrait, OBJ_TRAIT);
     trait->name = name;
@@ -88,7 +95,6 @@ ObjNative *newNative(NativeFn function) {
     native->function = function;
     return native;
 }
-
 
 ObjNativeVoid *newNativeVoid(NativeFnVoid function) {
     ObjNativeVoid *native = ALLOCATE_OBJ(ObjNativeVoid, OBJ_NATIVE_VOID);
@@ -178,6 +184,7 @@ ObjUpvalue *newUpvalue(Value *slot) {
 
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
+        case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
             ObjClass *klass = AS_CLASS(value);
             char *classString = malloc(sizeof(char) * (klass->name->length + 8));
