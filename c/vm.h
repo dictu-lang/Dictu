@@ -48,11 +48,11 @@ typedef enum {
 
 extern VM vm;
 
-void initVM(bool repl, const char *scriptName);
+void initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
 
 void freeVM();
 
-InterpretResult interpret(const char *source, int argc, const char *argv[]);
+InterpretResult interpret(const char *source);
 
 void push(Value value);
 
