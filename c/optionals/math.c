@@ -17,7 +17,7 @@ static Value averageNative(int argCount, Value *args) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to average()");
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
         average = average + AS_NUMBER(value);
     }
@@ -28,12 +28,12 @@ static Value averageNative(int argCount, Value *args) {
 static Value floorNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("floor() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
         runtimeError("A non-number value passed to floor()");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
 
@@ -43,12 +43,12 @@ static Value floorNative(int argCount, Value *args) {
 static Value roundNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("round() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
         runtimeError("A non-number value passed to round()");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
 
@@ -58,12 +58,12 @@ static Value roundNative(int argCount, Value *args) {
 static Value ceilNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("ceil() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
         runtimeError("A non-number value passed to ceil()");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
 
@@ -73,12 +73,12 @@ static Value ceilNative(int argCount, Value *args) {
 static Value absNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("abs() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
         runtimeError("A non-number value passed to abs()");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     double absValue = AS_NUMBER(args[0]);
@@ -103,7 +103,7 @@ static Value sumNative(int argCount, Value *args) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to sum()");
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
         sum = sum + AS_NUMBER(value);
     }
@@ -126,7 +126,7 @@ static Value minNative(int argCount, Value *args) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to min()");
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
 
         double current = AS_NUMBER(value);
@@ -154,7 +154,7 @@ static Value maxNative(int argCount, Value *args) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
             runtimeError("A non-number value passed to max()");
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
 
         double current = AS_NUMBER(value);

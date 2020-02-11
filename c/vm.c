@@ -96,6 +96,7 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm.replVar = copyString("_", 1);
     defineAllNatives();
     createMathsClass();
+    createEnvClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);
@@ -189,22 +190,11 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_CLOSURE:
                 return call(AS_CLOSURE(callee), argCount);
 
-            case OBJ_NATIVE_VOID: {
-                NativeFnVoid native = AS_NATIVE_VOID(callee);
-                if (!native(argCount, vm.stackTop - argCount))
-                    return false;
-
-                vm.stackTop -= argCount + 1;
-                vm.stackCount -= argCount + 1;
-                push(NIL_VAL);
-                return true;
-            }
-
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
 
-                if (IS_NIL(result))
+                if (IS_EMPTY(result))
                     return false;
 
                 vm.stackTop -= argCount + 1;

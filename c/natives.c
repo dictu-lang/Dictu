@@ -21,15 +21,6 @@ static void defineNative(const char *name, NativeFn function) {
     pop();
 }
 
-
-static void defineNativeVoid(const char *name, NativeFnVoid function) {
-    push(OBJ_VAL(copyString(name, (int) strlen(name))));
-    push(OBJ_VAL(newNativeVoid(function)));
-    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
-    pop();
-    pop();
-}
-
 // Native functions
 static Value timeNative(int argCount, Value *args) {
     return NUMBER_VAL((double) time(NULL));
@@ -42,12 +33,12 @@ static Value clockNative(int argCount, Value *args) {
 static Value numberNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("number() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
         runtimeError("number() only takes a string as an argument");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     char *numberString = AS_CSTRING(args[0]);
@@ -59,7 +50,7 @@ static Value numberNative(int argCount, Value *args) {
 static Value strNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("str() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
@@ -77,7 +68,7 @@ static Value strNative(int argCount, Value *args) {
 static Value typeNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("type() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (IS_BOOL(args[0])) {
@@ -110,7 +101,6 @@ static Value typeNative(int argCount, Value *args) {
                 return OBJ_VAL(copyString("dict", 4));
             case OBJ_SET:
                 return OBJ_VAL(copyString("set", 3));
-            case OBJ_NATIVE_VOID:
             case OBJ_NATIVE:
                 return OBJ_VAL(copyString("native", 6));
             case OBJ_FILE:
@@ -130,7 +120,7 @@ static Value setNative(int argCount, Value *args) {
 static Value lenNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("len() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (IS_STRING(args[0])) {
@@ -144,13 +134,13 @@ static Value lenNative(int argCount, Value *args) {
     }
 
     runtimeError("Unsupported type passed to len()", argCount);
-    return NIL_VAL;
+    return EMPTY_VAL;
 }
 
 static Value boolNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("bool() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     return BOOL_VAL(!isFalsey(args[0]));
@@ -159,14 +149,14 @@ static Value boolNative(int argCount, Value *args) {
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError("input() takes 1 argument (%d given).", argCount);
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     if (argCount != 0) {
         Value prompt = args[0];
         if (!IS_STRING(prompt)) {
             runtimeError("input() only takes a string argument");
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
 
         printf("%s", AS_CSTRING(prompt));
@@ -179,7 +169,7 @@ static Value inputNative(int argCount, Value *args) {
 
     if (line == NULL) {
         runtimeError("Memory error on input()!");
-        return NIL_VAL;
+        return EMPTY_VAL;
     }
 
     int c = EOF;
@@ -208,15 +198,15 @@ static Value inputNative(int argCount, Value *args) {
 
 // Natives no return
 
-static bool sleepNative(int argCount, Value *args) {
+static Value sleepNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("sleep() takes 1 argument (%d given)", argCount);
-        return false;
+        return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
         runtimeError("sleep() argument must be a number");
-        return false;
+        return EMPTY_VAL;
     }
 
     double stopTime = AS_NUMBER(args[0]);
@@ -226,13 +216,13 @@ static bool sleepNative(int argCount, Value *args) {
 #else
     sleep(stopTime);
 #endif
-    return true;
+    return NIL_VAL;
 }
 
-static bool printNative(int argCount, Value *args) {
+static Value printNative(int argCount, Value *args) {
     if (argCount == 0) {
         printf("\n");
-        return true;
+        return NIL_VAL;
     }
 
     for (int i = 0; i < argCount; ++i) {
@@ -241,29 +231,29 @@ static bool printNative(int argCount, Value *args) {
         printf("\n");
     }
 
-    return true;
+    return NIL_VAL;
 }
 
-static bool assertNative(int argCount, Value *args) {
+static Value assertNative(int argCount, Value *args) {
     Value value = args[0];
 
     if (!IS_BOOL(value)) {
         runtimeError("assert() only takes a boolean as an argument.", argCount);
-        return false;
+        return EMPTY_VAL;
     }
 
     value = AS_BOOL(value);
     if (!value) {
         runtimeError("assert() was false!");
-        return false;
+        return EMPTY_VAL;
     }
 
-    return true;
+    return NIL_VAL;
 }
 
-static bool collectNative(int argCount, Value *args) {
+static Value collectNative(int argCount, Value *args) {
     collectGarbage();
-    return true;
+    return NIL_VAL;
 }
 
 // End of natives
@@ -278,7 +268,11 @@ void defineAllNatives() {
             "number",
             "str",
             "type",
-            "set"
+            "set",
+            "sleep",
+            "print",
+            "assert",
+            "collect"
     };
 
     NativeFn nativeFunctions[] = {
@@ -290,17 +284,7 @@ void defineAllNatives() {
             numberNative,
             strNative,
             typeNative,
-            setNative
-    };
-
-    char *nativeVoidNames[] = {
-            "sleep",
-            "print",
-            "assert",
-            "collect"
-    };
-
-    NativeFnVoid nativeVoidFunctions[] = {
+            setNative,
             sleepNative,
             printNative,
             assertNative,
@@ -310,9 +294,5 @@ void defineAllNatives() {
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
         defineNative(nativeNames[i], nativeFunctions[i]);
-    }
-
-    for (uint8_t i = 0; i < sizeof(nativeVoidNames) / sizeof(nativeVoidNames[0]); ++i) {
-        defineNativeVoid(nativeVoidNames[i], nativeVoidFunctions[i]);
     }
 }
