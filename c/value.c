@@ -286,7 +286,7 @@ char *valueToString(Value value) {
     }
 
     char *unknown = malloc(sizeof(char) * 8);
-    snprintf(unknown, 7, "%s", "unknown");
+    snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }
 
