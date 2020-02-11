@@ -1,16 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 
 #include "natives.h"
-#include "memory.h"
 #include "vm.h"
 
 static void defineNative(const char *name, NativeFn function) {
@@ -22,14 +14,6 @@ static void defineNative(const char *name, NativeFn function) {
 }
 
 // Native functions
-static Value timeNative(int argCount, Value *args) {
-    return NUMBER_VAL((double) time(NULL));
-}
-
-static Value clockNative(int argCount, Value *args) {
-    return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
-}
-
 static Value numberNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("number() takes 1 argument (%d given).", argCount);
@@ -196,29 +180,6 @@ static Value inputNative(int argCount, Value *args) {
     return l;
 }
 
-// Natives no return
-
-static Value sleepNative(int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError("sleep() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_NUMBER(args[0])) {
-        runtimeError("sleep() argument must be a number");
-        return EMPTY_VAL;
-    }
-
-    double stopTime = AS_NUMBER(args[0]);
-
-#ifdef _WIN32
-    Sleep(stopTime * 1000);
-#else
-    sleep(stopTime);
-#endif
-    return NIL_VAL;
-}
-
 static Value printNative(int argCount, Value *args) {
     if (argCount == 0) {
         printf("\n");
@@ -251,17 +212,10 @@ static Value assertNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value collectNative(int argCount, Value *args) {
-    collectGarbage();
-    return NIL_VAL;
-}
-
 // End of natives
 
 void defineAllNatives() {
     char *nativeNames[] = {
-            "clock",
-            "time",
             "len",
             "bool",
             "input",
@@ -269,15 +223,11 @@ void defineAllNatives() {
             "str",
             "type",
             "set",
-            "sleep",
             "print",
-            "assert",
-            "collect"
+            "assert"
     };
 
     NativeFn nativeFunctions[] = {
-            clockNative,
-            timeNative,
             lenNative,
             boolNative,
             inputNative,
@@ -285,10 +235,8 @@ void defineAllNatives() {
             strNative,
             typeNative,
             setNative,
-            sleepNative,
             printNative,
-            assertNative,
-            collectNative
+            assertNative
     };
 
 

@@ -1,0 +1,13 @@
+/**
+* sleep.du
+*
+* Testing the System.sleep() function
+*
+* sleep() pauses execution for a given amount of seconds
+*/
+
+var start = System.time();
+
+System.sleep(2);
+
+assert(System.time() - start >= 2);

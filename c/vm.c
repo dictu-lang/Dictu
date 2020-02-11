@@ -97,6 +97,7 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     defineAllNatives();
     createMathsClass();
     createEnvClass();
+    createSystemClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);
