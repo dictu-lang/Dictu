@@ -18,6 +18,7 @@
 #include "datatypes/files.h"
 #include "datatypes/instance.h"
 #include "natives.h"
+#include "optionals/optionals.h"
 
 VM vm; // [one]
 
@@ -59,7 +60,22 @@ void runtimeError(const char *format, ...) {
     resetStack();
 }
 
-void initVM(bool repl, const char *scriptName) {
+void initArgv(int argc, const char *argv[]) {
+    ObjList *list = initList();
+    push(OBJ_VAL(list));
+
+    for (int i = 1; i < argc; i++) {
+        Value arg = OBJ_VAL(copyString(argv[i], strlen(argv[i])));
+        push(arg);
+        writeValueArray(&list->values, arg);
+        pop();
+    }
+
+    tableSet(&vm.globals, copyString("argv", 4), OBJ_VAL(list));
+    pop();
+}
+
+void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     resetStack();
     vm.objects = NULL;
     vm.repl = repl;
@@ -78,8 +94,14 @@ void initVM(bool repl, const char *scriptName) {
     initTable(&vm.imports);
     vm.initString = copyString("init", 4);
     vm.replVar = copyString("_", 1);
-    vm.argv = copyString("argv", 4);
     defineAllNatives();
+    createMathsClass();
+    createEnvClass();
+    createSystemClass();
+
+    if (!vm.repl) {
+        initArgv(argc, argv);
+    }
 }
 
 void freeVM() {
@@ -169,22 +191,11 @@ static bool callValue(Value callee, int argCount) {
             case OBJ_CLOSURE:
                 return call(AS_CLOSURE(callee), argCount);
 
-            case OBJ_NATIVE_VOID: {
-                NativeFnVoid native = AS_NATIVE_VOID(callee);
-                if (!native(argCount, vm.stackTop - argCount))
-                    return false;
-
-                vm.stackTop -= argCount + 1;
-                vm.stackCount -= argCount + 1;
-                push(NIL_VAL);
-                return true;
-            }
-
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
                 Value result = native(argCount, vm.stackTop - argCount);
 
-                if (IS_NIL(result))
+                if (IS_EMPTY(result))
                     return false;
 
                 vm.stackTop -= argCount + 1;
@@ -224,6 +235,17 @@ static bool invoke(ObjString *name, int argCount) {
     }
 
     switch (getObjType(receiver)) {
+        case OBJ_NATIVE_CLASS: {
+            ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
+            Value function;
+            if (!tableGet(&instance->methods, name, &function)) {
+                runtimeError("Undefined property '%s'.", name->chars);
+                return false;
+            }
+
+            return callValue(function, argCount);
+        }
+
         case OBJ_CLASS: {
             ObjClass *instance = AS_CLASS(receiver);
             Value method;
@@ -1109,6 +1131,7 @@ static InterpretResult run() {
             switch (getObjType(objectValue)) {
                 case OBJ_LIST: {
                     ObjList *newList = initList();
+                    push(OBJ_VAL(newList));
                     ObjList *list = AS_LIST(objectValue);
 
                     if (IS_NIL(sliceEndIndex)) {
@@ -1124,6 +1147,8 @@ static InterpretResult run() {
                     for (int i = indexStart; i < indexEnd; i++) {
                         writeValueArray(&newList->values, list->values.values[i]);
                     }
+
+                    pop();
 
                     returnVal = OBJ_VAL(newList);
 
@@ -1415,29 +1440,12 @@ static InterpretResult run() {
 
 }
 
-void initArgv(int argc, const char *argv[]) {
-    ObjList *list = initList();
-
-    for (int i = 1; i < argc; i++) {
-        Value arg = OBJ_VAL(copyString(argv[i], strlen(argv[i])));
-        push(arg);
-        writeValueArray(&list->values, arg);
-        pop();
-    }
-
-    tableSet(&vm.globals, vm.argv, OBJ_VAL(list));
-}
-
-InterpretResult interpret(const char *source, int argc, const char *argv[]) {
+InterpretResult interpret(const char *source) {
     ObjFunction *function = compile(source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop();
-
-    if (!vm.repl) {
-        initArgv(argc, argv);
-    }
 
     callValue(OBJ_VAL(closure), 0);
     InterpretResult result = run();

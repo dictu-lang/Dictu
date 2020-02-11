@@ -13,12 +13,12 @@
 
 #define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
+#define IS_NATIVE_CLASS(value)  isObjType(value, OBJ_NATIVE_CLASS)
 #define IS_TRAIT(value)         isObjType(value, OBJ_TRAIT)
 #define IS_CLOSURE(value)       isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
-#define IS_NATIVE_VOID(value)   isObjType(value, OBJ_NATIVE_VOID)
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_LIST(value)          isObjType(value, OBJ_LIST)
 #define IS_DICT(value)          isObjType(value, OBJ_DICT)
@@ -27,12 +27,12 @@
 
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
+#define AS_CLASS_NATIVE(value)  ((ObjClassNative*)AS_OBJ(value))
 #define AS_TRAIT(value)         ((ObjTrait*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
 #define AS_NATIVE(value)        (((ObjNative*)AS_OBJ(value))->function)
-#define AS_NATIVE_VOID(value)   (((ObjNativeVoid*)AS_OBJ(value))->function)
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
@@ -43,12 +43,12 @@
 typedef enum {
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
+    OBJ_NATIVE_CLASS,
     OBJ_TRAIT,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
     OBJ_NATIVE,
-    OBJ_NATIVE_VOID,
     OBJ_STRING,
     OBJ_LIST,
     OBJ_DICT,
@@ -81,11 +81,6 @@ typedef struct {
     Obj obj;
     NativeFn function;
 } ObjNative;
-
-typedef struct {
-    Obj obj;
-    NativeFnVoid function;
-} ObjNativeVoid;
 
 struct sObjString {
     Obj obj;
@@ -164,6 +159,12 @@ typedef struct sObjClass {
     Table methods;
 } ObjClass;
 
+typedef struct sObjClassNative {
+    Obj obj;
+    ObjString *name;
+    Table methods;
+} ObjClassNative;
+
 typedef struct sObjTrait {
     Obj obj;
     ObjString *name;
@@ -186,6 +187,8 @@ ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 
 ObjClass *newClass(ObjString *name, ObjClass *superclass);
 
+ObjClassNative *newClassNative(ObjString *name);
+
 ObjTrait *newTrait(ObjString *name);
 
 ObjClosure *newClosure(ObjFunction *function);
@@ -195,8 +198,6 @@ ObjFunction *newFunction(bool isStatic);
 ObjInstance *newInstance(ObjClass *klass);
 
 ObjNative *newNative(NativeFn function);
-
-ObjNativeVoid *newNativeVoid(NativeFnVoid function);
 
 ObjString *takeString(char *chars, int length);
 

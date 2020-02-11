@@ -18,8 +18,8 @@ else
 endif
 
 # Files.
-HEADERS := $(wildcard $(SOURCE_DIR)/*.h) $(wildcard $(SOURCE_DIR)/datatypes/*.h)
-SOURCES := $(wildcard $(SOURCE_DIR)/*.c) $(wildcard $(SOURCE_DIR)/datatypes/*.c)
+HEADERS := $(wildcard $(SOURCE_DIR)/*.h) $(wildcard $(SOURCE_DIR)/datatypes/*.h) $(wildcard $(SOURCE_DIR)/optionals/*.h)
+SOURCES := $(wildcard $(SOURCE_DIR)/*.c) $(wildcard $(SOURCE_DIR)/datatypes/*.c) $(wildcard $(SOURCE_DIR)/optionals/*.c)
 OBJECTS := $(addprefix $(BUILD_DIR)/$(NAME)/, $(notdir $(SOURCES:.c=.o)))
 
 # Targets ---------------------------------------------------------------------
@@ -38,6 +38,12 @@ $(BUILD_DIR)/$(NAME)/%.o: $(SOURCE_DIR)/%.c $(HEADERS)
 
 # Compile object files.
 $(BUILD_DIR)/$(NAME)/%.o: $(SOURCE_DIR)/datatypes/%.c $(HEADERS)
+	@ printf "%8s %-40s %s\n" $(CC) $< "$(CFLAGS)"
+	@ mkdir -p $(BUILD_DIR)/$(NAME)
+	@ $(CC) -c $(CFLAGS) -o $@ $<
+
+# Compile object files.
+$(BUILD_DIR)/$(NAME)/%.o: $(SOURCE_DIR)/optionals/%.c $(HEADERS)
 	@ printf "%8s %-40s %s\n" $(CC) $< "$(CFLAGS)"
 	@ mkdir -p $(BUILD_DIR)/$(NAME)
 	@ $(CC) -c $(CFLAGS) -o $@ $<

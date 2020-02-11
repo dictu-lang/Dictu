@@ -10,7 +10,7 @@
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.3.0\n"
+#define VERSION "Dictu Version: 0.3.1\n"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
@@ -96,7 +96,7 @@ static void repl(int argc, const char *argv[]) {
             linenoiseHistorySave("history.txt");
         }
 
-        interpret(fullLine, argc, argv);
+        interpret(fullLine);
 
         free(line);
         free(fullLine);
@@ -105,7 +105,7 @@ static void repl(int argc, const char *argv[]) {
 
 static void runFile(int argc, const char *argv[]) {
     char *source = readFile(argv[1]);
-    InterpretResult result = interpret(source, argc, argv);
+    InterpretResult result = interpret(source);
     free(source); // [owner]
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
@@ -113,7 +113,7 @@ static void runFile(int argc, const char *argv[]) {
 }
 
 int main(int argc, const char *argv[]) {
-    initVM(argc == 1, argc >= 2 ? argv[1] : "repl");
+    initVM(argc == 1, argc >= 2 ? argv[1] : "repl", argc, argv);
 
     if (argc == 1) {
         repl(argc, argv);

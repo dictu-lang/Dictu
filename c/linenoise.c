@@ -613,22 +613,48 @@ static void refreshLine(struct linenoiseState *l) {
 int linenoiseEditInsert(struct linenoiseState *l, char c) {
     if (l->len < l->buflen) {
         if (l->len == l->pos) {
-            l->buf[l->pos] = c;
-            l->pos++;
-            l->len++;
+            bool tab = false;
+            if (c == '\t') {
+                c = ' ';
+                for (int i = 0; i < 4; i++) {
+                    l->buf[l->pos] = c;
+                    l->pos++;
+                    l->len++;
+                    tab = true;
+                }
+            } else {
+                l->buf[l->pos] = c;
+                l->pos++;
+                l->len++;
+            }
             l->buf[l->len] = '\0';
+
             if ((!mlmode && l->plen+l->len < l->cols && !hintsCallback)) {
                 /* Avoid a full update of the line in the
                  * trivial case. */
-                if (write(l->ofd,&c,1) == -1) return -1;
+                if (tab) {
+                    if (write(l->ofd, "    ", 4) == -1) return -1;
+                } else {
+                    if (write(l->ofd, &c, 1) == -1) return -1;
+                }
             } else {
                 refreshLine(l);
             }
         } else {
-            memmove(l->buf+l->pos+1,l->buf+l->pos,l->len-l->pos);
-            l->buf[l->pos] = c;
-            l->len++;
-            l->pos++;
+            if (c == '\t') {
+                memmove(l->buf+l->pos+4,l->buf+l->pos,l->len-l->pos);
+                for (int i = 0; i < 4; i++) {
+                    l->buf[l->pos] = ' ';
+                    l->len++;
+                    l->pos++;
+                }
+            } else {
+                memmove(l->buf+l->pos+1,l->buf+l->pos,l->len-l->pos);
+                l->buf[l->pos] = c;
+                l->len++;
+                l->pos++;
+            }
+
             l->buf[l->len] = '\0';
             refreshLine(l);
         }
@@ -698,8 +724,25 @@ void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
  * position. Basically this is what happens with the "Delete" keyboard key. */
 void linenoiseEditDelete(struct linenoiseState *l) {
     if (l->len > 0 && l->pos < l->len) {
-        memmove(l->buf+l->pos,l->buf+l->pos+1,l->len-l->pos-1);
-        l->len--;
+        bool tab = true;
+        if (l->len - l->pos > 4) {
+            for (int i = 0; i < 4; i++) {
+                if (l->buf[l->pos + i] != ' ') {
+                    tab = false;
+                    break;
+                }
+            }
+        } else {
+            tab = false;
+        }
+
+        if (tab) {
+            memmove(l->buf + l->pos, l->buf + l->pos + 4, l->len - l->pos - 4);
+            l->len -= 4;
+        } else {
+            memmove(l->buf + l->pos, l->buf + l->pos + 1, l->len - l->pos - 1);
+            l->len--;
+        }
         l->buf[l->len] = '\0';
         refreshLine(l);
     }
@@ -708,15 +751,33 @@ void linenoiseEditDelete(struct linenoiseState *l) {
 /* Backspace implementation. */
 void linenoiseEditBackspace(struct linenoiseState *l) {
     if (l->pos > 0 && l->len > 0) {
-        memmove(l->buf+l->pos-1,l->buf+l->pos,l->len-l->pos);
-        l->pos--;
-        l->len--;
+        bool tab = true;
+        if (l->pos > 3) {
+            for (int i = 0; i < 4; i++) {
+                if (l->buf[l->pos - i - 1] != ' ') {
+                    tab = false;
+                    break;
+                }
+            }
+        } else {
+            tab = false;
+        }
+
+        if (tab) {
+            memmove(l->buf + l->pos - 4, l->buf + l->pos, l->len - l->pos);
+            l->pos -= 4;
+            l->len -= 4;
+        } else {
+            memmove(l->buf + l->pos - 1, l->buf + l->pos, l->len - l->pos);
+            l->pos--;
+            l->len--;
+        }
         l->buf[l->len] = '\0';
         refreshLine(l);
     }
 }
 
-/* Delete the previosu word, maintaining the cursor at the start of the
+/* Delete the previous word, maintaining the cursor at the start of the
  * current word. */
 void linenoiseEditDeletePrevWord(struct linenoiseState *l) {
     size_t old_pos = l->pos;

@@ -1,0 +1,21 @@
+/**
+* maths.du
+*
+* Testing the Math functions:
+*    - min(), max(), average(), sum(), floor(), round(), ceil(), abs()
+*
+*/
+
+assert(Math.min(1, 2, 3) == 1);
+assert(Math.min([1, 2, 3]) == 1);
+assert(Math.max(1, 2, 3) == 3);
+assert(Math.max([1, 2, 3]) == 3);
+assert(Math.average(1, 2, 3) == 2);
+assert(Math.average([1, 2, 3]) == 2);
+assert(Math.sum(1, 2, 3) == 6);
+assert(Math.sum([1, 2, 3]) == 6);
+assert(Math.floor(17.999) == 17);
+assert(Math.round(17.5) == 18);
+assert(Math.ceil(17.0001) == 18);
+assert(Math.abs(18) == 18);
+assert(Math.abs(-18) == 18);
