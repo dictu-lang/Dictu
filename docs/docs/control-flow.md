@@ -153,7 +153,7 @@ someList[0](someList[1]); // Hello!
 Functions can also have optional parameters. If a value is not passed, the parameter will take the default value
 given in the function header. Note: non-optional parameters **must** be defined before optional parameters.
 
-```
+```python
 def someFunction(a, b=10) {
     print(a, b);
 }
