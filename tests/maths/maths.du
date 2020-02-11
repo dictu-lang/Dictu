@@ -1,7 +1,7 @@
 /**
 * maths.du
 *
-* Testing the builtin maths functions:
+* Testing the Math functions:
 *    - min(), max(), average(), sum(), floor(), round(), ceil(), abs()
 *
 */

@@ -96,12 +96,6 @@ ObjNative *newNative(NativeFn function) {
     return native;
 }
 
-ObjNativeVoid *newNativeVoid(NativeFnVoid function) {
-    ObjNativeVoid *native = ALLOCATE_OBJ(ObjNativeVoid, OBJ_NATIVE_VOID);
-    native->function = function;
-    return native;
-}
-
 static ObjString *allocateString(char *chars, int length,
                                  uint32_t hash) {
     ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
@@ -253,7 +247,6 @@ char *objectToString(Value value) {
             return instanceString;
         }
 
-        case OBJ_NATIVE_VOID:
         case OBJ_NATIVE: {
             char *nativeString = malloc(sizeof(char) * 12);
             snprintf(nativeString, 12, "%s", "<native fn>");

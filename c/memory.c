@@ -195,7 +195,6 @@ static void blackenObject(Obj *object) {
 
 
         case OBJ_NATIVE:
-        case OBJ_NATIVE_VOID:
         case OBJ_STRING:
         case OBJ_FILE:
             break;
@@ -257,11 +256,6 @@ void freeObject(Obj *object) {
 
         case OBJ_NATIVE: {
             FREE(ObjNative, object);
-            break;
-        }
-
-        case OBJ_NATIVE_VOID: {
-            FREE(ObjNativeVoid, object);
             break;
         }
 

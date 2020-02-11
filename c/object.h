@@ -19,7 +19,6 @@
 #define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
-#define IS_NATIVE_VOID(value)   isObjType(value, OBJ_NATIVE_VOID)
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_LIST(value)          isObjType(value, OBJ_LIST)
 #define IS_DICT(value)          isObjType(value, OBJ_DICT)
@@ -34,7 +33,6 @@
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
 #define AS_NATIVE(value)        (((ObjNative*)AS_OBJ(value))->function)
-#define AS_NATIVE_VOID(value)   (((ObjNativeVoid*)AS_OBJ(value))->function)
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
@@ -51,7 +49,6 @@ typedef enum {
     OBJ_FUNCTION,
     OBJ_INSTANCE,
     OBJ_NATIVE,
-    OBJ_NATIVE_VOID,
     OBJ_STRING,
     OBJ_LIST,
     OBJ_DICT,
@@ -84,11 +81,6 @@ typedef struct {
     Obj obj;
     NativeFn function;
 } ObjNative;
-
-typedef struct {
-    Obj obj;
-    NativeFnVoid function;
-} ObjNativeVoid;
 
 struct sObjString {
     Obj obj;
@@ -206,8 +198,6 @@ ObjFunction *newFunction(bool isStatic);
 ObjInstance *newInstance(ObjClass *klass);
 
 ObjNative *newNative(NativeFn function);
-
-ObjNativeVoid *newNativeVoid(NativeFnVoid function);
 
 ObjString *takeString(char *chars, int length);
 

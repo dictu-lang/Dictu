@@ -21,14 +21,16 @@ typedef struct sObjFile ObjFile;
 #define QNAN ((uint64_t)0x7ffc000000000000)
 
 // Tag values for the different singleton values.
-#define TAG_NIL   1 // 01
-#define TAG_FALSE 2 // 10
-#define TAG_TRUE  3 // 11
+#define TAG_NIL    1
+#define TAG_FALSE  2
+#define TAG_TRUE   3
+#define TAG_EMPTY  4
 
 typedef uint64_t Value;
 
 #define IS_BOOL(v)    (((v) & FALSE_VAL) == FALSE_VAL)
 #define IS_NIL(v)     ((v) == NIL_VAL)
+#define IS_EMPTY(v)   ((v) == EMPTY_VAL)
 // If the NaN bits are set, it's not a number.
 #define IS_NUMBER(v)  (((v) & QNAN) != QNAN)
 #define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
@@ -37,10 +39,11 @@ typedef uint64_t Value;
 #define AS_NUMBER(v)  valueToNum(v)
 #define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
 
-#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)
-#define FALSE_VAL         ((Value)(uint64_t)(QNAN | TAG_FALSE))
-#define TRUE_VAL          ((Value)(uint64_t)(QNAN | TAG_TRUE))
-#define NIL_VAL           ((Value)(uint64_t)(QNAN | TAG_NIL))
+#define BOOL_VAL(boolean)   ((boolean) ? TRUE_VAL : FALSE_VAL)
+#define FALSE_VAL           ((Value)(uint64_t)(QNAN | TAG_FALSE))
+#define TRUE_VAL            ((Value)(uint64_t)(QNAN | TAG_TRUE))
+#define NIL_VAL             ((Value)(uint64_t)(QNAN | TAG_NIL))
+#define EMPTY_VAL           ((Value)(uint64_t)(QNAN | TAG_EMPTY))
 #define NUMBER_VAL(num)   numToValue(num)
 // The triple casting is necessary here to satisfy some compilers:
 // 1. (uintptr_t) Convert the pointer to a number of the right size.
