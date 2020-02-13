@@ -191,6 +191,11 @@ static bool joinListItem(int argCount) {
     fullString[index] = '\0';
     push(OBJ_VAL(copyString(fullString, index)));
 
+    if (!IS_STRING(list->values.values[list->values.count - 1])) {
+        free(output);
+    }
+    free(fullString);
+
     return true;
 }
 
