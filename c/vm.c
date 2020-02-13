@@ -98,6 +98,8 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createMathsClass();
     createEnvClass();
     createSystemClass();
+    createHttpClass();
+    createJSONClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);

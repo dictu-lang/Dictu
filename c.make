@@ -6,7 +6,7 @@
 # SOURCE_DIR   Directory where source files and headers are found.
 
 CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter
-LFLAGS := -lm
+LFLAGS := -lm -lcurl
 
 # Mode configuration.
 ifeq ($(MODE),debug)

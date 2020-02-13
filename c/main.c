@@ -85,7 +85,7 @@ static void repl(int argc, const char *argv[]) {
             char *temp = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
 
             if (temp == NULL) {
-                printf("Unable to allocate memory");
+                printf("Unable to allocate memory\n");
                 exit(71);
             }
 
