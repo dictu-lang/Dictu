@@ -17,8 +17,8 @@ Documentation for Dictu can be found [here](https://jason2605.github.io/Dictu/)
 $ git clone https://github.com/Jason2605/Dictu.git
 $ cd Dictu
 $ make dictu
-$ ./dictu examples/guessingGame.du
-```
+$ export PATH="$PATH:`pwd`/"
+$ dictu examples/guessingGame.du
 
 ## Example program
 ```js
