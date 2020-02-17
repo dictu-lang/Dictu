@@ -546,9 +546,9 @@ size_t json_measure_ex (json_value * value, json_serialize_opts opts)
 
     /* to reduce branching
      */
-    bracket_size = flags & f_spaces_around_brackets ? 2 : 1;
-    comma_size = flags & f_spaces_after_commas ? 2 : 1;
-    colon_size = flags & f_spaces_after_colons ? 2 : 1;
+    bracket_size = (flags & f_spaces_around_brackets) ? 2 : 1;
+    comma_size = (flags & f_spaces_after_commas) ? 2 : 1;
+    colon_size = (flags & f_spaces_after_colons) ? 2 : 1;
 
     while (value)
     {
@@ -740,7 +740,7 @@ void json_serialize_ex (json_char * buf, json_value * value, json_serialize_opts
 
     flags = get_serialize_flags (opts);
 
-    indent_char = flags & f_tabs ? '\t' : ' ';
+    indent_char = (flags & f_tabs) ? '\t' : ' ';
 
     while (value)
     {
