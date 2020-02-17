@@ -206,6 +206,10 @@ static int new_value (json_state * state,
     return 1;
 }
 
+#define whitespace \
+   case '\n': ++ state.cur_line;  state.cur_col = 0; /* FALLTHRU */ \
+   case ' ': /* FALLTHRU */ case '\t': /* FALLTHRU */ case '\r' /* FALLTHRU */
+
 #define string_add(b)  \
    do { if (!state.first_pass) string [string_length] = b;  ++ string_length; } while (0);
 
@@ -510,13 +514,7 @@ json_value * json_parse_ex (json_settings * settings,
 
                 switch (b)
                 {
-                    case '\n':
-                        ++state.cur_line;
-                        state.cur_col = 0;
-                        continue;
-                    case ' ':
-                    case '\t':
-                    case '\r':
+                    whitespace:
                         continue;
 
                     default:
@@ -532,13 +530,7 @@ json_value * json_parse_ex (json_settings * settings,
             {
                 switch (b)
                 {
-                    case '\n':
-                        ++state.cur_line;
-                        state.cur_col = 0;
-                        continue;
-                    case ' ':
-                    case '\t':
-                    case '\r':
+                    whitespace:
                         continue;
 
                     case ']':
@@ -717,13 +709,7 @@ json_value * json_parse_ex (json_settings * settings,
 
                         switch (b)
                         {
-                            case '\n':
-                                ++state.cur_line;
-                                state.cur_col = 0;
-                                continue;
-                            case ' ':
-                            case '\t':
-                            case '\r':
+                            whitespace:
                                 continue;
 
                             case '"':
@@ -751,7 +737,7 @@ json_value * json_parse_ex (json_settings * settings,
                                 {
                                     flags &= ~ flag_need_comma;
                                     break;
-                                }
+                                } /* FALLTHRU */
 
                             default:
                                 sprintf (error, "%d:%d: Unexpected `%c` in object", line_and_col, b);
