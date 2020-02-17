@@ -40,6 +40,10 @@ static Value parseJson(json_value *json) {
         case json_boolean: {
             return BOOL_VAL(json->u.boolean);
         }
+
+        default: {
+            return EMPTY_VAL;
+        }
     }
 }
 
@@ -63,6 +67,12 @@ static Value parse(int argCount, Value *args) {
     }
 
     Value val = parseJson(json_obj);
+
+    if (val == EMPTY_VAL) {
+        runtimeError("Invalid JSON passed to parse()");
+        return EMPTY_VAL;
+    }
+
     json_value_free(json_obj);
 
     return val;
