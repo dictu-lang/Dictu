@@ -1,0 +1,32 @@
+/**
+ * stringify.du
+ *
+ * Testing the JSON.stringify() function
+ *
+ */
+
+assert(JSON.stringify(true) == 'true');
+assert(JSON.stringify(false) == 'false');
+assert(JSON.stringify(nil) == 'null');
+assert(JSON.stringify(10) == '10');
+assert(JSON.stringify("test") == '"test"');
+assert(JSON.stringify([]) == '[]');
+assert(JSON.stringify({}) == '{}');
+
+assert(JSON.stringify([true]) == '[true]');
+assert(JSON.stringify([false]) == '[false]');
+assert(JSON.stringify([nil]) == '[null]');
+assert(JSON.stringify([10]) == '[10]');
+assert(JSON.stringify(["test"]) == '["test"]');
+assert(JSON.stringify([[]]) == '[[]]');
+assert(JSON.stringify([{}]) == '[{}]');
+
+assert(JSON.stringify({"test": true}) == '{"test": true}');
+assert(JSON.stringify({"test": false}) == '{"test": false}');
+assert(JSON.stringify({"test": nil}) == '{"test": null}');
+assert(JSON.stringify({"test": 10}) == '{"test": 10}');
+assert(JSON.stringify({"test": "test"}) == '{"test": "test"}');
+assert(JSON.stringify({"test": []}) == '{"test": []}');
+assert(JSON.stringify({"test": {}}) == '{"test": {}}');
+
+assert(JSON.stringify({"test": {"test": [1, 2, 3, {"test": true}]}}) == '{"test": {"test": [1, 2, 3, {"test": true}]}}');
