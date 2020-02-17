@@ -1,0 +1,32 @@
+/**
+ * parse.du
+ *
+ * Testing the JSON.parse() function
+ *
+ */
+
+assert(JSON.parse('true') == true);
+assert(JSON.parse('false') == false);
+assert(JSON.parse('null') == nil);
+assert(JSON.parse('10') == 10);
+assert(JSON.parse('"test"') == "test");
+assert(JSON.parse('[]') == []);
+assert(JSON.parse('{}') == {});
+
+assert(JSON.parse('[true]') == [true]);
+assert(JSON.parse('[false]') == [false]);
+assert(JSON.parse('[null]') == [nil]);
+assert(JSON.parse('[10]') == [10]);
+assert(JSON.parse('["test"]') == ["test"]);
+assert(JSON.parse('[[]]') == [[]]);
+assert(JSON.parse('[{}]') == [{}]);
+
+assert(JSON.parse('{"test": true}') == {"test": true});
+assert(JSON.parse('{"test": false}') == {"test": false});
+assert(JSON.parse('{"test": null}') == {"test": nil});
+assert(JSON.parse('{"test": 10}') == {"test": 10});
+assert(JSON.parse('{"test": "test"}') == {"test": "test"});
+assert(JSON.parse('{"test": []}') == {"test": []});
+assert(JSON.parse('{"test": {}}') == {"test": {}});
+
+assert(JSON.parse('{"test": {"test": [1, 2, 3, {"test": true}]}}') == {"test": {"test": [1, 2, 3, {"test": true}]}});
