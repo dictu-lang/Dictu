@@ -206,10 +206,6 @@ static int new_value (json_state * state,
     return 1;
 }
 
-#define whitespace \
-   case '\n': ++ state.cur_line;  state.cur_col = 0; \
-   case ' ': case '\t': case '\r'
-
 #define string_add(b)  \
    do { if (!state.first_pass) string [string_length] = b;  ++ string_length; } while (0);
 
@@ -514,7 +510,13 @@ json_value * json_parse_ex (json_settings * settings,
 
                 switch (b)
                 {
-                    whitespace:
+                    case '\n':
+                        ++state.cur_line;
+                        state.cur_col = 0;
+                        continue;
+                    case ' ':
+                    case '\t':
+                    case '\r':
                         continue;
 
                     default:
@@ -530,7 +532,13 @@ json_value * json_parse_ex (json_settings * settings,
             {
                 switch (b)
                 {
-                    whitespace:
+                    case '\n':
+                        ++state.cur_line;
+                        state.cur_col = 0;
+                        continue;
+                    case ' ':
+                    case '\t':
+                    case '\r':
                         continue;
 
                     case ']':
@@ -709,7 +717,13 @@ json_value * json_parse_ex (json_settings * settings,
 
                         switch (b)
                         {
-                            whitespace:
+                            case '\n':
+                                ++state.cur_line;
+                                state.cur_col = 0;
+                                continue;
+                            case ' ':
+                            case '\t':
+                            case '\r':
                                 continue;
 
                             case '"':

@@ -5,7 +5,7 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter
+CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -fno-strict-aliasing
 LFLAGS := -lm
 
 # Mode configuration.
