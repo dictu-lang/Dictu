@@ -119,7 +119,6 @@ static int new_value (json_state * state,
                       json_type type)
 {
     json_value * value;
-    int values_size;
 
     if (!state->first_pass)
     {
@@ -150,7 +149,7 @@ static int new_value (json_state * state,
                 if (value->u.object.length == 0)
                     break;
 
-                values_size = sizeof (*value->u.object.values) * value->u.object.length;
+                int values_size = sizeof (*value->u.object.values) * value->u.object.length;
 
                 if (! (value->u.object.values = (json_object_entry *) json_alloc
                         (state, values_size + ((unsigned long) value->u.object.values), 0)) )
@@ -243,7 +242,6 @@ json_value * json_parse_ex (json_settings * settings,
     const json_char * end;
     json_value * top, * root, * alloc = 0;
     json_state state = { 0 };
-    long flags = 0;
     double num_digits = 0, num_e = 0;
     double num_fraction = 0;
 
@@ -282,7 +280,7 @@ json_value * json_parse_ex (json_settings * settings,
         unsigned int string_length = 0;
 
         top = root = 0;
-        flags = flag_seek_value;
+        long flags = flag_seek_value;
 
         state.cur_line = 1;
 

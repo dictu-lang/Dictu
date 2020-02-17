@@ -732,7 +732,7 @@ void json_serialize_ex (json_char * buf, json_value * value, json_serialize_opts
 {
     json_int_t integer, orig_integer;
     json_object_entry * entry;
-    json_char * ptr, * dot;
+    json_char * ptr;
     int indent = 0;
     char indent_char;
     int i;
@@ -880,8 +880,9 @@ void json_serialize_ex (json_char * buf, json_value * value, json_serialize_opts
             case json_double:
 
                 ptr = buf;
-
                 buf += sprintf (buf, "%g", value->u.dbl);
+
+                json_char *dot;
 
                 if ((dot = strchr (ptr, ',')))
                 {
