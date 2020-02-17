@@ -68,6 +68,27 @@ static Value parse(int argCount, Value *args) {
     return val;
 }
 
+static Value stringify(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("parse() takes 1 argument (%d  given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Value value = args[0];
+    json_value *json = NULL;
+
+    if (IS_NIL(value)) {
+        json = json_null_new();
+    }
+
+    char *buf = malloc(json_measure(json));
+    json_serialize(buf, json);
+
+    ObjString *string = copyString(buf, strlen(buf));
+    free(buf);
+    return OBJ_VAL(string);
+}
+
 void createJSONClass() {
     ObjString *name = copyString("JSON", 4);
     push(OBJ_VAL(name));
@@ -78,6 +99,7 @@ void createJSONClass() {
      * Define Json methods
      */
     defineNativeMethod(klass, "parse", parse);
+    defineNativeMethod(klass, "stringify", stringify);
 
     tableSet(&vm.globals, name, OBJ_VAL(klass));
     pop();

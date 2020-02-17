@@ -1,7 +1,8 @@
 #ifndef dictu_json_h
 #define dictu_json_h
 
-#include "jsonLib.h"
+#include "jsonParseLib.h"
+#include "jsonBuilderLib.h"
 #include "optionals.h"
 #include "../vm.h"
 
