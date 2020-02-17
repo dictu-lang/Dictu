@@ -117,7 +117,7 @@ json_value* stringifyJson(Value value) {
                         continue;
                     }
 
-                    json_object_push(json, dict->items[i]->key, stringifyJson(dict->items[i]->item));
+                    json_object_push_nocopy(json, strlen(dict->items[i]->key), dict->items[i]->key, stringifyJson(dict->items[i]->item));
                 }
 
                 return json;
