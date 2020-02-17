@@ -96,6 +96,7 @@ static Value stringify(int argCount, Value *args) {
 
     ObjString *string = copyString(buf, strlen(buf));
     free(buf);
+    json_value_free(json);
     return OBJ_VAL(string);
 }
 
