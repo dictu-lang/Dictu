@@ -78,22 +78,95 @@ static Value parse(int argCount, Value *args) {
     return val;
 }
 
+json_value* stringifyJson(Value value) {
+    if (IS_NIL(value)) {
+        return json_null_new();
+    } else if (IS_BOOL(value)) {
+        return json_boolean_new(AS_BOOL(value));
+    } else if (IS_NUMBER(value)) {
+        double num = AS_NUMBER(value);
+
+        if ((int) num == num) {
+            return json_integer_new((int) num);
+        }
+
+        return json_double_new(num);
+    } else if (IS_OBJ(value)) {
+        switch (AS_OBJ(value)->type) {
+            case OBJ_STRING: {
+                return json_string_new(AS_CSTRING(value));
+            }
+
+            case OBJ_LIST: {
+                ObjList *list = AS_LIST(value);
+                json_value *json = json_array_new(list->values.count);
+
+                for (int i = 0; i < list->values.count; i++) {
+                    json_array_push(json, stringifyJson(list->values.values[i]));
+                }
+
+                return json;
+            }
+
+            case OBJ_DICT: {
+                ObjDict *dict = AS_DICT(value);
+                json_value *json = json_object_new(dict->count);
+
+                for (int i = 0; i < dict->capacity; i++) {
+                    if (dict->items[i] == NULL) {
+                        continue;
+                    }
+
+                    json_object_push(json, dict->items[i]->key, stringifyJson(dict->items[i]->item));
+                }
+
+                return json;
+            }
+
+            // Pass through and return NULL
+            default: {}
+        }
+    }
+
+    return NULL;
+}
+
 static Value stringify(int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError("parse() takes 1 argument (%d  given)", argCount);
+    if (argCount != 1 && argCount != 2) {
+        runtimeError("stringify() takes 1 or 2 arguments (%d  given)", argCount);
         return EMPTY_VAL;
     }
 
-    Value value = args[0];
-    json_value *json = NULL;
+    int indent = 4;
+    int lineType = json_serialize_mode_single_line;
 
-    if (IS_NIL(value)) {
-        json = json_null_new();
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError("stringify() second argument must be a number");
+            return EMPTY_VAL;
+        }
+
+        lineType = json_serialize_mode_multiline;
+        indent = AS_NUMBER(args[1]);
     }
 
-    char *buf = malloc(json_measure(json));
-    json_serialize(buf, json);
+    json_value *json = stringifyJson(args[0]);
 
+    if (json == NULL) {
+        runtimeError("Value: %s is not JSON serializable", valueToString(args[0]));
+        return EMPTY_VAL;
+    }
+
+    json_serialize_opts default_opts =
+    {
+            lineType,
+            json_serialize_opt_pack_brackets,
+            indent
+    };
+
+
+    char *buf = malloc(json_measure(json));
+    json_serialize_ex(buf, json, default_opts);
     ObjString *string = copyString(buf, strlen(buf));
     free(buf);
     json_value_free(json);

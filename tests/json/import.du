@@ -5,3 +5,4 @@
  */
 
 import "tests/json/parse.du";
+import "tests/json/stringify.du";
