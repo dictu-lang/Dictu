@@ -11,4 +11,6 @@ assert(System.clock() > 0);
 
 var x = System.clock();
 
+System.sleep(1);
+
 assert(System.clock() > x);
