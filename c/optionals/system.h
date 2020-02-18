@@ -2,6 +2,8 @@
 #define dictu_system_h
 
 #include <time.h>
+#include <unistd.h>
+#include <limits.h>
 
 #ifdef _WIN32
 #include <windows.h>

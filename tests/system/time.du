@@ -1,0 +1,12 @@
+/**
+ * clock.du
+ *
+ * Testing the System.time() function
+ *
+ * clock() returns a UNIX timestamp.
+ */
+
+// Time is also tested within sleep.du
+
+assert(type(System.time()) == 'number');
+assert(System.time() > 0);
