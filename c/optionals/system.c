@@ -1,5 +1,16 @@
 #include "system.h"
 
+static Value getCWDNative(int argCount, Value *args) {
+    char cwd[PATH_MAX];
+
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        return OBJ_VAL(copyString(cwd, strlen(cwd)));
+    }
+
+    runtimeError("Error getting current directory");
+    return EMPTY_VAL;
+}
+
 static Value timeNative(int argCount, Value *args) {
     return NUMBER_VAL((double) time(NULL));
 }
@@ -57,6 +68,7 @@ void createSystemClass() {
     /**
      * Define System methods
      */
+    defineNativeMethod(klass, "getcwd", getCWDNative);
     defineNativeMethod(klass, "time", timeNative);
     defineNativeMethod(klass, "clock", clockNative);
     defineNativeMethod(klass, "collect", collectNative);
