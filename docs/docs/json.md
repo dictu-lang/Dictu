@@ -15,8 +15,7 @@ nav_order: 14
 
 ---
 
-### Parsing JSON
-#### JSON.parse(string)
+### JSON.parse(string)
 
 Parses a JSON string and turns it into a valid Dictu datatype.
 
@@ -27,8 +26,7 @@ JSON.parse('[1, 2, 3]'); // [1, 2, 3]
 JSON.parse('null'); // nil
 ```
 
-### Stringify JSON
-#### JSON.stringify(value)
+### JSON.stringify(value)
 
 Stringify converts a Dictu value into a valid JSON string.
 
