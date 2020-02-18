@@ -1,0 +1,8 @@
+/**
+ * import.du
+ *
+ * General import file for all the JSON methods
+ */
+
+import "tests/json/parse.du";
+import "tests/json/stringify.du";
