@@ -6,9 +6,7 @@
  * clock() returns a UNIX timestamp.
  */
 
+// Time is also tested within sleep.du
+
 assert(type(System.time()) == 'number');
 assert(System.time() > 0);
-
-var x = System.time();
-
-assert(System.time() > x);
