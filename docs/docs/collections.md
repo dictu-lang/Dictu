@@ -22,7 +22,7 @@ Lists in Dictu are a type that allows you to store more than one value in a sing
 var myList = [1, 2, "hi", true, false, nil];
 ```
 
-### Accessing list elements
+### Indexing
 
 ```js
 var myList = [1, 2, 3];
@@ -30,7 +30,8 @@ var myList = [1, 2, 3];
 print(myList[0]); // 1
 ```
 
-### Updating a value
+Updating a value within a list uses the same syntax, except you supply a value via assignment.
+
 ```js
 var myList = [1, 5, 3];
 myList[1] = 2; // [1, 2, 3]
@@ -50,7 +51,10 @@ E.g `[1, 2, 3, 4, 5][1:]` or `[1, 2, 3, 4, 5][:5]` are both valid. The start ind
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
 ```
 
-### Adding to lists
+### list.push(value, number: index -> optional)
+
+To add a new value to a list, use the `.push()` method. To insert a value at a given index, without replacing the
+current value, supply an optional index to `.push()`
 
 ```js
 var myList = [];
@@ -62,7 +66,9 @@ myList.insert(11, 1); // [10, 11, 12]
 myList + [13]; // [10, 11, 12, 13]
 ```
 
-### Checking a value exists within a list
+### list.contains(value)
+
+To check if a value contains within a list we use `.contains()`
 
 ```js
 var myList = [1, 2, 3];
@@ -70,10 +76,11 @@ myList.contains(2); // true
 myList.contains(10); // false
 ```
 
-### Joining list elements
+### list.join(string: delimiter -> optional)
 
-If you have a list of elements and you wish to transfer them to a string, you can `.join()` them by a given delimiter.
+To convert a list of elements to a string use `.join()` to concatenate elements together by a given delimiter.
 If a delimiter is not supplied `", "` is the default.
+
 ```js
 var myList = [1, 2, 3];
 print(myList.join()); // "1, 2, 3"
@@ -81,7 +88,10 @@ print(myList.join("")); // "123"
 print(myList.join("-")); // "1-2-3"
 ```
 
-### Removing from lists
+### list.pop(number: index -> optional)
+
+To remove a value from a list, with an optional index, use `.pop()`
+
 ```js
 var myList = [1, 2, 3];
 // If no index is given, pops from the end
@@ -92,6 +102,8 @@ myList; // [2]
 ```
 
 ### Copying lists
+#### list.copy()
+
 When you are working with a mutable datatype taking a reference of a list when creating a new variable will modify the original list.
 ```js
 var list1 = [1, 2];
@@ -114,6 +126,8 @@ var list2 = list1.copy();
 list2[0][0] = 10;
 print(list1); // [[10, 2]]
 ```
+
+#### list.deepCopy()
 To get around this, we can deepCopy the list.
 ```js
 var list1 = [[1, 2];
@@ -131,9 +145,9 @@ Dictionaries are a key:value pair data type. Currently Dictu requires that the d
 var myDict = {"key": 1, "key1": true};
 ```
 
-### Accessing dictionary values
+### Indexing
 
-Accessing dictionary items is the same syntax as lists, except instead of an index, it expects a string key.
+Accessing dictionary items is the same syntax as lists, except instead of an index, it expects a **string key**.
 If you try to access a key that does not exist, `nil` is returned. If you expect a key may not exist `.get()` can be used to return a default value.
 
 ```js
@@ -144,23 +158,23 @@ var nilValue = myDict["unknown key"]; // nil
 var defaultValue = myDict.get("unknown key", "No key!"); // No key!
 ```
 
-### Updating a dictionary value
+Updating a value within a dictionary uses the same syntax, except you supply a value via assignment.
 
 ```js
 var myDict = {"key": 1, "key1": true};
 var myDict["key"] = false; // {"key": false, "key1": true}
 ```
 
-### Adding to dictionaries
-
-The exact same syntax as updating a value, just if a key does not exist, it is created.
+Adding a value to a dictionary is the same as updating a value, however if the key does not exist it is created.
 
 ```js
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
-### Checking if a key exists
+### dict.exists(string)
+
+To check if a key exists within a dictionary use `.exists()`
 
 ```js
 var myDict = {"key": 1, "key1": true};
@@ -168,9 +182,10 @@ var keyExists = myDict.exists("key"); // true
 var keyDoesNotExist = myDict.exists("unknown key"); // false
 ```
 
-### Removing from dictionaries
+### dict.remove(string)
 
-If you try to remove a key that does not exist a runtime error is raised.
+To remove a key from a dictionary use `.remove()`.
+**Note**: If you try to remove a key that does not exist a runtime error is raised, use together with `.exists()`.
 
 ```js
 var myDict = {"key": 1, "key1": true};
@@ -197,7 +212,7 @@ Sets are an unordered collection of unique hashable values. Currently Dictu requ
 var mySet = set();
 ```
 
-### Adding to sets
+### set.add(value)
 
 Adding to sets is just a case of passing a value to .add()
 
@@ -206,7 +221,9 @@ var mySet = set();
 mySet.add("Dictu!");
 ```
 
-### Checking a value exists
+### set.contains(value)
+
+To check if a set contains a value use `.contains()`
 
 ```js
 var mySet = set();
@@ -215,9 +232,10 @@ print(mySet.contains("Dictu!")); // true
 print(mySet.contains("Other!")); // false
 ```
 
-### Removing a value from a set
+### set.remove(value)
 
-Note: Attempting to remove a value from a set that does not exist is a runtime error, ensure the value exists before attempting to remove.
+To remove a value from a set use `.remove()`.
+**Note**: If you try to remove a value that does not exist a runtime error is raised, use together with `.contains()`.
 
 ```js
 var mySet = set();

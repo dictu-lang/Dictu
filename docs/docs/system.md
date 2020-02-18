@@ -15,7 +15,7 @@ nav_order: 13
 
 ---
 
-### Sleep
+### System.sleep(number)
 
 Sleep pauses execution of the program for a given amount of time in seconds
 
@@ -23,7 +23,7 @@ Sleep pauses execution of the program for a given amount of time in seconds
 System.sleep(3); // Pauses execution for 3 seconds
 ```
 
-### Clock
+### System.clock()
 
 Returns number of clock ticks since the start of the program, useful for benchmarks.
 
@@ -31,7 +31,7 @@ Returns number of clock ticks since the start of the program, useful for benchma
 System.clock();
 ```
 
-### Time
+### System.time()
 
 Returns UNIX timestamp.
 
@@ -39,7 +39,7 @@ Returns UNIX timestamp.
 System.time();
 ```
 
-### Collect
+### System.collect()
 
 Manually trigger a garbage collection.
 
@@ -47,7 +47,7 @@ Manually trigger a garbage collection.
 System.collect();
 ```
 
-### Exit
+### System.exit(number)
 
 When you wish to prematurely exit the script with a given exit code
 
