@@ -15,12 +15,12 @@ nav_order: 13
 
 ---
 
-### System.getcwd()
+### System.getCWD()
 
 Get current working directory of the Dictu process returned as a string
 
 ```js
-System.getcwd(); // '/Some/Path/To/A/Directory'
+System.getCWD(); // '/Some/Path/To/A/Directory'
 ```
 
 ### System.sleep(number)

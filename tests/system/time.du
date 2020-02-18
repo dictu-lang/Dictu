@@ -1,0 +1,14 @@
+/**
+ * clock.du
+ *
+ * Testing the System.time() function
+ *
+ * clock() returns a UNIX timestamp.
+ */
+
+assert(type(System.time()) == 'number');
+assert(System.time() > 0);
+
+var x = System.time();
+
+assert(System.time() > x);

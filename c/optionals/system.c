@@ -68,7 +68,7 @@ void createSystemClass() {
     /**
      * Define System methods
      */
-    defineNativeMethod(klass, "getcwd", getCWDNative);
+    defineNativeMethod(klass, "getCWD", getCWDNative);
     defineNativeMethod(klass, "time", timeNative);
     defineNativeMethod(klass, "clock", clockNative);
     defineNativeMethod(klass, "collect", collectNative);

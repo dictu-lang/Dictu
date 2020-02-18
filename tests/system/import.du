@@ -5,3 +5,4 @@
  */
 
 import "tests/system/sleep.du";
+import "tests/system/getCWD.du";

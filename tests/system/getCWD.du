@@ -1,0 +1,10 @@
+/**
+ * getCWD.du
+ *
+ * Testing the System.getCWD() function
+ *
+ * getCWD() gets the current working directory of the process
+ */
+
+assert(type(System.getCWD()) == 'string');
+assert(len(System.getCWD()) > 0);
