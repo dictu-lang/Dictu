@@ -5,6 +5,7 @@
 #include "env.h"
 #include "system.h"
 #include "json.h"
+#include "http.h"
 
 #include "../vm.h"
 
