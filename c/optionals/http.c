@@ -14,8 +14,9 @@ static void createResponse(Response *response) {
     response->res[0] = '\0';
 }
 
-static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *response)
+static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
 {
+    Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
     response->res = realloc(response->res, new_len + 1);
     if (response->res == NULL) {
@@ -29,11 +30,16 @@ static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *resp
     return size * nmemb;
 }
 
-static size_t writeHeaders(char *ptr, size_t size, size_t nitems, Response *response)
+static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data)
 {
+    Response *response = (Response *) data;
     // if nitems equals 2 its an empty header
     if (nitems != 2) {
-        writeValueArray(&response->headers->values, OBJ_VAL(copyString(ptr, (nitems - 2) * size)));
+        Value header = OBJ_VAL(copyString(ptr, (nitems - 2) * size));
+        // Push to stack to avoid GC
+        push(header);
+        writeValueArray(&response->headers->values, header);
+        pop();
     }
     return size * nitems;
 }
@@ -134,6 +140,8 @@ static Value get(int argCount, Value *args) {
 
         ObjString *content = copyString(response.res, response.len);
         free(response.res);
+        // Push to stack to avoid GC
+        push(OBJ_VAL(content));
 
         /* always cleanup */
         curl_easy_cleanup(curl);
@@ -148,7 +156,8 @@ static Value get(int argCount, Value *args) {
         insertDict(responseVal, "headers", OBJ_VAL(response.headers));
         insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
 
-        // Pop header list and dict return off stack
+        // Pop header list, content and response dict return off stack
+        pop();
         pop();
         pop();
 
@@ -235,6 +244,8 @@ static Value post(int argCount, Value *args) {
 
         ObjString *content = copyString(response.res, response.len);
         free(response.res);
+        // Push to stack to avoid GC
+        push(OBJ_VAL(content));
 
         if (dict != NULL) {
             free(postValue);
@@ -254,6 +265,7 @@ static Value post(int argCount, Value *args) {
         insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
 
         // Pop header list and dict return off stack
+        pop();
         pop();
         pop();
 
