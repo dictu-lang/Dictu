@@ -8,7 +8,10 @@
 
 typedef struct response {
     char *res;
+    ObjList *headers;
     size_t len;
+    size_t headerLen;
+    long statusCode;
 } Response;
 
 void createHTTPClass();

@@ -1,6 +1,10 @@
 #include "http.h"
 
 static void createResponse(Response *response) {
+    response->headers = initList();
+    // Push to stack to avoid GC
+    push(OBJ_VAL(response->headers));
+
     response->len = 0;
     response->res = malloc(response->len + 1);
     if (response->res == NULL) {
@@ -23,6 +27,15 @@ static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *resp
     response->len = new_len;
 
     return size * nmemb;
+}
+
+static size_t writeHeaders(char *ptr, size_t size, size_t nitems, Response *response)
+{
+    // if nitems equals 2 its an empty header
+    if (nitems != 2) {
+        writeValueArray(&response->headers->values, OBJ_VAL(copyString(ptr, (nitems - 2) * size)));
+    }
+    return size * nitems;
 }
 
 static char *dictToPostArgs(ObjDict *dict) {
@@ -105,6 +118,8 @@ static Value get(int argCount, Value *args) {
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -115,7 +130,9 @@ static Value get(int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        ObjString *string = copyString(response.res, response.len);
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
+
+        ObjString *content = copyString(response.res, response.len);
         free(response.res);
 
         /* always cleanup */
@@ -123,7 +140,19 @@ static Value get(int argCount, Value *args) {
 
         curl_global_cleanup();
 
-        return OBJ_VAL(string);
+        ObjDict *responseVal = initDict();
+        // Push to stack to avoid GC
+        push(OBJ_VAL(responseVal));
+
+        insertDict(responseVal, "content", OBJ_VAL(content));
+        insertDict(responseVal, "headers", OBJ_VAL(response.headers));
+        insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+
+        // Pop header list and dict return off stack
+        pop();
+        pop();
+
+        return OBJ_VAL(responseVal);
     }
 
     runtimeError("cURL failed to initialise");
@@ -137,7 +166,7 @@ static Value post(int argCount, Value *args) {
     }
 
     long timeout = 20;
-    ObjDict *dict;
+    ObjDict *dict = NULL;
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
@@ -183,11 +212,14 @@ static Value post(int argCount, Value *args) {
             postValue = dictToPostArgs(dict);
         }
 
+        // Set cURL options
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postValue);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -198,7 +230,10 @@ static Value post(int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        ObjString *string = copyString(response.res, response.len);
+        // Get status code
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
+
+        ObjString *content = copyString(response.res, response.len);
         free(response.res);
 
         if (dict != NULL) {
@@ -210,7 +245,19 @@ static Value post(int argCount, Value *args) {
 
         curl_global_cleanup();
 
-        return OBJ_VAL(string);
+        ObjDict *responseVal = initDict();
+        // Push to stack to avoid GC
+        push(OBJ_VAL(responseVal));
+
+        insertDict(responseVal, "content", OBJ_VAL(content));
+        insertDict(responseVal, "headers", OBJ_VAL(response.headers));
+        insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+
+        // Pop header list and dict return off stack
+        pop();
+        pop();
+
+        return OBJ_VAL(responseVal);
     }
 
     runtimeError("cURL failed to initialise");
