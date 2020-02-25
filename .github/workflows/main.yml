@@ -18,5 +18,5 @@ jobs:
     - uses: actions/checkout@v1
     - name: Make dictu and run tests
       run: |
-        make dictu
+        make debug
         ./dictu tests/runTests.du
