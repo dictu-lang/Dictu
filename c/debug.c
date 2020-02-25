@@ -81,6 +81,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
         case OP_DEFINE_GLOBAL:
             return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+        case OP_DEFINE_OPTIONAL:
+            return constantInstruction("OP_DEFINE_OPTIONAL", chunk, offset);
         case OP_SET_GLOBAL:
             return constantInstruction("OP_SET_GLOBAL", chunk, offset);
         case OP_GET_UPVALUE:
@@ -141,12 +143,14 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_SUBSCRIPT", offset);
         case OP_SUBSCRIPT_ASSIGN:
             return simpleInstruction("OP_SUBSCRIPT_ASSIGN", offset);
+        case OP_SLICE:
+            return simpleInstruction("OP_SLICE", offset);
         case OP_PUSH:
             return simpleInstruction("OP_PUSH", offset);
         case OP_NEW_DICT:
-            return simpleInstruction("OP_NEW_LIST", offset);
+            return simpleInstruction("OP_NEW_DICT", offset);
         case OP_ADD_DICT:
-            return simpleInstruction("OP_ADD_LIST", offset);
+            return simpleInstruction("OP_ADD_DICT", offset);
         case OP_CALL:
             return byteInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE:
@@ -186,6 +190,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_METHOD", chunk, offset);
         case OP_TRAIT_METHOD:
             return constantInstruction("OP_TRAIT_METHOD", chunk, offset);
+        case OP_USE:
+            return constantInstruction("OP_USE", chunk, offset);
+        case OP_OPEN_FILE:
+            return constantInstruction("OP_OPEN_FILE", chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

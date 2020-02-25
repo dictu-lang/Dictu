@@ -10,7 +10,7 @@ LFLAGS := -lm
 
 # Mode configuration.
 ifeq ($(MODE),debug)
-	CFLAGS += -O0 -DDEBUG -g
+	CFLAGS += -O0 -DDEBUG -DDEBUG_STRESS_GC -g
 	BUILD_DIR := build/debug
 else
 	CFLAGS += -O3 -flto
