@@ -67,6 +67,11 @@ static char *dictToPostArgs(ObjDict *dict) {
         if (currentLen + keyLen + valLen > len) {
             len = len * 2 + keyLen + valLen;
             ret = realloc(ret, len);
+
+            if (ret == NULL) {
+                printf("Unable to allocate memory\n");
+                exit(71);
+            }
         }
 
         memcpy(ret + currentLen, dict->items[i]->key, keyLen);
@@ -108,8 +113,6 @@ static Value get(int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *url = AS_CSTRING(args[0]);
-
     CURL *curl;
     CURLcode curlResponse;
 
@@ -119,6 +122,7 @@ static Value get(int argCount, Value *args) {
     if (curl) {
         Response response;
         createResponse(&response);
+        char *url = AS_CSTRING(args[0]);
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
@@ -204,9 +208,6 @@ static Value post(int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *url = AS_CSTRING(args[0]);
-    char *postValue = "";
-
     CURL *curl;
     CURLcode curlResponse;
 
@@ -214,6 +215,8 @@ static Value post(int argCount, Value *args) {
     curl = curl_easy_init();
 
     if (curl) {
+        char *url = AS_CSTRING(args[0]);
+        char *postValue = "";
         Response response;
         createResponse(&response);
 
