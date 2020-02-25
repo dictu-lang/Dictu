@@ -9,18 +9,35 @@ static Value parseJson(json_value *json) {
 
         case json_object: {
             ObjDict *dict = initDict();
+            // Push value to stack to avoid GC
+            push(OBJ_VAL(dict));
+
             for (unsigned int i = 0; i < json->u.object.length; i++) {
-                insertDict(dict, json->u.object.values[i].name, parseJson(json->u.object.values[i].value));
+                Value val = parseJson(json->u.object.values[i].value);
+                push(val);
+                insertDict(dict, json->u.object.values[i].name, val);
+                pop();
             }
+
+            pop();
 
             return OBJ_VAL(dict);
         }
 
         case json_array: {
             ObjList *list = initList();
+            // Push value to stack to avoid GC
+            push(OBJ_VAL(list));
+
             for (unsigned int i = 0; i < json->u.array.length; i++) {
-                writeValueArray(&list->values, parseJson(json->u.array.values[i]));
+                Value val = parseJson(json->u.array.values[i]);
+                push(val);
+                writeValueArray(&list->values, val);
+                pop();
             }
+
+            // Pop list
+            pop();
 
             return OBJ_VAL(list);
         }
