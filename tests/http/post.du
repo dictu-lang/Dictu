@@ -1,0 +1,13 @@
+/**
+ * post.du
+ *
+ * Testing the HTTP.post() function
+ *
+ */
+
+var response = HTTP.post("https://httpbin.org/post", {"test": 10});
+
+assert(response["statusCode"] == 200);
+assert(len(response["headers"]) > 0);
+assert(response["content"].contains("origin"));
+assert(response["content"].contains('"test": "10"'));

@@ -1,0 +1,12 @@
+/**
+ * get.du
+ *
+ * Testing the HTTP.get() function
+ *
+ */
+
+var response = HTTP.get("https://httpbin.org/get");
+
+assert(response["statusCode"] == 200);
+assert(response["content"].contains("headers"));
+assert(len(response["headers"]) > 0);

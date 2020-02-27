@@ -88,6 +88,8 @@ static char *dictToPostArgs(ObjDict *dict) {
         }
     }
 
+    ret[currentLen] = '\0';
+
     return ret;
 }
 
