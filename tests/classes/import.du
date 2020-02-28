@@ -9,3 +9,4 @@ import "tests/classes/static.du";
 import "tests/classes/properties.du";
 import "tests/classes/inherit.du";
 import "tests/classes/traits.du";
+import "tests/classes/copy.du";
