@@ -2,21 +2,35 @@ name: CI
 
 on:
   pull_request:
-    branches: 
+    branches:
       - develop
       - master
 
 jobs:
-  test:
+  test-ubuntu:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
-    
+        os: [ubuntu-latest, ubuntu-16.04]
+
     steps:
-    - uses: actions/checkout@v1
-    - name: Make dictu and run tests
-      run: |
-        make debug
-        ./dictu tests/runTests.du
+      - uses: actions/checkout@v1
+      - name: Make dictu and run tests
+        run: |
+          sudo apt-get install -y libcurl4-openssl-dev
+          make debug
+          ./dictu tests/runTests.du
+  test-mac:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-latest]
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Make dictu and run tests
+        run: |
+          make debug
+          ./dictu tests/runTests.du

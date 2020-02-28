@@ -99,6 +99,7 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createEnvClass();
     createSystemClass();
     createJSONClass();
+    createHTTPClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);
