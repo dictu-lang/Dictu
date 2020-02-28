@@ -13,11 +13,9 @@ static bool splitString(int argCount) {
         return false;
     }
 
-    // Ensure the GC does *not* run while we are creating the list
-    vm.gc = false;
-
     char *delimiter = AS_CSTRING(pop());
     ObjString *string = AS_STRING(pop());
+
     char *tmp = malloc(string->length + 1);
     char *tmpFree = tmp;
     memcpy(tmp, string->chars, string->length + 1);
@@ -25,32 +23,24 @@ static bool splitString(int argCount) {
     char *token;
 
     ObjList *list = initList();
+    push(OBJ_VAL(list));
 
     do {
         token = strstr(tmp, delimiter);
         if (token)
             *token = '\0';
 
-        ValueArray *array = &list->values;
-        ObjString *str = copyString(tmp, strlen(tmp));
+        Value str = OBJ_VAL(copyString(tmp, strlen(tmp)));
 
-        if (array->capacity < array->count + 1) {
-            int oldCapacity = array->capacity;
-            array->capacity = GROW_CAPACITY(oldCapacity);
-            vm.bytesAllocated += sizeof(Value) * (array->capacity) - sizeof(Value) * (oldCapacity);
-            array->values = realloc(array->values, sizeof(Value) * (array->capacity));
-        }
-
-        array->values[array->count] = OBJ_VAL(str);
-        array->count++;
+        // Push to stack to avoid GC
+        push(str);
+        writeValueArray(&list->values, str);
+        pop();
 
         tmp = token + delimiterLength;
     } while (token != NULL);
 
     free(tmpFree);
-    push(OBJ_VAL(list));
-    vm.gc = true;
-
     return true;
 }
 

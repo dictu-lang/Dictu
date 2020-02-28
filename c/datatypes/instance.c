@@ -88,6 +88,8 @@ bool instanceMethods(char *method, int argCount) {
         return getAttribute(argCount);
     } else if (strcmp(method, "setAttribute") == 0) {
         return setAttribute(argCount);
+    } else if (false) {
+
     }
 
     return false;
