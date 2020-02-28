@@ -13,10 +13,9 @@ uint32_t hash(char *str) {
 ObjList *copyList(ObjList *oldList, bool shallow);
 
 ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
-    // Ensure the GC does *not* run while we are creating the list
-    vm.gc = false;
-
     ObjDict *newDict = initDict();
+    // Push to stack to avoid GC
+    push(OBJ_VAL(newDict));
 
     for (int i = 0; i < oldDict->capacity; ++i) {
         if (oldDict->items[i] == NULL) {
@@ -33,66 +32,20 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
             }
         }
 
-        ObjDict *dict = newDict;
-        char *key = oldDict->items[i]->key;
-
-        if (dict->count * 100 / dict->capacity >= 60) {
-            resizeDict(dict, true);
-        }
-
-        uint32_t hashValue = hash(key);
-        int index = hashValue % dict->capacity;
-
-        size_t keySize = sizeof(char) * (strlen(key) + 1);
-        char *key_m = realloc(NULL, keySize);
-        vm.bytesAllocated += keySize;
-
-        if (key_m == NULL) {
-            printf("Unable to allocate memory\n");
-            exit(71);
-        }
-
-        strcpy(key_m, key);
-        size_t dictSize = sizeof(dictItem) * (sizeof(dictItem));
-        dictItem *item = realloc(NULL, dictSize);
-        vm.bytesAllocated += dictSize;
-
-        if (item == NULL) {
-            printf("Unable to allocate memory\n");
-            exit(71);
-        }
-
-        item->key = key_m;
-        item->item = val;
-        item->deleted = false;
-        item->hash = hashValue;
-
-        while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
-            index++;
-            if (index == dict->capacity) {
-                index = 0;
-            }
-        }
-
-        if (dict->items[index]) {
-            free(dict->items[index]->key);
-            free(dict->items[index]);
-            dict->count--;
-        }
-
-        dict->items[index] = item;
-        dict->count++;
+        // Push to stack to avoid GC
+        push(val);
+        insertDict(newDict, oldDict->items[i]->key, val);
+        pop();
     }
 
-    vm.gc = true;
+    pop();
     return newDict;
 }
 
 ObjList *copyList(ObjList *oldList, bool shallow) {
-    // Ensure the GC does *not* run while we are creating the list
-    vm.gc = false;
-
     ObjList *newList = initList();
+    // Push to stack to avoid GC
+    push(OBJ_VAL(newList));
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];
@@ -105,20 +58,13 @@ ObjList *copyList(ObjList *oldList, bool shallow) {
             }
         }
 
-        ValueArray *array = &newList->values;
-
-        if (array->capacity < array->count + 1) {
-            int oldCapacity = array->capacity;
-            array->capacity = GROW_CAPACITY(oldCapacity);
-            vm.bytesAllocated += sizeof(Value) * (array->capacity) - sizeof(Value) * (oldCapacity);
-            array->values = realloc(array->values, sizeof(Value) * (array->capacity));
-        }
-
-        array->values[array->count] = val;
-        array->count++;
+        // Push to stack to avoid GC
+        push(val);
+        writeValueArray(&newList->values, val);
+        pop();
     }
 
-    vm.gc = true;
+    pop();
     return newList;
 }
 
