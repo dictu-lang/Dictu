@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "copy.h"
+
 bool instanceMethods(char *method, int argCount);
 
 #endif //dictu_instance_h

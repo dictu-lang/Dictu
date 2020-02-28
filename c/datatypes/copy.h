@@ -12,6 +12,8 @@ ObjList *copyList(ObjList *oldList, bool shallow);
 
 ObjDict *copyDict(ObjDict *oldDict, bool shallow);
 
+ObjInstance *copyInstance(ObjInstance *oldInstance, bool shallow);
+
 uint32_t hash(char *str);
 
 #endif //dictu_copy_h

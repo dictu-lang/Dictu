@@ -29,6 +29,8 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
                 val = OBJ_VAL(copyDict(AS_DICT(val), false));
             } else if (IS_LIST(val)) {
                 val = OBJ_VAL(copyList(AS_LIST(val), false));
+            } else if (IS_INSTANCE(val)) {
+                val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
             }
         }
 
@@ -55,6 +57,8 @@ ObjList *copyList(ObjList *oldList, bool shallow) {
                 val = OBJ_VAL(copyDict(AS_DICT(val), false));
             } else if (IS_LIST(val)) {
                 val = OBJ_VAL(copyList(AS_LIST(val), false));
+            } else if (IS_INSTANCE(val)) {
+                val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
             }
         }
 
@@ -66,6 +70,39 @@ ObjList *copyList(ObjList *oldList, bool shallow) {
 
     pop();
     return newList;
+}
+
+ObjInstance *copyInstance(ObjInstance *oldInstance, bool shallow) {
+    ObjInstance *instance = newInstance(oldInstance->klass);
+    // Push to stack to avoid GC
+    push(OBJ_VAL(instance));
+
+    if (shallow) {
+        tableAddAll(&oldInstance->fields, &instance->fields);
+    } else {
+        for (int i = 0; i <= oldInstance->fields.capacityMask; i++) {
+            Entry *entry = &oldInstance->fields.entries[i];
+            if (entry->key != NULL) {
+                Value val = entry->value;
+
+                if (IS_LIST(val)) {
+                    val = OBJ_VAL(copyList(AS_LIST(val), false));
+                } else if (IS_DICT(val)) {
+                    val = OBJ_VAL(copyDict(AS_DICT(val), false));
+                } else if (IS_INSTANCE(val)) {
+                    val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
+                }
+
+                // Push to stack to avoid GC
+                push(val);
+                tableSet(&instance->fields, entry->key, val);
+                pop();
+            }
+        }
+    }
+
+    pop();
+    return instance;
 }
 
 // TODO: Set copy
