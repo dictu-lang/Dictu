@@ -291,3 +291,70 @@ class MyClass {
 var myObject = MyClass("Jason");
 myObject.hello(); // Hello Jason
 ```
+
+## Copying objects
+
+Class instances are a mutable type, this means if you were to take the reference of an object and use it in a new variable
+and you mutate the instance in the new variable, it would mutate the object at the old variable, since its a reference to the same object.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+var myNewObject = myObject;
+myNewObject.x = 100;
+print(myObject.x); // 100
+```
+
+To get around this, instances have two methods, obj.copy() and obj.deepCopy().
+
+### obj.copy()
+
+This method will take a shallow copy of the object, and create a new copy of the instance. Mutable types are still references
+and will mutate on both new and old if changed. See obj.deepCopy() to avoid this.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+var myNewObject = myObject.copy();
+myNewObject.x = 100;
+print(myObject.x); // 10
+
+myObject.obj = Test(); // Reference to a mutable datatype
+myNewObject = myObject.copy();
+myNewObject.obj.x = 100;
+print(myObject.obj.x); // 100
+```
+
+### obj.deepCopy()
+
+This method will take a deep copy of the object, and create a new copy of the instance. The difference with deepCopy()
+is if the object contains references to any mutable datatypes these will also be copied and returned as new values meaning,
+they will not be mutated on the old object.
+
+```js
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+var myNewObject = myObject.deepCopy();
+myNewObject.x = 100;
+print(myObject.x); // 10
+
+myObject.obj = Test(); // Reference to a mutable datatype
+myNewObject = myObject.deepCopy();
+myNewObject.obj.x = 100;
+print(myObject.obj.x); // 10
+```
