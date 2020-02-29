@@ -59,7 +59,7 @@ static bool getAttribute(int argCount) {
 
 static bool setAttribute(int argCount) {
     if (argCount != 3) {
-        runtimeError("setAttribute() takes 3 (%d  given)", argCount);
+        runtimeError("setAttribute() takes 3 arguments (%d  given)", argCount);
         return false;
     }
 
@@ -80,6 +80,31 @@ static bool setAttribute(int argCount) {
     return true;
 }
 
+static bool copyShallow(int argCount) {
+    if (argCount != 1) {
+        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjInstance *oldInstance = AS_INSTANCE(pop());
+    ObjInstance *instance = copyInstance(oldInstance, true);
+    push(OBJ_VAL(instance));
+
+    return true;
+}
+
+static bool copyDeep(int argCount) {
+    if (argCount != 1) {
+        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        return false;
+    }
+
+    ObjInstance *oldInstance = AS_INSTANCE(pop());
+    ObjInstance *instance = copyInstance(oldInstance, false);
+    push(OBJ_VAL(instance));
+
+    return true;
+}
 
 bool instanceMethods(char *method, int argCount) {
     if (strcmp(method, "hasAttribute") == 0) {
@@ -88,6 +113,10 @@ bool instanceMethods(char *method, int argCount) {
         return getAttribute(argCount);
     } else if (strcmp(method, "setAttribute") == 0) {
         return setAttribute(argCount);
+    } else if (strcmp(method, "copy") == 0) {
+        return copyShallow(argCount);
+    } else if (strcmp(method, "deepCopy") == 0) {
+        return copyDeep(argCount);
     }
 
     return false;

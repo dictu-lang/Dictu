@@ -40,7 +40,7 @@ remote_theme: pmarsceill/just-the-docs
 plugins:
   - jekyll-feed
 
-version: "0.3.2"
+version: "0.3.3"
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

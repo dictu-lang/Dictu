@@ -6,11 +6,11 @@
 # SOURCE_DIR   Directory where source files and headers are found.
 
 CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -fno-strict-aliasing
-LFLAGS := -lm
+LFLAGS := -lm -lcurl
 
 # Mode configuration.
 ifeq ($(MODE),debug)
-	CFLAGS += -O0 -DDEBUG -g
+	CFLAGS += -O0 -DDEBUG -DDEBUG_STRESS_GC -g
 	BUILD_DIR := build/debug
 else
 	CFLAGS += -O3 -flto

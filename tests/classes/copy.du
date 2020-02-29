@@ -1,0 +1,46 @@
+/**
+ * copy.du
+ *
+ * Testing the obj.copy() and obj.deepCopy() methods
+ *
+ * .copy() returns a shallow copy of the object
+ * .deepCopy() returns a deep copy of the object
+ */
+
+class Test {
+    init() {
+        this.x = [1, 2];
+    }
+}
+
+var obj = Test();
+
+// First check the object was created properly
+assert(obj.x == [1, 2]);
+
+var objCopy = obj.copy(); // shallow copy
+
+assert(objCopy.x == [1, 2]);
+
+objCopy.y = 10;
+
+assert(objCopy.y == 10);
+assert(!obj.hasAttribute('y'));
+
+obj.y = Test();
+
+var deepCopy = obj.deepCopy();
+
+assert(deepCopy.x == [1, 2]);
+assert(deepCopy.y.x == [1, 2]);
+
+deepCopy.y.x.push(1);
+
+assert(deepCopy.y.x == [1, 2, 1]);
+assert(obj.y.x == [1, 2]);
+
+deepCopy.i = 10;
+
+assert(deepCopy.i == 10);
+assert(!obj.hasAttribute('i'));
+

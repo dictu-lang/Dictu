@@ -1,0 +1,16 @@
+/**
+ * clock.du
+ *
+ * Testing the System.clock() function
+ *
+ * clock() returns number of clock ticks since the start of the program, useful for benchmarks.
+ */
+
+assert(type(System.clock()) == 'number');
+assert(System.clock() > 0);
+
+var x = System.clock();
+
+System.sleep(1);
+
+assert(System.clock() > x);

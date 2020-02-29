@@ -79,7 +79,6 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     resetStack();
     vm.objects = NULL;
     vm.repl = repl;
-    vm.gc = true;
     vm.scriptName = scriptName;
     vm.currentScriptName = scriptName;
     vm.frameCapacity = 4;
@@ -99,6 +98,7 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createEnvClass();
     createSystemClass();
     createJSONClass();
+    createHTTPClass();
 
     if (!vm.repl) {
         initArgv(argc, argv);
@@ -112,7 +112,6 @@ void freeVM() {
     FREE_ARRAY(CallFrame, vm.frames, vm.frameCapacity);
     vm.initString = NULL;
     vm.replVar = NULL;
-    vm.gc = NULL;
     freeObjects();
 }
 
