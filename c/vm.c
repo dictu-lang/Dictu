@@ -98,7 +98,9 @@ void initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createEnvClass();
     createSystemClass();
     createJSONClass();
+#ifndef DISABLE_HTTP
     createHTTPClass();
+#endif
 
     if (!vm.repl) {
         initArgv(argc, argv);

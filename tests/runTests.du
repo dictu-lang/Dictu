@@ -12,6 +12,12 @@ import "tests/loops/import.du";
 import "tests/env/import.du";
 import "tests/system/import.du";
 import "tests/json/import.du";
+
+if (len(argv) > 1 and argv[1] == "--disable-http") {
+  print("All tests passed successfully!");
+  System.exit (0);
+}
+
 import "tests/http/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.

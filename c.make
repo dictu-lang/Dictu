@@ -5,8 +5,14 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -fno-strict-aliasing
-LFLAGS := -lm -lcurl
+CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -fno-strict-aliasing \
+          -Wshadow -Wunused-function -Wunused-macros -fno-strict-aliasing
+LFLAGS := -lm
+
+DISABLE_HTTP := 0
+ifeq ($(DISABLE_HTTP), 0)
+  LFLAGS += -lcurl
+endif
 
 # Mode configuration.
 ifeq ($(MODE),debug)
@@ -20,8 +26,14 @@ endif
 # Files.
 HEADERS := $(wildcard $(SOURCE_DIR)/*.h) $(wildcard $(SOURCE_DIR)/datatypes/*.h) $(wildcard $(SOURCE_DIR)/optionals/*.h)
 SOURCES := $(wildcard $(SOURCE_DIR)/*.c) $(wildcard $(SOURCE_DIR)/datatypes/*.c) $(wildcard $(SOURCE_DIR)/optionals/*.c)
-OBJECTS := $(addprefix $(BUILD_DIR)/$(NAME)/, $(notdir $(SOURCES:.c=.o)))
 
+ifeq ($(DISABLE_HTTP), 1)
+    CFLAGS  += -DDISABLE_HTTP
+    SOURCES := $(filter-out %http.c, $(SOURCES))
+    HEADERS := $(filter-out %http.h, $(HEADERS))
+endif
+
+OBJECTS := $(addprefix $(BUILD_DIR)/$(NAME)/, $(notdir $(SOURCES:.c=.o)))
 # Targets ---------------------------------------------------------------------
 
 # Link the interpreter.
