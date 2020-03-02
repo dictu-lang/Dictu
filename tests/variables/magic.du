@@ -8,4 +8,4 @@
  * argv is a list of all parameters passed to the interpreter.
  * The first element is always the script name
  */
-assert(argv == ["tests/runTests.du"]);
+assert(argv[0] == "tests/runTests.du");

@@ -1,7 +1,9 @@
 #ifndef dictu_http_h
 #define dictu_http_h
 
+#ifndef DISABLE_HTTP
 #include <curl/curl.h>
+#endif
 
 #include "optionals.h"
 #include "../vm.h"
