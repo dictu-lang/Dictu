@@ -16,7 +16,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Make dictu and run tests
+      - name: Make dictu and run tests (No HTTP)
+          run: |
+            make debug DISABLE_HTTP=1
+            ./dictu tests/runTests.du
+      - name: Make dictu and run tests (HTTP)
         run: |
           sudo apt-get install -y libcurl4-openssl-dev
           make debug
@@ -30,6 +34,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: Make dictu and run tests (No HTTP)
+          run: |
+            make debug DISABLE_HTTP=1
+            ./dictu tests/runTests.du
       - name: Make dictu and run tests
         run: |
           make debug
