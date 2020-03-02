@@ -96,7 +96,6 @@ static void skipWhitespace() {
                     advance();
                     while (true) {
                         while (peek() != '*' && !isAtEnd()) {
-                            char c;
                             if ((c = advance()) == '\n') {
                                 scanner.line++;
                             }

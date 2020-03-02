@@ -994,7 +994,7 @@ static void prefix(bool canAssign) {
         emitBytes(OP_SET_PROPERTY, arg);
     } else {
         uint8_t setOp;
-        int arg = resolveLocal(current, &cur, false);
+        arg = resolveLocal(current, &cur, false);
         if (arg != -1) {
             setOp = OP_SET_LOCAL;
         } else if ((arg = resolveUpvalue(current, &cur)) != -1) {
@@ -1666,7 +1666,7 @@ static void statement() {
         whileStatement();
     } else if (match(TOKEN_LEFT_BRACE)) {
         Token previous = parser.previous;
-        Token current = parser.current;
+        Token curtok = parser.current;
 
         // Advance the parser to the next token
         advance();
@@ -1698,7 +1698,7 @@ static void statement() {
 
         // Reset the parser
         parser.previous = previous;
-        parser.current = current;
+        parser.current = curtok;
 
         beginScope();
         block();

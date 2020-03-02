@@ -33,9 +33,9 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize) {
     return realloc(previous, newSize);
 }
 
-void freeDictValue(dictItem *dictItem) {
-    free(dictItem->key);
-    free(dictItem);
+void freeDictValue(dictItem *item) {
+    free(item->key);
+    free(item);
 }
 
 void freeDict(ObjDict *dict) {
@@ -49,8 +49,8 @@ void freeDict(ObjDict *dict) {
     free(dict);
 }
 
-void freeSetValue (setItem *setItem) {
-    free(setItem);
+void freeSetValue (setItem *item) {
+    free(item);
 }
 
 void freeSet(ObjSet *set) {
