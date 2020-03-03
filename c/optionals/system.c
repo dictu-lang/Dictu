@@ -14,7 +14,7 @@ static Value setCWDNative(int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *dir = AS_STRING(args[0])->chars;
+    char *dir = AS_CSTRING(args[0]);
 
     int retval = chdir(dir);
 
