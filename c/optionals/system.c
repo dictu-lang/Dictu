@@ -1,5 +1,28 @@
 #include "system.h"
 
+static Value setCWDNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("setcwd() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("setcwd() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *dir = AS_CSTRING(args[0]);
+
+    int retval = chdir(dir);
+
+    if (retval != 0) {
+        runtimeError("Error setting current directory");
+        return EMPTY_VAL;
+    }
+
+    return NIL_VAL;
+}
+
 static Value getCWDNative(int argCount, Value *args) {
     char cwd[PATH_MAX];
 
@@ -70,6 +93,7 @@ void createSystemClass() {
     /**
      * Define System methods
      */
+    defineNativeMethod(klass, "setCWD", setCWDNative);
     defineNativeMethod(klass, "getCWD", getCWDNative);
     defineNativeMethod(klass, "time", timeNative);
     defineNativeMethod(klass, "clock", clockNative);
