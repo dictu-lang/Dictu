@@ -23,6 +23,14 @@ Get current working directory of the Dictu process returned as a string
 System.getCWD(); // '/Some/Path/To/A/Directory'
 ```
 
+### System.setCWD()
+
+Set current working directory of the Dictu process. Raises a runtime error if it is unsuccessful.
+
+```js
+System.setCWD('/');
+```
+
 ### System.sleep(number)
 
 Sleep pauses execution of the program for a given amount of time in seconds

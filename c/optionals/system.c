@@ -1,8 +1,5 @@
 #include "system.h"
 
-#define SYS_OK 0
-#define SYS_NOTOK -1
-
 static Value setCWDNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("setcwd() takes 1 argument (%d given)", argCount);
@@ -20,10 +17,10 @@ static Value setCWDNative(int argCount, Value *args) {
 
     if (retval != 0) {
         runtimeError("Error setting current directory");
-        return AS_NUMBER(SYS_NOTOK);
+        return EMPTY_VAL;
     }
 
-    return AS_NUMBER(SYS_OK);
+    return NIL_VAL;
 }
 
 static Value getCWDNative(int argCount, Value *args) {
