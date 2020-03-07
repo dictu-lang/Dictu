@@ -7,6 +7,6 @@
 
 #include "copy.h"
 
-bool dictMethods(char *method, int argCount);
+bool dictMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_dicts_h

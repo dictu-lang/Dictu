@@ -93,7 +93,7 @@ typedef struct Compiler {
 
     int loopDepth;
 
-    bool repl;
+    VM *vm;
 } Compiler;
 
 typedef struct ClassCompiler {
@@ -175,7 +175,7 @@ static bool match(TokenType type) {
 }
 
 static void emitByte(uint8_t byte) {
-    writeChunk(currentChunk(), byte, parser.previous.line);
+    writeChunk(current->vm, currentChunk(), byte, parser.previous.line);
 }
 
 static void emitBytes(uint8_t byte1, uint8_t byte2) {
@@ -215,7 +215,7 @@ static void emitReturn() {
 }
 
 static uint8_t makeConstant(Value value) {
-    int constant = addConstant(currentChunk(), value);
+    int constant = addConstant(current->vm, currentChunk(), value);
     if (constant > UINT8_MAX) {
         error("Too many constants in one chunk.");
         return 0;
@@ -243,7 +243,7 @@ static void patchJump(int offset) {
     currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
-static void initCompiler(Compiler *compiler, int scopeDepth,
+static void initCompiler(Compiler *compiler, VM *vm, int scopeDepth,
                          FunctionType type) {
     compiler->enclosing = current;
     compiler->function = NULL;
@@ -251,7 +251,8 @@ static void initCompiler(Compiler *compiler, int scopeDepth,
     compiler->localCount = 0;
     compiler->scopeDepth = scopeDepth;
     compiler->loopDepth = 0;
-    compiler->function = newFunction(type == TYPE_STATIC);
+    compiler->function = newFunction(current->vm, type == TYPE_STATIC);
+    compiler->vm = vm;
     current = compiler;
 
     switch (type) {
@@ -259,8 +260,11 @@ static void initCompiler(Compiler *compiler, int scopeDepth,
         case TYPE_METHOD:
         case TYPE_STATIC:
         case TYPE_FUNCTION:
-            current->function->name = copyString(parser.previous.start,
-                                                 parser.previous.length);
+            current->function->name = copyString(
+                    current->vm,
+                    parser.previous.start,
+                    parser.previous.length
+            );
             break;
         case TYPE_TOP_LEVEL:
             current->function->name = NULL;
@@ -330,7 +334,7 @@ static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
 static uint8_t identifierConstant(Token *name) {
-    return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+    return makeConstant(OBJ_VAL(copyString(current->vm, name->start, name->length)));
 }
 
 static bool identifiersEqual(Token *a, Token *b) {
@@ -715,7 +719,7 @@ static void string(bool canAssign) {
     int length = parseString(string, parser.previous.length - 2);
     string[length] = '\0';
 
-    emitConstant(OBJ_VAL(copyString(string, length)));
+    emitConstant(OBJ_VAL(copyString(current->vm, string, length)));
 
     free(string);
 }
@@ -1114,9 +1118,9 @@ static void block() {
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
-static void function(FunctionType type) {
+static void function(VM *vm, FunctionType type) {
     Compiler compiler;
-    initCompiler(&compiler, 1, type);
+    initCompiler(&compiler, vm, 1, type);
     beginScope();
 
     // Compile the parameter list.
@@ -1199,7 +1203,7 @@ static void method(bool trait) {
         type = TYPE_INITIALIZER;
     }
 
-    function(type);
+    function(current->vm, type);
 
     if (trait) {
         emitBytes(OP_TRAIT_METHOD, constant);
@@ -1280,7 +1284,7 @@ static void traitDeclaration() {
 
 static void funDeclaration() {
     uint8_t global = parseVariable("Expect function name.");
-    function(TYPE_FUNCTION);
+    function(current->vm, TYPE_FUNCTION);
     defineVariable(global);
 }
 
@@ -1302,11 +1306,16 @@ static void varDeclaration() {
 static void expressionStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (vm.repl) {
+    emitByte(OP_POP);
+
+    // TODO: Handle
+    /*
+    if (vm->repl) {
         emitByte(OP_POP_REPL);
     } else {
         emitByte(OP_POP);
     }
+     */
 }
 
 /*
@@ -1551,8 +1560,11 @@ static void returnStatement() {
 
 static void importStatement() {
     consume(TOKEN_STRING, "Expect string after import.");
-    emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
-                                    parser.previous.length - 2)));
+    emitConstant(OBJ_VAL(copyString(
+            current->vm,
+            parser.previous.start + 1,
+            parser.previous.length - 2))
+    );
     consume(TOKEN_SEMICOLON, "Expect ';' after import.");
 
     emitByte(OP_IMPORT);
@@ -1710,10 +1722,10 @@ static void statement() {
     }
 }
 
-ObjFunction *compile(const char *source) {
+ObjFunction *compile(VM *vm, const char *source) {
     initScanner(source);
     Compiler mainCompiler;
-    initCompiler(&mainCompiler, 0, TYPE_TOP_LEVEL);
+    initCompiler(&mainCompiler, vm, 0, TYPE_TOP_LEVEL);
     parser.hadError = false;
     parser.panicMode = false;
 
@@ -1735,7 +1747,7 @@ ObjFunction *compile(const char *source) {
 void grayCompilerRoots() {
     Compiler *compiler = current;
     while (compiler != NULL) {
-        grayObject((Obj *) compiler->function);
+        grayObject(current->vm, (Obj *) compiler->function);
         compiler = compiler->enclosing;
     }
 }

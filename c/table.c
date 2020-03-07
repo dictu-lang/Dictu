@@ -14,8 +14,8 @@ void initTable(Table *table) {
     table->entries = NULL;
 }
 
-void freeTable(Table *table) {
-    FREE_ARRAY(Entry, table->entries, table->capacityMask + 1);
+void freeTable(VM *vm, Table *table) {
+    FREE_ARRAY(vm, Entry, table->entries, table->capacityMask + 1);
     initTable(table);
 }
 
@@ -54,8 +54,8 @@ bool tableGet(Table *table, ObjString *key, Value *value) {
     return true;
 }
 
-static void adjustCapacity(Table *table, int capacityMask) {
-    Entry *entries = ALLOCATE(Entry, capacityMask + 1);
+static void adjustCapacity(VM *vm, Table *table, int capacityMask) {
+    Entry *entries = ALLOCATE(vm, Entry, capacityMask + 1);
     for (int i = 0; i <= capacityMask; i++) {
         entries[i].key = NULL;
         entries[i].value = NIL_VAL;
@@ -73,16 +73,16 @@ static void adjustCapacity(Table *table, int capacityMask) {
         table->count++;
     }
 
-    FREE_ARRAY(Entry, table->entries, table->capacityMask + 1);
+    FREE_ARRAY(vm, Entry, table->entries, table->capacityMask + 1);
     table->entries = entries;
     table->capacityMask = capacityMask;
 }
 
-bool tableSet(Table *table, ObjString *key, Value value) {
+bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
     if (table->count + 1 > (table->capacityMask + 1) * TABLE_MAX_LOAD) {
         // Figure out the new table size.
         int capacityMask = GROW_CAPACITY(table->capacityMask + 1) - 1;
-        adjustCapacity(table, capacityMask);
+        adjustCapacity(vm, table, capacityMask);
     }
 
     Entry *entry = findEntry(table->entries, table->capacityMask, key);
@@ -107,11 +107,11 @@ bool tableDelete(Table *table, ObjString *key) {
     return true;
 }
 
-void tableAddAll(Table *from, Table *to) {
+void tableAddAll(VM *vm, Table *from, Table *to) {
     for (int i = 0; i <= from->capacityMask; i++) {
         Entry *entry = &from->entries[i];
         if (entry->key != NULL) {
-            tableSet(to, entry->key, entry->value);
+            tableSet(vm, to, entry->key, entry->value);
         }
     }
 }
@@ -150,10 +150,10 @@ void tableRemoveWhite(Table *table) {
     }
 }
 
-void grayTable(Table *table) {
+void grayTable(VM *vm, Table *table) {
     for (int i = 0; i <= table->capacityMask; i++) {
         Entry *entry = &table->entries[i];
-        grayObject((Obj *) entry->key);
-        grayValue(entry->value);
+        grayObject(vm, (Obj *) entry->key);
+        grayValue(vm, entry->value);
     }
 }

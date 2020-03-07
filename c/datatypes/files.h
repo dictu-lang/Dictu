@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-bool fileMethods(char *method, int argCount);
+#include "../common.h"
+
+bool fileMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_files_h

@@ -9,6 +9,7 @@
 #include "../vm.h"
 
 typedef struct response {
+    VM *vm;
     char *res;
     ObjList *headers;
     size_t len;
