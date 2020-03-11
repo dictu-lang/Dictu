@@ -77,11 +77,13 @@ void initArgv(VM *vm, int argc, const char *argv[]) {
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     VM *vm = (VM*) malloc(sizeof(*vm));
-    memset(vm, '\0', sizeof(VM));
 
-//    if (vm == NULL) {
-//        exit(72);
-//    }
+    if (vm == NULL) {
+        printf("Unable to allocate memory\n");
+        exit(71);
+    }
+
+    memset(vm, '\0', sizeof(VM));
 
     resetStack(vm);
     vm->objects = NULL;
@@ -495,20 +497,20 @@ static InterpretResult run(VM *vm) {
     #define CASE_CODE(name)   op_##name
 
     #ifdef DEBUG_TRACE_EXECUTION
-        #define DISPATCH()                                                         \
-            do                                                                     \
-            {                                                                      \
-                printf("          ");                                              \
-                for (Value *slot = vm->stack; slot < vm->stackTop; slot++) {         \
-                    printf("[ ");                                                  \
-                    printValue(*slot);                                             \
-                    printf(" ]");                                                  \
-                }                                                                  \
-                printf("\n");                                                      \
-                disassembleInstruction(&frame->closure->function->chunk,           \
-                        (int) (frame->ip - frame->closure->function->chunk.code)); \
-                goto *dispatchTable[instruction = READ_BYTE()];                    \
-            }                                                                      \
+        #define DISPATCH()                                                                        \
+            do                                                                                    \
+            {                                                                                     \
+                printf("          ");                                                             \
+                for (Value *stackValue = vm->stack; stackValue < vm->stackTop; stackValue++) {    \
+                    printf("[ ");                                                                 \
+                    printValue(*stackValue);                                                      \
+                    printf(" ]");                                                                 \
+                }                                                                                 \
+                printf("\n");                                                                     \
+                disassembleInstruction(&frame->closure->function->chunk,                          \
+                        (int) (frame->ip - frame->closure->function->chunk.code));                \
+                goto *dispatchTable[instruction = READ_BYTE()];                                   \
+            }                                                                                     \
             while (false)
     #else
         #define DISPATCH()                                            \
