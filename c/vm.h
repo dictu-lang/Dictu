@@ -4,6 +4,9 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "compiler.h"
+
+
 // TODO: Work out the maximum stack size at compilation time
 #define STACK_MAX (64 * UINT8_COUNT)
 
@@ -14,6 +17,7 @@ typedef struct {
 } CallFrame;
 
 struct _vm {
+    Compiler *compiler;
     Value stack[STACK_MAX];
     Value *stackTop;
     int stackCount;

@@ -76,11 +76,12 @@ void initArgv(VM *vm, int argc, const char *argv[]) {
 }
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
-    VM *vm = malloc(sizeof(vm));
+    VM *vm = (VM*) malloc(sizeof(*vm));
+    memset(vm, '\0', sizeof(VM));
 
-    if (vm == NULL) {
-        exit(72);
-    }
+//    if (vm == NULL) {
+//        exit(72);
+//    }
 
     resetStack(vm);
     vm->objects = NULL;
@@ -880,6 +881,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
+            // DISPATCH();
             ObjString *fileName = AS_STRING(pop(vm));
 
             // If we have imported this file already, skip.
@@ -1456,7 +1458,6 @@ InterpretResult interpret(VM *vm, const char *source) {
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
-
     callValue(vm, OBJ_VAL(closure), 0);
     InterpretResult result = run(vm);
 
