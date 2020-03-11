@@ -126,6 +126,7 @@ void freeVM(VM *vm) {
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
+    free(vm);
 }
 
 void push(VM *vm, Value value) {
