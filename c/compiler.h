@@ -59,7 +59,14 @@ typedef struct ClassCompiler {
     struct ClassCompiler *enclosing;
     Token name;
     bool hasSuperclass;
+    bool staticMethod;
 } ClassCompiler;
+
+typedef struct Loop {
+    struct Loop *enclosing;
+    int start;
+    int scopeDepth;
+} Loop;
 
 typedef struct Compiler {
     struct Compiler *enclosing;
@@ -73,13 +80,13 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
-
-    int loopDepth;
 } Compiler;
 
 typedef struct {
     VM *vm;
     Compiler *compiler;
+    ClassCompiler *class;
+    Loop *loop;
     Token current;
     Token previous;
     bool hadError;

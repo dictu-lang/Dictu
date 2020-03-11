@@ -11,18 +11,6 @@
 #include "debug.h"
 #endif
 
-// Parser parser;
-
-// Compiler *current = NULL;
-
-ClassCompiler *currentClass = NULL;
-
-bool staticMethod = false;
-
-// Used for "continue" statements
-int innermostLoopStart = -1;
-int innermostLoopScopeDepth = 0;
-
 static Chunk *currentChunk(Parser *parser) {
     return &parser->compiler->function->chunk;
 }
@@ -158,7 +146,6 @@ static void initCompiler(Parser *parser, Compiler *compiler, FunctionType type) 
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->loopDepth = 0;
     compiler->function = newFunction(parser->vm, type == TYPE_STATIC);
     parser->compiler = compiler;
     parser->vm->compiler = compiler;
@@ -798,14 +785,14 @@ static Token syntheticToken(const char *text) {
 }
 
 static void pushSuperclass(Parser *parser) {
-    if (currentClass == NULL) return;
+    if (parser->class == NULL) return;
     namedVariable(parser, syntheticToken("super"), false);
 }
 
 static void super_(Parser *parser, bool canAssign) {
-    if (currentClass == NULL) {
+    if (parser->class == NULL) {
         error(parser, "Cannot utilise 'super' outside of a class.");
-    } else if (!currentClass->hasSuperclass) {
+    } else if (!parser->class->hasSuperclass) {
         error(parser, "Cannot utilise 'super' in a class with no superclass.");
     }
 
@@ -829,9 +816,9 @@ static void super_(Parser *parser, bool canAssign) {
 }
 
 static void this_(Parser *parser, bool canAssign) {
-    if (currentClass == NULL) {
+    if (parser->class == NULL) {
         error(parser, "Cannot utilise 'this' outside of a class.");
-    } else if (staticMethod) {
+    } else if (parser->class->staticMethod) {
         error(parser, "Cannot utilise 'this' inside a static method.");
     } else {
         variable(parser, false);
@@ -839,13 +826,13 @@ static void this_(Parser *parser, bool canAssign) {
 }
 
 static void static_(Parser *parser, bool canAssign) {
-    if (currentClass == NULL) {
+    if (parser->class == NULL) {
         error(parser, "Cannot utilise 'static' outside of a class.");
     }
 }
 
 static void useStatement(Parser *parser) {
-    if (currentClass == NULL) {
+    if (parser->class == NULL) {
         error(parser, "Cannot utilise 'use' outside of a class.");
     }
 
@@ -1070,11 +1057,6 @@ static void function(Parser *parser, FunctionType type) {
 
     block(parser);
 
-    if (type == TYPE_STATIC) {
-        // Reset 'staticMethod' for next function
-        staticMethod = false;
-    }
-
     /**
      * No need to explicitly reduce the scope here as endCompiler does
      * it for us.
@@ -1098,9 +1080,10 @@ static void method(Parser *parser, bool trait) {
     if (check(parser, TOKEN_STATIC)) {
         type = TYPE_STATIC;
         consume(parser, TOKEN_STATIC, "Expect static.");
-        staticMethod = true;
+        parser->class->staticMethod = true;
     } else {
         type = TYPE_METHOD;
+        parser->class->staticMethod = false;
     }
 
     consume(parser, TOKEN_IDENTIFIER, "Expect method name.");
@@ -1129,8 +1112,9 @@ static void classDeclaration(Parser *parser) {
     ClassCompiler classCompiler;
     classCompiler.name = parser->previous;
     classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = currentClass;
-    currentClass = &classCompiler;
+    classCompiler.enclosing = parser->class;
+    classCompiler.staticMethod = false;
+    parser->class = &classCompiler;
 
     if (match(parser, TOKEN_LESS)) {
         consume(parser, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1164,7 +1148,7 @@ static void classDeclaration(Parser *parser) {
 
     defineVariable(parser, nameConstant);
 
-    currentClass = currentClass->enclosing;
+    parser->class = parser->class->enclosing;
 }
 
 static void traitDeclaration(Parser *parser) {
@@ -1175,8 +1159,9 @@ static void traitDeclaration(Parser *parser) {
     ClassCompiler classCompiler;
     classCompiler.name = parser->previous;
     classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = currentClass;
-    currentClass = &classCompiler;
+    classCompiler.enclosing = parser->class;
+    classCompiler.staticMethod = false;
+    parser->class = &classCompiler;
 
     emitBytes(parser, OP_TRAIT, nameConstant);
 
@@ -1188,7 +1173,7 @@ static void traitDeclaration(Parser *parser) {
 
     defineVariable(parser, nameConstant);
 
-    currentClass = currentClass->enclosing;
+    parser->class = parser->class->enclosing;
 }
 
 static void funDeclaration(Parser *parser) {
@@ -1215,16 +1200,11 @@ static void varDeclaration(Parser *parser) {
 static void expressionStatement(Parser *parser) {
     expression(parser);
     consume(parser, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    emitByte(parser, OP_POP);
-
-    // TODO: Handle
-    /*
-    if (vm->repl) {
+    if (parser->vm->repl) {
         emitByte(parser, OP_POP_REPL);
     } else {
         emitByte(parser, OP_POP);
     }
-     */
 }
 
 /*
@@ -1323,7 +1303,6 @@ static void forStatement(Parser *parser) {
 
     // Create a scope for the loop variable.
     beginScope(parser);
-    parser->compiler->loopDepth++;
 
     // The initialization clause.
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
@@ -1335,10 +1314,11 @@ static void forStatement(Parser *parser) {
         expressionStatement(parser);
     }
 
-    int surroundingLoopStart = innermostLoopStart;
-    int surroundingLoopScopeDepth = innermostLoopScopeDepth;
-    innermostLoopStart = currentChunk(parser)->count;
-    innermostLoopScopeDepth = parser->compiler->scopeDepth;
+    Loop loop;
+    loop.start = currentChunk(parser)->count;
+    loop.scopeDepth = parser->compiler->scopeDepth;
+    loop.enclosing = parser->loop;
+    parser->loop = &loop;
 
     // The exit condition.
     int exitJump = -1;
@@ -1363,8 +1343,8 @@ static void forStatement(Parser *parser) {
         emitByte(parser, OP_POP);
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
-        emitLoop(parser, innermostLoopStart);
-        innermostLoopStart = incrementStart;
+        emitLoop(parser, parser->loop->start);
+        parser->loop->start = incrementStart;
 
         patchJump(parser, bodyJump);
     }
@@ -1373,22 +1353,20 @@ static void forStatement(Parser *parser) {
     statement(parser);
 
     // Jump back to the beginning (or the increment).
-    emitLoop(parser, innermostLoopStart);
+    emitLoop(parser, parser->loop->start);
 
     if (exitJump != -1) {
         patchJump(parser, exitJump);
         emitByte(parser, OP_POP); // Condition.
     }
 
-    innermostLoopStart = surroundingLoopStart;
-    innermostLoopScopeDepth = surroundingLoopScopeDepth;
+    parser->loop = parser->loop->enclosing;
 
     endScope(parser); // Loop variable.
-    parser->compiler->loopDepth--;
 }
 
 static void continueStatement(Parser *parser) {
-    if (innermostLoopStart == -1) {
+    if (parser->loop == NULL) {
         error(parser, "Cannot utilise 'continue' outside of a loop.");
     }
 
@@ -1396,13 +1374,13 @@ static void continueStatement(Parser *parser) {
 
     // Discard any locals created inside the loop.
     for (int i = parser->compiler->localCount - 1;
-         i >= 0 && parser->compiler->locals[i].depth > innermostLoopScopeDepth;
+         i >= 0 && parser->compiler->locals[i].depth > parser->loop->scopeDepth;
          i--) {
         emitByte(parser, OP_POP);
     }
 
     // Jump to top of current innermost loop.
-    emitLoop(parser, innermostLoopStart);
+    emitLoop(parser, parser->loop->start);
 }
 
 static void ifStatement(Parser *parser) {
@@ -1480,7 +1458,7 @@ static void importStatement(Parser *parser) {
 }
 
 static void breakStatement(Parser *parser) {
-    if (parser->compiler->loopDepth == 0) {
+    if (parser->loop == NULL) {
         error(parser, "Cannot utilise 'break' outside of a loop.");
         return;
     }
@@ -1490,12 +1468,11 @@ static void breakStatement(Parser *parser) {
 }
 
 static void whileStatement(Parser *parser) {
-    parser->compiler->loopDepth++;
-
-    int surroundingLoopStart = innermostLoopStart;
-    int surroundingLoopScopeDepth = innermostLoopScopeDepth;
-    innermostLoopStart = currentChunk(parser)->count;
-    innermostLoopScopeDepth = parser->compiler->scopeDepth;
+    Loop loop;
+    loop.start = currentChunk(parser)->count;
+    loop.scopeDepth = parser->compiler->scopeDepth;
+    loop.enclosing = parser->loop;
+    parser->loop = &loop;
 
     if (check(parser, TOKEN_LEFT_BRACE)) {
         emitByte(parser, OP_TRUE);
@@ -1513,15 +1490,12 @@ static void whileStatement(Parser *parser) {
     statement(parser);
 
     // Loop back to the start.
-    emitLoop(parser, innermostLoopStart);
+    emitLoop(parser, loop.start);
 
     patchJump(parser, exitJump);
     emitByte(parser, OP_POP); // Condition.
 
-    innermostLoopStart = surroundingLoopStart;
-    innermostLoopScopeDepth = surroundingLoopScopeDepth;
-
-    parser->compiler->loopDepth--;
+    parser->loop = parser->loop->enclosing;
 }
 
 static void synchronize(Parser *parser) {
@@ -1635,6 +1609,8 @@ ObjFunction *compile(VM *vm, const char *source) {
     Parser parser;
     parser.vm = vm;
     parser.compiler = NULL;
+    parser.class = NULL;
+    parser.loop = NULL;
     parser.hadError = false;
     parser.panicMode = false;
 
