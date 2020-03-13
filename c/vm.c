@@ -884,7 +884,6 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            // DISPATCH();
             ObjString *fileName = AS_STRING(pop(vm));
 
             // If we have imported this file already, skip.
@@ -1389,8 +1388,7 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
 
         CASE_CODE(TRAIT_METHOD): {
-            ObjString *name = READ_STRING();
-            defineTraitMethod(vm, name);
+            defineTraitMethod(vm, READ_STRING());
             DISPATCH();
         }
 
