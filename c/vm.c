@@ -20,8 +20,6 @@
 #include "natives.h"
 #include "optionals/optionals.h"
 
-// VM vm; // [one]
-
 void defineAllNatives();
 
 static void resetStack(VM *vm) {
