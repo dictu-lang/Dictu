@@ -8,11 +8,11 @@
 #include "../vm.h"
 #include "../memory.h"
 
-ObjList *copyList(ObjList *oldList, bool shallow);
+ObjList *copyList(VM *vm, ObjList *oldList, bool shallow);
 
-ObjDict *copyDict(ObjDict *oldDict, bool shallow);
+ObjDict *copyDict(VM *vm, ObjDict *oldDict, bool shallow);
 
-ObjInstance *copyInstance(ObjInstance *oldInstance, bool shallow);
+ObjInstance *copyInstance(VM *vm, ObjInstance *oldInstance, bool shallow);
 
 uint32_t hash(char *str);
 

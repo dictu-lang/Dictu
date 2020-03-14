@@ -1,13 +1,13 @@
 #include "system.h"
 
-static Value setCWDNative(int argCount, Value *args) {
+static Value setCWDNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("setcwd() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "setcwd() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError("setcwd() argument must be a string");
+        runtimeError(vm, "setcwd() argument must be a string");
         return EMPTY_VAL;
     }
 
@@ -16,45 +16,45 @@ static Value setCWDNative(int argCount, Value *args) {
     int retval = chdir(dir);
 
     if (retval != 0) {
-        runtimeError("Error setting current directory");
+        runtimeError(vm, "Error setting current directory");
         return EMPTY_VAL;
     }
 
     return NIL_VAL;
 }
 
-static Value getCWDNative(int argCount, Value *args) {
+static Value getCWDNative(VM *vm, int argCount, Value *args) {
     char cwd[PATH_MAX];
 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        return OBJ_VAL(copyString(cwd, strlen(cwd)));
+        return OBJ_VAL(copyString(vm, cwd, strlen(cwd)));
     }
 
-    runtimeError("Error getting current directory");
+    runtimeError(vm, "Error getting current directory");
     return EMPTY_VAL;
 }
 
-static Value timeNative(int argCount, Value *args) {
+static Value timeNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL((double) time(NULL));
 }
 
-static Value clockNative(int argCount, Value *args) {
+static Value clockNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
 
-static Value collectNative(int argCount, Value *args) {
-    collectGarbage();
+static Value collectNative(VM *vm, int argCount, Value *args) {
+    collectGarbage(vm);
     return NIL_VAL;
 }
 
-static Value sleepNative(int argCount, Value *args) {
+static Value sleepNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("sleep() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "sleep() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("sleep() argument must be a number");
+        runtimeError(vm, "sleep() argument must be a number");
         return EMPTY_VAL;
     }
 
@@ -68,14 +68,14 @@ static Value sleepNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value exitNative(int argCount, Value *args) {
+static Value exitNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("exit() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "exit() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("sleep() argument must be a number");
+        runtimeError(vm, "sleep() argument must be a number");
         return EMPTY_VAL;
     }
 
@@ -84,24 +84,24 @@ static Value exitNative(int argCount, Value *args) {
 
 }
 
-void createSystemClass() {
-    ObjString *name = copyString("System", 6);
-    push(OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(name);
-    push(OBJ_VAL(klass));
+void createSystemClass(VM *vm) {
+    ObjString *name = copyString(vm, "System", 6);
+    push(vm, OBJ_VAL(name));
+    ObjClassNative *klass = newClassNative(vm, name);
+    push(vm, OBJ_VAL(klass));
 
     /**
      * Define System methods
      */
-    defineNativeMethod(klass, "setCWD", setCWDNative);
-    defineNativeMethod(klass, "getCWD", getCWDNative);
-    defineNativeMethod(klass, "time", timeNative);
-    defineNativeMethod(klass, "clock", clockNative);
-    defineNativeMethod(klass, "collect", collectNative);
-    defineNativeMethod(klass, "sleep", sleepNative);
-    defineNativeMethod(klass, "exit", exitNative);
+    defineNativeMethod(vm, klass, "setCWD", setCWDNative);
+    defineNativeMethod(vm, klass, "getCWD", getCWDNative);
+    defineNativeMethod(vm, klass, "time", timeNative);
+    defineNativeMethod(vm, klass, "clock", clockNative);
+    defineNativeMethod(vm, klass, "collect", collectNative);
+    defineNativeMethod(vm, klass, "sleep", sleepNative);
+    defineNativeMethod(vm, klass, "exit", exitNative);
 
-    tableSet(&vm.globals, name, OBJ_VAL(klass));
-    pop();
-    pop();
+    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    pop(vm);
+    pop(vm);
 }

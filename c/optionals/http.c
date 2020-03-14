@@ -1,9 +1,10 @@
 #include "http.h"
 
-static void createResponse(Response *response) {
-    response->headers = initList();
+static void createResponse(VM *vm, Response *response) {
+    response->vm = vm;
+    response->headers = initList(vm);
     // Push to stack to avoid GC
-    push(OBJ_VAL(response->headers));
+    push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
     response->res = malloc(response->len + 1);
@@ -35,11 +36,11 @@ static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data)
     Response *response = (Response *) data;
     // if nitems equals 2 its an empty header
     if (nitems != 2) {
-        Value header = OBJ_VAL(copyString(ptr, (nitems - 2) * size));
+        Value header = OBJ_VAL(copyString(response->vm, ptr, (nitems - 2) * size));
         // Push to stack to avoid GC
-        push(header);
-        writeValueArray(&response->headers->values, header);
-        pop();
+        push(response->vm, header);
+        writeValueArray(response->vm, &response->headers->values, header);
+        pop(response->vm);
     }
     return size * nitems;
 }
@@ -93,9 +94,9 @@ static char *dictToPostArgs(ObjDict *dict) {
     return ret;
 }
 
-static Value get(int argCount, Value *args) {
+static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError("get() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d  given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -103,7 +104,7 @@ static Value get(int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError("Timeout passed to get() must be a number");
+            runtimeError(vm, "Timeout passed to get() must be a number");
             return EMPTY_VAL;
         }
 
@@ -111,7 +112,7 @@ static Value get(int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError("URL passed to get() must be a string");
+        runtimeError(vm, "URL passed to get() must be a string");
         return EMPTY_VAL;
     }
 
@@ -123,7 +124,7 @@ static Value get(int argCount, Value *args) {
 
     if (curl) {
         Response response;
-        createResponse(&response);
+        createResponse(vm, &response);
         char *url = AS_CSTRING(args[0]);
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -138,45 +139,45 @@ static Value get(int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError("cURL request failed: %s", curl_easy_strerror(curlResponse));
+            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
 
-        ObjString *content = copyString(response.res, response.len);
+        ObjString *content = copyString(vm, response.res, response.len);
         free(response.res);
         // Push to stack to avoid GC
-        push(OBJ_VAL(content));
+        push(vm, OBJ_VAL(content));
 
         /* always cleanup */
         curl_easy_cleanup(curl);
 
         curl_global_cleanup();
 
-        ObjDict *responseVal = initDict();
+        ObjDict *responseVal = initDict(vm);
         // Push to stack to avoid GC
-        push(OBJ_VAL(responseVal));
+        push(vm, OBJ_VAL(responseVal));
 
-        insertDict(responseVal, "content", OBJ_VAL(content));
-        insertDict(responseVal, "headers", OBJ_VAL(response.headers));
-        insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+        insertDict(vm, responseVal, "content", OBJ_VAL(content));
+        insertDict(vm, responseVal, "headers", OBJ_VAL(response.headers));
+        insertDict(vm, responseVal, "statusCode", NUMBER_VAL(response.statusCode));
 
         // Pop header list, content and response dict return off stack
-        pop();
-        pop();
-        pop();
+        pop(vm);
+        pop(vm);
+        pop(vm);
 
         return OBJ_VAL(responseVal);
     }
 
-    runtimeError("cURL failed to initialise");
+    runtimeError(vm, "cURL failed to initialise");
     return EMPTY_VAL;
 }
 
-static Value post(int argCount, Value *args) {
+static Value post(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 && argCount != 3) {
-        runtimeError("post() takes between 1 and 3 arguments (%d  given)", argCount);
+        runtimeError(vm, "post() takes between 1 and 3 arguments (%d  given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -185,12 +186,12 @@ static Value post(int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError("Timeout passed to post() must be a number");
+            runtimeError(vm, "Timeout passed to post() must be a number");
             return EMPTY_VAL;
         }
 
         if (!IS_DICT(args[1])) {
-            runtimeError("Post values passed to post() must be a dictionary");
+            runtimeError(vm, "Post values passed to post() must be a dictionary");
             return EMPTY_VAL;
         }
 
@@ -198,7 +199,7 @@ static Value post(int argCount, Value *args) {
         dict = AS_DICT(args[1]);
     } else if (argCount == 2) {
         if (!IS_DICT(args[1])) {
-            runtimeError("Post values passed to post() must be a dictionary");
+            runtimeError(vm, "Post values passed to post() must be a dictionary");
             return EMPTY_VAL;
         }
 
@@ -206,7 +207,7 @@ static Value post(int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError("URL passed to post() must be a string");
+        runtimeError(vm, "URL passed to post() must be a string");
         return EMPTY_VAL;
     }
 
@@ -220,7 +221,7 @@ static Value post(int argCount, Value *args) {
         char *url = AS_CSTRING(args[0]);
         char *postValue = "";
         Response response;
-        createResponse(&response);
+        createResponse(vm, &response);
 
         if (dict != NULL) {
             postValue = dictToPostArgs(dict);
@@ -240,17 +241,17 @@ static Value post(int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError("cURL request failed: %s", curl_easy_strerror(curlResponse));
+            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
         // Get status code
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
 
-        ObjString *content = copyString(response.res, response.len);
+        ObjString *content = copyString(vm, response.res, response.len);
         free(response.res);
         // Push to stack to avoid GC
-        push(OBJ_VAL(content));
+        push(vm, OBJ_VAL(content));
 
         if (dict != NULL) {
             free(postValue);
@@ -261,39 +262,39 @@ static Value post(int argCount, Value *args) {
 
         curl_global_cleanup();
 
-        ObjDict *responseVal = initDict();
+        ObjDict *responseVal = initDict(vm);
         // Push to stack to avoid GC
-        push(OBJ_VAL(responseVal));
+        push(vm, OBJ_VAL(responseVal));
 
-        insertDict(responseVal, "content", OBJ_VAL(content));
-        insertDict(responseVal, "headers", OBJ_VAL(response.headers));
-        insertDict(responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+        insertDict(vm, responseVal, "content", OBJ_VAL(content));
+        insertDict(vm, responseVal, "headers", OBJ_VAL(response.headers));
+        insertDict(vm, responseVal, "statusCode", NUMBER_VAL(response.statusCode));
 
         // Pop header list and dict return off stack
-        pop();
-        pop();
-        pop();
+        pop(vm);
+        pop(vm);
+        pop(vm);
 
         return OBJ_VAL(responseVal);
     }
 
-    runtimeError("cURL failed to initialise");
+    runtimeError(vm, "cURL failed to initialise");
     return EMPTY_VAL;
 }
 
-void createHTTPClass() {
-    ObjString *name = copyString("HTTP", 4);
-    push(OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(name);
-    push(OBJ_VAL(klass));
+void createHTTPClass(VM *vm) {
+    ObjString *name = copyString(vm, "HTTP", 4);
+    push(vm, OBJ_VAL(name));
+    ObjClassNative *klass = newClassNative(vm, name);
+    push(vm, OBJ_VAL(klass));
 
     /**
      * Define Http methods
      */
-    defineNativeMethod(klass, "get", get);
-    defineNativeMethod(klass, "post", post);
+    defineNativeMethod(vm, klass, "get", get);
+    defineNativeMethod(vm, klass, "post", post);
 
-    tableSet(&vm.globals, name, OBJ_VAL(klass));
-    pop();
-    pop();
+    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    pop(vm);
+    pop(vm);
 }

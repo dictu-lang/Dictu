@@ -4,6 +4,9 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "compiler.h"
+
+
 // TODO: Work out the maximum stack size at compilation time
 #define STACK_MAX (64 * UINT8_COUNT)
 
@@ -13,7 +16,8 @@ typedef struct {
     Value *slots;
 } CallFrame;
 
-typedef struct {
+struct _vm {
+    Compiler *compiler;
     Value stack[STACK_MAX];
     Value *stackTop;
     int stackCount;
@@ -38,7 +42,7 @@ typedef struct {
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
-} VM;
+};
 
 typedef enum {
     INTERPRET_OK,
@@ -46,21 +50,21 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-extern VM vm;
+// extern VM vm;
 
-void initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
+VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
 
-void freeVM();
+void freeVM(VM *vm);
 
-InterpretResult interpret(const char *source);
+InterpretResult interpret(VM *vm, const char *source);
 
-void push(Value value);
+void push(VM *vm, Value value);
 
-Value peek(int distance);
+Value peek(VM *vm, int distance);
 
-void runtimeError(const char *format, ...);
+void runtimeError(VM *vm, const char *format, ...);
 
-Value pop();
+Value pop(VM *vm);
 
 bool isFalsey(Value value);
 
