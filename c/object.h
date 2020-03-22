@@ -73,9 +73,7 @@ typedef struct {
     bool staticMethod;
 } ObjFunction;
 
-typedef Value (*NativeFn)(int argCount, Value *args);
-
-typedef bool (*NativeFnVoid)(int argCount, Value *args);
+typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);
 
 typedef struct {
     Obj obj;
@@ -183,35 +181,35 @@ typedef struct {
     ObjClosure *method;
 } ObjBoundMethod;
 
-ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
+ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 
-ObjClass *newClass(ObjString *name, ObjClass *superclass);
+ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass);
 
-ObjClassNative *newClassNative(ObjString *name);
+ObjClassNative *newClassNative(VM *vm, ObjString *name);
 
-ObjTrait *newTrait(ObjString *name);
+ObjTrait *newTrait(VM *vm, ObjString *name);
 
-ObjClosure *newClosure(ObjFunction *function);
+ObjClosure *newClosure(VM *vm, ObjFunction *function);
 
-ObjFunction *newFunction(bool isStatic);
+ObjFunction *newFunction(VM *vm, bool isStatic);
 
-ObjInstance *newInstance(ObjClass *klass);
+ObjInstance *newInstance(VM *vm, ObjClass *klass);
 
-ObjNative *newNative(NativeFn function);
+ObjNative *newNative(VM *vm, NativeFn function);
 
-ObjString *takeString(char *chars, int length);
+ObjString *takeString(VM *vm, char *chars, int length);
 
-ObjString *copyString(const char *chars, int length);
+ObjString *copyString(VM *vm, const char *chars, int length);
 
-ObjList *initList();
+ObjList *initList(VM *vm);
 
-ObjDict *initDict();
+ObjDict *initDict(VM *vm);
 
-ObjSet *initSet();
+ObjSet *initSet(VM *vm);
 
-ObjFile *initFile();
+ObjFile *initFile(VM *vm);
 
-ObjUpvalue *newUpvalue(Value *slot);
+ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 
 char *objectToString(Value value);
 

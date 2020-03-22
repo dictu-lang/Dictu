@@ -9,6 +9,6 @@
 
 #include "../vm.h"
 
-void defineNativeMethod(ObjClassNative *klass, const char *name, NativeFn function);
+void defineNativeMethod(VM *vm, ObjClassNative *klass, const char *name, NativeFn function);
 
 #endif //dictu_optionals_h

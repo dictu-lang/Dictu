@@ -5,23 +5,23 @@
 #include "natives.h"
 #include "vm.h"
 
-static void defineNative(const char *name, NativeFn function) {
-    push(OBJ_VAL(copyString(name, (int) strlen(name))));
-    push(OBJ_VAL(newNative(function)));
-    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
-    pop();
-    pop();
+static void defineNative(VM *vm, const char *name, NativeFn function) {
+    push(vm, OBJ_VAL(copyString(vm, name, (int) strlen(name))));
+    push(vm, OBJ_VAL(newNative(vm, function)));
+    tableSet(vm, &vm->globals, AS_STRING(vm->stack[0]), vm->stack[1]);
+    pop(vm);
+    pop(vm);
 }
 
 // Native functions
-static Value numberNative(int argCount, Value *args) {
+static Value numberNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("number() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "number() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError("number() only takes a string as an argument");
+        runtimeError(vm, "number() only takes a string as an argument");
         return EMPTY_VAL;
     }
 
@@ -31,16 +31,16 @@ static Value numberNative(int argCount, Value *args) {
     return NUMBER_VAL(number);
 }
 
-static Value strNative(int argCount, Value *args) {
+static Value strNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("str() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "str() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
         char *valueString = valueToString(args[0]);
 
-        ObjString *string = copyString(valueString, strlen(valueString));
+        ObjString *string = copyString(vm, valueString, strlen(valueString));
         free(valueString);
 
         return OBJ_VAL(string);
@@ -49,61 +49,61 @@ static Value strNative(int argCount, Value *args) {
     return args[0];
 }
 
-static Value typeNative(int argCount, Value *args) {
+static Value typeNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("type() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "type() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (IS_BOOL(args[0])) {
-        return OBJ_VAL(copyString("bool", 4));
+        return OBJ_VAL(copyString(vm, "bool", 4));
     } else if (IS_NIL(args[0])) {
-        return OBJ_VAL(copyString("nil", 3));
+        return OBJ_VAL(copyString(vm, "nil", 3));
     } else if (IS_NUMBER(args[0])) {
-        return OBJ_VAL(copyString("number", 6));
+        return OBJ_VAL(copyString(vm, "number", 6));
     } else if (IS_OBJ(args[0])) {
         switch (OBJ_TYPE(args[0])) {
             case OBJ_NATIVE_CLASS:
             case OBJ_CLASS:
-                return OBJ_VAL(copyString("class", 5));
+                return OBJ_VAL(copyString(vm, "class", 5));
             case OBJ_TRAIT:
-                return OBJ_VAL(copyString("trait", 5));
+                return OBJ_VAL(copyString(vm, "trait", 5));
             case OBJ_INSTANCE: {
                 ObjString *className = AS_INSTANCE(args[0])->klass->name;
-                return OBJ_VAL(copyString(className->chars, className->length));
+                return OBJ_VAL(copyString(vm, className->chars, className->length));
             }
             case OBJ_BOUND_METHOD:
-                return OBJ_VAL(copyString("method", 6));
+                return OBJ_VAL(copyString(vm, "method", 6));
             case OBJ_CLOSURE:
             case OBJ_FUNCTION:
-                return OBJ_VAL(copyString("function", 8));
+                return OBJ_VAL(copyString(vm, "function", 8));
             case OBJ_STRING:
-                return OBJ_VAL(copyString("string", 6));
+                return OBJ_VAL(copyString(vm, "string", 6));
             case OBJ_LIST:
-                return OBJ_VAL(copyString("list", 4));
+                return OBJ_VAL(copyString(vm, "list", 4));
             case OBJ_DICT:
-                return OBJ_VAL(copyString("dict", 4));
+                return OBJ_VAL(copyString(vm, "dict", 4));
             case OBJ_SET:
-                return OBJ_VAL(copyString("set", 3));
+                return OBJ_VAL(copyString(vm, "set", 3));
             case OBJ_NATIVE:
-                return OBJ_VAL(copyString("native", 6));
+                return OBJ_VAL(copyString(vm, "native", 6));
             case OBJ_FILE:
-                return OBJ_VAL(copyString("file", 4));
+                return OBJ_VAL(copyString(vm, "file", 4));
             default:
                 break;
         }
     }
 
-    return OBJ_VAL(copyString("Unknown Type", 12));
+    return OBJ_VAL(copyString(vm, "Unknown Type", 12));
 }
 
-static Value setNative(int argCount, Value *args) {
-    return OBJ_VAL(initSet());
+static Value setNative(VM *vm, int argCount, Value *args) {
+    return OBJ_VAL(initSet(vm));
 }
 
-static Value lenNative(int argCount, Value *args) {
+static Value lenNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("len() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "len() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
@@ -117,29 +117,29 @@ static Value lenNative(int argCount, Value *args) {
         return NUMBER_VAL(AS_SET(args[0])->count);
     }
 
-    runtimeError("Unsupported type passed to len()", argCount);
+    runtimeError(vm, "Unsupported type passed to len()", argCount);
     return EMPTY_VAL;
 }
 
-static Value boolNative(int argCount, Value *args) {
+static Value boolNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("bool() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "bool() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     return BOOL_VAL(!isFalsey(args[0]));
 }
 
-static Value inputNative(int argCount, Value *args) {
+static Value inputNative(VM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError("input() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "input() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (argCount != 0) {
         Value prompt = args[0];
         if (!IS_STRING(prompt)) {
-            runtimeError("input() only takes a string argument");
+            runtimeError(vm, "input() only takes a string argument");
             return EMPTY_VAL;
         }
 
@@ -152,7 +152,7 @@ static Value inputNative(int argCount, Value *args) {
     char *line = malloc(len_max);
 
     if (line == NULL) {
-        runtimeError("Memory error on input()!");
+        runtimeError(vm, "Memory error on input()!");
         return EMPTY_VAL;
     }
 
@@ -174,13 +174,13 @@ static Value inputNative(int argCount, Value *args) {
 
     line[i] = '\0';
 
-    Value l = OBJ_VAL(copyString(line, strlen(line)));
+    Value l = OBJ_VAL(copyString(vm, line, strlen(line)));
     free(line);
 
     return l;
 }
 
-static Value printNative(int argCount, Value *args) {
+static Value printNative(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         printf("\n");
         return NIL_VAL;
@@ -195,17 +195,17 @@ static Value printNative(int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value assertNative(int argCount, Value *args) {
+static Value assertNative(VM *vm, int argCount, Value *args) {
     Value value = args[0];
 
     if (!IS_BOOL(value)) {
-        runtimeError("assert() only takes a boolean as an argument.", argCount);
+        runtimeError(vm, "assert() only takes a boolean as an argument.", argCount);
         return EMPTY_VAL;
     }
 
     value = AS_BOOL(value);
     if (!value) {
-        runtimeError("assert() was false!");
+        runtimeError(vm, "assert() was false!");
         return EMPTY_VAL;
     }
 
@@ -214,7 +214,7 @@ static Value assertNative(int argCount, Value *args) {
 
 // End of natives
 
-void defineAllNatives() {
+void defineAllNatives(VM *vm) {
     char *nativeNames[] = {
             "len",
             "bool",
@@ -241,6 +241,6 @@ void defineAllNatives() {
 
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
-        defineNative(nativeNames[i], nativeFunctions[i]);
+        defineNative(vm, nativeNames[i], nativeFunctions[i]);
     }
 }

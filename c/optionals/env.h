@@ -7,6 +7,6 @@
 #include "optionals.h"
 #include "../vm.h"
 
-void createEnvClass();
+void createEnvClass(VM *vm);
 
 #endif //dictu_env_h

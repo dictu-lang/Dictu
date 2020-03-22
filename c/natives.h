@@ -1,6 +1,8 @@
 #ifndef dictu_natives_h
 #define dictu_natives_h
 
-void defineAllNatives();
+#include "common.h"
+
+void defineAllNatives(VM *vm);
 
 #endif //dictu_natives_h

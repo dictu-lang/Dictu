@@ -13,11 +13,11 @@ void initValueArray(ValueArray *array) {
     array->count = 0;
 }
 
-void writeValueArray(ValueArray *array, Value value) {
+void writeValueArray(VM *vm, ValueArray *array, Value value) {
     if (array->capacity < array->count + 1) {
         int oldCapacity = array->capacity;
         array->capacity = GROW_CAPACITY(oldCapacity);
-        array->values = GROW_ARRAY(array->values, Value,
+        array->values = GROW_ARRAY(vm, array->values, Value,
                                    oldCapacity, array->capacity);
     }
 
@@ -25,8 +25,8 @@ void writeValueArray(ValueArray *array, Value value) {
     array->count++;
 }
 
-void freeValueArray(ValueArray *array) {
-    FREE_ARRAY(Value, array->values, array->capacity);
+void freeValueArray(VM *vm, ValueArray *array) {
+    FREE_ARRAY(vm, Value, array->values, array->capacity);
     initValueArray(array);
 }
 
@@ -52,7 +52,7 @@ static uint32_t hash(char *str) {
     return hash;
 }
 
-void insertDict(ObjDict *dict, char *key, Value value) {
+void insertDict(VM *vm, ObjDict *dict, char *key, Value value) {
     if (dict->count * 100 / dict->capacity >= 60) {
         resizeDict(dict, true);
     }
@@ -60,7 +60,7 @@ void insertDict(ObjDict *dict, char *key, Value value) {
     uint32_t hashValue = hash(key);
     int index = hashValue % dict->capacity;
 
-    char *key_m = ALLOCATE(char, strlen(key) + 1);
+    char *key_m = ALLOCATE(vm, char, strlen(key) + 1);
 
     if (!key_m) {
         printf("ERROR!");
@@ -69,7 +69,7 @@ void insertDict(ObjDict *dict, char *key, Value value) {
 
     strcpy(key_m, key);
 
-    dictItem *item = ALLOCATE(dictItem, sizeof(dictItem));
+    dictItem *item = ALLOCATE(vm, dictItem, sizeof(dictItem));
 
     if (!item) {
         printf("ERROR!");
@@ -159,7 +159,7 @@ Value searchDict(ObjDict *dict, char *key) {
     return NIL_VAL;
 }
 
-void insertSet(ObjSet *set, Value value) {
+void insertSet(VM *vm, ObjSet *set, Value value) {
     if (!IS_STRING(value)) {
         printf("Sets can only store string values!"); // TODO: To be revised as more values support hashing
         return;
@@ -174,7 +174,7 @@ void insertSet(ObjSet *set, Value value) {
 
     int index = string->hash % set->capacity;
 
-    setItem *item = ALLOCATE(setItem, sizeof(setItem));
+    setItem *item = ALLOCATE(vm, setItem, sizeof(setItem));
 
     if (set->count * 100 / set->capacity >= 60) {
         resizeSet(set, true);

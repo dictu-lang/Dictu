@@ -2,7 +2,7 @@
 #include "../vm.h"
 #include <math.h>
 
-static Value averageNative(int argCount, Value *args) {
+static Value averageNative(VM *vm, int argCount, Value *args) {
     double average = 0;
 
     if (argCount == 0) {
@@ -16,7 +16,7 @@ static Value averageNative(int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError("A non-number value passed to average()");
+            runtimeError(vm, "A non-number value passed to average()");
             return EMPTY_VAL;
         }
         average = average + AS_NUMBER(value);
@@ -25,14 +25,14 @@ static Value averageNative(int argCount, Value *args) {
     return NUMBER_VAL(average / argCount);
 }
 
-static Value floorNative(int argCount, Value *args) {
+static Value floorNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("floor() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "floor() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("A non-number value passed to floor()");
+        runtimeError(vm, "A non-number value passed to floor()");
         return EMPTY_VAL;
     }
 
@@ -40,14 +40,14 @@ static Value floorNative(int argCount, Value *args) {
     return NUMBER_VAL(floor(AS_NUMBER(args[0])));
 }
 
-static Value roundNative(int argCount, Value *args) {
+static Value roundNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("round() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "round() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("A non-number value passed to round()");
+        runtimeError(vm, "A non-number value passed to round()");
         return EMPTY_VAL;
     }
 
@@ -55,14 +55,14 @@ static Value roundNative(int argCount, Value *args) {
     return NUMBER_VAL(round(AS_NUMBER(args[0])));
 }
 
-static Value ceilNative(int argCount, Value *args) {
+static Value ceilNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("ceil() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "ceil() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("A non-number value passed to ceil()");
+        runtimeError(vm, "A non-number value passed to ceil()");
         return EMPTY_VAL;
     }
 
@@ -70,14 +70,14 @@ static Value ceilNative(int argCount, Value *args) {
     return NUMBER_VAL(ceil(AS_NUMBER(args[0])));
 }
 
-static Value absNative(int argCount, Value *args) {
+static Value absNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("abs() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "abs() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("A non-number value passed to abs()");
+        runtimeError(vm, "A non-number value passed to abs()");
         return EMPTY_VAL;
     }
 
@@ -88,7 +88,7 @@ static Value absNative(int argCount, Value *args) {
     return NUMBER_VAL(absValue);
 }
 
-static Value sumNative(int argCount, Value *args) {
+static Value sumNative(VM *vm, int argCount, Value *args) {
     double sum = 0;
 
     if (argCount == 0) {
@@ -102,7 +102,7 @@ static Value sumNative(int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError("A non-number value passed to sum()");
+            runtimeError(vm, "A non-number value passed to sum()");
             return EMPTY_VAL;
         }
         sum = sum + AS_NUMBER(value);
@@ -111,7 +111,7 @@ static Value sumNative(int argCount, Value *args) {
     return NUMBER_VAL(sum);
 }
 
-static Value minNative(int argCount, Value *args) {
+static Value minNative(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -125,7 +125,7 @@ static Value minNative(int argCount, Value *args) {
     for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError("A non-number value passed to min()");
+            runtimeError(vm, "A non-number value passed to min()");
             return EMPTY_VAL;
         }
 
@@ -139,7 +139,7 @@ static Value minNative(int argCount, Value *args) {
     return NUMBER_VAL(minimum);
 }
 
-static Value maxNative(int argCount, Value *args) {
+static Value maxNative(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -153,7 +153,7 @@ static Value maxNative(int argCount, Value *args) {
     for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError("A non-number value passed to max()");
+            runtimeError(vm, "A non-number value passed to max()");
             return EMPTY_VAL;
         }
 
@@ -167,25 +167,25 @@ static Value maxNative(int argCount, Value *args) {
     return NUMBER_VAL(maximum);
 }
 
-void createMathsClass() {
-    ObjString *name = copyString("Math", 4);
-    push(OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(name);
-    push(OBJ_VAL(klass));
+void createMathsClass(VM *vm) {
+    ObjString *name = copyString(vm, "Math", 4);
+    push(vm, OBJ_VAL(name));
+    ObjClassNative *klass = newClassNative(vm, name);
+    push(vm, OBJ_VAL(klass));
 
     /**
      * Define Math methods
      */
-    defineNativeMethod(klass, "average", averageNative);
-    defineNativeMethod(klass, "floor", floorNative);
-    defineNativeMethod(klass, "round", roundNative);
-    defineNativeMethod(klass, "ceil", ceilNative);
-    defineNativeMethod(klass, "abs", absNative);
-    defineNativeMethod(klass, "max", maxNative);
-    defineNativeMethod(klass, "min", minNative);
-    defineNativeMethod(klass, "sum", sumNative);
+    defineNativeMethod(vm, klass, "average", averageNative);
+    defineNativeMethod(vm, klass, "floor", floorNative);
+    defineNativeMethod(vm, klass, "round", roundNative);
+    defineNativeMethod(vm, klass, "ceil", ceilNative);
+    defineNativeMethod(vm, klass, "abs", absNative);
+    defineNativeMethod(vm, klass, "max", maxNative);
+    defineNativeMethod(vm, klass, "min", minNative);
+    defineNativeMethod(vm, klass, "sum", sumNative);
 
-    tableSet(&vm.globals, name, OBJ_VAL(klass));
-    pop();
-    pop();
+    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    pop(vm);
+    pop(vm);
 }

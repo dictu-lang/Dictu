@@ -6,6 +6,6 @@
 #include "optionals.h"
 #include "../vm.h"
 
-void createJSONClass();
+void createJSONClass(VM *vm);
 
 #endif //dictu_json_h

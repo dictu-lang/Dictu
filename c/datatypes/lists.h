@@ -7,6 +7,6 @@
 
 #include "copy.h"
 
-bool listMethods(char *method, int argCount);
+bool listMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_lists_h

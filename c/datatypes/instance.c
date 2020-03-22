@@ -2,121 +2,121 @@
 #include "../vm.h"
 #include "../memory.h"
 
-static bool hasAttribute(int argCount) {
+static bool hasAttribute(VM *vm, int argCount) {
     if (argCount != 2) {
-        runtimeError("hasAttribute() takes 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "hasAttribute() takes 2 arguments (%d  given)", argCount);
         return false;
     }
 
-    Value value = pop(); // Pop the "attribute"
-    ObjInstance *instance = AS_INSTANCE(pop()); // Pop the instance
+    Value value = pop(vm); // Pop the "attribute"
+    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
 
     if (!IS_STRING(value)) {
-        runtimeError("Argument passed to hasAttribute() must be a string");
+        runtimeError(vm, "Argument passed to hasAttribute() must be a string");
         return false;
     }
 
     Value _; // Unused variable
     if (tableGet(&instance->fields, AS_STRING(value), &_)) {
-        push(TRUE_VAL);
+        push(vm, TRUE_VAL);
     } else {
-        push(FALSE_VAL);
+        push(vm, FALSE_VAL);
     }
 
     return true;
 }
 
-static bool getAttribute(int argCount) {
+static bool getAttribute(VM *vm, int argCount) {
     if (argCount != 2 && argCount != 3) {
-        runtimeError("getAttribute() takes 2 or 3 arguments (%d  given)", argCount);
+        runtimeError(vm, "getAttribute() takes 2 or 3 arguments (%d  given)", argCount);
         return false;
     }
 
     Value defaultValue = NIL_VAL;
     // Passed in a default value
     if (argCount == 3) {
-        defaultValue = pop();
+        defaultValue = pop(vm);
     }
 
-    Value key = pop();
+    Value key = pop(vm);
 
     if (!IS_STRING(key)) {
-        runtimeError("Argument passed to getAttribute() must be a string");
+        runtimeError(vm, "Argument passed to getAttribute() must be a string");
         return false;
     }
 
-    ObjInstance *instance = AS_INSTANCE(pop()); // Pop the instance
+    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
 
     Value value;
     if (tableGet(&instance->fields, AS_STRING(key), &value)) {
-        push(value);
+        push(vm, value);
     } else {
-        push(defaultValue);
+        push(vm, defaultValue);
     }
 
     return true;
 }
 
-static bool setAttribute(int argCount) {
+static bool setAttribute(VM *vm, int argCount) {
     if (argCount != 3) {
-        runtimeError("setAttribute() takes 3 arguments (%d  given)", argCount);
+        runtimeError(vm, "setAttribute() takes 3 arguments (%d  given)", argCount);
         return false;
     }
 
-    Value value = pop();
-    Value key = pop();
+    Value value = pop(vm);
+    Value key = pop(vm);
 
     if (!IS_STRING(key)) {
-        runtimeError("Argument passed to setAttribute() must be a string");
+        runtimeError(vm, "Argument passed to setAttribute() must be a string");
         return false;
     }
 
-    ObjInstance *instance = AS_INSTANCE(pop()); // Pop the instance
+    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
 
-    tableSet(&instance->fields, AS_STRING(key), value);
+    tableSet(vm, &instance->fields, AS_STRING(key), value);
 
-    push(NIL_VAL);
+    push(vm, NIL_VAL);
 
     return true;
 }
 
-static bool copyShallow(int argCount) {
+static bool copyShallow(VM *vm, int argCount) {
     if (argCount != 1) {
-        runtimeError("copy() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "copy() takes 1 argument (%d  given)", argCount);
         return false;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(pop());
-    ObjInstance *instance = copyInstance(oldInstance, true);
-    push(OBJ_VAL(instance));
+    ObjInstance *oldInstance = AS_INSTANCE(pop(vm));
+    ObjInstance *instance = copyInstance(vm, oldInstance, true);
+    push(vm, OBJ_VAL(instance));
 
     return true;
 }
 
-static bool copyDeep(int argCount) {
+static bool copyDeep(VM *vm, int argCount) {
     if (argCount != 1) {
-        runtimeError("deepCopy() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "deepCopy() takes 1 argument (%d  given)", argCount);
         return false;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(pop());
-    ObjInstance *instance = copyInstance(oldInstance, false);
-    push(OBJ_VAL(instance));
+    ObjInstance *oldInstance = AS_INSTANCE(pop(vm));
+    ObjInstance *instance = copyInstance(vm, oldInstance, false);
+    push(vm, OBJ_VAL(instance));
 
     return true;
 }
 
-bool instanceMethods(char *method, int argCount) {
+bool instanceMethods(VM *vm, char *method, int argCount) {
     if (strcmp(method, "hasAttribute") == 0) {
-        return hasAttribute(argCount);
+        return hasAttribute(vm, argCount);
     } else if (strcmp(method, "getAttribute") == 0) {
-        return getAttribute(argCount);
+        return getAttribute(vm, argCount);
     } else if (strcmp(method, "setAttribute") == 0) {
-        return setAttribute(argCount);
+        return setAttribute(vm, argCount);
     } else if (strcmp(method, "copy") == 0) {
-        return copyShallow(argCount);
+        return copyShallow(vm, argCount);
     } else if (strcmp(method, "deepCopy") == 0) {
-        return copyDeep(argCount);
+        return copyDeep(vm, argCount);
     }
 
     return false;

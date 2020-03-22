@@ -10,12 +10,12 @@ uint32_t hash(char *str) {
     return hash;
 }
 
-ObjList *copyList(ObjList *oldList, bool shallow);
+ObjList *copyList(VM* vm, ObjList *oldList, bool shallow);
 
-ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
-    ObjDict *newDict = initDict();
+ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
+    ObjDict *newDict = initDict(vm);
     // Push to stack to avoid GC
-    push(OBJ_VAL(newDict));
+    push(vm, OBJ_VAL(newDict));
 
     for (int i = 0; i < oldDict->capacity; ++i) {
         if (oldDict->items[i] == NULL) {
@@ -26,59 +26,59 @@ ObjDict *copyDict(ObjDict *oldDict, bool shallow) {
 
         if (!shallow) {
             if (IS_DICT(val)) {
-                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+                val = OBJ_VAL(copyDict(vm, AS_DICT(val), false));
             } else if (IS_LIST(val)) {
-                val = OBJ_VAL(copyList(AS_LIST(val), false));
+                val = OBJ_VAL(copyList(vm, AS_LIST(val), false));
             } else if (IS_INSTANCE(val)) {
-                val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
+                val = OBJ_VAL(copyInstance(vm, AS_INSTANCE(val), false));
             }
         }
 
         // Push to stack to avoid GC
-        push(val);
-        insertDict(newDict, oldDict->items[i]->key, val);
-        pop();
+        push(vm, val);
+        insertDict(vm, newDict, oldDict->items[i]->key, val);
+        pop(vm);
     }
 
-    pop();
+    pop(vm);
     return newDict;
 }
 
-ObjList *copyList(ObjList *oldList, bool shallow) {
-    ObjList *newList = initList();
+ObjList *copyList(VM* vm, ObjList *oldList, bool shallow) {
+    ObjList *newList = initList(vm);
     // Push to stack to avoid GC
-    push(OBJ_VAL(newList));
+    push(vm, OBJ_VAL(newList));
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];
 
         if (!shallow) {
             if (IS_DICT(val)) {
-                val = OBJ_VAL(copyDict(AS_DICT(val), false));
+                val = OBJ_VAL(copyDict(vm, AS_DICT(val), false));
             } else if (IS_LIST(val)) {
-                val = OBJ_VAL(copyList(AS_LIST(val), false));
+                val = OBJ_VAL(copyList(vm, AS_LIST(val), false));
             } else if (IS_INSTANCE(val)) {
-                val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
+                val = OBJ_VAL(copyInstance(vm, AS_INSTANCE(val), false));
             }
         }
 
         // Push to stack to avoid GC
-        push(val);
-        writeValueArray(&newList->values, val);
-        pop();
+        push(vm, val);
+        writeValueArray(vm, &newList->values, val);
+        pop(vm);
     }
 
-    pop();
+    pop(vm);
     return newList;
 }
 
-ObjInstance *copyInstance(ObjInstance *oldInstance, bool shallow) {
-    ObjInstance *instance = newInstance(oldInstance->klass);
+ObjInstance *copyInstance(VM* vm, ObjInstance *oldInstance, bool shallow) {
+    ObjInstance *instance = newInstance(vm, oldInstance->klass);
     // Push to stack to avoid GC
-    push(OBJ_VAL(instance));
+    push(vm, OBJ_VAL(instance));
 
     if (shallow) {
-        tableAddAll(&oldInstance->fields, &instance->fields);
+        tableAddAll(vm, &oldInstance->fields, &instance->fields);
     } else {
         for (int i = 0; i <= oldInstance->fields.capacityMask; i++) {
             Entry *entry = &oldInstance->fields.entries[i];
@@ -86,22 +86,22 @@ ObjInstance *copyInstance(ObjInstance *oldInstance, bool shallow) {
                 Value val = entry->value;
 
                 if (IS_LIST(val)) {
-                    val = OBJ_VAL(copyList(AS_LIST(val), false));
+                    val = OBJ_VAL(copyList(vm, AS_LIST(val), false));
                 } else if (IS_DICT(val)) {
-                    val = OBJ_VAL(copyDict(AS_DICT(val), false));
+                    val = OBJ_VAL(copyDict(vm, AS_DICT(val), false));
                 } else if (IS_INSTANCE(val)) {
-                    val = OBJ_VAL(copyInstance(AS_INSTANCE(val), false));
+                    val = OBJ_VAL(copyInstance(vm, AS_INSTANCE(val), false));
                 }
 
                 // Push to stack to avoid GC
-                push(val);
-                tableSet(&instance->fields, entry->key, val);
-                pop();
+                push(vm, val);
+                tableSet(vm, &instance->fields, entry->key, val);
+                pop(vm);
             }
         }
     }
 
-    pop();
+    pop(vm);
     return instance;
 }
 

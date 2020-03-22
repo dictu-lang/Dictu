@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
-bool stringMethods(char *method, int argCount);
+#include "../common.h"
+
+bool stringMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_strings_h
