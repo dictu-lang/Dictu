@@ -22,7 +22,6 @@ struct _vm {
     Value *stackTop;
     int stackCount;
     bool repl;
-    bool gc;
     const char *scriptName;
     const char *currentScriptName;
     CallFrame *frames;

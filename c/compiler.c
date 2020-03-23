@@ -141,14 +141,11 @@ static void patchJump(Compiler *compiler, int offset) {
 }
 
 static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
-    printf("New compiler!\n");
     compiler->parser = parser;
     compiler->enclosing = parent;
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
-
-    // compiler->name = "1";
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -168,13 +165,11 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
         case TYPE_METHOD:
         case TYPE_STATIC:
         case TYPE_FUNCTION: {
-            printf("name\n");
             compiler->function->name = copyString(
                     parser->vm,
                     parser->previous.start,
                     parser->previous.length
             );
-            printf("name1\n");
             break;
         }
         case TYPE_TOP_LEVEL: {
@@ -209,9 +204,6 @@ static ObjFunction *endCompiler(Compiler *compiler) {
           function->name != NULL ? function->name->chars : "<top>");
     }
 #endif
-
-    printf("END COMPILER!!!\n");
-
     if (compiler->enclosing != NULL) {
         // Capture the upvalues in the new closure object.
         emitBytes(compiler->enclosing, OP_CLOSURE, makeConstant(compiler->enclosing, OBJ_VAL(function)));
@@ -224,14 +216,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
         }
     }
 
-
     compiler->parser->vm->compiler = compiler->enclosing;
-    printf("COMP!\n");
-
-
-    compiler->parser->vm->compiler = compiler->parser->vm->compiler;
-    printf("COMP1!\n");
-
     return function;
 }
 
@@ -266,10 +251,7 @@ static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Compiler *compiler, Precedence precedence);
 
 static uint8_t identifierConstant(Compiler *compiler, Token *name) {
-    printf("constant\n");
-    Value v = OBJ_VAL(copyString(compiler->parser->vm, name->start, name->length));
-    printf("constant1\n");
-    return makeConstant(compiler, v);
+    return makeConstant(compiler, OBJ_VAL(copyString(compiler->parser->vm, name->start, name->length)));
 }
 
 static bool identifiersEqual(Token *a, Token *b) {
@@ -653,13 +635,7 @@ static void string(Compiler *compiler, bool canAssign) {
     int length = parseString(string, parser->previous.length - 2);
     string[length] = '\0';
 
-
-    printf("s\n");
-    Value v = OBJ_VAL(copyString(parser->vm, string, length));
-    printf("s1\n");
-
-    emitConstant(compiler, v);
-
+    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
     free(string);
 }
 
@@ -1641,7 +1617,6 @@ static void statement(Compiler *compiler) {
 }
 
 ObjFunction *compile(VM *vm, const char *source) {
-    printf("compile\n");
     Parser parser;
     parser.vm = vm;
     parser.hadError = false;
@@ -1667,17 +1642,10 @@ ObjFunction *compile(VM *vm, const char *source) {
 }
 
 void grayCompilerRoots(VM *vm) {
-    printf("GRAY ROOT\n");
-
     Compiler *compiler = vm->compiler;
-    // grayObject(vm, (Obj *) compiler->function);
-    // return;
-    printf("GRAY ROOT1\n");
+
     while (compiler != NULL) {
-        printf("here?\n");
         grayObject(vm, (Obj *) compiler->function);
-        printf("here1?\n");
         compiler = compiler->enclosing;
     }
-    printf("GRAY ROOT2\n");
 }

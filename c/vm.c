@@ -64,9 +64,7 @@ void initArgv(VM *vm, int argc, const char *argv[]) {
     push(vm, OBJ_VAL(list));
 
     for (int i = 1; i < argc; i++) {
-        printf("heremaybe?\n");
         Value arg = OBJ_VAL(copyString(vm, argv[i], strlen(argv[i])));
-        printf("heremaybe1?\n");
         push(vm, arg);
         writeValueArray(vm, &list->values, arg);
         pop(vm);
@@ -98,7 +96,6 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->grayCount = 0;
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
-    vm->gc = true;
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
@@ -512,7 +509,6 @@ static InterpretResult run(VM *vm) {
                 printf("\n");                                                                     \
                 disassembleInstruction(&frame->closure->function->chunk,                          \
                         (int) (frame->ip - frame->closure->function->chunk.code));                \
-                printf("here\n");                                                                 \
                 goto *dispatchTable[instruction = READ_BYTE()];                                   \
             }                                                                                     \
             while (false)
@@ -543,7 +539,6 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(CONSTANT): {
             Value constant = READ_CONSTANT();
             push(vm, constant);
-            printf("constant\n");
             DISPATCH();
         }
 
@@ -730,11 +725,8 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GET_SUPER): {
-            printf("here?\n");
             ObjString *name = READ_STRING();
-        printf("here1?\n");
             ObjClass *superclass = AS_CLASS(pop(vm));
-        printf("here2?\n");
             if (!bindMethod(vm, superclass, name)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -891,8 +883,6 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            printf("import\n");
-            // DISPATCH();
             ObjString *fileName = AS_STRING(peek(vm, 0));
 
             // If we have imported this file already, skip.
@@ -903,28 +893,17 @@ static InterpretResult run(VM *vm) {
             char *s = readFile(fileName->chars);
             vm->currentScriptName = fileName->chars;
 
-//            ObjFunction *f = vm->compiler->function;
-//            push(vm, OBJ_VAL(f));
-
             ObjFunction *function = compile(vm, s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
-            printf("Import\n");
             ObjClosure *closure = newClosure(vm, function);
-            printf("Import1\n");
             pop(vm);
 
-            // vm->compiler->function = AS_FUNCTION(pop(vm));
-
             frame->ip = ip;
-            printf("Call\n");
             call(vm, closure, 0);
-            printf("Call1\n");
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
-            // vm->compiler->function = AS_FUNCTION(pop(vm));
-            // pop filename
             free(s);
             DISPATCH();
         }
@@ -1331,31 +1310,22 @@ static InterpretResult run(VM *vm) {
 
             // Create the closure and push it on the stack before creating
             // upvalues so that it doesn't get collected.
-            printf("OP_CLosure\n");
             ObjClosure *closure = newClosure(vm, function);
-            printf("OP_CLosure1\n");
             push(vm, OBJ_VAL(closure));
 
             // Capture upvalues.
             for (int i = 0; i < closure->upvalueCount; i++) {
-                printf("OP_CLosure2\n");
                 uint8_t isLocal = READ_BYTE();
                 uint8_t index = READ_BYTE();
-                printf("OP_CLosure3\n");
                 if (isLocal) {
                     // Make an new upvalue to close over the parent's local
                     // variable.
-                    printf("OP_CLosure3.1\n");
                     closure->upvalues[i] = captureUpvalue(vm, frame->slots + index);
                 } else {
                     // Use the same upvalue as the current call frame.
-                    printf("OP_CLosure3.2\n");
                     closure->upvalues[i] = frame->closure->upvalues[index];
                 }
-                printf("OP_CLosure4\n");
             }
-
-            printf("OP_CLosure - fin\n");
 
             DISPATCH();
         }
@@ -1486,7 +1456,6 @@ InterpretResult interpret(VM *vm, const char *source) {
     ObjFunction *function = compile(vm, source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(vm, OBJ_VAL(function));
-    printf("New closure\n");
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
     callValue(vm, OBJ_VAL(closure), 0);

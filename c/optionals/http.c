@@ -1,12 +1,10 @@
 #include "http.h"
 
 static void createResponse(VM *vm, Response *response) {
-    printf("wowow!\n");
     response->vm = vm;
     response->headers = initList(vm);
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(response->headers));
-    printf("wowow1!\n");
 
     response->len = 0;
     response->res = malloc(response->len + 1);
@@ -15,12 +13,10 @@ static void createResponse(VM *vm, Response *response) {
         exit(71);
     }
     response->res[0] = '\0';
-    printf("wowow2!\n");
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
 {
-    printf("ok!\n");
     Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
     response->res = realloc(response->res, new_len + 1);
@@ -31,30 +27,21 @@ static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
     memcpy(response->res + response->len, ptr, size * nmemb);
     response->res[new_len] = '\0';
     response->len = new_len;
-    printf("ok1!\n");
 
     return size * nmemb;
 }
 
 static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data)
 {
-    printf("head!\n");
     Response *response = (Response *) data;
-    printf("head1.0!\n");
     // if nitems equals 2 its an empty header
     if (nitems != 2) {
-        printf("head1.01!\n");
         Value header = OBJ_VAL(copyString(response->vm, ptr, (nitems - 2) * size));
-        printf("head1.1!\n");
         // Push to stack to avoid GC
         push(response->vm, header);
-        printf("head1.2!\n");
         writeValueArray(response->vm, &response->headers->values, header);
-        printf("head1.3!\n");
         pop(response->vm);
-        printf("head1.4!\n");
     }
-    printf("head1!\n");
     return size * nitems;
 }
 
@@ -136,25 +123,19 @@ static Value get(VM *vm, int argCount, Value *args) {
     curl = curl_easy_init();
 
     if (curl) {
-        printf("here\n");
         Response response;
         createResponse(vm, &response);
-        printf("here1.11\n");
         char *url = AS_CSTRING(args[0]);
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
-        printf("here1.111\n");
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
-        printf("here1.1111\n");
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
-        printf("here1.11111\n");
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
-        printf("here1\n");
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
@@ -163,33 +144,23 @@ static Value get(VM *vm, int argCount, Value *args) {
         }
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-        printf("here1.1\n");
-
         ObjString *content = copyString(vm, response.res, response.len);
-        printf("here1.2\n");
         free(response.res);
 
-        printf("here2\n");
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(content));
 
         /* always cleanup */
         curl_easy_cleanup(curl);
-
         curl_global_cleanup();
-
-        printf("here3\n");
 
         ObjDict *responseVal = initDict(vm);
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
-        printf("here4\n");
-
         insertDict(vm, responseVal, "content", OBJ_VAL(content));
         insertDict(vm, responseVal, "headers", OBJ_VAL(response.headers));
         insertDict(vm, responseVal, "statusCode", NUMBER_VAL(response.statusCode));
-        printf("here5\n");
 
         // Pop header list, content and response dict return off stack
         pop(vm);
@@ -246,23 +217,19 @@ static Value post(VM *vm, int argCount, Value *args) {
     curl = curl_easy_init();
 
     if (curl) {
-        printf("return\n");
         char *url = AS_CSTRING(args[0]);
         char *postValue = "";
         Response response;
         createResponse(vm, &response);
-        printf("return1\n");
 
         if (dict != NULL) {
             postValue = dictToPostArgs(dict);
         }
-        printf("return2\n");
 
         // Set cURL options
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postValue);
-        printf("return3\n");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
@@ -270,7 +237,6 @@ static Value post(VM *vm, int argCount, Value *args) {
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
-        printf("return4\n");
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
@@ -280,10 +246,7 @@ static Value post(VM *vm, int argCount, Value *args) {
 
         // Get status code
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-
-        printf("content?????\n");
         ObjString *content = copyString(vm, response.res, response.len);
-        printf("content1?????\n");
         free(response.res);
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(content));
@@ -291,7 +254,6 @@ static Value post(VM *vm, int argCount, Value *args) {
         if (dict != NULL) {
             free(postValue);
         }
-        printf("return5\n");
 
         /* always cleanup */
         curl_easy_cleanup(curl);
@@ -299,7 +261,6 @@ static Value post(VM *vm, int argCount, Value *args) {
         curl_global_cleanup();
 
         ObjDict *responseVal = initDict(vm);
-        printf("return6\n");
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
@@ -311,10 +272,8 @@ static Value post(VM *vm, int argCount, Value *args) {
         pop(vm);
         pop(vm);
         pop(vm);
-        printf("return90\n");
 
         return OBJ_VAL(responseVal);
-        // return NIL_VAL;
     }
 
     runtimeError(vm, "cURL failed to initialise");
@@ -322,9 +281,7 @@ static Value post(VM *vm, int argCount, Value *args) {
 }
 
 void createHTTPClass(VM *vm) {
-    printf("HTTP??\n");
     ObjString *name = copyString(vm, "HTTP", 4);
-    printf("HTTP1??\n");
     push(vm, OBJ_VAL(name));
     ObjClassNative *klass = newClassNative(vm, name);
     push(vm, OBJ_VAL(klass));

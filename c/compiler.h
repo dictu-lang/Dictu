@@ -77,9 +77,6 @@ typedef struct {
 } Parser;
 
 typedef struct Compiler {
-    char *name;
-
-
     Parser *parser;
 
     struct Compiler *enclosing;
