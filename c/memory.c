@@ -298,8 +298,6 @@ void freeObject(VM *vm, Obj *object) {
 }
 
 void collectGarbage(VM *vm) {
-    return;
-
 #ifdef DEBUG_TRACE_GC
     printf("-- gc begin\n");
     size_t before = vm->bytesAllocated;
@@ -310,13 +308,9 @@ void collectGarbage(VM *vm) {
         grayValue(vm, *slot);
     }
 
-    printf("?\n");
-
     for (int i = 0; i < vm->frameCount; i++) {
         grayObject(vm, (Obj *) vm->frames[i].closure);
     }
-
-    printf("??\n");
 
     // Mark the open upvalues.
     for (ObjUpvalue *upvalue = vm->openUpvalues;

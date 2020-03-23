@@ -144,15 +144,14 @@ static Value get(VM *vm, int argCount, Value *args) {
         }
 
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-
         ObjString *content = copyString(vm, response.res, response.len);
         free(response.res);
+
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(content));
 
         /* always cleanup */
         curl_easy_cleanup(curl);
-
         curl_global_cleanup();
 
         ObjDict *responseVal = initDict(vm);
@@ -247,7 +246,6 @@ static Value post(VM *vm, int argCount, Value *args) {
 
         // Get status code
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-
         ObjString *content = copyString(vm, response.res, response.len);
         free(response.res);
         // Push to stack to avoid GC

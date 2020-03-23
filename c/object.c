@@ -14,7 +14,6 @@
 static Obj *allocateObject(VM *vm, size_t size, ObjType type) {
     Obj *object;
     object = (Obj *) reallocate(vm, NULL, 0, size);
-
     object->type = type;
     object->isDark = false;
     object->next = vm->objects;
@@ -73,7 +72,6 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
 
 ObjFunction *newFunction(VM *vm, bool isStatic) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
-
     function->arity = 0;
     function->arityOptional = 0;
     function->upvalueCount = 0;
@@ -163,7 +161,6 @@ ObjString *copyString(VM *vm, const char *chars, int length) {
     char *heapChars = ALLOCATE(vm, char, length + 1);
     memcpy(heapChars, chars, length);
     heapChars[length] = '\0';
-
     return allocateString(vm, heapChars, length, hash);
 }
 
