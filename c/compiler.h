@@ -68,8 +68,23 @@ typedef struct Loop {
     int scopeDepth;
 } Loop;
 
+typedef struct {
+    VM *vm;
+    Token current;
+    Token previous;
+    bool hadError;
+    bool panicMode;
+} Parser;
+
 typedef struct Compiler {
+    char *name;
+
+
+    Parser *parser;
+
     struct Compiler *enclosing;
+    ClassCompiler *class;
+    Loop *loop;
 
     ObjFunction *function;
     FunctionType type;
@@ -82,18 +97,7 @@ typedef struct Compiler {
     int scopeDepth;
 } Compiler;
 
-typedef struct {
-    VM *vm;
-    Compiler *compiler;
-    ClassCompiler *class;
-    Loop *loop;
-    Token current;
-    Token previous;
-    bool hadError;
-    bool panicMode;
-} Parser;
-
-typedef void (*ParseFn)(Parser *parser, bool canAssign);
+typedef void (*ParseFn)(Compiler *compiler, bool canAssign);
 
 typedef struct {
     ParseFn prefix;

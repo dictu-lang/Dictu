@@ -15,10 +15,12 @@ static Obj *allocateObject(VM *vm, size_t size, ObjType type) {
     Obj *object;
     object = (Obj *) reallocate(vm, NULL, 0, size);
 
+    printf("Obj?\n");
     object->type = type;
     object->isDark = false;
     object->next = vm->objects;
     vm->objects = object;
+    printf("Obj1?\n");
 
 #ifdef DEBUG_TRACE_GC
     printf("%p allocate %zd for %d\n", (void *)object, size, type);
@@ -65,14 +67,17 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     }
 
     ObjClosure *closure = ALLOCATE_OBJ(vm, ObjClosure, OBJ_CLOSURE);
+    printf("Closure?\n");
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
+    printf("Closure1?\n");
     return closure;
 }
 
 ObjFunction *newFunction(VM *vm, bool isStatic) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
+    printf("Function?\n");
 
     function->arity = 0;
     function->arityOptional = 0;
@@ -80,6 +85,7 @@ ObjFunction *newFunction(VM *vm, bool isStatic) {
     function->name = NULL;
     function->staticMethod = isStatic;
     initChunk(vm, &function->chunk);
+    printf("Function1?\n");
     return function;
 }
 
@@ -98,13 +104,16 @@ ObjNative *newNative(VM *vm, NativeFn function) {
 
 static ObjString *allocateString(VM *vm, char *chars, int length,
                                  uint32_t hash) {
+    printf("string?\n");
     ObjString *string = ALLOCATE_OBJ(vm, ObjString, OBJ_STRING);
+    printf("string1?\n");
     string->length = length;
     string->chars = chars;
     string->hash = hash;
     push(vm, OBJ_VAL(string));
     tableSet(vm, &vm->strings, string, NIL_VAL);
     pop(vm);
+    printf("return?\n");
     return string;
 }
 
@@ -160,15 +169,24 @@ ObjString *copyString(VM *vm, const char *chars, int length) {
                                           hash);
     if (interned != NULL) return interned;
 
+    printf("alloc\n");
     char *heapChars = ALLOCATE(vm, char, length + 1);
+    printf("alloc1\n");
     memcpy(heapChars, chars, length);
+    printf("alloc2\n");
     heapChars[length] = '\0';
+    printf("alloc3\n");
 
-    return allocateString(vm, heapChars, length, hash);
+    ObjString *s = allocateString(vm, heapChars, length, hash);
+
+    printf("copy\n");
+
+    return s;
 }
 
 ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
     ObjUpvalue *upvalue = ALLOCATE_OBJ(vm, ObjUpvalue, OBJ_UPVALUE);
+    printf("Upvalue?\n");
     upvalue->closed = NIL_VAL;
     upvalue->value = slot;
     upvalue->next = NULL;

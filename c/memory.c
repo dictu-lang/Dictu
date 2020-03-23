@@ -29,6 +29,7 @@ void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
         free(previous);
         return NULL;
     }
+    printf("here1234?\n");
 
     return realloc(previous, newSize);
 }
@@ -298,7 +299,11 @@ void freeObject(VM *vm, Obj *object) {
 }
 
 void collectGarbage(VM *vm) {
-    return;
+    // return;
+    printf("%s\n", vm->gc ? "gc" : "nop");
+
+//    if (!vm->gc)
+//        return;
 
 #ifdef DEBUG_TRACE_GC
     printf("-- gc begin\n");
@@ -325,11 +330,15 @@ void collectGarbage(VM *vm) {
         grayObject(vm, (Obj *) upvalue);
     }
 
+    printf("???\n");
+
     // Mark the global roots.
     grayTable(vm, &vm->globals);
     grayCompilerRoots(vm);
+    printf("????\n");
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->replVar);
+    printf("?????\n");
 
     // Traverse the references.
     while (vm->grayCount > 0) {
@@ -338,8 +347,12 @@ void collectGarbage(VM *vm) {
         blackenObject(vm, object);
     }
 
+    printf("??????\n");
+
     // Delete unused interned strings.
     tableRemoveWhite(&vm->strings);
+
+    printf("???????\n");
 
     // Collect the white objects.
     Obj **object = &vm->objects;
@@ -357,6 +370,8 @@ void collectGarbage(VM *vm) {
             object = &(*object)->next;
         }
     }
+
+    printf("????????\n");
 
     // Adjust the heap size based on live memory.
     vm->nextGC = vm->bytesAllocated * GC_HEAP_GROW_FACTOR;
