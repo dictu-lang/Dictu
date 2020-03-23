@@ -27,6 +27,7 @@ static void resetStack(VM *vm) {
     vm->frameCount = 0;
     vm->currentFrameCount = 0;
     vm->openUpvalues = NULL;
+    vm->compiler = NULL;
 }
 
 void runtimeError(VM *vm, const char *format, ...) {
@@ -74,7 +75,7 @@ void initArgv(VM *vm, int argc, const char *argv[]) {
 }
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
-    VM *vm = (VM*) malloc(sizeof(*vm));
+    VM *vm = malloc(sizeof(*vm));
 
     if (vm == NULL) {
         printf("Unable to allocate memory\n");
@@ -882,7 +883,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            ObjString *fileName = AS_STRING(pop(vm));
+            ObjString *fileName = AS_STRING(peek(vm, 0));
 
             // If we have imported this file already, skip.
             if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
