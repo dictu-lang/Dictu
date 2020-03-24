@@ -142,6 +142,7 @@ static void patchJump(Compiler *compiler, int offset) {
 
 static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
     compiler->parser = parser;
+    initTable(&compiler->stringConstants);
     compiler->enclosing = parent;
     compiler->function = NULL;
     compiler->class = NULL;
@@ -251,7 +252,15 @@ static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Compiler *compiler, Precedence precedence);
 
 static uint8_t identifierConstant(Compiler *compiler, Token *name) {
-    return makeConstant(compiler, OBJ_VAL(copyString(compiler->parser->vm, name->start, name->length)));
+    ObjString *string = copyString(compiler->parser->vm, name->start, name->length);
+    Value indexValue;
+    if (tableGet(&compiler->stringConstants, string, &indexValue)) {
+        return (uint8_t)AS_NUMBER(indexValue);
+    }
+
+    uint8_t index = makeConstant(compiler, OBJ_VAL(string));
+    tableSet(compiler->parser->vm, &compiler->stringConstants, string, NUMBER_VAL((double)index));
+    return index;
 }
 
 static bool identifiersEqual(Token *a, Token *b) {
@@ -1634,6 +1643,7 @@ ObjFunction *compile(VM *vm, const char *source) {
         } while (!match(&compiler, TOKEN_EOF));
     }
 
+    freeTable(vm, &compiler.stringConstants);
     ObjFunction *function = endCompiler(&compiler);
 
     // If there was a compile error, the code is not valid, so don't
@@ -1646,6 +1656,7 @@ void grayCompilerRoots(VM *vm) {
 
     while (compiler != NULL) {
         grayObject(vm, (Obj *) compiler->function);
+        grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
     }
 }
