@@ -7,6 +7,6 @@
 
 #include "copy.h"
 
-bool setMethods(char *method, int argCount);
+bool setMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_sets_h

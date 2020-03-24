@@ -10,7 +10,7 @@
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.3.3\n"
+#define VERSION "Dictu Version: 0.4.0\n"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
@@ -61,7 +61,7 @@ static bool replCountQuotes(char *line) {
     return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
 }
 
-static void repl(int argc, const char *argv[]) {
+static void repl(VM *vm, int argc, const char *argv[]) {
     printf(VERSION);
     char *line;
 
@@ -96,16 +96,16 @@ static void repl(int argc, const char *argv[]) {
             linenoiseHistorySave("history.txt");
         }
 
-        interpret(fullLine);
+        interpret(vm, fullLine);
 
         free(line);
         free(fullLine);
     }
 }
 
-static void runFile(int argc, const char *argv[]) {
+static void runFile(VM *vm, int argc, const char *argv[]) {
     char *source = readFile(argv[1]);
-    InterpretResult result = interpret(source);
+    InterpretResult result = interpret(vm, source);
     free(source); // [owner]
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
@@ -113,17 +113,17 @@ static void runFile(int argc, const char *argv[]) {
 }
 
 int main(int argc, const char *argv[]) {
-    initVM(argc == 1, argc >= 2 ? argv[1] : "repl", argc, argv);
+    VM *vm = initVM(argc == 1, argc >= 2 ? argv[1] : "repl", argc, argv);
 
     if (argc == 1) {
-        repl(argc, argv);
+        repl(vm, argc, argv);
     } else if (argc >= 2) {
-        runFile(argc, argv);
+        runFile(vm, argc, argv);
     } else {
         fprintf(stderr, "Usage: dictu [path] [args]\n");
         exit(64);
     }
 
-    freeVM();
+    freeVM(vm);
     return 0;
 }

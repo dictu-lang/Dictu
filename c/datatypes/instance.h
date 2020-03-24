@@ -8,6 +8,6 @@
 
 #include "copy.h"
 
-bool instanceMethods(char *method, int argCount);
+bool instanceMethods(VM *vm, char *method, int argCount);
 
 #endif //dictu_instance_h

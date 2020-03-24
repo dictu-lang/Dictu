@@ -1,0 +1,15 @@
+/**
+ * setCWD.du
+ *
+ * Testing the System.setCWD() function
+ *
+ * setCWD() sets the current working directory of the process
+ */
+
+var cwd = System.getCWD();
+assert(type(cwd) == 'string');
+assert(len(cwd) > 0);
+System.setCWD("/");
+assert(System.getCWD() == "/");
+System.setCWD(cwd);
+assert(System.getCWD() == cwd);

@@ -116,21 +116,21 @@ bool valuesEqual(Value a, Value b);
 
 void initValueArray(ValueArray *array);
 
-void writeValueArray(ValueArray *array, Value value);
+void writeValueArray(VM *vm, ValueArray *array, Value value);
 
-void freeValueArray(ValueArray *array);
+void freeValueArray(VM *vm, ValueArray *array);
 
 void initDictValues(ObjDict *dict, uint32_t capacity);
 
 void initSetValues(ObjSet *set, uint32_t capacity);
 
-void insertDict(ObjDict *dict, char *key, Value value);
+void insertDict(VM *vm, ObjDict *dict, char *key, Value value);
 
 void resizeDict(ObjDict *dict, bool grow);
 
 Value searchDict(ObjDict *dict, char *key);
 
-void insertSet(ObjSet *set, Value value);
+void insertSet(VM *vm, ObjSet *set, Value value);
 
 bool searchSet(ObjSet *set, ObjString *string);
 
