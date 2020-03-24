@@ -17,3 +17,14 @@ assert(test == 123);
 // Test assignment of declared var
 x = 100;
 assert(x == 100);
+
+// Test multiple variable assignment in a single statement
+
+var a, b = 10, c, d = "test", e = [1, 2], f = {"test": 10};
+
+assert(a == nil);
+assert(b == 10);
+assert(c == nil);
+assert(d == "test");
+assert(e == [1, 2]);
+assert(f == {"test": 10});
