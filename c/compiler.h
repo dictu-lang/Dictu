@@ -78,6 +78,7 @@ typedef struct {
 
 typedef struct Compiler {
     Parser *parser;
+    Table stringConstants;
 
     struct Compiler *enclosing;
     ClassCompiler *class;
