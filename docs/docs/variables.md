@@ -65,6 +65,5 @@ You can also define multiple variables with a single statement.
 
 ```js
 var a, b = 10, c = "hello!";
-
 print(a, b, c); // nil, 10, 'hello!'
 ```
