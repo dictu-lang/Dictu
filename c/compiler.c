@@ -1202,18 +1202,21 @@ static void funDeclaration(Compiler *compiler) {
 }
 
 static void varDeclaration(Compiler *compiler) {
-    uint8_t global = parseVariable(compiler, "Expect variable name.");
+    do {
+        uint8_t global = parseVariable(compiler, "Expect variable name.");
 
-    if (match(compiler, TOKEN_EQUAL)) {
-        // Compile the initializer.
-        expression(compiler);
-    } else {
-        // Default to nil.
-        emitByte(compiler, OP_NIL);
-    }
+        if (match(compiler, TOKEN_EQUAL)) {
+            // Compile the initializer.
+            expression(compiler);
+        } else {
+            // Default to nil.
+            emitByte(compiler, OP_NIL);
+        }
+
+        defineVariable(compiler, global);
+    } while (match(compiler, TOKEN_COMMA));
+
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
-
-    defineVariable(compiler, global);
 }
 
 static void expressionStatement(Compiler *compiler) {
