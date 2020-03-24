@@ -212,6 +212,26 @@ static Value assertNative(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value isDefinedNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isDefined() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "isDefined() only takes a string as an argument");
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+
+    Value value;
+    if (tableGet(&vm->globals, string, &value))
+       return BOOL_VAL(true);
+
+    return BOOL_VAL(false);
+}
+
 // End of natives
 
 void defineAllNatives(VM *vm) {
@@ -224,7 +244,8 @@ void defineAllNatives(VM *vm) {
             "type",
             "set",
             "print",
-            "assert"
+            "assert",
+            "isDefined"
     };
 
     NativeFn nativeFunctions[] = {
@@ -236,7 +257,8 @@ void defineAllNatives(VM *vm) {
             typeNative,
             setNative,
             printNative,
-            assertNative
+            assertNative,
+            isDefinedNative
     };
 
 

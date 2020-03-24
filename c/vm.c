@@ -641,7 +641,6 @@ static InterpretResult run(VM *vm) {
                 push(vm, values[i - 1]);
             }
 
-
             DISPATCH();
         }
 

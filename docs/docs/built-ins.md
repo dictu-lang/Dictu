@@ -97,3 +97,12 @@ Raise a runtime error if the given boolean is not true.
 assert(10 > 9);
 assert(9 > 10); // assert() was false!
 ```
+
+### isDefined(string)
+
+Returns a boolean depending on whether a variable has been defined in the global scope.
+
+```js
+isDefined("isDefined"); // true
+isDefined("garbage value"); // false
+```
