@@ -205,7 +205,6 @@ static bool joinListItem(VM *vm, int argCount) {
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
         free(output);
     }
-    free(fullString);
 
     pop(vm);
     if (argCount == 2) {
@@ -213,6 +212,8 @@ static bool joinListItem(VM *vm, int argCount) {
     }
 
     push(vm, OBJ_VAL(copyString(vm, fullString, index)));
+
+    free(fullString);
 
     return true;
 }
