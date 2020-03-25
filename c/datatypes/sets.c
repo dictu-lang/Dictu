@@ -11,9 +11,11 @@ static bool addSetItem(VM *vm, int argCount) {
         return false;
     }
 
-    Value value = pop(vm);
-    ObjSet *set = AS_SET(pop(vm));
+    Value value = peek(vm, 0);
+    ObjSet *set = AS_SET(peek(vm, 1));
     insertSet(vm, set, value);
+    pop(vm);
+    pop(vm);
     push(vm, NIL_VAL);
 
     return true;
@@ -30,8 +32,8 @@ static bool removeSetItem(VM *vm, int argCount) {
         return false;
     }
 
-    ObjString *string = AS_STRING(pop(vm));
-    ObjSet *set = AS_SET(pop(vm));
+    ObjString *string = AS_STRING(peek(vm, 0));
+    ObjSet *set = AS_SET(peek(vm, 1));
     int index = string->hash % set->capacity;
 
     while (set->items[index] && !(strcmp(set->items[index]->item->chars, string->chars) == 0 && !set->items[index]->deleted)) {
@@ -46,8 +48,11 @@ static bool removeSetItem(VM *vm, int argCount) {
         set->count--;
 
         if (set->capacity != 8 && set->count * 100 / set->capacity <= 35) {
-            resizeSet(set, false);
+            resizeSet(vm, set, false);
         }
+
+        pop(vm);
+        pop(vm);
 
         push(vm, NIL_VAL);
         return true;

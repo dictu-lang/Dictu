@@ -54,7 +54,7 @@ static uint32_t hash(char *str) {
 
 void insertDict(VM *vm, ObjDict *dict, char *key, Value value) {
     if (dict->count * 100 / dict->capacity >= 60) {
-        resizeDict(dict, true);
+        resizeDict(vm, dict, true);
     }
 
     uint32_t hashValue = hash(key);
@@ -104,7 +104,7 @@ void insertDict(VM *vm, ObjDict *dict, char *key, Value value) {
     dict->count++;
 }
 
-void resizeDict(ObjDict *dict, bool grow) {
+void resizeDict(VM *vm, ObjDict *dict, bool grow) {
     int newSize;
 
     if (grow)
@@ -112,7 +112,7 @@ void resizeDict(ObjDict *dict, bool grow) {
     else
         newSize = dict->capacity >> 1; // Shrink by a factor of 2
 
-    dictItem **items = calloc(newSize, sizeof(*dict->items));
+    dictItem **items = (dictItem **)ALLOCATE(vm, setItem, newSize);
 
     for (int j = 0; j < dict->capacity; ++j) {
         if (!dict->items[j])
@@ -177,7 +177,7 @@ void insertSet(VM *vm, ObjSet *set, Value value) {
     setItem *item = ALLOCATE(vm, setItem, sizeof(setItem));
 
     if (set->count * 100 / set->capacity >= 60) {
-        resizeSet(set, true);
+        resizeSet(vm, set, true);
     }
 
     item->item = string;
@@ -230,7 +230,7 @@ bool searchSetMarkActive(ObjSet *set, ObjString *string) {
     return false;
 }
 
-void resizeSet(ObjSet *set, bool grow) {
+void resizeSet(VM *vm, ObjSet *set, bool grow) {
     int newSize;
 
     if (grow)
@@ -238,7 +238,7 @@ void resizeSet(ObjSet *set, bool grow) {
     else
         newSize = set->capacity >> 1;
 
-    setItem **items = calloc(newSize, sizeof(*set->items));
+    setItem **items = (setItem **)ALLOCATE(vm, setItem, newSize);
 
     for (int j = 0; j < set->capacity; ++j) {
         if (!set->items[j])

@@ -126,7 +126,7 @@ void initSetValues(ObjSet *set, uint32_t capacity);
 
 void insertDict(VM *vm, ObjDict *dict, char *key, Value value);
 
-void resizeDict(ObjDict *dict, bool grow);
+void resizeDict(VM *vm, ObjDict *dict, bool grow);
 
 Value searchDict(ObjDict *dict, char *key);
 
@@ -136,7 +136,7 @@ bool searchSet(ObjSet *set, ObjString *string);
 
 bool searchSetMarkActive(ObjSet *set, ObjString *string);
 
-void resizeSet(ObjSet *set, bool grow);
+void resizeSet(VM *vm, ObjSet *set, bool grow);
 
 char *valueToString(Value value);
 
