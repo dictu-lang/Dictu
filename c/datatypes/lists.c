@@ -6,10 +6,11 @@ static bool pushListItem(VM *vm, int argCount) {
         return false;
     }
 
-    Value listItem = pop(vm);
-
-    ObjList *list = AS_LIST(pop(vm));
+    Value listItem = peek(vm, 0);
+    ObjList *list = AS_LIST(peek(vm, 1));
     writeValueArray(vm, &list->values, listItem);
+    pop(vm);
+    pop(vm);
     push(vm, NIL_VAL);
 
     return true;
@@ -26,10 +27,9 @@ static bool insertListItem(VM *vm, int argCount) {
         return false;
     }
 
-
-    int index = AS_NUMBER(pop(vm));
-    Value insertValue = pop(vm);
-    ObjList *list = AS_LIST(pop(vm));
+    int index = AS_NUMBER(peek(vm, 0));
+    Value insertValue = peek(vm, 1);
+    ObjList *list = AS_LIST(peek(vm, 2));
 
     if (index < 0 || index > list->values.count) {
         runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
@@ -50,6 +50,10 @@ static bool insertListItem(VM *vm, int argCount) {
     }
 
     list->values.values[index] = insertValue;
+    pop(vm);
+    pop(vm);
+    pop(vm);
+
     push(vm, NIL_VAL);
 
     return true;
@@ -70,7 +74,7 @@ static bool popListItem(VM *vm, int argCount) {
             return false;
         }
 
-        list = AS_LIST(pop(vm));
+        list = AS_LIST(peek(vm, 0));
 
         if (list->values.count == 0) {
             runtimeError(vm, "pop(vm); called on an empty list");
@@ -89,8 +93,8 @@ static bool popListItem(VM *vm, int argCount) {
             return false;
         }
 
-        int index = AS_NUMBER(pop(vm));
-        list = AS_LIST(pop(vm));
+        int index = AS_NUMBER(peek(vm, 0));
+        list = AS_LIST(peek(vm, 1));
 
         if (list->values.count == 0) {
             runtimeError(vm, "pop(vm); called on an empty list");
@@ -109,6 +113,12 @@ static bool popListItem(VM *vm, int argCount) {
         }
     }
     list->values.count--;
+
+    pop(vm);
+    if (argCount == 2) {
+        pop(vm);
+    }
+
     push(vm, last);
 
     return true;
@@ -141,6 +151,7 @@ static bool joinListItem(VM *vm, int argCount) {
     }
 
     char *delimiter = ", ";
+    ObjList *list;
 
     if (argCount == 2) {
         if (!IS_STRING(peek(vm, 0))) {
@@ -148,10 +159,11 @@ static bool joinListItem(VM *vm, int argCount) {
             return false;
         }
 
-        delimiter = AS_CSTRING(pop(vm));
+        delimiter = AS_CSTRING(peek(vm, 0));
+        list = AS_LIST(peek(vm, 1));
+    } else {
+        list = AS_LIST(peek(vm, 0));
     }
-
-    ObjList *list = AS_LIST(pop(vm));
 
     char *output;
     char *fullString = NULL;
@@ -189,12 +201,18 @@ static bool joinListItem(VM *vm, int argCount) {
     index += elementLength;
 
     fullString[index] = '\0';
-    push(vm, OBJ_VAL(copyString(vm, fullString, index)));
 
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
         free(output);
     }
     free(fullString);
+
+    pop(vm);
+    if (argCount == 2) {
+        pop(vm);
+    }
+
+    push(vm, OBJ_VAL(copyString(vm, fullString, index)));
 
     return true;
 }
@@ -220,8 +238,11 @@ static bool copyListDeep(VM *vm, int argCount) {
         return false;
     }
 
-    ObjList *oldList = AS_LIST(pop(vm));
-    push(vm, OBJ_VAL(copyList(vm, oldList, false)));
+    ObjList *oldList = AS_LIST(peek(vm, 0));
+    ObjList *newList = copyList(vm, oldList, false);
+    pop(vm);
+    push(vm, OBJ_VAL(newList));
+
 
     return true;
 }
