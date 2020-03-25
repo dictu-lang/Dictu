@@ -41,8 +41,8 @@ static bool removeDictItem(VM *vm, int argCount) {
         return false;
     }
 
-    char *key = AS_CSTRING(pop(vm));
-    ObjDict *dict = AS_DICT(pop(vm));
+    char *key = AS_CSTRING(peek(vm, 0));
+    ObjDict *dict = AS_DICT(peek(vm, 1));
 
     int index = hash(key) % dict->capacity;
 
@@ -58,8 +58,10 @@ static bool removeDictItem(VM *vm, int argCount) {
         dict->count--;
 
         if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 35) {
-            resizeDict(dict, false);
+            resizeDict(vm, dict, false);
         }
+        pop(vm);
+        pop(vm);
 
         push(vm, NIL_VAL);
         return true;
@@ -103,8 +105,10 @@ static bool copyDictShallow(VM *vm, int argCount) {
         return false;
     }
 
-    ObjDict *oldDict = AS_DICT(pop(vm));
-    push(vm, OBJ_VAL(copyDict(vm, oldDict, true)));
+    ObjDict *oldDict = AS_DICT(peek(vm, 0));
+    ObjDict *newDict = copyDict(vm, oldDict, true);
+    pop(vm);
+    push(vm, OBJ_VAL(newDict));
 
     return true;
 }
@@ -115,8 +119,10 @@ static bool copyDictDeep(VM *vm, int argCount) {
         return false;
     }
 
-    ObjDict *oldDict = AS_DICT(pop(vm));
-    push(vm, OBJ_VAL(copyDict(vm, oldDict, false)));
+    ObjDict *oldDict = AS_DICT(peek(vm, 0));
+    ObjDict *newDict = copyDict(vm, oldDict, false);
+    pop(vm);
+    push(vm, OBJ_VAL(newDict));
 
     return true;
 }

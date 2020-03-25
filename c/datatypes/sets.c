@@ -48,7 +48,7 @@ static bool removeSetItem(VM *vm, int argCount) {
         set->count--;
 
         if (set->capacity != 8 && set->count * 100 / set->capacity <= 35) {
-            resizeSet(set, false);
+            resizeSet(vm, set, false);
         }
 
         pop(vm);

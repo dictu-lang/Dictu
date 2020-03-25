@@ -71,10 +71,9 @@ static bool setAttribute(VM *vm, int argCount) {
         return false;
     }
 
-    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
-
+    ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
     tableSet(vm, &instance->fields, AS_STRING(key), value);
-
+    pop(vm);
     push(vm, NIL_VAL);
 
     return true;
@@ -86,8 +85,9 @@ static bool copyShallow(VM *vm, int argCount) {
         return false;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(pop(vm));
+    ObjInstance *oldInstance = AS_INSTANCE(peek(vm, 0));
     ObjInstance *instance = copyInstance(vm, oldInstance, true);
+    pop(vm);
     push(vm, OBJ_VAL(instance));
 
     return true;
@@ -99,8 +99,9 @@ static bool copyDeep(VM *vm, int argCount) {
         return false;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(pop(vm));
+    ObjInstance *oldInstance = AS_INSTANCE(peek(vm, 0));
     ObjInstance *instance = copyInstance(vm, oldInstance, false);
+    pop(vm);
     push(vm, OBJ_VAL(instance));
 
     return true;
