@@ -565,12 +565,6 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(POP): {
-            if (IS_FILE(peek(vm, 0))) {
-                ObjFile *file = AS_FILE(peek(vm, 0));
-                fclose(file->file);
-                collectGarbage(vm);
-            }
-
             pop(vm);
             DISPATCH();
         }
@@ -1437,6 +1431,12 @@ static InterpretResult run(VM *vm) {
             }
 
             push(vm, OBJ_VAL(file));
+            DISPATCH();
+        }
+
+        CASE_CODE(CLOSE_FILE): {
+            ObjFile *file = AS_FILE(peek(vm, 0));
+            fclose(file->file);
             DISPATCH();
         }
     }

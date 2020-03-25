@@ -1444,8 +1444,8 @@ static void withStatement(Compiler *compiler) {
     local->name = syntheticToken("file");
 
     emitByte(compiler, OP_OPEN_FILE);
-
     statement(compiler);
+    emitByte(compiler, OP_CLOSE_FILE);
     endScope(compiler);
 }
 
