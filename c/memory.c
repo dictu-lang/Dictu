@@ -158,14 +158,6 @@ static void blackenObject(VM *vm, Obj *object) {
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
             grayTable(vm, &dict->items);
-            /*
-            for (int i = 0; i < dict->capacity; ++i) {
-                if (!dict->items[i])
-                    continue;
-
-                grayValue(vm, dict->items[i]->item);
-            }
-             */
             break;
         }
 
