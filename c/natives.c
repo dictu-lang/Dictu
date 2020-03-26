@@ -112,7 +112,7 @@ static Value lenNative(VM *vm, int argCount, Value *args) {
     } else if (IS_LIST(args[0])) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
     } else if (IS_DICT(args[0])) {
-        return NUMBER_VAL(AS_DICT(args[0])->count);
+        return NUMBER_VAL(AS_DICT(args[0])->items.count);
     } else if (IS_SET(args[0])) {
         return NUMBER_VAL(AS_SET(args[0])->count);
     }

@@ -33,11 +33,13 @@ void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
     return realloc(previous, newSize);
 }
 
+/*
 void freeDictValue(dictItem *item) {
     free(item->key);
     free(item);
 }
-
+ */
+/*
 void freeDict(ObjDict *dict) {
     for (int i = 0; i < dict->capacity; i++) {
         dictItem *item = dict->items[i];
@@ -48,6 +50,7 @@ void freeDict(ObjDict *dict) {
     free(dict->items);
     free(dict);
 }
+*/
 
 void freeSetValue (setItem *item) {
     free(item);
@@ -173,12 +176,15 @@ static void blackenObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
+            grayTable(vm, &dict->items);
+            /*
             for (int i = 0; i < dict->capacity; ++i) {
                 if (!dict->items[i])
                     continue;
 
                 grayValue(vm, dict->items[i]->item);
             }
+             */
             break;
         }
 
@@ -275,7 +281,8 @@ void freeObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            freeDict(dict);
+            freeTable(vm, &dict->items);
+            FREE(vm, ObjDict, dict);
             break;
         }
 

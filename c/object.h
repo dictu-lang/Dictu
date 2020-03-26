@@ -101,9 +101,12 @@ struct dictItem {
 
 struct sObjDict {
     Obj obj;
+    Table items;
+    /*
     int capacity;
     int count;
     dictItem **items;
+     */
 };
 
 struct setItem {

@@ -15,7 +15,7 @@ static Value parseJson(VM *vm, json_value *json) {
             for (unsigned int i = 0; i < json->u.object.length; i++) {
                 Value val = parseJson(vm, json->u.object.values[i].value);
                 push(vm, val);
-                insertDict(vm, dict, json->u.object.values[i].name, val);
+                tableSet(vm, &dict->items, copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length), val);
                 pop(vm);
             }
 
@@ -127,14 +127,20 @@ json_value* stringifyJson(Value value) {
 
             case OBJ_DICT: {
                 ObjDict *dict = AS_DICT(value);
-                json_value *json = json_object_new(dict->count);
+                json_value *json = json_object_new(dict->items.count);
 
-                for (int i = 0; i < dict->capacity; i++) {
-                    if (dict->items[i] == NULL) {
+                for (int i = 0; i <= dict->items.capacityMask; i++) {
+                    Entry *entry = &dict->items.entries[i];
+                    if (entry->key == NULL) {
                         continue;
                     }
 
-                    json_object_push_nocopy(json, strlen(dict->items[i]->key), dict->items[i]->key, stringifyJson(dict->items[i]->item));
+                    json_object_push_nocopy(
+                            json,
+                            entry->key->length,
+                            entry->key->chars,
+                            stringifyJson(entry->value)
+                    );
                 }
 
                 return json;

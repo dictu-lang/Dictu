@@ -418,7 +418,7 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_DICT(value) && AS_DICT(value)->items.count == 0) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
@@ -939,9 +939,10 @@ static InterpretResult run(VM *vm) {
             }
 
             ObjDict *dict = AS_DICT(dictValue);
-            char *keyString = AS_CSTRING(key);
+            ObjString *keyString = AS_STRING(key);
 
-            insertDict(vm, dict, keyString, value);
+            // insertDict(vm, dict, keyString, value);
+            tableSet(vm, &dict->items, keyString, value);
 
             pop(vm);
             pop(vm);
@@ -1012,9 +1013,14 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *key = AS_CSTRING(indexValue);
+                    ObjString *key = AS_STRING(indexValue);
 
-                    push(vm, searchDict(dict, key));
+                    Value v;
+                    if (tableGet(&dict->items, key, &v)) {
+                        push(vm, v);
+                    } else {
+                        push(vm, NIL_VAL);
+                    }
 
                     DISPATCH();
                 }
@@ -1078,9 +1084,10 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *keyString = AS_CSTRING(indexValue);
+                    ObjString *keyString = AS_STRING(indexValue);
 
-                    insertDict(vm, dict, keyString, assignValue);
+                    // insertDict(vm, dict, keyString, value);
+                    tableSet(vm, &dict->items, keyString, assignValue);
 
                     // Pop after the values have been inserted to stop GC cleanup
                     pop(vm);
@@ -1243,11 +1250,18 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *key = AS_CSTRING(indexValue);
+                    ObjString *key = AS_STRING(indexValue);
+
+                    Value v;
+                    bool found = tableGet(&dict->items, key, &v);
 
                     push(vm, subscriptValue);
                     push(vm, indexValue);
-                    push(vm, searchDict(dict, key));
+                    if (found) {
+                        push(vm, v);
+                    } else {
+                        push(vm, NIL_VAL);
+                    }
                     push(vm, value);
 
                     DISPATCH();
