@@ -941,7 +941,6 @@ static InterpretResult run(VM *vm) {
             ObjDict *dict = AS_DICT(dictValue);
             ObjString *keyString = AS_STRING(key);
 
-            // insertDict(vm, dict, keyString, value);
             tableSet(vm, &dict->items, keyString, value);
 
             pop(vm);
@@ -1086,7 +1085,6 @@ static InterpretResult run(VM *vm) {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     ObjString *keyString = AS_STRING(indexValue);
 
-                    // insertDict(vm, dict, keyString, value);
                     tableSet(vm, &dict->items, keyString, assignValue);
 
                     // Pop after the values have been inserted to stop GC cleanup

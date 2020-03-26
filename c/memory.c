@@ -33,25 +33,6 @@ void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
     return realloc(previous, newSize);
 }
 
-/*
-void freeDictValue(dictItem *item) {
-    free(item->key);
-    free(item);
-}
- */
-/*
-void freeDict(ObjDict *dict) {
-    for (int i = 0; i < dict->capacity; i++) {
-        dictItem *item = dict->items[i];
-        if (item != NULL) {
-            freeDictValue(item);
-        }
-    }
-    free(dict->items);
-    free(dict);
-}
-*/
-
 void freeSetValue (setItem *item) {
     free(item);
 }

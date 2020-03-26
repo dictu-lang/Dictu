@@ -37,7 +37,6 @@ ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
         // Push to stack to avoid GC
         push(vm, val);
         tableSet(vm, &newDict->items, oldDict->items.entries[i].key, val);
-        // insertDict(vm, newDict, oldDict->items[i]->key, val);
         pop(vm);
     }
 

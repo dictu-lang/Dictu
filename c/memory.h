@@ -32,10 +32,6 @@ void freeObjects(VM *vm);
 
 void freeObject(VM *vm, Obj *object);
 
-// void freeDictValue(dictItem *item);
-
-// void freeDict(ObjDict *item);
-
 void freeSetValue(setItem *item);
 
 #endif
