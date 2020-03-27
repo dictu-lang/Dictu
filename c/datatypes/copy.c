@@ -1,15 +1,5 @@
 #include "copy.h"
 
-uint32_t hash(char *str) {
-    uint32_t hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
-}
-
 ObjList *copyList(VM* vm, ObjList *oldList, bool shallow);
 
 ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {

@@ -14,6 +14,4 @@ ObjDict *copyDict(VM *vm, ObjDict *oldDict, bool shallow);
 
 ObjInstance *copyInstance(VM *vm, ObjInstance *oldInstance, bool shallow);
 
-uint32_t hash(char *str);
-
 #endif //dictu_copy_h
