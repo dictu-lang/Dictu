@@ -19,12 +19,11 @@ static bool getDictItem(VM *vm, int argCount) {
     Value key = pop(vm);
     ObjDict *dict = AS_DICT(pop(vm));
 
-    Value ret = searchDict(dict, AS_CSTRING(key));
-
-    if (ret == NIL_VAL) {
-        push(vm, defaultValue);
-    } else {
+    Value ret;
+    if (tableGet(&dict->items, AS_STRING(key), &ret)) {
         push(vm, ret);
+    } else {
+        push(vm, defaultValue);
     }
 
     return true;
@@ -41,33 +40,15 @@ static bool removeDictItem(VM *vm, int argCount) {
         return false;
     }
 
-    char *key = AS_CSTRING(peek(vm, 0));
-    ObjDict *dict = AS_DICT(peek(vm, 1));
+    ObjString *key = AS_STRING(pop(vm));
+    ObjDict *dict = AS_DICT(pop(vm));
 
-    int index = hash(key) % dict->capacity;
-
-    while (dict->items[index] && !(strcmp(dict->items[index]->key, key) == 0 && !dict->items[index]->deleted)) {
-        index++;
-        if (index == dict->capacity) {
-            index = 0;
-        }
-    }
-
-    if (dict->items[index]) {
-        dict->items[index]->deleted = true;
-        dict->count--;
-
-        if (dict->capacity != 8 && dict->count * 100 / dict->capacity <= 35) {
-            resizeDict(vm, dict, false);
-        }
-        pop(vm);
-        pop(vm);
-
+    if (tableDelete(&dict->items, key)) {
         push(vm, NIL_VAL);
         return true;
     }
 
-    runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", key);
+    runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", key->chars);
     return false;
 }
 
@@ -82,20 +63,16 @@ static bool dictItemExists(VM *vm, int argCount) {
         return false;
     }
 
-    char *key = AS_CSTRING(pop(vm));
+    ObjString *key = AS_STRING(pop(vm));
     ObjDict *dict = AS_DICT(pop(vm));
+    Value v;
 
-    for (int i = 0; i < dict->capacity; ++i) {
-        if (!dict->items[i])
-            continue;
-
-        if (strcmp(dict->items[i]->key, key) == 0 && !dict->items[i]->deleted) {
-            push(vm, TRUE_VAL);
-            return true;
-        }
+    if (tableGet(&dict->items, key, &v)) {
+        push(vm, TRUE_VAL);
+    } else {
+        push(vm, FALSE_VAL);
     }
 
-    push(vm, FALSE_VAL);
     return true;
 }
 
