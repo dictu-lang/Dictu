@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "vm.h"
 
 char *readFile(const char *path) {
     FILE *file = fopen(path, "rb");
@@ -28,4 +31,12 @@ char *readFile(const char *path) {
 
     fclose(file);
     return buffer;
+}
+
+void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
+    push(vm, OBJ_VAL(copyString(vm, name, (int) strlen(name))));
+    push(vm, OBJ_VAL(newNative(vm, function)));
+    tableSet(vm, table, AS_STRING(vm->stack[0]), vm->stack[1]);
+    pop(vm);
+    pop(vm);
 }

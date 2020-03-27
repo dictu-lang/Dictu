@@ -20,7 +20,6 @@ struct _vm {
     Compiler *compiler;
     Value stack[STACK_MAX];
     Value *stackTop;
-    int stackCount;
     bool repl;
     const char *scriptName;
     const char *currentScriptName;
@@ -31,6 +30,7 @@ struct _vm {
     Table globals;
     Table strings;
     Table imports;
+    Table instanceMethods;
     ObjString *initString;
     ObjString *replVar;
     ObjString *argv;

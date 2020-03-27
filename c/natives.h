@@ -2,6 +2,7 @@
 #define dictu_natives_h
 
 #include "common.h"
+#include "util.h"
 
 void defineAllNatives(VM *vm);
 

@@ -2,123 +2,105 @@
 #include "../vm.h"
 #include "../memory.h"
 
-static bool hasAttribute(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "hasAttribute() takes 2 arguments (%d  given)", argCount);
-        return false;
+static Value hasAttribute(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "hasAttribute() takes 1 argument (%d  given)", argCount);
+        return EMPTY_VAL;
     }
 
-    Value value = pop(vm); // Pop the "attribute"
-    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
+    ObjInstance *instance = AS_INSTANCE(args[0]);
+    Value value = args[1];
 
     if (!IS_STRING(value)) {
         runtimeError(vm, "Argument passed to hasAttribute() must be a string");
-        return false;
+        return EMPTY_VAL;
     }
 
     Value _; // Unused variable
     if (tableGet(&instance->fields, AS_STRING(value), &_)) {
-        push(vm, TRUE_VAL);
-    } else {
-        push(vm, FALSE_VAL);
+        return TRUE_VAL;
     }
 
-    return true;
+    return FALSE_VAL;
 }
 
-static bool getAttribute(VM *vm, int argCount) {
-    if (argCount != 2 && argCount != 3) {
-        runtimeError(vm, "getAttribute() takes 2 or 3 arguments (%d  given)", argCount);
-        return false;
+static Value getAttribute(VM *vm, int argCount, Value *args) {
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "getAttribute() takes 1 or 2 arguments (%d  given)", argCount);
+        return EMPTY_VAL;
     }
 
     Value defaultValue = NIL_VAL;
     // Passed in a default value
-    if (argCount == 3) {
-        defaultValue = pop(vm);
+    if (argCount == 2) {
+        defaultValue = args[2];
     }
 
-    Value key = pop(vm);
+    Value key = args[1];
 
     if (!IS_STRING(key)) {
         runtimeError(vm, "Argument passed to getAttribute() must be a string");
-        return false;
+        return EMPTY_VAL;
     }
 
-    ObjInstance *instance = AS_INSTANCE(pop(vm)); // Pop the instance
+    ObjInstance *instance = AS_INSTANCE(args[0]);
 
     Value value;
     if (tableGet(&instance->fields, AS_STRING(key), &value)) {
-        push(vm, value);
-    } else {
-        push(vm, defaultValue);
+        return value;
     }
 
-    return true;
+    return defaultValue;
 }
 
-static bool setAttribute(VM *vm, int argCount) {
-    if (argCount != 3) {
-        runtimeError(vm, "setAttribute() takes 3 arguments (%d  given)", argCount);
-        return false;
+static Value setAttribute(VM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "setAttribute() takes 2 arguments (%d  given)", argCount);
+        return EMPTY_VAL;
     }
 
-    Value value = pop(vm);
-    Value key = pop(vm);
+    Value value = args[2];
+    Value key = args[1];
 
     if (!IS_STRING(key)) {
         runtimeError(vm, "Argument passed to setAttribute() must be a string");
-        return false;
+        return EMPTY_VAL;
     }
 
-    ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+    ObjInstance *instance = AS_INSTANCE(args[0]);
     tableSet(vm, &instance->fields, AS_STRING(key), value);
-    pop(vm);
-    push(vm, NIL_VAL);
 
-    return true;
+    return NIL_VAL;
 }
 
-static bool copyShallow(VM *vm, int argCount) {
-    if (argCount != 1) {
-        runtimeError(vm, "copy() takes 1 argument (%d  given)", argCount);
-        return false;
+static Value copyShallow(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "copy() takes no arguments (%d  given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(peek(vm, 0));
+    ObjInstance *oldInstance = AS_INSTANCE(args[0]);
     ObjInstance *instance = copyInstance(vm, oldInstance, true);
-    pop(vm);
-    push(vm, OBJ_VAL(instance));
 
-    return true;
+    return OBJ_VAL(instance);
 }
 
-static bool copyDeep(VM *vm, int argCount) {
-    if (argCount != 1) {
-        runtimeError(vm, "deepCopy() takes 1 argument (%d  given)", argCount);
-        return false;
+static Value copyDeep(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "deepCopy() takes no arguments (%d  given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjInstance *oldInstance = AS_INSTANCE(peek(vm, 0));
+    ObjInstance *oldInstance = AS_INSTANCE(args[0]);
     ObjInstance *instance = copyInstance(vm, oldInstance, false);
-    pop(vm);
-    push(vm, OBJ_VAL(instance));
 
-    return true;
+    return OBJ_VAL(instance);
 }
 
-bool instanceMethods(VM *vm, char *method, int argCount) {
-    if (strcmp(method, "hasAttribute") == 0) {
-        return hasAttribute(vm, argCount);
-    } else if (strcmp(method, "getAttribute") == 0) {
-        return getAttribute(vm, argCount);
-    } else if (strcmp(method, "setAttribute") == 0) {
-        return setAttribute(vm, argCount);
-    } else if (strcmp(method, "copy") == 0) {
-        return copyShallow(vm, argCount);
-    } else if (strcmp(method, "deepCopy") == 0) {
-        return copyDeep(vm, argCount);
-    }
-
-    return false;
+void declareInstanceMethods(VM *vm) {
+    defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
+    defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
+    defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);
+    defineNative(vm, &vm->instanceMethods, "copy", copyShallow);
+    defineNative(vm, &vm->instanceMethods, "deepCopy", copyDeep);
 }

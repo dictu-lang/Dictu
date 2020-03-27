@@ -99,9 +99,17 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
+    initTable(&vm->instanceMethods);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
+
+    // Native functions
     defineAllNatives(vm);
+
+    // Native methods
+    declareInstanceMethods(vm);
+
+    // Native classes
     createMathsClass(vm);
     createEnvClass(vm);
     createSystemClass(vm);
@@ -109,6 +117,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
+
 
     if (!vm->repl) {
         initArgv(vm, argc, argv);
@@ -131,12 +140,10 @@ void freeVM(VM *vm) {
 void push(VM *vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
-    vm->stackCount++;
 }
 
 Value pop(VM *vm) {
     vm->stackTop--;
-    vm->stackCount--;
     return *vm->stackTop;
 }
 
@@ -212,7 +219,6 @@ static bool callValue(VM *vm, Value callee, int argCount) {
                     return false;
 
                 vm->stackTop -= argCount + 1;
-                vm->stackCount -= argCount + 1;
                 push(vm, result);
                 return true;
             }
@@ -306,7 +312,16 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             }
 
             // Check for instance methods.
-            if (instanceMethods(vm, name->chars, argCount + 1)) {
+            if (tableGet(&vm->instanceMethods, name, &value)) {
+                NativeFn native = AS_NATIVE(value);
+
+                Value result = native(vm, argCount, vm->stackTop - argCount - 1);
+
+                if (IS_EMPTY(result))
+                    return false;
+
+                vm->stackTop -= argCount + 1;
+                push(vm, result);
                 return true;
             }
 
