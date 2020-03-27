@@ -7,6 +7,9 @@
 #include <ctype.h>
 
 #include "../common.h"
+#include "../util.h"
+
+void declareStringMethods(VM *vm);
 
 bool stringMethods(VM *vm, char *method, int argCount);
 

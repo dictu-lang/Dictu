@@ -99,7 +99,6 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
-    initTable(&vm->instanceMethods);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
@@ -107,6 +106,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     defineAllNatives(vm);
 
     // Native methods
+    declareStringMethods(vm);
     declareInstanceMethods(vm);
 
     // Native classes
@@ -233,6 +233,19 @@ static bool callValue(VM *vm, Value callee, int argCount) {
     return false;
 }
 
+static bool callNativeMethod(VM *vm, Value method, int argCount) {
+    NativeFn native = AS_NATIVE(method);
+
+    Value result = native(vm, argCount, vm->stackTop - argCount - 1);
+
+    if (IS_EMPTY(result))
+        return false;
+
+    vm->stackTop -= argCount + 1;
+    push(vm, result);
+    return true;
+}
+
 static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
                             int argCount) {
     // Look for the method.
@@ -282,7 +295,13 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
 
         case OBJ_STRING: {
-            return stringMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->stringMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "String has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_LIST: {
@@ -313,16 +332,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
 
             // Check for instance methods.
             if (tableGet(&vm->instanceMethods, name, &value)) {
-                NativeFn native = AS_NATIVE(value);
-
-                Value result = native(vm, argCount, vm->stackTop - argCount - 1);
-
-                if (IS_EMPTY(result))
-                    return false;
-
-                vm->stackTop -= argCount + 1;
-                push(vm, result);
-                return true;
+                return callNativeMethod(vm, value, argCount);
             }
 
             return invokeFromClass(vm, instance->klass, name, argCount);

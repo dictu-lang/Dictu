@@ -98,6 +98,8 @@ static Value copyDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareInstanceMethods(VM *vm) {
+    initTable(&vm->instanceMethods);
+
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);

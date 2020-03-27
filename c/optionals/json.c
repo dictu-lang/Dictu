@@ -205,8 +205,8 @@ void createJSONClass(VM *vm) {
     /**
      * Define Json methods
      */
-    defineNativeMethod(vm, klass, "parse", parse);
-    defineNativeMethod(vm, klass, "stringify", stringify);
+    defineNative(vm, &klass->methods, "parse", parse);
+    defineNative(vm, &klass->methods, "stringify", stringify);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

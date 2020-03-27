@@ -176,14 +176,14 @@ void createMathsClass(VM *vm) {
     /**
      * Define Math methods
      */
-    defineNativeMethod(vm, klass, "average", averageNative);
-    defineNativeMethod(vm, klass, "floor", floorNative);
-    defineNativeMethod(vm, klass, "round", roundNative);
-    defineNativeMethod(vm, klass, "ceil", ceilNative);
-    defineNativeMethod(vm, klass, "abs", absNative);
-    defineNativeMethod(vm, klass, "max", maxNative);
-    defineNativeMethod(vm, klass, "min", minNative);
-    defineNativeMethod(vm, klass, "sum", sumNative);
+    defineNative(vm, &klass->methods, "average", averageNative);
+    defineNative(vm, &klass->methods, "floor", floorNative);
+    defineNative(vm, &klass->methods, "round", roundNative);
+    defineNative(vm, &klass->methods, "ceil", ceilNative);
+    defineNative(vm, &klass->methods, "abs", absNative);
+    defineNative(vm, &klass->methods, "max", maxNative);
+    defineNative(vm, &klass->methods, "min", minNative);
+    defineNative(vm, &klass->methods, "sum", sumNative);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

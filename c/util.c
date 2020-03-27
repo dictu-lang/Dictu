@@ -34,9 +34,11 @@ char *readFile(const char *path) {
 }
 
 void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
-    push(vm, OBJ_VAL(copyString(vm, name, (int) strlen(name))));
-    push(vm, OBJ_VAL(newNative(vm, function)));
-    tableSet(vm, table, AS_STRING(vm->stack[0]), vm->stack[1]);
+    ObjNative *native = newNative(vm, function);
+    push(vm, OBJ_VAL(native));
+    ObjString *methodName = copyString(vm, name, strlen(name));
+    push(vm, OBJ_VAL(methodName));
+    tableSet(vm, table, methodName, OBJ_VAL(native));
     pop(vm);
     pop(vm);
 }

@@ -291,8 +291,8 @@ void createHTTPClass(VM *vm) {
     /**
      * Define Http methods
      */
-    defineNativeMethod(vm, klass, "get", get);
-    defineNativeMethod(vm, klass, "post", post);
+    defineNative(vm, &klass->methods, "get", get);
+    defineNative(vm, &klass->methods, "post", post);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

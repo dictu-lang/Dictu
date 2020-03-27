@@ -30,6 +30,7 @@ struct _vm {
     Table globals;
     Table strings;
     Table imports;
+    Table stringMethods;
     Table instanceMethods;
     ObjString *initString;
     ObjString *replVar;
