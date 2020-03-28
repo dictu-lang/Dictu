@@ -113,7 +113,7 @@ static Value containsListItem(VM *vm, int argCount, Value *args) {
 
 static Value joinListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "join() takes either no or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "join() takes 1 optional argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
