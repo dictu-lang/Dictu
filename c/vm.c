@@ -142,6 +142,12 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
+    freeTable(vm, &vm->stringMethods);
+    freeTable(vm, &vm->listMethods);
+    freeTable(vm, &vm->dictMethods);
+    freeTable(vm, &vm->setMethods);
+    freeTable(vm, &vm->fileMethods);
+    freeTable(vm, &vm->instanceMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;

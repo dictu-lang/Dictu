@@ -142,11 +142,11 @@ static void patchJump(Compiler *compiler, int offset) {
 
 static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
     compiler->parser = parser;
-    initTable(&compiler->stringConstants);
     compiler->enclosing = parent;
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
+    initTable(&compiler->stringConstants);
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -217,6 +217,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
         }
     }
 
+    freeTable(compiler->parser->vm, &compiler->stringConstants);
     compiler->parser->vm->compiler = compiler->enclosing;
     return function;
 }
@@ -1646,7 +1647,6 @@ ObjFunction *compile(VM *vm, const char *source) {
         } while (!match(&compiler, TOKEN_EOF));
     }
 
-    freeTable(vm, &compiler.stringConstants);
     ObjFunction *function = endCompiler(&compiler);
 
     // If there was a compile error, the code is not valid, so don't
@@ -1659,6 +1659,7 @@ void grayCompilerRoots(VM *vm) {
 
     while (compiler != NULL) {
         grayObject(vm, (Obj *) compiler->function);
+        // if (compiler->stringConstants != NULL)
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
     }
