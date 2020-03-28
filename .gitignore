@@ -15,3 +15,9 @@ text\.txt
 
 *.py
 *.pyc
+
+benchmark.sh
+
+out.txt
+
+time.du
