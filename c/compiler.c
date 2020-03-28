@@ -143,10 +143,10 @@ static void patchJump(Compiler *compiler, int offset) {
 static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
     compiler->parser = parser;
     compiler->enclosing = parent;
+    initTable(&compiler->stringConstants);
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
-    initTable(&compiler->stringConstants);
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -1659,7 +1659,6 @@ void grayCompilerRoots(VM *vm) {
 
     while (compiler != NULL) {
         grayObject(vm, (Obj *) compiler->function);
-        // if (compiler->stringConstants != NULL)
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
     }
