@@ -101,6 +101,7 @@ bool tableDelete(Table *table, ObjString *key) {
     if (entry->key == NULL) return false;
 
     // Place a tombstone in the entry.
+    table->count--;
     entry->key = NULL;
     entry->value = BOOL_VAL(true);
 

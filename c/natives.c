@@ -5,14 +5,6 @@
 #include "natives.h"
 #include "vm.h"
 
-static void defineNative(VM *vm, const char *name, NativeFn function) {
-    push(vm, OBJ_VAL(copyString(vm, name, (int) strlen(name))));
-    push(vm, OBJ_VAL(newNative(vm, function)));
-    tableSet(vm, &vm->globals, AS_STRING(vm->stack[0]), vm->stack[1]);
-    pop(vm);
-    pop(vm);
-}
-
 // Native functions
 static Value numberNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
@@ -112,7 +104,7 @@ static Value lenNative(VM *vm, int argCount, Value *args) {
     } else if (IS_LIST(args[0])) {
         return NUMBER_VAL(AS_LIST(args[0])->values.count);
     } else if (IS_DICT(args[0])) {
-        return NUMBER_VAL(AS_DICT(args[0])->count);
+        return NUMBER_VAL(AS_DICT(args[0])->items.count);
     } else if (IS_SET(args[0])) {
         return NUMBER_VAL(AS_SET(args[0])->count);
     }
@@ -263,6 +255,6 @@ void defineAllNatives(VM *vm) {
 
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
-        defineNative(vm, nativeNames[i], nativeFunctions[i]);
+        defineNative(vm, &vm->globals, nativeNames[i], nativeFunctions[i]);
     }
 }

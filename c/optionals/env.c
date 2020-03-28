@@ -51,8 +51,8 @@ void createEnvClass(VM *vm) {
     /**
      * Define Env methods
      */
-    defineNativeMethod(vm, klass, "get", get);
-    defineNativeMethod(vm, klass, "set", set);
+    defineNative(vm, &klass->methods, "get", get);
+    defineNative(vm, &klass->methods, "set", set);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

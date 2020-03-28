@@ -1,39 +1,36 @@
 #include "lists.h"
 
-static bool pushListItem(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "push() takes 2 arguments (%d given)", argCount);
-        return false;
+
+static Value pushListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "push() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    Value listItem = pop(vm);
+    ObjList *list = AS_LIST(args[0]);
+    writeValueArray(vm, &list->values, args[1]);
 
-    ObjList *list = AS_LIST(pop(vm));
-    writeValueArray(vm, &list->values, listItem);
-    push(vm, NIL_VAL);
-
-    return true;
+    return NIL_VAL;
 }
 
-static bool insertListItem(VM *vm, int argCount) {
-    if (argCount != 3) {
-        runtimeError(vm, "insert() takes 3 arguments (%d given)", argCount);
-        return false;
+static Value insertListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "insert() takes 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(peek(vm, 0))) {
-        runtimeError(vm, "insert() third argument must be a number");
-        return false;
+    if (!IS_NUMBER(args[2])) {
+        runtimeError(vm, "insert() second argument must be a number");
+        return EMPTY_VAL;
     }
 
-
-    int index = AS_NUMBER(pop(vm));
-    Value insertValue = pop(vm);
-    ObjList *list = AS_LIST(pop(vm));
+    ObjList *list = AS_LIST(args[0]);
+    Value insertValue = args[1];
+    int index = AS_NUMBER(args[2]);
 
     if (index < 0 || index > list->values.count) {
         runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
-        return false;
+        return EMPTY_VAL;
     }
 
     if (list->values.capacity < list->values.count + 1) {
@@ -50,108 +47,87 @@ static bool insertListItem(VM *vm, int argCount) {
     }
 
     list->values.values[index] = insertValue;
-    push(vm, NIL_VAL);
 
-    return true;
+    return NIL_VAL;
 }
 
-static bool popListItem(VM *vm, int argCount) {
-    if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "pop(vm); takes either 1 or 2 arguments (%d  given)", argCount);
-        return false;
+static Value popListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 0 && argCount != 1) {
+        runtimeError(vm, "pop() takes either 0 or 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjList *list;
-    Value last;
+    ObjList *list = AS_LIST(args[0]);
+
+    if (list->values.count == 0) {
+        runtimeError(vm, "pop() called on an empty list");
+        return EMPTY_VAL;
+    }
+
+    Value element;
 
     if (argCount == 1) {
-        if (!IS_LIST(peek(vm, 0))) {
-            runtimeError(vm, "pop(vm); only takes a list as an argument");
-            return false;
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "pop() index argument must be a number");
+            return EMPTY_VAL;
         }
 
-        list = AS_LIST(pop(vm));
-
-        if (list->values.count == 0) {
-            runtimeError(vm, "pop(vm); called on an empty list");
-            return false;
-        }
-
-        last = list->values.values[list->values.count - 1];
-    } else {
-        if (!IS_LIST(peek(vm, 1))) {
-            runtimeError(vm, "pop(vm); only takes a list as an argument");
-            return false;
-        }
-
-        if (!IS_NUMBER(peek(vm, 0))) {
-            runtimeError(vm, "pop(vm); index argument must be a number");
-            return false;
-        }
-
-        int index = AS_NUMBER(pop(vm));
-        list = AS_LIST(pop(vm));
-
-        if (list->values.count == 0) {
-            runtimeError(vm, "pop(vm); called on an empty list");
-            return false;
-        }
+        int index = AS_NUMBER(args[1]);
 
         if (index < 0 || index > list->values.count) {
-            runtimeError(vm, "Index passed to pop(vm); is out of bounds for the list given");
-            return false;
+            runtimeError(vm, "Index passed to pop() is out of bounds for the list given");
+            return EMPTY_VAL;
         }
 
-        last = list->values.values[index];
+        element = list->values.values[index];
 
         for (int i = index; i < list->values.count - 1; ++i) {
             list->values.values[i] = list->values.values[i + 1];
         }
+    } else {
+        element = list->values.values[list->values.count - 1];
     }
-    list->values.count--;
-    push(vm, last);
 
-    return true;
+    list->values.count--;
+
+    return element;
 }
 
-static bool containsListItem(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "contains() takes 2 arguments (%d  given)", argCount);
-        return false;
+static Value containsListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    Value search = pop(vm);
-    ObjList *list = AS_LIST(pop(vm));
+    ObjList *list = AS_LIST(args[0]);
+    Value search = args[1];
 
     for (int i = 0; i < list->values.count; ++i) {
         if (valuesEqual(list->values.values[i], search)) {
-            push(vm, TRUE_VAL);
-            return true;
+            return TRUE_VAL;
         }
     }
 
-    push(vm, FALSE_VAL);
-    return true;
+    return FALSE_VAL;
 }
 
-static bool joinListItem(VM *vm, int argCount) {
-    if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "join() takes either 1 or 2 arguments (%d  given)", argCount);
-        return false;
+static Value joinListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 0 && argCount != 1) {
+        runtimeError(vm, "join() takes 1 optional argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
+    ObjList *list = AS_LIST(args[0]);
     char *delimiter = ", ";
 
-    if (argCount == 2) {
-        if (!IS_STRING(peek(vm, 0))) {
+    if (argCount == 1) {
+        if (!IS_STRING(args[1])) {
             runtimeError(vm, "join() only takes a string as an argument");
-            return false;
+            return EMPTY_VAL;
         }
 
-        delimiter = AS_CSTRING(pop(vm));
+        delimiter = AS_CSTRING(args[1]);
     }
-
-    ObjList *list = AS_LIST(pop(vm));
 
     char *output;
     char *fullString = NULL;
@@ -189,60 +165,45 @@ static bool joinListItem(VM *vm, int argCount) {
     index += elementLength;
 
     fullString[index] = '\0';
-    push(vm, OBJ_VAL(copyString(vm, fullString, index)));
 
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
         free(output);
     }
+
+    Value ret = OBJ_VAL(copyString(vm, fullString, index));
     free(fullString);
-
-    return true;
+    return ret;
 }
 
-static bool copyListShallow(VM *vm, int argCount) {
-    if (argCount != 1) {
-        runtimeError(vm, "copy() takes 1 argument (%d  given)", argCount);
-        return false;
+static Value copyListShallow(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjList *oldList = AS_LIST(peek(vm, 0));
+    ObjList *oldList = AS_LIST(args[0]);
     ObjList *newList = copyList(vm, oldList, true);
-    pop(vm);
-    push(vm, OBJ_VAL(newList));
-
-    return true;
+    return OBJ_VAL(newList);
 }
 
-
-static bool copyListDeep(VM *vm, int argCount) {
-    if (argCount != 1) {
-        runtimeError(vm, "deepCopy() takes 1 argument (%d  given)", argCount);
-        return false;
+static Value copyListDeep(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjList *oldList = AS_LIST(pop(vm));
-    push(vm, OBJ_VAL(copyList(vm, oldList, false)));
+    ObjList *oldList = AS_LIST(args[0]);
+    ObjList *newList = copyList(vm, oldList, false);
 
-    return true;
+    return OBJ_VAL(newList);
 }
 
-bool listMethods(VM *vm, char *method, int argCount) {
-    if (strcmp(method, "push") == 0) {
-        return pushListItem(vm, argCount);
-    } else if (strcmp(method, "insert") == 0) {
-        return insertListItem(vm, argCount);
-    } else if (strcmp(method, "pop") == 0) {
-        return popListItem(vm, argCount);
-    } else if (strcmp(method, "contains") == 0) {
-        return containsListItem(vm, argCount);
-    } else if (strcmp(method, "join") == 0) {
-        return joinListItem(vm, argCount);
-    } else if (strcmp(method, "copy") == 0) {
-        return copyListShallow(vm, argCount);
-    } else if (strcmp(method, "deepCopy") == 0) {
-        return copyListDeep(vm, argCount);
-    }
-
-    runtimeError(vm, "List has no method %s()", method);
-    return false;
+void declareListMethods(VM *vm) {
+    defineNative(vm, &vm->listMethods, "push", pushListItem);
+    defineNative(vm, &vm->listMethods, "insert", insertListItem);
+    defineNative(vm, &vm->listMethods, "pop", popListItem);
+    defineNative(vm, &vm->listMethods, "contains", containsListItem);
+    defineNative(vm, &vm->listMethods, "join", joinListItem);
+    defineNative(vm, &vm->listMethods, "copy", copyListShallow);
+    defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
 }

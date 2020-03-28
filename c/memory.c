@@ -33,22 +33,6 @@ void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
     return realloc(previous, newSize);
 }
 
-void freeDictValue(dictItem *item) {
-    free(item->key);
-    free(item);
-}
-
-void freeDict(ObjDict *dict) {
-    for (int i = 0; i < dict->capacity; i++) {
-        dictItem *item = dict->items[i];
-        if (item != NULL) {
-            freeDictValue(item);
-        }
-    }
-    free(dict->items);
-    free(dict);
-}
-
 void freeSetValue (setItem *item) {
     free(item);
 }
@@ -173,12 +157,7 @@ static void blackenObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            for (int i = 0; i < dict->capacity; ++i) {
-                if (!dict->items[i])
-                    continue;
-
-                grayValue(vm, dict->items[i]->item);
-            }
+            grayTable(vm, &dict->items);
             break;
         }
 
@@ -275,7 +254,8 @@ void freeObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            freeDict(dict);
+            freeTable(vm, &dict->items);
+            FREE(vm, ObjDict, dict);
             break;
         }
 
@@ -321,6 +301,12 @@ void collectGarbage(VM *vm) {
 
     // Mark the global roots.
     grayTable(vm, &vm->globals);
+    grayTable(vm, &vm->stringMethods);
+    grayTable(vm, &vm->listMethods);
+    grayTable(vm, &vm->dictMethods);
+    grayTable(vm, &vm->setMethods);
+    grayTable(vm, &vm->fileMethods);
+    grayTable(vm, &vm->instanceMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->replVar);

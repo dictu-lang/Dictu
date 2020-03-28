@@ -7,7 +7,8 @@
 #include <ctype.h>
 
 #include "../common.h"
+#include "../util.h"
 
-bool stringMethods(VM *vm, char *method, int argCount);
+void declareStringMethods(VM *vm);
 
 #endif //dictu_strings_h

@@ -114,7 +114,7 @@ ObjList *initList(VM *vm) {
 
 ObjDict *initDict(VM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
-    initDictValues(dict, 8);
+    initTable(&dict->items);
     return dict;
 }
 
@@ -312,15 +312,15 @@ char *objectToString(Value value) {
             char *dictString = malloc(sizeof(char) * size);
             int dictStringLength = snprintf(dictString, size, "%s", "{");
 
-            for (int i = 0; i < dict->capacity; ++i) {
-                dictItem *item = dict->items[i];
-                if (!item || item->deleted)
+            for (int i = 0; i <= dict->items.capacityMask; ++i) {
+                Entry *item = &dict->items.entries[i];
+                if (item->key == NULL) {
                     continue;
+                }
 
                 count++;
 
-
-                int keySize = strlen(item->key) + 5;
+                int keySize = item->key->length + 5;
 
                 if (keySize > (size - dictStringLength - 1)) {
                     if (keySize > size * 2) {
@@ -339,9 +339,9 @@ char *objectToString(Value value) {
                     dictString = newB;
                 }
 
-                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", item->key);
+                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", item->key->chars);
 
-                char *element = valueToString(item->item);
+                char *element = valueToString(item->value);
                 int elementSize = strlen(element);
 
                 if (elementSize > (size - dictStringLength - 3)) {
@@ -365,7 +365,7 @@ char *objectToString(Value value) {
 
                 free(element);
 
-                if (count != dict->count) {
+                if (count != dict->items.count) {
                     dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
                 }
             }

@@ -7,7 +7,6 @@ typedef struct sObj Obj;
 typedef struct sObjString ObjString;
 typedef struct sObjList ObjList;
 typedef struct sObjDict ObjDict;
-typedef struct dictItem dictItem;
 typedef struct sObjSet  ObjSet;
 typedef struct setItem  setItem;
 typedef struct sObjFile ObjFile;
@@ -120,15 +119,7 @@ void writeValueArray(VM *vm, ValueArray *array, Value value);
 
 void freeValueArray(VM *vm, ValueArray *array);
 
-void initDictValues(ObjDict *dict, uint32_t capacity);
-
 void initSetValues(ObjSet *set, uint32_t capacity);
-
-void insertDict(VM *vm, ObjDict *dict, char *key, Value value);
-
-void resizeDict(ObjDict *dict, bool grow);
-
-Value searchDict(ObjDict *dict, char *key);
 
 void insertSet(VM *vm, ObjSet *set, Value value);
 
@@ -136,7 +127,7 @@ bool searchSet(ObjSet *set, ObjString *string);
 
 bool searchSetMarkActive(ObjSet *set, ObjString *string);
 
-void resizeSet(ObjSet *set, bool grow);
+void resizeSet(VM *vm, ObjSet *set, bool grow);
 
 char *valueToString(Value value);
 

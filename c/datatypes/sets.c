@@ -1,37 +1,36 @@
 #include "sets.h"
 
-static bool addSetItem(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "add() takes 2 arguments (%d given)", argCount);
-        return false;
+static Value addSetItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    if (!IS_STRING(peek(vm, 0))) {
+    if (!IS_STRING(args[1])) {
         runtimeError(vm, "Argument passed to add() must be a string", argCount);
-        return false;
+        return EMPTY_VAL;
     }
 
-    Value value = pop(vm);
-    ObjSet *set = AS_SET(pop(vm));
-    insertSet(vm, set, value);
-    push(vm, NIL_VAL);
 
-    return true;
+    ObjSet *set = AS_SET(args[0]);
+    insertSet(vm, set, args[1]);
+
+    return NIL_VAL;
 }
 
-static bool removeSetItem(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "remove() takes 2 arguments (%d  given)", argCount);
-        return false;
+static Value removeSetItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    if (!IS_STRING(peek(vm, 0))) {
+    if (!IS_STRING(args[1])) {
         runtimeError(vm, "Argument passed to remove() must be a string");
-        return false;
+        return EMPTY_VAL;
     }
 
-    ObjString *string = AS_STRING(pop(vm));
-    ObjSet *set = AS_SET(pop(vm));
+    ObjSet *set = AS_SET(args[0]);
+    ObjString *string = AS_STRING(args[1]);
     int index = string->hash % set->capacity;
 
     while (set->items[index] && !(strcmp(set->items[index]->item->chars, string->chars) == 0 && !set->items[index]->deleted)) {
@@ -46,49 +45,40 @@ static bool removeSetItem(VM *vm, int argCount) {
         set->count--;
 
         if (set->capacity != 8 && set->count * 100 / set->capacity <= 35) {
-            resizeSet(set, false);
+            resizeSet(vm, set, false);
         }
 
-        push(vm, NIL_VAL);
-        return true;
+        return NIL_VAL;
     }
 
     runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", string->chars);
-    return false;
+    return EMPTY_VAL;
 }
 
-static bool containsSetItem(VM *vm, int argCount) {
-    if (argCount != 2) {
-        runtimeError(vm, "contains() takes 2 arguments (%d given)", argCount);
-        return false;
+static Value containsSetItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    if (!IS_STRING(peek(vm, 0))) {
+    if (!IS_STRING(args[1])) {
         runtimeError(vm, "Argument passed to contains() must be a string", argCount);
-        return false;
+        return EMPTY_VAL;
     }
 
-    ObjString *string = AS_STRING(pop(vm));
-    ObjSet *set = AS_SET(pop(vm));
+    ObjSet *set = AS_SET(args[0]);
+    ObjString *string = AS_STRING(args[1]);
 
     if (searchSet(set, string)) {
-        push(vm, TRUE_VAL);
-    } else {
-        push(vm, FALSE_VAL);
+        return TRUE_VAL;
     }
 
-    return true;
+    return FALSE_VAL;
 }
 
-bool setMethods(VM *vm, char *method, int argCount) {
-    if (strcmp(method, "add") == 0) {
-        return addSetItem(vm, argCount);
-    } else if (strcmp(method, "remove") == 0) {
-        return removeSetItem(vm, argCount);
-    } else if (strcmp(method, "contains") == 0) {
-        return containsSetItem(vm, argCount);
-    }
-
-    runtimeError(vm, "Set has no method %s()", method);
-    return false;
+void declareSetMethods(VM *vm) {
+    defineNative(vm, &vm->setMethods, "add", addSetItem);
+    defineNative(vm, &vm->setMethods, "remove", removeSetItem);
+    defineNative(vm, &vm->setMethods, "contains", containsSetItem);
 }
+

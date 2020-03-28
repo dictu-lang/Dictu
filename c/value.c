@@ -30,133 +30,10 @@ void freeValueArray(VM *vm, ValueArray *array) {
     initValueArray(array);
 }
 
-void initDictValues(ObjDict *dict, uint32_t capacity) {
-    dict->capacity = capacity;
-    dict->count = 0;
-    dict->items = calloc(capacity, sizeof(*dict->items));
-}
-
 void initSetValues(ObjSet *set, uint32_t capacity) {
     set->capacity = capacity;
     set->count = 0;
     set->items = calloc(capacity, sizeof(*set->items));
-}
-
-static uint32_t hash(char *str) {
-    uint32_t hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
-}
-
-void insertDict(VM *vm, ObjDict *dict, char *key, Value value) {
-    if (dict->count * 100 / dict->capacity >= 60) {
-        resizeDict(dict, true);
-    }
-
-    uint32_t hashValue = hash(key);
-    int index = hashValue % dict->capacity;
-
-    char *key_m = ALLOCATE(vm, char, strlen(key) + 1);
-
-    if (!key_m) {
-        printf("ERROR!");
-        return;
-    }
-
-    strcpy(key_m, key);
-
-    dictItem *item = ALLOCATE(vm, dictItem, sizeof(dictItem));
-
-    if (!item) {
-        printf("ERROR!");
-        return;
-    }
-
-    item->key = key_m;
-    item->item = value;
-    item->deleted = false;
-    item->hash = hashValue;
-
-    while (dict->items[index] && strcmp(dict->items[index]->key, key) != 0) {
-        index++;
-        if (index == dict->capacity) {
-            index = 0;
-        }
-    }
-
-    // Replace the value
-    if (dict->items[index]) {
-        // If the key is not "deleted", we are updating the value, not inserting
-        // a new entry, therefore count should not change
-        if (!dict->items[index]->deleted) {
-            dict->count--;
-        }
-
-        free(dict->items[index]->key);
-        free(dict->items[index]);
-    }
-
-    dict->items[index] = item;
-    dict->count++;
-}
-
-void resizeDict(ObjDict *dict, bool grow) {
-    int newSize;
-
-    if (grow)
-        newSize = dict->capacity << 1; // Grow by a factor of 2
-    else
-        newSize = dict->capacity >> 1; // Shrink by a factor of 2
-
-    dictItem **items = calloc(newSize, sizeof(*dict->items));
-
-    for (int j = 0; j < dict->capacity; ++j) {
-        if (!dict->items[j])
-            continue;
-
-        if (dict->items[j]->deleted) {
-            freeDictValue(dict->items[j]);
-            continue;
-        }
-
-        int index = dict->items[j]->hash % newSize;
-
-        while (items[index]) {
-            index = (index + 1) % newSize; // Handles wrap around indexes
-        }
-
-        items[index] = dict->items[j];
-    }
-
-    free(dict->items);
-
-    dict->capacity = newSize;
-    dict->items = items;
-}
-
-Value searchDict(ObjDict *dict, char *key) {
-    int index = hash(key) % dict->capacity;
-
-    if (!dict->items[index]) {
-        return NIL_VAL;
-    }
-
-    while (dict->items[index] && !dict->items[index]->deleted && strcmp(dict->items[index]->key, key) != 0) {
-        index++;
-        if (index == dict->capacity) {
-            index = 0;
-        }
-    }
-
-    if (dict->items[index] && !dict->items[index]->deleted) {
-        return dict->items[index]->item;
-    }
-
-    return NIL_VAL;
 }
 
 void insertSet(VM *vm, ObjSet *set, Value value) {
@@ -177,7 +54,7 @@ void insertSet(VM *vm, ObjSet *set, Value value) {
     setItem *item = ALLOCATE(vm, setItem, sizeof(setItem));
 
     if (set->count * 100 / set->capacity >= 60) {
-        resizeSet(set, true);
+        resizeSet(vm, set, true);
     }
 
     item->item = string;
@@ -230,7 +107,7 @@ bool searchSetMarkActive(ObjSet *set, ObjString *string) {
     return false;
 }
 
-void resizeSet(ObjSet *set, bool grow) {
+void resizeSet(VM *vm, ObjSet *set, bool grow) {
     int newSize;
 
     if (grow)
@@ -238,7 +115,7 @@ void resizeSet(ObjSet *set, bool grow) {
     else
         newSize = set->capacity >> 1;
 
-    setItem **items = calloc(newSize, sizeof(*set->items));
+    setItem **items = (setItem **)ALLOCATE(vm, setItem, newSize);
 
     for (int j = 0; j < set->capacity; ++j) {
         if (!set->items[j])
@@ -316,26 +193,26 @@ static bool dictComparison(Value a, Value b) {
     ObjDict *dictB = AS_DICT(b);
 
     // Different lengths, not the same
-    if (dict->count != dictB->count)
+    if (dict->items.count != dictB->items.count)
         return false;
 
     // Lengths are the same, and dict 1 has 0 length
     // therefore both are empty
-    if (dict->count == 0)
+    if (dict->items.count == 0)
         return true;
 
-    for (int i = 0; i < dict->capacity; ++i) {
-        dictItem *item = dict->items[i];
-        dictItem *itemB = dictB->items[i];
+    for (int i = 0; i <= dict->items.capacityMask; ++i) {
+        Entry *item = &dict->items.entries[i];
+        Entry *itemB = &dictB->items.entries[i];
 
-        if (!item || !itemB) {
+        if (item->key == NULL || itemB->key == NULL) {
             continue;
         }
 
-        if (strcmp(item->key, itemB->key) != 0)
+        if (!valuesEqual(OBJ_VAL(item->key), OBJ_VAL(itemB->key)))
             return false;
 
-        if (!valuesEqual(item->item, itemB->item))
+        if (!valuesEqual(item->value, itemB->value))
             return false;
     }
 

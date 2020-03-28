@@ -99,9 +99,29 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
+
+    initTable(&vm->stringMethods);
+    initTable(&vm->listMethods);
+    initTable(&vm->dictMethods);
+    initTable(&vm->setMethods);
+    initTable(&vm->fileMethods);
+    initTable(&vm->instanceMethods);
+
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
+
+    // Native methods
+    declareStringMethods(vm);
+    declareListMethods(vm);
+    declareDictMethods(vm);
+    declareSetMethods(vm);
+    declareFileMethods(vm);
+    declareInstanceMethods(vm);
+
+    // Native functions
     defineAllNatives(vm);
+
+    // Native classes
     createMathsClass(vm);
     createEnvClass(vm);
     createSystemClass(vm);
@@ -109,6 +129,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
+
 
     if (!vm->repl) {
         initArgv(vm, argc, argv);
@@ -121,6 +142,12 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
+    freeTable(vm, &vm->stringMethods);
+    freeTable(vm, &vm->listMethods);
+    freeTable(vm, &vm->dictMethods);
+    freeTable(vm, &vm->setMethods);
+    freeTable(vm, &vm->fileMethods);
+    freeTable(vm, &vm->instanceMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
@@ -131,12 +158,10 @@ void freeVM(VM *vm) {
 void push(VM *vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
-    vm->stackCount++;
 }
 
 Value pop(VM *vm) {
     vm->stackTop--;
-    vm->stackCount--;
     return *vm->stackTop;
 }
 
@@ -212,7 +237,6 @@ static bool callValue(VM *vm, Value callee, int argCount) {
                     return false;
 
                 vm->stackTop -= argCount + 1;
-                vm->stackCount -= argCount + 1;
                 push(vm, result);
                 return true;
             }
@@ -225,6 +249,19 @@ static bool callValue(VM *vm, Value callee, int argCount) {
 
     runtimeError(vm, "Can only call functions and classes.");
     return false;
+}
+
+static bool callNativeMethod(VM *vm, Value method, int argCount) {
+    NativeFn native = AS_NATIVE(method);
+
+    Value result = native(vm, argCount, vm->stackTop - argCount - 1);
+
+    if (IS_EMPTY(result))
+        return false;
+
+    vm->stackTop -= argCount + 1;
+    push(vm, result);
+    return true;
 }
 
 static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
@@ -276,23 +313,53 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
 
         case OBJ_STRING: {
-            return stringMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->stringMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "String has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_LIST: {
-            return listMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->listMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "List has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_DICT: {
-            return dictMethods(vm, name->chars, argCount + 1);
-        }
+            Value value;
+            if (tableGet(&vm->dictMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
 
-        case OBJ_FILE: {
-            return fileMethods(vm, name->chars, argCount + 1);
+            runtimeError(vm, "Dict has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_SET: {
-            return setMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->setMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Set has no method %s()", name->chars);
+            return false;
+        }
+
+        case OBJ_FILE: {
+            Value value;
+            if (tableGet(&vm->fileMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "File has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_INSTANCE: {
@@ -306,8 +373,8 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             }
 
             // Check for instance methods.
-            if (instanceMethods(vm, name->chars, argCount + 1)) {
-                return true;
+            if (tableGet(&vm->instanceMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
             }
 
             return invokeFromClass(vm, instance->klass, name, argCount);
@@ -418,7 +485,7 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_DICT(value) && AS_DICT(value)->items.count == 0) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
@@ -565,12 +632,6 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(POP): {
-            if (IS_FILE(peek(vm, 0))) {
-                ObjFile *file = AS_FILE(peek(vm, 0));
-                fclose(file->file);
-                collectGarbage(vm);
-            }
-
             pop(vm);
             DISPATCH();
         }
@@ -945,9 +1006,9 @@ static InterpretResult run(VM *vm) {
             }
 
             ObjDict *dict = AS_DICT(dictValue);
-            char *keyString = AS_CSTRING(key);
+            ObjString *keyString = AS_STRING(key);
 
-            insertDict(vm, dict, keyString, value);
+            tableSet(vm, &dict->items, keyString, value);
 
             pop(vm);
             pop(vm);
@@ -1018,9 +1079,14 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *key = AS_CSTRING(indexValue);
+                    ObjString *key = AS_STRING(indexValue);
 
-                    push(vm, searchDict(dict, key));
+                    Value v;
+                    if (tableGet(&dict->items, key, &v)) {
+                        push(vm, v);
+                    } else {
+                        push(vm, NIL_VAL);
+                    }
 
                     DISPATCH();
                 }
@@ -1084,9 +1150,9 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *keyString = AS_CSTRING(indexValue);
+                    ObjString *keyString = AS_STRING(indexValue);
 
-                    insertDict(vm, dict, keyString, assignValue);
+                    tableSet(vm, &dict->items, keyString, assignValue);
 
                     // Pop after the values have been inserted to stop GC cleanup
                     pop(vm);
@@ -1249,11 +1315,18 @@ static InterpretResult run(VM *vm) {
                     }
 
                     ObjDict *dict = AS_DICT(subscriptValue);
-                    char *key = AS_CSTRING(indexValue);
+                    ObjString *key = AS_STRING(indexValue);
+
+                    Value v;
+                    bool found = tableGet(&dict->items, key, &v);
 
                     push(vm, subscriptValue);
                     push(vm, indexValue);
-                    push(vm, searchDict(dict, key));
+                    if (found) {
+                        push(vm, v);
+                    } else {
+                        push(vm, NIL_VAL);
+                    }
                     push(vm, value);
 
                     DISPATCH();
@@ -1437,6 +1510,12 @@ static InterpretResult run(VM *vm) {
             }
 
             push(vm, OBJ_VAL(file));
+            DISPATCH();
+        }
+
+        CASE_CODE(CLOSE_FILE): {
+            ObjFile *file = AS_FILE(peek(vm, 0));
+            fclose(file->file);
             DISPATCH();
         }
     }

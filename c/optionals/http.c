@@ -50,19 +50,21 @@ static char *dictToPostArgs(ObjDict *dict) {
     char *ret = malloc(sizeof(char) * len);
     int currentLen = 0;
 
-    for (int i = 0; i < dict->capacity; i++) {
-        if (dict->items[i] == NULL) {
+    for (int i = 0; i <= dict->items.capacityMask; i++) {
+        Entry *entry = &dict->items.entries[i];
+        if (entry->key == NULL) {
             continue;
         }
 
         char *value;
-        if (IS_STRING(dict->items[i]->item)) {
-            value = AS_CSTRING(dict->items[i]->item);
+        if (IS_STRING(entry->value)) {
+            value = AS_CSTRING(entry->value);
         } else {
-            value = valueToString(dict->items[i]->item);
+            value = valueToString(entry->value);
         }
 
-        int keyLen = strlen(dict->items[i]->key);
+        int keyLen = entry->key->length;
+
         int valLen = strlen(value);
 
         if (currentLen + keyLen + valLen > len) {
@@ -75,7 +77,7 @@ static char *dictToPostArgs(ObjDict *dict) {
             }
         }
 
-        memcpy(ret + currentLen, dict->items[i]->key, keyLen);
+        memcpy(ret + currentLen, entry->key->chars, keyLen);
         currentLen += keyLen;
         memcpy(ret + currentLen, "=", 1);
         currentLen += 1;
@@ -84,7 +86,7 @@ static char *dictToPostArgs(ObjDict *dict) {
         memcpy(ret + currentLen, "&", 1);
         currentLen += 1;
 
-        if (!IS_STRING(dict->items[i]->item)) {
+        if (!IS_STRING(entry->value)) {
             free(value);
         }
     }
@@ -96,7 +98,7 @@ static char *dictToPostArgs(ObjDict *dict) {
 
 static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "get() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -158,9 +160,9 @@ static Value get(VM *vm, int argCount, Value *args) {
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
-        insertDict(vm, responseVal, "content", OBJ_VAL(content));
-        insertDict(vm, responseVal, "headers", OBJ_VAL(response.headers));
-        insertDict(vm, responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
+        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
+        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
 
         // Pop header list, content and response dict return off stack
         pop(vm);
@@ -176,7 +178,7 @@ static Value get(VM *vm, int argCount, Value *args) {
 
 static Value post(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 && argCount != 3) {
-        runtimeError(vm, "post() takes between 1 and 3 arguments (%d  given)", argCount);
+        runtimeError(vm, "post() takes between 1 and 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -264,9 +266,9 @@ static Value post(VM *vm, int argCount, Value *args) {
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
-        insertDict(vm, responseVal, "content", OBJ_VAL(content));
-        insertDict(vm, responseVal, "headers", OBJ_VAL(response.headers));
-        insertDict(vm, responseVal, "statusCode", NUMBER_VAL(response.statusCode));
+        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
+        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
+        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
 
         // Pop header list and dict return off stack
         pop(vm);
@@ -289,8 +291,8 @@ void createHTTPClass(VM *vm) {
     /**
      * Define Http methods
      */
-    defineNativeMethod(vm, klass, "get", get);
-    defineNativeMethod(vm, klass, "post", post);
+    defineNative(vm, &klass->methods, "get", get);
+    defineNative(vm, &klass->methods, "post", post);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

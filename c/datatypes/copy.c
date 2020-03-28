@@ -1,15 +1,5 @@
 #include "copy.h"
 
-uint32_t hash(char *str) {
-    uint32_t hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
-}
-
 ObjList *copyList(VM* vm, ObjList *oldList, bool shallow);
 
 ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
@@ -17,12 +7,12 @@ ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(newDict));
 
-    for (int i = 0; i < oldDict->capacity; ++i) {
-        if (oldDict->items[i] == NULL) {
+    for (int i = 0; i <= oldDict->items.capacityMask; ++i) {
+        if (oldDict->items.entries[i].key == NULL) {
             continue;
         }
 
-        Value val = oldDict->items[i]->item;
+        Value val = oldDict->items.entries[i].value;
 
         if (!shallow) {
             if (IS_DICT(val)) {
@@ -36,7 +26,7 @@ ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
 
         // Push to stack to avoid GC
         push(vm, val);
-        insertDict(vm, newDict, oldDict->items[i]->key, val);
+        tableSet(vm, &newDict->items, oldDict->items.entries[i].key, val);
         pop(vm);
     }
 

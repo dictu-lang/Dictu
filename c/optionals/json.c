@@ -15,7 +15,7 @@ static Value parseJson(VM *vm, json_value *json) {
             for (unsigned int i = 0; i < json->u.object.length; i++) {
                 Value val = parseJson(vm, json->u.object.values[i].value);
                 push(vm, val);
-                insertDict(vm, dict, json->u.object.values[i].name, val);
+                tableSet(vm, &dict->items, copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length), val);
                 pop(vm);
             }
 
@@ -66,7 +66,7 @@ static Value parseJson(VM *vm, json_value *json) {
 
 static Value parse(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "parse() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "parse() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -127,14 +127,20 @@ json_value* stringifyJson(Value value) {
 
             case OBJ_DICT: {
                 ObjDict *dict = AS_DICT(value);
-                json_value *json = json_object_new(dict->count);
+                json_value *json = json_object_new(dict->items.count);
 
-                for (int i = 0; i < dict->capacity; i++) {
-                    if (dict->items[i] == NULL) {
+                for (int i = 0; i <= dict->items.capacityMask; i++) {
+                    Entry *entry = &dict->items.entries[i];
+                    if (entry->key == NULL) {
                         continue;
                     }
 
-                    json_object_push_nocopy(json, strlen(dict->items[i]->key), dict->items[i]->key, stringifyJson(dict->items[i]->item));
+                    json_object_push_nocopy(
+                            json,
+                            entry->key->length,
+                            entry->key->chars,
+                            stringifyJson(entry->value)
+                    );
                 }
 
                 return json;
@@ -150,7 +156,7 @@ json_value* stringifyJson(Value value) {
 
 static Value stringify(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -199,8 +205,8 @@ void createJSONClass(VM *vm) {
     /**
      * Define Json methods
      */
-    defineNativeMethod(vm, klass, "parse", parse);
-    defineNativeMethod(vm, klass, "stringify", stringify);
+    defineNative(vm, &klass->methods, "parse", parse);
+    defineNative(vm, &klass->methods, "stringify", stringify);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

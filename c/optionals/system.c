@@ -93,13 +93,13 @@ void createSystemClass(VM *vm) {
     /**
      * Define System methods
      */
-    defineNativeMethod(vm, klass, "setCWD", setCWDNative);
-    defineNativeMethod(vm, klass, "getCWD", getCWDNative);
-    defineNativeMethod(vm, klass, "time", timeNative);
-    defineNativeMethod(vm, klass, "clock", clockNative);
-    defineNativeMethod(vm, klass, "collect", collectNative);
-    defineNativeMethod(vm, klass, "sleep", sleepNative);
-    defineNativeMethod(vm, klass, "exit", exitNative);
+    defineNative(vm, &klass->methods, "setCWD", setCWDNative);
+    defineNative(vm, &klass->methods, "getCWD", getCWDNative);
+    defineNative(vm, &klass->methods, "time", timeNative);
+    defineNative(vm, &klass->methods, "clock", clockNative);
+    defineNative(vm, &klass->methods, "collect", collectNative);
+    defineNative(vm, &klass->methods, "sleep", sleepNative);
+    defineNative(vm, &klass->methods, "exit", exitNative);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
