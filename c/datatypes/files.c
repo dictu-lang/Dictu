@@ -2,43 +2,63 @@
 #include "../vm.h"
 #include "../memory.h"
 
-static bool writeFile(VM *vm, int argCount, bool newLine) {
-    if (argCount != 2) {
-        runtimeError(vm, "write() takes 2 arguments (%d given)", argCount);
-        return false;
+static Value writeFile(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "write() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    if (!IS_STRING(peek(vm, 0))) {
+    if (!IS_STRING(args[1])) {
         runtimeError(vm, "write() argument must be a string");
-        return false;
+        return EMPTY_VAL;
     }
 
-    ObjString *string = AS_STRING(pop(vm));
-    ObjFile *file = AS_FILE(pop(vm));
+    ObjFile *file = AS_FILE(args[0]);
+    ObjString *string = AS_STRING(args[1]);
 
     if (strcmp(file->openType, "r") == 0) {
         runtimeError(vm, "File is not writable!");
-        return false;
+        return EMPTY_VAL;
     }
 
     int charsWrote = fprintf(file->file, "%s", string->chars);
-    if (newLine)
-        fprintf(file->file, "\n");
-
     fflush(file->file);
 
-    push(vm, NUMBER_VAL(charsWrote));
-
-    return true;
+    return NUMBER_VAL(charsWrote);
 }
 
-static bool readFile(VM *vm, int argCount) {
+static Value writeLineFile(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "read() takes 1 argument (%d given)", argCount);
-        return false;
+        runtimeError(vm, "writeLine() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
-    ObjFile *file = AS_FILE(pop(vm));
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "writeLine() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    ObjFile *file = AS_FILE(args[0]);
+    ObjString *string = AS_STRING(args[1]);
+
+    if (strcmp(file->openType, "r") == 0) {
+        runtimeError(vm, "File is not writable!");
+        return EMPTY_VAL;
+    }
+
+    int charsWrote = fprintf(file->file, "%s\n", string->chars);
+    fflush(file->file);
+
+    return NUMBER_VAL(charsWrote);
+}
+
+static Value readFullFile(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "read() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjFile *file = AS_FILE(args[0]);
 
     size_t currentPosition = ftell(file->file);
     // Calculate file size
@@ -55,57 +75,57 @@ static bool readFile(VM *vm, int argCount) {
     char *buffer = (char *) malloc(fileSize + 1);
     if (buffer == NULL) {
         runtimeError(vm, "Not enough memory to read \"%s\".\n", file->path);
-        return false;
+        return EMPTY_VAL;
     }
 
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, file->file);
     if (bytesRead < fileSize) {
         free(buffer);
         runtimeError(vm, "Could not read file \"%s\".\n", file->path);
-        return false;
+        return EMPTY_VAL;
     }
 
     buffer[bytesRead] = '\0';
 
-    push(vm, OBJ_VAL(copyString(vm, buffer, strlen(buffer))));
     free(buffer);
-    return true;
+    return OBJ_VAL(copyString(vm, buffer, fileSize));
 }
 
-static bool readLineFile(VM *vm, int argCount) {
-    if (argCount != 1) {
-        runtimeError(vm, "readLine() takes 1 argument (%d given)", argCount);
-        return false;
+static Value readLineFile(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
+    // TODO: This could be better
     char line[4096];
 
-    ObjFile *file = AS_FILE(pop(vm));
+    ObjFile *file = AS_FILE(args[0]);
     if (fgets(line, 4096, file->file) != NULL) {
+        int lineLength = strlen(line);
         // Remove newline char
-        line[strcspn(line, "\n")] = '\0';
-        push(vm, OBJ_VAL(copyString(vm, line, strlen(line))));
-    } else {
-        push(vm, OBJ_VAL(copyString(vm, "", 0)));
+        line[lineLength - 1] = '\0';
+        return OBJ_VAL(copyString(vm, line, lineLength));
     }
-    return true;
+
+    return OBJ_VAL(copyString(vm, "", 0));
 }
 
-static bool seekFile(VM *vm, int argCount) {
-    if (argCount != 2 && argCount != 3) {
-        runtimeError(vm, "seek() takes 2 or 3 arguments (%d given)", argCount);
-        return false;
+static Value seekFile(VM *vm, int argCount, Value *args) {
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "seek() takes 1 or 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
     }
 
     int seekType = SEEK_SET;
 
-    if (argCount == 3) {
-        if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
             runtimeError(vm, "seek() arguments must be numbers");
-            return false;
+            return EMPTY_VAL;
         }
 
-        int seekTypeNum = AS_NUMBER(pop(vm));
+        int seekTypeNum = AS_NUMBER(args[2]);
 
         switch (seekTypeNum) {
             case 0:
@@ -123,31 +143,24 @@ static bool seekFile(VM *vm, int argCount) {
         }
     }
 
-    if (!IS_NUMBER(peek(vm, 0))) {
+    if (!IS_NUMBER(args[1])) {
         runtimeError(vm, "seek() argument must be a number");
-        return false;
+        return EMPTY_VAL;
     }
 
-    int offset = AS_NUMBER(pop(vm));
-    ObjFile *file = AS_FILE(pop(vm));
+    int offset = AS_NUMBER(args[1]);
+    ObjFile *file = AS_FILE(args[0]);
     fseek(file->file, offset, seekType);
 
-    push(vm, NIL_VAL);
-    return true;
+    return NIL_VAL;
 }
 
-bool fileMethods(VM *vm, char *method, int argCount) {
-    if (strcmp(method, "write") == 0) {
-        return writeFile(vm, argCount, false);
-    } else if (strcmp(method, "writeLine") == 0) {
-        return writeFile(vm, argCount, true);
-    } else if (strcmp(method, "read") == 0) {
-        return readFile(vm, argCount);
-    } else if (strcmp(method, "readLine") == 0) {
-        return readLineFile(vm, argCount);
-    } else if (strcmp(method, "seek") == 0) {
-        return seekFile(vm, argCount);
-    }
+void declareFileMethods(VM *vm) {
+    initTable(&vm->fileMethods);
 
-    return false;
+    defineNative(vm, &vm->fileMethods, "write", writeFile);
+    defineNative(vm, &vm->fileMethods, "writeLine", writeLineFile);
+    defineNative(vm, &vm->fileMethods, "read", readFullFile);
+    defineNative(vm, &vm->fileMethods, "readLine", readLineFile);
+    defineNative(vm, &vm->fileMethods, "seek", seekFile);
 }

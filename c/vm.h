@@ -33,6 +33,7 @@ struct _vm {
     Table stringMethods;
     Table listMethods;
     Table dictMethods;
+    Table fileMethods;
     Table instanceMethods;
     ObjString *initString;
     ObjString *replVar;

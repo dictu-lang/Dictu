@@ -107,8 +107,9 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
     // Native methods
     declareStringMethods(vm);
-    declareDictMethods(vm);
     declareListMethods(vm);
+    declareDictMethods(vm);
+    declareFileMethods(vm);
     declareInstanceMethods(vm);
 
     // Native classes
@@ -327,7 +328,13 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
 
         case OBJ_FILE: {
-            return fileMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->fileMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "File has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_SET: {
