@@ -269,8 +269,9 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
+    Value ret = OBJ_VAL(copyString(vm, temp, string->length));
     free(temp);
-    return OBJ_VAL(copyString(vm, temp, string->length));
+    return ret;
 }
 
 static Value upperString(VM *vm, int argCount, Value *args) {
@@ -288,8 +289,9 @@ static Value upperString(VM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
+    Value ret = OBJ_VAL(copyString(vm, temp, string->length));
     free(temp);
-    return OBJ_VAL(copyString(vm, temp, string->length));
+    return ret;
 }
 
 static Value startsWithString(VM *vm, int argCount, Value *args) {
@@ -351,8 +353,9 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
         charSeen = true;
     }
     temp[i - count] = '\0';
+    Value ret = OBJ_VAL(copyString(vm, temp, i - count));
     free(temp);
-    return OBJ_VAL(copyString(vm, temp, i - count));
+    return ret;
 }
 
 static Value rightStripString(VM *vm, int argCount, Value *args) {
@@ -372,8 +375,9 @@ static Value rightStripString(VM *vm, int argCount, Value *args) {
     }
 
     memcpy(temp, string->chars, length + 1);
+    Value ret = OBJ_VAL(copyString(vm, temp, length + 1));
     free(temp);
-    return OBJ_VAL(copyString(vm, temp, length + 1));
+    return ret;
 }
 
 static Value stripString(VM *vm, int argCount, Value *args) {

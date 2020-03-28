@@ -170,8 +170,9 @@ static Value joinListItem(VM *vm, int argCount, Value *args) {
         free(output);
     }
 
+    Value ret = OBJ_VAL(copyString(vm, fullString, index));
     free(fullString);
-    return OBJ_VAL(copyString(vm, fullString, index));
+    return ret;
 }
 
 static Value copyListShallow(VM *vm, int argCount, Value *args) {
