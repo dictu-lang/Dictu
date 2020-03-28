@@ -6,7 +6,8 @@
 #include <stdlib.h>
 
 #include "copy.h"
+#include "../util.h"
 
-bool dictMethods(VM *vm, char *method, int argCount);
+void declareDictMethods(VM *vm);
 
 #endif //dictu_dicts_h

@@ -301,6 +301,12 @@ void collectGarbage(VM *vm) {
 
     // Mark the global roots.
     grayTable(vm, &vm->globals);
+    grayTable(vm, &vm->stringMethods);
+    grayTable(vm, &vm->listMethods);
+    grayTable(vm, &vm->dictMethods);
+    grayTable(vm, &vm->setMethods);
+    grayTable(vm, &vm->fileMethods);
+    grayTable(vm, &vm->instanceMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->replVar);

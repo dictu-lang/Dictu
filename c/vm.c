@@ -99,9 +99,29 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
+
+    initTable(&vm->stringMethods);
+    initTable(&vm->listMethods);
+    initTable(&vm->dictMethods);
+    initTable(&vm->setMethods);
+    initTable(&vm->fileMethods);
+    initTable(&vm->instanceMethods);
+
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
+
+    // Native methods
+    declareStringMethods(vm);
+    declareListMethods(vm);
+    declareDictMethods(vm);
+    declareSetMethods(vm);
+    declareFileMethods(vm);
+    declareInstanceMethods(vm);
+
+    // Native functions
     defineAllNatives(vm);
+
+    // Native classes
     createMathsClass(vm);
     createEnvClass(vm);
     createSystemClass(vm);
@@ -109,6 +129,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
+
 
     if (!vm->repl) {
         initArgv(vm, argc, argv);
@@ -131,12 +152,10 @@ void freeVM(VM *vm) {
 void push(VM *vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
-    vm->stackCount++;
 }
 
 Value pop(VM *vm) {
     vm->stackTop--;
-    vm->stackCount--;
     return *vm->stackTop;
 }
 
@@ -212,7 +231,6 @@ static bool callValue(VM *vm, Value callee, int argCount) {
                     return false;
 
                 vm->stackTop -= argCount + 1;
-                vm->stackCount -= argCount + 1;
                 push(vm, result);
                 return true;
             }
@@ -225,6 +243,19 @@ static bool callValue(VM *vm, Value callee, int argCount) {
 
     runtimeError(vm, "Can only call functions and classes.");
     return false;
+}
+
+static bool callNativeMethod(VM *vm, Value method, int argCount) {
+    NativeFn native = AS_NATIVE(method);
+
+    Value result = native(vm, argCount, vm->stackTop - argCount - 1);
+
+    if (IS_EMPTY(result))
+        return false;
+
+    vm->stackTop -= argCount + 1;
+    push(vm, result);
+    return true;
 }
 
 static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
@@ -276,23 +307,53 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
 
         case OBJ_STRING: {
-            return stringMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->stringMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "String has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_LIST: {
-            return listMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->listMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "List has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_DICT: {
-            return dictMethods(vm, name->chars, argCount + 1);
-        }
+            Value value;
+            if (tableGet(&vm->dictMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
 
-        case OBJ_FILE: {
-            return fileMethods(vm, name->chars, argCount + 1);
+            runtimeError(vm, "Dict has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_SET: {
-            return setMethods(vm, name->chars, argCount + 1);
+            Value value;
+            if (tableGet(&vm->setMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Set has no method %s()", name->chars);
+            return false;
+        }
+
+        case OBJ_FILE: {
+            Value value;
+            if (tableGet(&vm->fileMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "File has no method %s()", name->chars);
+            return false;
         }
 
         case OBJ_INSTANCE: {
@@ -306,8 +367,8 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             }
 
             // Check for instance methods.
-            if (instanceMethods(vm, name->chars, argCount + 1)) {
-                return true;
+            if (tableGet(&vm->instanceMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
             }
 
             return invokeFromClass(vm, instance->klass, name, argCount);

@@ -7,7 +7,8 @@
 #include <stdlib.h>
 
 #include "../common.h"
+#include "../util.h"
 
-bool fileMethods(VM *vm, char *method, int argCount);
+void declareFileMethods(VM *vm);
 
 #endif //dictu_files_h

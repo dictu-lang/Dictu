@@ -66,7 +66,7 @@ static Value parseJson(VM *vm, json_value *json) {
 
 static Value parse(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "parse() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "parse() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -156,7 +156,7 @@ json_value* stringifyJson(Value value) {
 
 static Value stringify(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -205,8 +205,8 @@ void createJSONClass(VM *vm) {
     /**
      * Define Json methods
      */
-    defineNativeMethod(vm, klass, "parse", parse);
-    defineNativeMethod(vm, klass, "stringify", stringify);
+    defineNative(vm, &klass->methods, "parse", parse);
+    defineNative(vm, &klass->methods, "stringify", stringify);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
