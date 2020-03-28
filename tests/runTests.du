@@ -1,5 +1,3 @@
-var t = System.clock();
-
 import "tests/strings/import.du";
 import "tests/variables/import.du";
 import "tests/lists/import.du";
@@ -16,10 +14,8 @@ import "tests/system/import.du";
 import "tests/json/import.du";
 
 if (isDefined("HTTP")) {
-  // import "tests/http/import.du";
+  import "tests/http/import.du";
 }
 
-print(System.clock() - t);
-
 // If we got here no runtime errors were thrown, therefore all tests passed.
-// print("All tests passed successfully!");
+print("All tests passed successfully!");
