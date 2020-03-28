@@ -86,9 +86,10 @@ static Value readFullFile(VM *vm, int argCount, Value *args) {
     }
 
     buffer[bytesRead] = '\0';
+    Value ret = OBJ_VAL(copyString(vm, buffer, fileSize));
 
     free(buffer);
-    return OBJ_VAL(copyString(vm, buffer, fileSize));
+    return ret;
 }
 
 static Value readLineFile(VM *vm, int argCount, Value *args) {
