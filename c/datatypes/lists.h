@@ -6,7 +6,8 @@
 #include <stdlib.h>
 
 #include "copy.h"
+#include "../util.h"
 
-bool listMethods(VM *vm, char *method, int argCount);
+void declareListMethods(VM *vm);
 
 #endif //dictu_lists_h

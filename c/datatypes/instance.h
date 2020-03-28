@@ -9,8 +9,6 @@
 #include "copy.h"
 #include "../util.h"
 
-bool instanceMethods(VM *vm, char *method, int argCount);
-
 void declareInstanceMethods(VM *vm);
 
 #endif //dictu_instance_h

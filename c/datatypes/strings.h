@@ -11,6 +11,4 @@
 
 void declareStringMethods(VM *vm);
 
-bool stringMethods(VM *vm, char *method, int argCount);
-
 #endif //dictu_strings_h
