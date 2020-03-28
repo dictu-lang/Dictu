@@ -98,7 +98,7 @@ static char *dictToPostArgs(ObjDict *dict) {
 
 static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "get() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -178,7 +178,7 @@ static Value get(VM *vm, int argCount, Value *args) {
 
 static Value post(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 && argCount != 3) {
-        runtimeError(vm, "post() takes between 1 and 3 arguments (%d  given)", argCount);
+        runtimeError(vm, "post() takes between 1 and 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

@@ -99,18 +99,27 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->strings);
     initTable(&vm->imports);
+
+    initTable(&vm->stringMethods);
+    initTable(&vm->listMethods);
+    initTable(&vm->dictMethods);
+    initTable(&vm->setMethods);
+    initTable(&vm->fileMethods);
+    initTable(&vm->instanceMethods);
+
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
-
-    // Native functions
-    defineAllNatives(vm);
 
     // Native methods
     declareStringMethods(vm);
     declareListMethods(vm);
     declareDictMethods(vm);
+    declareSetMethods(vm);
     declareFileMethods(vm);
     declareInstanceMethods(vm);
+
+    // Native functions
+    defineAllNatives(vm);
 
     // Native classes
     createMathsClass(vm);
@@ -327,6 +336,16 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             return false;
         }
 
+        case OBJ_SET: {
+            Value value;
+            if (tableGet(&vm->setMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Set has no method %s()", name->chars);
+            return false;
+        }
+
         case OBJ_FILE: {
             Value value;
             if (tableGet(&vm->fileMethods, name, &value)) {
@@ -335,10 +354,6 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
 
             runtimeError(vm, "File has no method %s()", name->chars);
             return false;
-        }
-
-        case OBJ_SET: {
-            return setMethods(vm, name->chars, argCount + 1);
         }
 
         case OBJ_INSTANCE: {

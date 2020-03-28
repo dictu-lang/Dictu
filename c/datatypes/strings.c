@@ -411,8 +411,6 @@ static Value countString(VM *vm, int argCount, Value *args) {
 }
 
 void declareStringMethods(VM *vm) {
-    initTable(&vm->stringMethods);
-
     defineNative(vm, &vm->stringMethods, "format", formatString);
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);

@@ -156,8 +156,6 @@ static Value seekFile(VM *vm, int argCount, Value *args) {
 }
 
 void declareFileMethods(VM *vm) {
-    initTable(&vm->fileMethods);
-
     defineNative(vm, &vm->fileMethods, "write", writeFile);
     defineNative(vm, &vm->fileMethods, "writeLine", writeLineFile);
     defineNative(vm, &vm->fileMethods, "read", readFullFile);

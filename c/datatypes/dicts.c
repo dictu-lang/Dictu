@@ -2,7 +2,7 @@
 
 static Value getDictItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "get() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -29,7 +29,7 @@ static Value getDictItem(VM *vm, int argCount, Value *args) {
 
 static Value removeDictItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "remove() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -51,7 +51,7 @@ static Value removeDictItem(VM *vm, int argCount, Value *args) {
 
 static Value dictItemExists(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "exists() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "exists() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -77,7 +77,7 @@ static Value dictItemExists(VM *vm, int argCount, Value *args) {
 
 static Value copyDictShallow(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "copy() takes no arguments (%d  given)", argCount);
+        runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -89,7 +89,7 @@ static Value copyDictShallow(VM *vm, int argCount, Value *args) {
 
 static Value copyDictDeep(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "deepCopy() takes no arguments (%d  given)", argCount);
+        runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -100,8 +100,6 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareDictMethods(VM *vm) {
-    initTable(&vm->dictMethods);
-
     defineNative(vm, &vm->dictMethods, "get", getDictItem);
     defineNative(vm, &vm->dictMethods, "remove", removeDictItem);
     defineNative(vm, &vm->dictMethods, "exists", dictItemExists);

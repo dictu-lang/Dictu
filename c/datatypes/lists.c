@@ -198,8 +198,6 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareListMethods(VM *vm) {
-    initTable(&vm->listMethods);
-
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);

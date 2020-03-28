@@ -4,7 +4,7 @@
 
 static Value hasAttribute(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "hasAttribute() takes 1 argument (%d  given)", argCount);
+        runtimeError(vm, "hasAttribute() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -26,7 +26,7 @@ static Value hasAttribute(VM *vm, int argCount, Value *args) {
 
 static Value getAttribute(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "getAttribute() takes 1 or 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "getAttribute() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -55,7 +55,7 @@ static Value getAttribute(VM *vm, int argCount, Value *args) {
 
 static Value setAttribute(VM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "setAttribute() takes 2 arguments (%d  given)", argCount);
+        runtimeError(vm, "setAttribute() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -75,7 +75,7 @@ static Value setAttribute(VM *vm, int argCount, Value *args) {
 
 static Value copyShallow(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "copy() takes no arguments (%d  given)", argCount);
+        runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -87,7 +87,7 @@ static Value copyShallow(VM *vm, int argCount, Value *args) {
 
 static Value copyDeep(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "deepCopy() takes no arguments (%d  given)", argCount);
+        runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -98,8 +98,6 @@ static Value copyDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareInstanceMethods(VM *vm) {
-    initTable(&vm->instanceMethods);
-
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);

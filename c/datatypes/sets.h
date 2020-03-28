@@ -6,7 +6,8 @@
 #include <stdlib.h>
 
 #include "copy.h"
+#include "../util.h"
 
-bool setMethods(VM *vm, char *method, int argCount);
+void declareSetMethods(VM *vm);
 
 #endif //dictu_sets_h
