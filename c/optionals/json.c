@@ -147,10 +147,9 @@ json_value* stringifyJson(Value value) {
                         keySize = strlen(key) + 5;
                     }
 
-
                     json_object_push_nocopy(
                             json,
-                            strlen(key),
+                            keySize,
                             key,
                             stringifyJson(entry->value)
                     );
