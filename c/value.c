@@ -79,7 +79,6 @@ static DictItem *findEntry(DictItem *entries, int capacityMask,
     DictItem *tombstone = NULL;
 
     for (;;) {
-        // printf("lol\n");
         DictItem *entry = &entries[index];
 
         if (IS_EMPTY(entry->key)) {
@@ -116,8 +115,6 @@ static void adjustCapacity(VM *vm, ObjDict *dict, int capacityMask) {
         entries[i].value = NIL_VAL;
     }
 
-    // printf("Mask: %d\nCount: %d\n", dict->capacityMask, dict->count);
-
     dict->count = 0;
 
     for (int i = 0; i <= dict->capacityMask; i++) {
@@ -136,7 +133,6 @@ static void adjustCapacity(VM *vm, ObjDict *dict, int capacityMask) {
 }
 
 bool dictSet(VM *vm, ObjDict *dict, Value key, Value value) {
-    // printf("Size: %d\nMask: %d\n", (dict->count + 1) / dict->capacityMask, dict->capacityMask);
     if (dict->count + 1 > (dict->capacityMask + 1) * TABLE_MAX_LOAD) {
         // Figure out the new table size.
         int capacityMask = GROW_CAPACITY(dict->capacityMask + 1) - 1;

@@ -255,8 +255,6 @@ void freeObject(VM *vm, Obj *object) {
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
             freeDict(vm, dict);
-            // freeTable(vm, &dict->items);
-            // FREE(vm, ObjDict, dict);
             break;
         }
 
