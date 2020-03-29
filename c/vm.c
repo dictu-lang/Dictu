@@ -1002,6 +1002,11 @@ static InterpretResult run(VM *vm) {
             Value value = peek(vm, 0);
             Value key = peek(vm, 1);
 
+            if (!isValidKey(key)) {
+                runtimeError(vm, "Dictionary key must be an immutable type");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             ObjDict *dict = AS_DICT(peek(vm, 2));
             dictSet(vm, dict, key, value);
 
@@ -1068,6 +1073,10 @@ static InterpretResult run(VM *vm) {
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
 
                     Value v;
                     if (dictGet(dict, indexValue, &v)) {
@@ -1132,6 +1141,10 @@ static InterpretResult run(VM *vm) {
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
 
                     dictSet(vm, dict, indexValue, assignValue);
 
@@ -1290,6 +1303,10 @@ static InterpretResult run(VM *vm) {
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
 
                     Value v;
                     bool found = dictGet(dict, indexValue, &v);
@@ -1301,8 +1318,8 @@ static InterpretResult run(VM *vm) {
                     } else {
                         push(vm, NIL_VAL);
                     }
-                    push(vm, value);
 
+                    push(vm, value);
                     DISPATCH();
                 }
 

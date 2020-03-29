@@ -11,8 +11,8 @@ static Value getDictItem(VM *vm, int argCount, Value *args) {
         defaultValue = args[2];
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to get() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to get() must be an immutable type");
         return EMPTY_VAL;
     }
 
@@ -32,14 +32,14 @@ static Value removeDictItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to remove() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to remove() must be an immutable type");
         return EMPTY_VAL;
     }
 
     ObjDict *dict = AS_DICT(args[0]);
 
-    if (dictDelete(dict, args[1])) {
+    if (dictDelete(vm, dict, args[1])) {
         return NIL_VAL;
     }
 
@@ -53,8 +53,8 @@ static Value dictItemExists(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to exists() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to exists() must be an immutable type");
         return EMPTY_VAL;
     }
 

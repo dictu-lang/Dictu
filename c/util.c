@@ -42,3 +42,12 @@ void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
     pop(vm);
     pop(vm);
 }
+
+bool isValidKey(Value value) {
+    if (IS_NIL(value) || IS_BOOL(value) || IS_NUMBER(value) ||
+    IS_STRING(value)) {
+        return true;
+    }
+
+    return false;
+}

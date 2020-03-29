@@ -145,4 +145,4 @@ bool dictSet(VM *vm, ObjDict *dict, Value key, Value value);
 
 bool dictGet(ObjDict *dict, Value key, Value *value);
 
-bool dictDelete(ObjDict *dict, Value key);
+bool dictDelete(VM *vm, ObjDict *dict, Value key);
