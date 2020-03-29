@@ -139,7 +139,7 @@ print(list2); // [[10, 2]]
 
 ## Dictionaries
 
-Dictionaries are a key:value pair data type. Currently Dictu requires that the dictionary key be a string, however the value can be any type.
+Dictionaries are a key:value pair data type. Dictu requires that the dictionary key be an immutable type (nil, boolean, number, string), however the value can be any type.
 
 ```js
 var myDict = {"key": 1, "key1": true};
@@ -147,7 +147,7 @@ var myDict = {"key": 1, "key1": true};
 
 ### Indexing
 
-Accessing dictionary items is the same syntax as lists, except instead of an index, it expects a **string key**.
+Accessing dictionary items is the same syntax as lists, except instead of an index, it expects an immutable type (nil, boolean, number, string) for it's key.
 If you try to access a key that does not exist, `nil` is returned. If you expect a key may not exist `.get()` can be used to return a default value.
 
 ```js
