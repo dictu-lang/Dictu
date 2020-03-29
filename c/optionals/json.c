@@ -15,7 +15,7 @@ static Value parseJson(VM *vm, json_value *json) {
             for (unsigned int i = 0; i < json->u.object.length; i++) {
                 Value val = parseJson(vm, json->u.object.values[i].value);
                 push(vm, val);
-                tableSet(vm, &dict->items, copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length), val);
+                dictSet(vm, dict, OBJ_VAL(copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length)), val);
                 pop(vm);
             }
 
@@ -127,20 +127,37 @@ json_value* stringifyJson(Value value) {
 
             case OBJ_DICT: {
                 ObjDict *dict = AS_DICT(value);
-                json_value *json = json_object_new(dict->items.count);
+                json_value *json = json_object_new(dict->count);
 
-                for (int i = 0; i <= dict->items.capacityMask; i++) {
-                    Entry *entry = &dict->items.entries[i];
-                    if (entry->key == NULL) {
+                for (int i = 0; i <= dict->capacityMask; i++) {
+                    DictItem *entry = &dict->entries[i];
+                    if (IS_EMPTY(entry->key)) {
                         continue;
                     }
 
+                    char *key;
+                    int keySize;
+
+                    if (IS_STRING(entry->key)) {
+                        ObjString *s = AS_STRING(entry->key);
+                        key = s->chars;
+                        keySize = s->length + 5;
+                    } else {
+                        key = valueToString(entry->key);
+                        keySize = strlen(key) + 5;
+                    }
+
+
                     json_object_push_nocopy(
                             json,
-                            entry->key->length,
-                            entry->key->chars,
+                            strlen(key),
+                            key,
                             stringifyJson(entry->value)
                     );
+
+                    if (!IS_STRING(entry->key)) {
+                        free(key);
+                    }
                 }
 
                 return json;

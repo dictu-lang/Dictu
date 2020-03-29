@@ -92,16 +92,16 @@ struct sObjList {
     ValueArray values;
 };
 
-struct dictItem {
-    char *key;
-    Value item;
-    bool deleted;
-    uint32_t hash;
-};
+typedef struct {
+    Value key;
+    Value value;
+} DictItem;
 
 struct sObjDict {
     Obj obj;
-    Table items;
+    int count;
+    int capacityMask;
+    DictItem *entries;
 };
 
 struct setItem {

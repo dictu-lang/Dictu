@@ -7,12 +7,12 @@ ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(newDict));
 
-    for (int i = 0; i <= oldDict->items.capacityMask; ++i) {
-        if (oldDict->items.entries[i].key == NULL) {
+    for (int i = 0; i <= oldDict->capacityMask; ++i) {
+        if (IS_EMPTY(oldDict->entries[i].key)) {
             continue;
         }
 
-        Value val = oldDict->items.entries[i].value;
+        Value val = oldDict->entries[i].value;
 
         if (!shallow) {
             if (IS_DICT(val)) {
@@ -26,7 +26,7 @@ ObjDict *copyDict(VM* vm, ObjDict *oldDict, bool shallow) {
 
         // Push to stack to avoid GC
         push(vm, val);
-        tableSet(vm, &newDict->items, oldDict->items.entries[i].key, val);
+        dictSet(vm, newDict, oldDict->entries[i].key, val);
         pop(vm);
     }
 

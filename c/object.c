@@ -114,7 +114,9 @@ ObjList *initList(VM *vm) {
 
 ObjDict *initDict(VM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
-    initTable(&dict->items);
+    dict->count = 0;
+    dict->capacityMask = -1;
+    dict->entries = NULL;
     return dict;
 }
 
@@ -312,15 +314,25 @@ char *objectToString(Value value) {
             char *dictString = malloc(sizeof(char) * size);
             int dictStringLength = snprintf(dictString, size, "%s", "{");
 
-            for (int i = 0; i <= dict->items.capacityMask; ++i) {
-                Entry *item = &dict->items.entries[i];
-                if (item->key == NULL) {
+            for (int i = 0; i <= dict->capacityMask; ++i) {
+                DictItem *item = &dict->entries[i];
+                if (IS_EMPTY(item->key)) {
                     continue;
                 }
 
                 count++;
 
-                int keySize = item->key->length + 5;
+                char *key;
+                int keySize;
+
+                if (IS_STRING(item->key)) {
+                    ObjString *s = AS_STRING(item->key);
+                    key = s->chars;
+                    keySize = s->length + 5;
+                } else {
+                    key = valueToString(item->key);
+                    keySize = strlen(key) + 5;
+                }
 
                 if (keySize > (size - dictStringLength - 1)) {
                     if (keySize > size * 2) {
@@ -339,7 +351,12 @@ char *objectToString(Value value) {
                     dictString = newB;
                 }
 
-                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", item->key->chars);
+                if (IS_STRING(item->key)) {
+                    dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", key);
+                } else {
+                    dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s: ", key);
+                    free(key);
+                }
 
                 char *element = valueToString(item->value);
                 int elementSize = strlen(element);
@@ -365,7 +382,7 @@ char *objectToString(Value value) {
 
                 free(element);
 
-                if (count != dict->items.count) {
+                if (count != dict->count) {
                     dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
                 }
             }
