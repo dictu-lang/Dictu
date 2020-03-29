@@ -141,10 +141,10 @@ json_value* stringifyJson(Value value) {
                     if (IS_STRING(entry->key)) {
                         ObjString *s = AS_STRING(entry->key);
                         key = s->chars;
-                        keySize = s->length + 5;
+                        keySize = s->length;
                     } else {
                         key = valueToString(entry->key);
-                        keySize = strlen(key) + 5;
+                        keySize = strlen(key);
                     }
 
                     json_object_push_nocopy(
