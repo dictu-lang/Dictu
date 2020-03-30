@@ -682,7 +682,7 @@ static void dict(Compiler *compiler, bool canAssign) {
 static void subscript(Compiler *compiler, bool canAssign) {
     // slice with no initial index [1, 2, 3][:100]
     if (match(compiler, TOKEN_COLON)) {
-        emitByte(compiler, OP_NIL);
+        emitByte(compiler, OP_EMPTY);
         expression(compiler);
         emitByte(compiler, OP_SLICE);
         consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
@@ -692,11 +692,11 @@ static void subscript(Compiler *compiler, bool canAssign) {
     expression(compiler);
 
     if (match(compiler, TOKEN_COLON)) {
-        // If we slice with no "ending" push NIL so we know
+        // If we slice with no "ending" push EMPTY so we know
         // To go to the end of the iterable
         // i.e [1, 2, 3][1:]
         if (check(compiler, TOKEN_RIGHT_BRACKET)) {
-            emitByte(compiler, OP_NIL);
+            emitByte(compiler, OP_EMPTY);
         } else {
             expression(compiler);
         }

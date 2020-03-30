@@ -7,32 +7,38 @@
 * .deepCopy() returns a deep copy of the dictionary
 */
 
-var myDict = {"key": 1, "key1": true};
+var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
 // First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true});
+assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 var myDictCopy = myDict.copy(); // shallow copy
 
-assert(myDictCopy == {"key": 1, "key1": true});
+assert(myDictCopy == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 myDictCopy["key"] = 10;
 
-assert(myDict == {"key": 1, "key1": true});
-assert(myDictCopy == {"key": 10, "key1": true});
+assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+assert(myDictCopy == {"key": 10, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-var newDict = {"key": [1, "hey"], "key1": {"test": 10}};
+var newDict = {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 var deepCopy = newDict.deepCopy();
 
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
-assert(deepCopy == {"key": [1, "hey"], "key1": {"test": 10}});
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+assert(deepCopy == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 deepCopy["key"][1] = "test";
 
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
-assert(deepCopy == {"key": [1, "test"], "key1": {"test": 10}});
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+assert(deepCopy == {"key": [1, "test"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 deepCopy["key1"]["test"] = 20;
 
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}});
-assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}});
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+deepCopy[true] = true;
+deepCopy[false] = false;
+
+assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}, true: true, false: false, nil: 10, 10: nil, 10.5: 10.5});

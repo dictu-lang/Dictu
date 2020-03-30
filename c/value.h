@@ -134,3 +134,15 @@ char *valueToString(Value value);
 void printValue(Value value);
 
 #endif
+
+
+
+void freeDict(VM *vm, ObjDict *dict);
+
+void grayDict(VM *vm, ObjDict *dict);
+
+bool dictSet(VM *vm, ObjDict *dict, Value key, Value value);
+
+bool dictGet(ObjDict *dict, Value key, Value *value);
+
+bool dictDelete(VM *vm, ObjDict *dict, Value key);

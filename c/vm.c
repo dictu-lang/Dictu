@@ -485,7 +485,7 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->items.count == 0) ||
+           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
@@ -611,6 +611,10 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(NIL):
             push(vm, NIL_VAL);
+            DISPATCH();
+
+        CASE_CODE(EMPTY):
+            push(vm, EMPTY_VAL);
             DISPATCH();
 
         CASE_CODE(TRUE):
@@ -997,18 +1001,14 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(ADD_DICT): {
             Value value = peek(vm, 0);
             Value key = peek(vm, 1);
-            Value dictValue = peek(vm, 2);
 
-            if (!IS_STRING(key)) {
-                frame->ip = ip;
-                runtimeError(vm, "Dictionary key must be a string.");
+            if (!isValidKey(key)) {
+                runtimeError(vm, "Dictionary key must be an immutable type");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjDict *dict = AS_DICT(dictValue);
-            ObjString *keyString = AS_STRING(key);
-
-            tableSet(vm, &dict->items, keyString, value);
+            ObjDict *dict = AS_DICT(peek(vm, 2));
+            dictSet(vm, dict, key, value);
 
             pop(vm);
             pop(vm);
@@ -1072,17 +1072,14 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *key = AS_STRING(indexValue);
-
                     Value v;
-                    if (tableGet(&dict->items, key, &v)) {
+                    if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
                     } else {
                         push(vm, NIL_VAL);
@@ -1143,16 +1140,13 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *keyString = AS_STRING(indexValue);
-
-                    tableSet(vm, &dict->items, keyString, assignValue);
+                    dictSet(vm, dict, indexValue, assignValue);
 
                     // Pop after the values have been inserted to stop GC cleanup
                     pop(vm);
@@ -1186,7 +1180,7 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if ((!IS_NUMBER(sliceStartIndex) && !IS_NIL(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_NIL(sliceEndIndex))) {
+            if ((!IS_NUMBER(sliceStartIndex) && !IS_EMPTY(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_EMPTY(sliceEndIndex))) {
                 frame->ip = ip;
                 runtimeError(vm, "Slice index must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -1196,7 +1190,7 @@ static InterpretResult run(VM *vm) {
             int indexEnd;
             Value returnVal;
 
-            if (IS_NIL(sliceStartIndex)) {
+            if (IS_EMPTY(sliceStartIndex)) {
                 indexStart = 0;
             } else {
                 indexStart = AS_NUMBER(sliceStartIndex);
@@ -1212,7 +1206,7 @@ static InterpretResult run(VM *vm) {
                     push(vm, OBJ_VAL(newList));
                     ObjList *list = AS_LIST(objectValue);
 
-                    if (IS_NIL(sliceEndIndex)) {
+                    if (IS_EMPTY(sliceEndIndex)) {
                         indexEnd = list->values.count;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
@@ -1236,7 +1230,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(objectValue);
 
-                    if (IS_NIL(sliceEndIndex)) {
+                    if (IS_EMPTY(sliceEndIndex)) {
                         indexEnd = string->length;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
@@ -1308,17 +1302,14 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *key = AS_STRING(indexValue);
-
                     Value v;
-                    bool found = tableGet(&dict->items, key, &v);
+                    bool found = dictGet(dict, indexValue, &v);
 
                     push(vm, subscriptValue);
                     push(vm, indexValue);
@@ -1327,8 +1318,8 @@ static InterpretResult run(VM *vm) {
                     } else {
                         push(vm, NIL_VAL);
                     }
-                    push(vm, value);
 
+                    push(vm, value);
                     DISPATCH();
                 }
 
