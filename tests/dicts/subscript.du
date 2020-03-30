@@ -22,3 +22,28 @@ assert(myDict == {"key": 1, "key1": true, "test": 10});
 // Updating a value
 myDict["test"] = 100;
 assert(myDict == {"key": 1, "key1": true, "test": 100});
+
+// Test more value types for keys
+var newDict = {"test": 1, nil: 2, true: 3, false: 4, 10: 5, 10.5: 6};
+assert(newDict["test"] == 1);
+assert(newDict[nil] == 2);
+assert(newDict[true] == 3);
+assert(newDict[false] == 4);
+assert(newDict[10] == 5);
+assert(newDict[10.5] == 6);
+
+newDict["test"] = 10;
+newDict[nil] = 20;
+newDict[true] = 30;
+newDict[false] = 40;
+newDict[10] = 50;
+newDict[10.5] = 60;
+
+assert(newDict["test"] == 10);
+assert(newDict[nil] == 20);
+assert(newDict[true] == 30);
+assert(newDict[false] == 40);
+assert(newDict[10] == 50);
+assert(newDict[10.5] == 60);
+
+

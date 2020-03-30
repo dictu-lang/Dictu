@@ -11,16 +11,15 @@ static Value getDictItem(VM *vm, int argCount, Value *args) {
         defaultValue = args[2];
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to get() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to get() must be an immutable type");
         return EMPTY_VAL;
     }
 
     ObjDict *dict = AS_DICT(args[0]);
-    ObjString *key = AS_STRING(args[1]);
 
     Value ret;
-    if (tableGet(&dict->items, key, &ret)) {
+    if (dictGet(dict, args[1], &ret)) {
         return ret;
     }
 
@@ -33,19 +32,18 @@ static Value removeDictItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to remove() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to remove() must be an immutable type");
         return EMPTY_VAL;
     }
 
     ObjDict *dict = AS_DICT(args[0]);
-    ObjString *key = AS_STRING(args[1]);
 
-    if (tableDelete(&dict->items, key)) {
+    if (dictDelete(vm, dict, args[1])) {
         return NIL_VAL;
     }
 
-    runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", key->chars);
+    runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", AS_CSTRING(args[1]));
     return EMPTY_VAL;
 }
 
@@ -55,20 +53,19 @@ static Value dictItemExists(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Key passed to exists() must be a string");
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Dictionary key passed to exists() must be an immutable type");
         return EMPTY_VAL;
     }
 
     ObjDict *dict = AS_DICT(args[0]);
-    ObjString *key = AS_STRING(args[1]);
 
-    if (dict->items.count == 0) {
+    if (dict->count == 0) {
         return FALSE_VAL;
     }
 
     Value v;
-    if (tableGet(&dict->items, key, &v)) {
+    if (dictGet(dict, args[1], &v)) {
         return TRUE_VAL;
     }
 

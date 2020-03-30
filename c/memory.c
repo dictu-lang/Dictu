@@ -157,7 +157,7 @@ static void blackenObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            grayTable(vm, &dict->items);
+            grayDict(vm, dict);
             break;
         }
 
@@ -254,8 +254,7 @@ void freeObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            freeTable(vm, &dict->items);
-            FREE(vm, ObjDict, dict);
+            freeDict(vm, dict);
             break;
         }
 

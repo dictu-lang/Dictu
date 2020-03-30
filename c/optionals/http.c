@@ -50,10 +50,17 @@ static char *dictToPostArgs(ObjDict *dict) {
     char *ret = malloc(sizeof(char) * len);
     int currentLen = 0;
 
-    for (int i = 0; i <= dict->items.capacityMask; i++) {
-        Entry *entry = &dict->items.entries[i];
-        if (entry->key == NULL) {
+    for (int i = 0; i <= dict->capacityMask; i++) {
+        DictItem *entry = &dict->entries[i];
+        if (IS_EMPTY(entry->key)) {
             continue;
+        }
+
+        char *key;
+        if (IS_STRING(entry->key)) {
+            key = AS_CSTRING(entry->key);
+        } else {
+            key = valueToString(entry->key);
         }
 
         char *value;
@@ -63,8 +70,7 @@ static char *dictToPostArgs(ObjDict *dict) {
             value = valueToString(entry->value);
         }
 
-        int keyLen = entry->key->length;
-
+        int keyLen = strlen(key);
         int valLen = strlen(value);
 
         if (currentLen + keyLen + valLen > len) {
@@ -77,7 +83,7 @@ static char *dictToPostArgs(ObjDict *dict) {
             }
         }
 
-        memcpy(ret + currentLen, entry->key->chars, keyLen);
+        memcpy(ret + currentLen, key, keyLen);
         currentLen += keyLen;
         memcpy(ret + currentLen, "=", 1);
         currentLen += 1;
@@ -86,6 +92,9 @@ static char *dictToPostArgs(ObjDict *dict) {
         memcpy(ret + currentLen, "&", 1);
         currentLen += 1;
 
+        if (!IS_STRING(entry->key)) {
+            free(key);
+        }
         if (!IS_STRING(entry->value)) {
             free(value);
         }
@@ -160,9 +169,9 @@ static Value get(VM *vm, int argCount, Value *args) {
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
-        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
-        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
-        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "content", 7)), OBJ_VAL(content));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "headers", 7)), OBJ_VAL(response.headers));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "statusCode", 10)), NUMBER_VAL(response.statusCode));
 
         // Pop header list, content and response dict return off stack
         pop(vm);
@@ -266,9 +275,9 @@ static Value post(VM *vm, int argCount, Value *args) {
         // Push to stack to avoid GC
         push(vm, OBJ_VAL(responseVal));
 
-        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
-        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
-        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "content", 7)), OBJ_VAL(content));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "headers", 7)), OBJ_VAL(response.headers));
+        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "statusCode", 10)), NUMBER_VAL(response.statusCode));
 
         // Pop header list and dict return off stack
         pop(vm);
