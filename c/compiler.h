@@ -65,6 +65,8 @@ typedef struct ClassCompiler {
 typedef struct Loop {
     struct Loop *enclosing;
     int start;
+    int body;
+    int end;
     int scopeDepth;
 } Loop;
 
