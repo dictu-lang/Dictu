@@ -41,7 +41,8 @@ if (x == 6) {
     print("Not going to print!");
 }
 ```
-## While loop
+## Loops
+### While loop
 
 ```js
 // While loop
@@ -63,7 +64,7 @@ while {
 }
 ```
 
-## For loop
+### For loop
 
 ```js
 // For loop
@@ -72,7 +73,7 @@ for (var i = 0; i < 10; ++i) {
 }
 ```
 
-## Continue statement
+### Continue statement
 
 Continue allows execution of a loop to restart prematurely.
 
@@ -83,6 +84,20 @@ for (var i = 0; i < 10; ++i) {
         continue; // Skip all even numbers
 
     print(i); // Only odd numbers will be printed
+}
+```
+
+### Break statement
+
+Break allows execution of a loop to stop prematurely.
+
+```js
+// For loop
+for (var i = 0; i < 10; ++i) {
+    if (i > 5)
+        break; // Exit the loop here
+
+    print(i); // Only numbers less than or equal to 5 will be printed
 }
 ```
 
