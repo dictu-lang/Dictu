@@ -199,7 +199,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
 
     ObjFunction *function = compiler->function;
 #ifdef DEBUG_PRINT_CODE
-    if (!parser->hadError) {
+    if (!compiler->parser->hadError) {
 
       disassembleChunk(currentChunk(compiler),
           function->name != NULL ? function->name->chars : "<top>");
