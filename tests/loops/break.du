@@ -6,6 +6,7 @@
 
 var x = [];
 
+// Single break statement
 for (var i = 0; i < 10; ++i) {
     if (i > 5)
         break;
@@ -13,12 +14,27 @@ for (var i = 0; i < 10; ++i) {
     x.push(i);
 }
 
-
 assert(x == [0, 1, 2, 3, 4, 5]);
+
+var x = [];
+
+// Two break statements
+for (var i = 0; i < 10; ++i) {
+    if (i > 5)
+        break;
+
+    x.push(i);
+
+    if (i > 3)
+        break;
+}
+
+assert(x == [0, 1, 2, 3, 4]);
 
 var i = 0;
 var y = [];
 
+// While loop
 while (i < 10) {
     if (i > 5)
         break;
@@ -31,6 +47,7 @@ assert(y == [0, 1, 2, 3, 4, 5]);
 
 var z = [];
 
+// Nested for loop with multiple breaks
 for (var i = 0; i < 10; ++i) {
     for (var j = 0; j < 10; ++j) {
         if (j > 5)
@@ -49,6 +66,7 @@ assert(z == [0, 1, 2, 3, 4, 5, 0, 0, 1, 2, 3, 4, 5, 1, 0, 1, 2, 3, 4, 5, 2, 0, 1
 var i = 0;
 var z = [];
 
+// Nested while loop with multiple breaks
 while (i < 5) {
     var j = 0;
 
