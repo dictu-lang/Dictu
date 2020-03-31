@@ -6,3 +6,4 @@
 
 import "tests/loops/loop.du";
 import "tests/loops/continue.du";
+import "tests/loops/break.du";

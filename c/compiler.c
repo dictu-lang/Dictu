@@ -199,7 +199,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
 
     ObjFunction *function = compiler->function;
 #ifdef DEBUG_PRINT_CODE
-    if (!parser->hadError) {
+    if (!compiler->parser->hadError) {
 
       disassembleChunk(currentChunk(compiler),
           function->name != NULL ? function->name->chars : "<top>");
@@ -256,11 +256,11 @@ static uint8_t identifierConstant(Compiler *compiler, Token *name) {
     ObjString *string = copyString(compiler->parser->vm, name->start, name->length);
     Value indexValue;
     if (tableGet(&compiler->stringConstants, string, &indexValue)) {
-        return (uint8_t)AS_NUMBER(indexValue);
+        return (uint8_t) AS_NUMBER(indexValue);
     }
 
     uint8_t index = makeConstant(compiler, OBJ_VAL(string));
-    tableSet(compiler->parser->vm, &compiler->stringConstants, string, NUMBER_VAL((double)index));
+    tableSet(compiler->parser->vm, &compiler->stringConstants, string, NUMBER_VAL((double) index));
     return index;
 }
 
@@ -797,7 +797,7 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         expression(compiler);
         emitByte(compiler, OP_BITWISE_OR);
         emitBytes(compiler, setOp, (uint8_t) arg);
-    }  else {
+    } else {
         emitBytes(compiler, getOp, (uint8_t) arg);
     }
 }
@@ -938,69 +938,69 @@ static void prefix(Compiler *compiler, bool canAssign) {
 }
 
 ParseRule rules[] = {
-        {grouping, call,         PREC_CALL},               // TOKEN_LEFT_PAREN
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_PAREN
-        {dict,     NULL,         PREC_NONE},               // TOKEN_LEFT_BRACE [big]
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACE
-        {list,     subscript,    PREC_CALL},               // TOKEN_LEFT_BRACKET
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_RIGHT_BRACKET
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_COMMA
-        {NULL,     dot,          PREC_CALL},               // TOKEN_DOT
-        {unary,    binary,       PREC_TERM},               // TOKEN_MINUS
-        {NULL,     binary,       PREC_TERM},               // TOKEN_PLUS
-        {prefix,   NULL,         PREC_NONE},               // TOKEN_PLUS_PLUS
-        {prefix,   NULL,         PREC_NONE},               // TOKEN_MINUS_MINUS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_PLUS_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_MINUS_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_DIVIDE_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_SEMICOLON
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_COLON
-        {NULL,     binary,       PREC_FACTOR},             // TOKEN_SLASH
-        {NULL,     binary,       PREC_FACTOR},             // TOKEN_STAR
-        {NULL,     binary,       PREC_INDICES},            // TOKEN_STAR_STAR
-        {NULL,     binary,       PREC_FACTOR},             // TOKEN_PERCENT
-        {NULL,     binary,       PREC_BITWISE_AND},        // TOKEN_AMPERSAND
-        {NULL,     binary,       PREC_BITWISE_XOR},        // TOKEN_CARET
-        {NULL,     binary,       PREC_BITWISE_OR},         // TOKEN_PIPE
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_AMPERSAND_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_CARET_EQUALS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_PIPE_EQUALS
-        {unary,    NULL,         PREC_NONE},               // TOKEN_BANG
-        {NULL,     binary,       PREC_EQUALITY},           // TOKEN_BANG_EQUAL
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_EQUAL
-        {NULL,     binary,       PREC_EQUALITY},           // TOKEN_EQUAL_EQUAL
-        {NULL,     binary,       PREC_COMPARISON},         // TOKEN_GREATER
-        {NULL,     binary,       PREC_COMPARISON},         // TOKEN_GREATER_EQUAL
-        {NULL,     binary,       PREC_COMPARISON},         // TOKEN_LESS
-        {NULL,     binary,       PREC_COMPARISON},         // TOKEN_LESS_EQUAL
-        {variable, NULL,         PREC_NONE},               // TOKEN_IDENTIFIER
-        {string,   NULL,         PREC_NONE},               // TOKEN_STRING
-        {number,   NULL,         PREC_NONE},               // TOKEN_NUMBER
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_CLASS
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_TRAIT
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_USE
-        {static_,  NULL,         PREC_NONE},               // TOKEN_STATIC
-        {this_,    NULL,         PREC_NONE},               // TOKEN_THIS
-        {super_,   NULL,         PREC_NONE},               // TOKEN_SUPER
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_DEF
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_IF
-        {NULL,     and_,         PREC_AND},                // TOKEN_AND
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_ELSE
-        {NULL,     or_,          PREC_OR},                 // TOKEN_OR
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_VAR
-        {literal,  NULL,         PREC_NONE},               // TOKEN_TRUE
-        {literal,  NULL,         PREC_NONE},               // TOKEN_FALSE
-        {literal,  NULL,         PREC_NONE},               // TOKEN_NIL
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_FOR
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_WHILE
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_BREAK
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_RETURN
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_CONTINUE
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_WITH
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_EOF
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_IMPORT
-        {NULL,     NULL,         PREC_NONE},               // TOKEN_ERROR
+        {grouping, call,      PREC_CALL},               // TOKEN_LEFT_PAREN
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_RIGHT_PAREN
+        {dict,     NULL,      PREC_NONE},               // TOKEN_LEFT_BRACE [big]
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_RIGHT_BRACE
+        {list,     subscript, PREC_CALL},               // TOKEN_LEFT_BRACKET
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_RIGHT_BRACKET
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_COMMA
+        {NULL,     dot,       PREC_CALL},               // TOKEN_DOT
+        {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
+        {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
+        {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
+        {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_DIVIDE_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_SEMICOLON
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_COLON
+        {NULL,     binary,    PREC_FACTOR},             // TOKEN_SLASH
+        {NULL,     binary,    PREC_FACTOR},             // TOKEN_STAR
+        {NULL,     binary,    PREC_INDICES},            // TOKEN_STAR_STAR
+        {NULL,     binary,    PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     binary,    PREC_BITWISE_AND},        // TOKEN_AMPERSAND
+        {NULL,     binary,    PREC_BITWISE_XOR},        // TOKEN_CARET
+        {NULL,     binary,    PREC_BITWISE_OR},         // TOKEN_PIPE
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AMPERSAND_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_CARET_EQUALS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_PIPE_EQUALS
+        {unary,    NULL,      PREC_NONE},               // TOKEN_BANG
+        {NULL,     binary,    PREC_EQUALITY},           // TOKEN_BANG_EQUAL
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_EQUAL
+        {NULL,     binary,    PREC_EQUALITY},           // TOKEN_EQUAL_EQUAL
+        {NULL,     binary,    PREC_COMPARISON},         // TOKEN_GREATER
+        {NULL,     binary,    PREC_COMPARISON},         // TOKEN_GREATER_EQUAL
+        {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS
+        {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS_EQUAL
+        {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
+        {string,   NULL,      PREC_NONE},               // TOKEN_STRING
+        {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_CLASS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
+        {static_,  NULL,      PREC_NONE},               // TOKEN_STATIC
+        {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
+        {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_DEF
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
+        {NULL,     and_,      PREC_AND},                // TOKEN_AND
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
+        {NULL,     or_,       PREC_OR},                 // TOKEN_OR
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
+        {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
+        {literal,  NULL,      PREC_NONE},               // TOKEN_FALSE
+        {literal,  NULL,      PREC_NONE},               // TOKEN_NIL
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_FOR
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_WHILE
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_BREAK
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_RETURN
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_CONTINUE
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_WITH
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_EOF
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_IMPORT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ERROR
 };
 
 static void parsePrecedence(Compiler *compiler, Precedence precedence) {
@@ -1230,84 +1230,25 @@ static void expressionStatement(Compiler *compiler) {
     }
 }
 
-/*
-static void forstatement(parser) {
-    // for (var i = 0; i < 10; i = i + 1) print i;
-    //
-    //   var i = 0;
-    // start:                      <--.
-    //   if (i < 10) goto exit;  --.  |
-    //   goto body;  -----------.  |  |
-    // increment:            <--+--+--+--.
-    //   i = i + 1;             |  |  |  |
-    //   goto start;  ----------+--+--'  |
-    // body:                 <--'  |     |
-    //   print i;                  |     |
-    //   goto increment;  ---------+-----'
-    // exit:                    <--'
-    // for (2;10;1)
-
-    // Create a scope for the loop variable.
-    beginScope(compiler);
-
-    // The initialization clause.
-    consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
-    int start = 0, start1 = 0, start2 = 0;
-
-    if (match(compiler, TOKEN_NUMBER)) {
-        //Get number substring
-        char *t = strndup(parser->previous.start, parser->previous.length);
-        //Convert string to int
-        start = strtol(t, NULL, 10);
-        consume(compiler, TOKEN_SEMICOLON, "Expect ';' after 'number'");
-    }
-
-    loopVarDeclaration(start);
-
-    int loopStart = currentChunk(compiler)->count;
-    int exitJump = -1;
-
-    // The exit condition.
-    //match(compiler, TOKEN_MINUS);
-
-    if (match(compiler, TOKEN_NUMBER)) {
-        //Get number substring
-        char *t1 = strndup(parser->previous.start, parser->previous.length);
-        //Convert string to int
-        start1 = strtol(t1, NULL, 10);
-        consume(compiler, TOKEN_SEMICOLON, "Expect ';' after 'number'");
-    }
-
-    //if (match(compiler, TOKEN_MINUS)) {
-    //    consume(compiler, TOKEN_MINUS, "Expect '-' before 'number'");
-    //}
-
-    if (match(compiler, TOKEN_NUMBER)) {
-        //Get number substring
-        char *t2 = strndup(parser->previous.start, parser->previous.length);
-        start2 = strtod(t2, NULL);
-        printf("%d\n", start2);
-        printf("%d\n", -10);
-    }
-
-    //emitByte(compiler, OP_ADD);
-
-    // Compile the body.
-    statement(compiler);
-
-    // Jump back to the beginning (or the increment).
-    //emitLoop(loopStart);
-
-    if (exitJump != -1) {
-        printf("%d", loopStart);
-        patchJump(compiler, exitJump);
+static void endLoop(Compiler *compiler) {
+    if (compiler->loop->end != -1) {
+        patchJump(compiler, compiler->loop->end);
         emitByte(compiler, OP_POP); // Condition.
     }
 
-    endScope(parser); // Loop variable.
-}
- */
+    int i = compiler->loop->body;
+    while (i < compiler->function->chunk.count) {
+        if (compiler->function->chunk.code[i] == OP_BREAK) {
+            compiler->function->chunk.code[i] = OP_JUMP;
+            patchJump(compiler, i + 1);
+            i += 3;
+        } else {
+            i++;
+        }
+    }
 
+    compiler->loop = compiler->loop->enclosing;
+}
 
 static void forStatement(Compiler *compiler) {
     // for (var i = 0; i < 10; i = i + 1) print i;
@@ -1344,14 +1285,14 @@ static void forStatement(Compiler *compiler) {
     compiler->loop = &loop;
 
     // The exit condition.
-    int exitJump = -1;
+    compiler->loop->end = -1;
 
     if (!match(compiler, TOKEN_SEMICOLON)) {
         expression(compiler);
         consume(compiler, TOKEN_SEMICOLON, "Expect ';' after loop condition.");
 
         // Jump out of the loop if the condition is false.
-        exitJump = emitJump(compiler, OP_JUMP_IF_FALSE);
+        compiler->loop->end = emitJump(compiler, OP_JUMP_IF_FALSE);
         emitByte(compiler, OP_POP); // Condition.
     }
 
@@ -1373,19 +1314,32 @@ static void forStatement(Compiler *compiler) {
     }
 
     // Compile the body.
+    compiler->loop->body = compiler->function->chunk.count;
     statement(compiler);
 
     // Jump back to the beginning (or the increment).
     emitLoop(compiler, compiler->loop->start);
 
-    if (exitJump != -1) {
-        patchJump(compiler, exitJump);
-        emitByte(compiler, OP_POP); // Condition.
+    endLoop(compiler);
+    endScope(compiler); // Loop variable.
+}
+
+static void breakStatement(Compiler *compiler) {
+    if (compiler->loop == NULL) {
+        error(compiler->parser, "Cannot utilise 'break' outside of a loop.");
+        return;
     }
 
-    compiler->loop = compiler->loop->enclosing;
+    consume(compiler, TOKEN_SEMICOLON, "Expected semicolon after break");
 
-    endScope(compiler); // Loop variable.
+    // Discard any locals created inside the loop.
+    for (int i = compiler->localCount - 1;
+         i >= 0 && compiler->locals[i].depth > compiler->loop->scopeDepth;
+         i--) {
+        emitByte(compiler, OP_POP);
+    }
+
+    emitJump(compiler, OP_BREAK);
 }
 
 static void continueStatement(Compiler *compiler) {
@@ -1478,16 +1432,7 @@ static void importStatement(Compiler *compiler) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
 
     emitByte(compiler, OP_IMPORT);
-}
-
-static void breakStatement(Compiler *compiler) {
-    if (compiler->loop == NULL) {
-        error(compiler->parser, "Cannot utilise 'break' outside of a loop.");
-        return;
-    }
-
-    consume(compiler, TOKEN_SEMICOLON, "Expected semicolon after break");
-    emitByte(compiler, OP_BREAK);
+    emitByte(compiler, OP_POP);
 }
 
 static void whileStatement(Compiler *compiler) {
@@ -1506,19 +1451,16 @@ static void whileStatement(Compiler *compiler) {
     }
 
     // Jump out of the loop if the condition is false.
-    int exitJump = emitJump(compiler, OP_JUMP_IF_FALSE);
+    compiler->loop->end = emitJump(compiler, OP_JUMP_IF_FALSE);
 
     // Compile the body.
     emitByte(compiler, OP_POP); // Condition.
+    compiler->loop->body = compiler->function->chunk.count;
     statement(compiler);
 
     // Loop back to the start.
     emitLoop(compiler, loop.start);
-
-    patchJump(compiler, exitJump);
-    emitByte(compiler, OP_POP); // Condition.
-
-    compiler->loop = compiler->loop->enclosing;
+    endLoop(compiler);
 }
 
 static void synchronize(Parser *parser) {
@@ -1576,7 +1518,7 @@ static void statement(Compiler *compiler) {
         returnStatement(compiler);
     } else if (match(compiler, TOKEN_WITH)) {
         withStatement(compiler);
-    } else if (match(compiler, TOKEN_IMPORT)){
+    } else if (match(compiler, TOKEN_IMPORT)) {
         importStatement(compiler);
     } else if (match(compiler, TOKEN_BREAK)) {
         breakStatement(compiler);
@@ -1622,7 +1564,7 @@ static void statement(Compiler *compiler) {
         beginScope(compiler);
         block(compiler);
         endScope(compiler);
-    }  else if (match(compiler, TOKEN_CONTINUE)) {
+    } else if (match(compiler, TOKEN_CONTINUE)) {
         continueStatement(compiler);
     } else {
         expressionStatement(compiler);
