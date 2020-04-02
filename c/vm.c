@@ -111,6 +111,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createEnvClass(vm);
     createSystemClass(vm, argc, argv);
     createJSONClass(vm);
+    createPathClass(vm);
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
