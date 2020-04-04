@@ -33,15 +33,13 @@ static Value basenameNative(VM *vm, int argCount, Value *args) {
     int len = PathString->length;
 
     if (!len || (len == 1 && *path != DIR_SEPARATOR)) {
-        ObjString *newPath = copyString(vm, "", 0);
-        return OBJ_VAL(newPath);
+        return OBJ_VAL(copyString(vm, "", 0));
     }
 
     char *p = path + len - 1;
     while (p > path && (*(p - 1) != DIR_SEPARATOR)) --p;
 
-    ObjString *newPath = copyString(vm, p, (len - (p - path)));
-    return OBJ_VAL(newPath);
+    return OBJ_VAL(copyString(vm, p, (len - (p - path))));
 }
 
 static Value extnameNative(VM *vm, int argCount, Value *args) {
@@ -61,22 +59,19 @@ static Value extnameNative(VM *vm, int argCount, Value *args) {
     int len = PathString->length;
 
     if (!len) {
-        ObjString *newPath = copyString(vm, path, len);
-        return OBJ_VAL(newPath);
+        return OBJ_VAL(copyString(vm, path, len));
     }
 
     char *p = path + len;
     while (p > path && (*(p - 1) != '.')) --p;
 
     if (p == path) {
-        ObjString *newPath = copyString(vm, "", 0);
-        return OBJ_VAL(newPath);
+        return OBJ_VAL(copyString(vm, "", 0));
     }
 
     p--;
 
-    ObjString *newPath = copyString(vm, p, len - (p - path));
-    return OBJ_VAL(newPath);
+    return OBJ_VAL(copyString(vm, p, len - (p - path)));
 }
 
 static Value dirnameNative(VM *vm, int argCount, Value *args) {
@@ -96,8 +91,7 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
     int len = PathString->length;
 
     if (!len) {
-        ObjString *newPath = copyString(vm, ".", 1);
-        return OBJ_VAL(newPath);
+        return OBJ_VAL(copyString(vm, ".", 1));
     }
 
     char *sep = path + len;
@@ -124,14 +118,12 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
     }
 
     if (sep == path && *sep != DIR_SEPARATOR) {
-        ObjString *newPath = copyString(vm, ".", 1);
-        return OBJ_VAL(newPath);
+        return OBJ_VAL(copyString(vm, ".", 1));
     }
 
     len = sep - path + 1;
 
-    ObjString *newPath = copyString(vm, path, len);
-    return OBJ_VAL(newPath);
+    return OBJ_VAL(copyString(vm, path, len));
 }
 
 void createPathClass(VM *vm) {

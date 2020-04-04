@@ -18,3 +18,4 @@ assert(Path.dirname("") == ".");
 assert(Path.dirname("a") == ".");
 assert(Path.dirname("/root") == "/");
 assert(Path.dirname("///root") == "/");
+assert(Path.dirname("/root///a") == "/root");
