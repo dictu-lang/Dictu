@@ -95,7 +95,7 @@ void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
         pop(vm);
     }
 
-    tableSet(vm, table, copyString(vm, "argv", 4), OBJ_VAL(list));
+    defineNativeProperty(vm, table, "argv", OBJ_VAL(list));
     pop(vm);
 }
 
