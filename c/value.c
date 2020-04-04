@@ -7,8 +7,7 @@
 #include "value.h"
 #include "vm.h"
 
-#define TABLE_MAX_LOAD 0.75
-#define TABLE_MIN_LOAD 0.35
+#define TABLE_MAX_LOAD 0.50
 
 void initValueArray(ValueArray *array) {
     array->values = NULL;
@@ -159,7 +158,7 @@ bool dictDelete(VM *vm, ObjDict *dict, Value key) {
     entry->key = EMPTY_VAL;
     entry->value = BOOL_VAL(true);
 
-    if (dict->count - 1 < dict->capacityMask * TABLE_MIN_LOAD) {
+    if (dict->count - 1 < (dict->capacityMask + 1) / GROW_FACTOR * TABLE_MAX_LOAD) {
         // Figure out the new table size.
         int capacityMask = SHRINK_CAPACITY(dict->capacityMask);
         adjustCapacity(vm, dict, capacityMask);
