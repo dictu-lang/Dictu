@@ -159,6 +159,7 @@ typedef struct sObjClassNative {
     Obj obj;
     ObjString *name;
     Table methods;
+    Table properties;
 } ObjClassNative;
 
 typedef struct sObjTrait {

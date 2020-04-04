@@ -47,6 +47,7 @@ ObjClassNative *newClassNative(VM *vm, ObjString *name) {
     ObjClassNative *klass = ALLOCATE_OBJ(vm, ObjClassNative, OBJ_NATIVE_CLASS);
     klass->name = name;
     initTable(&klass->methods);
+    initTable(&klass->properties);
     return klass;
 }
 

@@ -732,25 +732,34 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GET_PROPERTY): {
-            if (!IS_INSTANCE(peek(vm, 0))) {
-                runtimeError(vm, "Only instances have properties.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
+            if (IS_INSTANCE(peek(vm, 0))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&instance->fields, name, &value)) {
+                    pop(vm); // Instance.
+                    push(vm, value);
+                    DISPATCH();
+                }
 
-            ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
-            Value value;
-            if (tableGet(&instance->fields, name, &value)) {
-                pop(vm); // Instance.
-                push(vm, value);
+                if (!bindMethod(vm, instance->klass, name)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
                 DISPATCH();
+            } else if (IS_NATIVE_CLASS(peek(vm, 0))) {
+                ObjClassNative *klass = AS_CLASS_NATIVE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&klass->properties, name, &value)) {
+                    pop(vm); // Class.
+                    push(vm, value);
+                    DISPATCH();
+                }
             }
 
-            if (!bindMethod(vm, instance->klass, name)) {
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            DISPATCH();
+            runtimeError(vm, "Only instances have properties.");
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {

@@ -1,10 +1,13 @@
 /**
-* maths.du
-*
-* Testing the Math functions:
-*    - min(), max(), average(), sum(), floor(), round(), ceil(), abs()
-*
-*/
+ * maths.du
+ *
+ * Testing the Math functions:
+ *    - min(), max(), average(), sum(), floor(), round(), ceil(), abs()
+ *
+ * Testing the Math constants:
+ *    - PI, e
+ *
+ */
 
 assert(Math.min(1, 2, 3) == 1);
 assert(Math.min([1, 2, 3]) == 1);
@@ -19,3 +22,6 @@ assert(Math.round(17.5) == 18);
 assert(Math.ceil(17.0001) == 18);
 assert(Math.abs(18) == 18);
 assert(Math.abs(-18) == 18);
+
+assert(Math.PI == 3.14159265358979);
+assert(Math.e == 2.71828182845905);

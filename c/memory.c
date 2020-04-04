@@ -112,6 +112,7 @@ static void blackenObject(VM *vm, Obj *object) {
             ObjClassNative *klass = (ObjClassNative *) object;
             grayObject(vm, (Obj *) klass->name);
             grayTable(vm, &klass->methods);
+            grayTable(vm, &klass->properties);
             break;
         }
 
@@ -201,6 +202,7 @@ void freeObject(VM *vm, Obj *object) {
         case OBJ_NATIVE_CLASS: {
             ObjClassNative *klass = (ObjClassNative *) object;
             freeTable(vm, &klass->methods);
+            freeTable(vm, &klass->properties);
             FREE(vm, ObjClass, object);
             break;
         }
