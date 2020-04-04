@@ -189,6 +189,7 @@ void createMathsClass(VM *vm) {
      * Define Math properties
      */
     defineNativeProperty(vm, &klass->properties, "PI", NUMBER_VAL(3.14159265358979));
+    defineNativeProperty(vm, &klass->properties, "e", NUMBER_VAL(2.71828182845905));
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

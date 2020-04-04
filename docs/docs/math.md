@@ -20,6 +20,13 @@ nav_order: 11
 Functions relating to mathematics are behind the Math namespace. For the purpose of the documentation, and iterable
 is either a list, or passing multiple arguments to the function directly.
 
+### Constants
+
+| Constant  | Description                                            |
+|-----------|--------------------------------------------------------|
+| Math.PI   | The mathematical constant: 3.14159265358979            |
+| Math.e    | The mathematical constant: 2.71828182845905            |
+
 ### Math.min(iterable)
 
 Return the smallest number within the iterable
