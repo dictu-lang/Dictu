@@ -7,6 +7,8 @@ char *readFile(const char *path);
 
 void defineNative(VM *vm, Table *table, const char *name, NativeFn function);
 
+void defineNativeProperty(VM *vm, Table *table, const char *name, Value value);
+
 bool isValidKey(Value value);
 
 #endif //dictu_util_h

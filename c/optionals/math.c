@@ -185,6 +185,11 @@ void createMathsClass(VM *vm) {
     defineNative(vm, &klass->methods, "min", minNative);
     defineNative(vm, &klass->methods, "sum", sumNative);
 
+    /**
+     * Define Math properties
+     */
+    defineNativeProperty(vm, &klass->properties, "PI", NUMBER_VAL(3.14159265358979));
+
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
     pop(vm);

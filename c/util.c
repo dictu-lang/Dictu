@@ -43,6 +43,15 @@ void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
     pop(vm);
 }
 
+void defineNativeProperty(VM *vm, Table *table, const char *name, Value value) {
+    push(vm, value);
+    ObjString *propertyName = copyString(vm, name, strlen(name));
+    push(vm, OBJ_VAL(propertyName));
+    tableSet(vm, table, propertyName, value);
+    pop(vm);
+    pop(vm);
+}
+
 bool isValidKey(Value value) {
     if (IS_NIL(value) || IS_BOOL(value) || IS_NUMBER(value) ||
     IS_STRING(value)) {
