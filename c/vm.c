@@ -59,21 +59,6 @@ void runtimeError(VM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-void initArgv(VM *vm, int argc, const char *argv[]) {
-    ObjList *list = initList(vm);
-    push(vm, OBJ_VAL(list));
-
-    for (int i = 1; i < argc; i++) {
-        Value arg = OBJ_VAL(copyString(vm, argv[i], strlen(argv[i])));
-        push(vm, arg);
-        writeValueArray(vm, &list->values, arg);
-        pop(vm);
-    }
-
-    tableSet(vm, &vm->globals, copyString(vm, "argv", 4), OBJ_VAL(list));
-    pop(vm);
-}
-
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     VM *vm = malloc(sizeof(*vm));
 
@@ -124,17 +109,11 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     // Native classes
     createMathsClass(vm);
     createEnvClass(vm);
-    createSystemClass(vm);
+    createSystemClass(vm, argc, argv);
     createJSONClass(vm);
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
-
-
-    if (!vm->repl) {
-        initArgv(vm, argc, argv);
-    }
-
     return vm;
 }
 

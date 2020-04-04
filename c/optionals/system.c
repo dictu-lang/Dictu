@@ -84,7 +84,22 @@ static Value exitNative(VM *vm, int argCount, Value *args) {
 
 }
 
-void createSystemClass(VM *vm) {
+void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
+    ObjList *list = initList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 1; i < argc; i++) {
+        Value arg = OBJ_VAL(copyString(vm, argv[i], strlen(argv[i])));
+        push(vm, arg);
+        writeValueArray(vm, &list->values, arg);
+        pop(vm);
+    }
+
+    defineNativeProperty(vm, table, "argv", OBJ_VAL(list));
+    pop(vm);
+}
+
+void createSystemClass(VM *vm, int argc, const char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjClassNative *klass = newClassNative(vm, name);
@@ -100,6 +115,14 @@ void createSystemClass(VM *vm) {
     defineNative(vm, &klass->methods, "collect", collectNative);
     defineNative(vm, &klass->methods, "sleep", sleepNative);
     defineNative(vm, &klass->methods, "exit", exitNative);
+
+    /**
+     * Define System properties
+     */
+    if (!vm->repl) {
+        // Set argv variable
+        initArgv(vm, &klass->properties, argc, argv);
+    }
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
