@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Path
-nav_order: 16
+nav_order: 13
 ---
 
 # Path
@@ -58,4 +58,10 @@ Path.isAbsolute("usr");  // false
 
 ### Path.realpath(string)
 
-Returns the canonicalized absolute pathname or nill on error.
+Returns the canonicalized absolute pathname or nil on error.
+
+**Note:** This is not available on windows systems.
+
+```js
+Path.realpath("/dir/../dir/../dir"); // '/dir'
+```
