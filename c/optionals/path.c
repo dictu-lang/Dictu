@@ -139,6 +139,12 @@ void createPathClass(VM *vm) {
     defineNative(vm, &klass->methods, "basename", basenameNative);
     defineNative(vm, &klass->methods, "extname", extnameNative);
     defineNative(vm, &klass->methods, "dirname", dirnameNative);
+
+    defineNativeProperty(vm, &klass->properties, "DELIMITER", OBJ_VAL(
+        copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
+    defineNativeProperty(vm, &klass->properties, "DIR_SEPARATOR", OBJ_VAL(
+        copyString(vm, DIR_SEPARATOR_AS_STRING, DIR_SEPARATOR_STRLEN)));
+
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
     pop(vm);

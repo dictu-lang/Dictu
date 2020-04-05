@@ -19,3 +19,6 @@ assert(Path.dirname("a") == ".");
 assert(Path.dirname("/root") == "/");
 assert(Path.dirname("///root") == "/");
 assert(Path.dirname("/root///a") == "/root");
+
+assert(Path.DELIMITER == ":");
+assert(Path.DIR_SEPARATOR == "/");
