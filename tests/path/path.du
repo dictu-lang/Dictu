@@ -20,7 +20,7 @@ assert(Path.dirname("/root") == "/");
 assert(Path.dirname("///root") == "/");
 assert(Path.dirname("/root///a") == "/root");
 
-assert(Path.DELIMITER == ":");
-assert(Path.DIR_SEPARATOR == "/");
+assert(Path.delimiter == ":");
+assert(Path.dir_separator == "/");
 
 assert(Path.realpath("/usr/../usr/../usr") == "/usr");
