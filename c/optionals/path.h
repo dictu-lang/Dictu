@@ -1,6 +1,13 @@
 #ifndef dictu_path_h
 #define dictu_path_h
 
+#include <limits.h>
+#include <stdlib.h>
+
+#ifndef PATH_MAX
+    PATH_MAX = 4096;
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #define DIR_SEPARATOR '\\'

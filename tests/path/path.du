@@ -22,3 +22,5 @@ assert(Path.dirname("/root///a") == "/root");
 
 assert(Path.DELIMITER == ":");
 assert(Path.DIR_SEPARATOR == "/");
+
+assert(Path.realpath("/tmp/../tmp/../tmp") == "/tmp");
