@@ -17,9 +17,10 @@ nav_order: 13
 
 ### Constants
 
-| Constant      | Description                                                                                       |
-|---------------|---------------------------------------------------------------------------------------------------|
-| System.argv   | The list of command line arguments. The first element of the argv list is always the script name. |
+| Constant        | Description                                                                                       |
+|-----------------|---------------------------------------------------------------------------------------------------|
+| System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
+| System.platform | This string identifies the underlying system platform.                                            |
 
 ### System.getCWD()
 

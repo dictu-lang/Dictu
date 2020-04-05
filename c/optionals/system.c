@@ -99,6 +99,24 @@ void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
     pop(vm);
 }
 
+void initPlatform(VM *vm, Table *table) {
+#ifdef _WIN32
+    defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, "windows", 7)));
+    return;
+#endif
+
+    struct utsname u;
+    if (-1 == uname(&u)) {
+        defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm,
+            "unknown", 7)));
+        return;
+    }
+
+    u.sysname[0] = tolower(u.sysname[0]);
+    defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, u.sysname,
+        strlen(u.sysname))));
+}
+
 void createSystemClass(VM *vm, int argc, const char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
@@ -123,6 +141,8 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
         // Set argv variable
         initArgv(vm, &klass->properties, argc, argv);
     }
+
+    initPlatform(vm, &klass->properties);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
