@@ -12,6 +12,7 @@ import "tests/loops/import.du";
 import "tests/env/import.du";
 import "tests/system/import.du";
 import "tests/json/import.du";
+import "tests/path/path.du";
 
 if (isDefined("HTTP")) {
   import "tests/http/import.du";
