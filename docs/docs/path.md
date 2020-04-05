@@ -20,7 +20,7 @@ nav_order: 13
 | Constant           | Description                          |
 |--------------------|--------------------------------------|
 | Path.delimiter     | System dependent path delimiter      |
-| Path.dir_separator | System dependent directory separator |
+| Path.dirSeparator  | System dependent directory separator |
 
 ### Path.basename(string)
 

@@ -167,7 +167,7 @@ void createPathClass(VM *vm) {
 
     defineNativeProperty(vm, &klass->properties, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
-    defineNativeProperty(vm, &klass->properties, "dir_separator", OBJ_VAL(
+    defineNativeProperty(vm, &klass->properties, "dirSeparator", OBJ_VAL(
         copyString(vm, DIR_SEPARATOR_AS_STRING, DIR_SEPARATOR_STRLEN)));
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
