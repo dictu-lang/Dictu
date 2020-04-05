@@ -15,6 +15,13 @@ nav_order: 16
 
 ---
 
+### Constants
+
+| Constant           | Description                          |
+|--------------------|--------------------------------------|
+| Path.DELIMITER     | System dependent path delimiter      |
+| Path.DIR_SEPARATOR | System dependent directory separator |
+
 ### Path.basename(string)
 
 Returns the basename of string.
@@ -48,3 +55,7 @@ Returns true if string is an absolute path or false otherwise.
 Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
+
+### Path.realpath(string)
+
+Returns the canonicalized absolute pathname or nill on error.
