@@ -96,7 +96,19 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newDict);
 }
 
+static Value lenDict(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjDict *dict = AS_DICT(args[0]);
+
+    return NUMBER_VAL(dict->count);
+}
+
 void declareDictMethods(VM *vm) {
+    defineNative(vm, &vm->dictMethods, "len", lenDict);
     defineNative(vm, &vm->dictMethods, "get", getDictItem);
     defineNative(vm, &vm->dictMethods, "remove", removeDictItem);
     defineNative(vm, &vm->dictMethods, "exists", dictItemExists);
