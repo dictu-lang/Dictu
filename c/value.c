@@ -203,7 +203,7 @@ bool setGet(ObjSet *set, Value value) {
     if (set->count == 0) return false;
 
     SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
-    if (IS_EMPTY(entry->value)) return false;
+    if (IS_EMPTY(entry->value) || entry->deleted) return false;
 
     return true;
 }
