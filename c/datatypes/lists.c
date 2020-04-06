@@ -1,6 +1,16 @@
 #include "lists.h"
 
 
+static Value lenList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    return NUMBER_VAL(list->values.count);
+}
+
 static Value pushListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "push() takes 1 argument (%d given)", argCount);
@@ -199,6 +209,7 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareListMethods(VM *vm) {
+    defineNative(vm, &vm->listMethods, "len", lenList);
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);

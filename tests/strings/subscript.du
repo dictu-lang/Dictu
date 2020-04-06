@@ -15,6 +15,6 @@ assert(string[-1] == "!");
 assert(string[-2] == "t");
 assert(string[-3] == "a");
 
-for (var i = 0; i < len(string); ++i) {
+for (var i = 0; i < string.len(); ++i) {
     assert(string[i] == stringList[i]);
 }

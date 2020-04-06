@@ -3,6 +3,16 @@
 #include "../memory.h"
 
 
+static Value lenString(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    return NUMBER_VAL(string->length);
+}
+
 static Value formatString(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         runtimeError(vm, "format() takes at least 1 argument (%d given)", argCount);
@@ -415,6 +425,7 @@ static Value countString(VM *vm, int argCount, Value *args) {
 }
 
 void declareStringMethods(VM *vm) {
+    defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "format", formatString);
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);

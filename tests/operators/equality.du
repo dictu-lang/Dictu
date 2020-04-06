@@ -12,11 +12,11 @@ assert("test" != "testing");
 
 // Ensure escape codes are working correctly
 assert("test\n" == "test\n");
-assert(len("test\"") == 5);
-assert(len("test\n") == 5);
-assert(len("test\t") == 5);
-assert(len("test\r") == 5);
-assert(len("test\v") == 5);
+assert("test\"".len() == 5);
+assert("test\n".len() == 5);
+assert("test\t".len() == 5);
+assert("test\r".len() == 5);
+assert("test\v".len() == 5);
 
 assert([] == []);
 assert([10] == [10]);
