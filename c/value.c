@@ -389,16 +389,24 @@ bool valuesEqual(Value a, Value b) {
 #ifdef NAN_TAGGING
 
     if (IS_OBJ(a) && IS_OBJ(b)) {
-        if (AS_OBJ(a)->type == OBJ_LIST && AS_OBJ(b)->type == OBJ_LIST) {
-            return listComparison(a, b);
-        }
+        if (AS_OBJ(a)->type != AS_OBJ(b)->type) return false;
 
-        if (AS_OBJ(a)->type == OBJ_DICT && AS_OBJ(b)->type == OBJ_DICT) {
-            return dictComparison(a, b);
-        }
+        switch (AS_OBJ(a)->type) {
+            case OBJ_LIST: {
+                return listComparison(a, b);
+            }
 
-        if (AS_OBJ(a)->type == OBJ_SET && AS_OBJ(b)->type == OBJ_SET) {
-            return setComparison(a, b);
+            case OBJ_DICT: {
+                return dictComparison(a, b);
+            }
+
+            case OBJ_SET: {
+                return setComparison(a, b);
+            }
+
+            // Pass through
+            default:
+                break;
         }
     }
 
