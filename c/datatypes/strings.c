@@ -414,7 +414,23 @@ static Value countString(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(count);
 }
 
+static Value lenString(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "Argument passed to len() must be a string");
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    return NUMBER_VAL(string->length);
+}
+
 void declareStringMethods(VM *vm) {
+    defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "format", formatString);
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);

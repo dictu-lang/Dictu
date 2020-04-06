@@ -1,0 +1,2 @@
+assert("qwert".len() == 5);
+assert("ασδφγ".len() == 10);
