@@ -6,7 +6,7 @@
 
 var x = "Dictu";
 
-assert(x[0:len(x)] == "Dictu");
+assert(x[0:x.len()] == "Dictu");
 assert(x[0:] == "Dictu");
 assert(x[1:] == "ictu");
 assert(x[2:] == "ctu");
@@ -14,7 +14,7 @@ assert(x[3:] == "tu");
 assert(x[4:] == "u");
 assert(x[5:] == "");
 
-assert(x[:len(x)] == "Dictu");
+assert(x[:x.len()] == "Dictu");
 assert(x[:5] == "Dictu");
 assert(x[:4] == "Dict");
 assert(x[:3] == "Dic");

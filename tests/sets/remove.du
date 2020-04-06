@@ -18,7 +18,7 @@ assert(mySet.contains("great!"));
 
 mySet.remove("dictu");
 
-assert(len(mySet) == 2);
+assert(mySet.len() == 2);
 
 assert(!mySet.contains("dictu"));
 assert(mySet.contains("is"));
