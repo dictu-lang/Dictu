@@ -38,7 +38,6 @@ struct _vm {
     Table instanceMethods;
     ObjString *initString;
     ObjString *replVar;
-    ObjString *argv;
     ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
