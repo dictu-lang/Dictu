@@ -49,16 +49,6 @@ type(true); // "bool"
 type([]); // "list"
 ```
 
-### len(string OR collection)
-
-Returns the length of a given string or collection (list, dictionary, set).
-
-```js
-len("Hello"); // 5
-len([1, 2]); // 2
-len({"test": 10}); // 1
-```
-
 ### bool(value)
 
 Converts a given value to the boolean value.

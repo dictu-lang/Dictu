@@ -6,7 +6,7 @@
 
 var x = [1, 2, 3, 4, 5];
 
-assert(x[0:len(x)] == x);
+assert(x[0:x.len()] == x);
 assert(x[0:] == x);
 assert(x[1:] == [2, 3, 4, 5]);
 assert(x[2:] == [3, 4, 5]);
@@ -14,7 +14,7 @@ assert(x[3:] == [4, 5]);
 assert(x[4:] == [5]);
 assert(x[5:] == []);
 
-assert(x[:len(x)] == x);
+assert(x[:x.len()] == x);
 assert(x[:5] == x);
 assert(x[:4] == [1, 2, 3, 4]);
 assert(x[:3] == [1, 2, 3]);

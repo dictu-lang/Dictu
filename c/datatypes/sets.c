@@ -1,5 +1,16 @@
 #include "sets.h"
 
+
+static Value lenSet(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjSet *set = AS_SET(args[0]);
+    return NUMBER_VAL(set->count);
+}
+
 static Value addSetItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
@@ -77,6 +88,7 @@ static Value containsSetItem(VM *vm, int argCount, Value *args) {
 }
 
 void declareSetMethods(VM *vm) {
+    defineNative(vm, &vm->setMethods, "len", lenSet);
     defineNative(vm, &vm->setMethods, "add", addSetItem);
     defineNative(vm, &vm->setMethods, "remove", removeSetItem);
     defineNative(vm, &vm->setMethods, "contains", containsSetItem);

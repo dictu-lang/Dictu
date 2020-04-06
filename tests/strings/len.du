@@ -1,0 +1,11 @@
+/**
+ * len.du
+ *
+ * Testing the string.len() method
+ *
+ * .len() returns a number based on the amount of string characters
+ */
+
+assert("qwert".len() == 5);
+assert(("test" + "ing").len() == 7);
+assert("ασδφγ".len() == 10);

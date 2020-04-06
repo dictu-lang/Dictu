@@ -7,4 +7,4 @@
  */
 
 assert(type(System.getCWD()) == 'string');
-assert(len(System.getCWD()) > 0);
+assert(System.getCWD().len() > 0);

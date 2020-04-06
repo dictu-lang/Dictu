@@ -93,26 +93,6 @@ static Value setNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(initSet(vm));
 }
 
-static Value lenNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "len() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (IS_STRING(args[0])) {
-        return NUMBER_VAL(AS_STRING(args[0])->length);
-    } else if (IS_LIST(args[0])) {
-        return NUMBER_VAL(AS_LIST(args[0])->values.count);
-    } else if (IS_DICT(args[0])) {
-        return NUMBER_VAL(AS_DICT(args[0])->count);
-    } else if (IS_SET(args[0])) {
-        return NUMBER_VAL(AS_SET(args[0])->count);
-    }
-
-    runtimeError(vm, "Unsupported type passed to len()", argCount);
-    return EMPTY_VAL;
-}
-
 static Value boolNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "bool() takes 1 argument (%d given).", argCount);
@@ -228,7 +208,6 @@ static Value isDefinedNative(VM *vm, int argCount, Value *args) {
 
 void defineAllNatives(VM *vm) {
     char *nativeNames[] = {
-            "len",
             "bool",
             "input",
             "number",
@@ -241,7 +220,6 @@ void defineAllNatives(VM *vm) {
     };
 
     NativeFn nativeFunctions[] = {
-            lenNative,
             boolNative,
             inputNative,
             numberNative,

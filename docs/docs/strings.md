@@ -58,6 +58,14 @@ E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive 
 "Dictu"[2:4]; // ct
 ```
 
+### string.len()
+
+Returns the length of the given string.
+
+```js
+"string".len(); // 6
+```
+
 ### string.lower()
 
 To make all characters within a string lowercase, use the `.lower()` method.
