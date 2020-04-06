@@ -104,17 +104,16 @@ struct sObjDict {
     DictItem *entries;
 };
 
-struct setItem {
-    ObjString *item;
+typedef struct {
+    Value value;
     bool deleted;
-    uint32_t hash;
-};
+} SetItem;
 
 struct sObjSet {
     Obj obj;
-    int capacity;
     int count;
-    setItem **items;
+    int capacityMask;
+    SetItem *entries;
 };
 
 struct sObjFile {

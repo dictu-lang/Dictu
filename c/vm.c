@@ -75,7 +75,9 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->scriptName = scriptName;
     vm->currentScriptName = scriptName;
     vm->frameCapacity = 4;
-    vm->frames = realloc(NULL, sizeof(CallFrame) * 4);
+    vm->frames = NULL;
+    vm->initString = NULL;
+    vm->replVar = NULL;
     vm->bytesAllocated = 0;
     vm->nextGC = 1024 * 1024;
     vm->grayCount = 0;
@@ -92,6 +94,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->instanceMethods);
 
+    vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,0, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
@@ -132,6 +135,11 @@ void freeVM(VM *vm) {
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
+
+#if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
+    printf("Total memory usage: %zu\n", vm->bytesAllocated);
+#endif
+
     free(vm);
 }
 
@@ -170,8 +178,7 @@ static bool call(VM *vm, ObjClosure *closure, int argCount) {
     frame->closure = closure;
     frame->ip = closure->function->chunk.code;
 
-    // +1 to include either the called function or the receiver.
-    frame->slots = vm->stackTop - (argCount + 1);
+    frame->slots = vm->stackTop - argCount - 1;
 
     return true;
 }
@@ -692,6 +699,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
+                tableDelete(&vm->globals, name);
                 frame->ip = ip;
                 runtimeError(vm, "Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
@@ -1401,7 +1409,10 @@ static InterpretResult run(VM *vm) {
                 vm->currentFrameCount = -1;
             }
 
-            if (vm->frameCount == 0) return INTERPRET_OK;
+            if (vm->frameCount == 0) {
+                pop(vm);
+                return INTERPRET_OK;
+            }
 
             vm->stackTop = frame->slots;
             push(vm, result);
@@ -1516,6 +1527,7 @@ InterpretResult interpret(VM *vm, const char *source) {
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
+    push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);
     InterpretResult result = run(vm);
 

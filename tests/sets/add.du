@@ -19,3 +19,26 @@ assert(mySet.len() == 2);
 mySet.add("great!");
 assert(mySet.contains("great!"));
 assert(mySet.len() == 3);
+
+
+var myNewSet = set();
+
+myNewSet.add(1);
+assert(myNewSet.contains(1));
+assert(myNewSet.len() == 1);
+
+myNewSet.add(true);
+assert(myNewSet.contains(true));
+assert(myNewSet.len() == 2);
+
+myNewSet.add(nil);
+assert(myNewSet.contains(nil));
+assert(myNewSet.len() == 3);
+
+myNewSet.add(false);
+assert(myNewSet.contains(false));
+assert(myNewSet.len() == 4);
+
+myNewSet.add(10.5);
+assert(myNewSet.contains(10.5));
+assert(myNewSet.len() == 5);
