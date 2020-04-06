@@ -130,8 +130,9 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
     for (;;) {
         Entry *entry = &table->entries[index];
 
-        if (entry->key == NULL) return NULL;
-        if (entry->key->length == length &&
+        if (entry->key == NULL) {
+            if (IS_NIL(entry->value)) return NULL;
+        } else if (entry->key->length == length &&
             memcmp(entry->key->chars, chars, length) == 0) {
             // We found it.
             return entry->key;
