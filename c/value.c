@@ -136,10 +136,11 @@ bool dictSet(VM *vm, ObjDict *dict, Value key, Value value) {
 
     DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
     bool isNewKey = IS_EMPTY(entry->key);
-    if (isNewKey && IS_NIL(entry->value)) dict->count++;
 
     entry->key = key;
     entry->value = value;
+
+    if (isNewKey) dict->count++;
 
     return isNewKey;
 }
@@ -239,9 +240,9 @@ bool setInsert(VM *vm, ObjSet *set, Value value) {
 
     SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
     bool isNewKey = IS_EMPTY(entry->value);
-    if (isNewKey) set->count++;
-
     entry->value = value;
+
+    if (isNewKey) set->count++;
 
     return isNewKey;
 }

@@ -87,10 +87,10 @@ bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
 
     Entry *entry = findEntry(table->entries, table->capacityMask, key);
     bool isNewKey = entry->key == NULL;
-    if (isNewKey && IS_NIL(entry->value)) table->count++;
-
     entry->key = key;
     entry->value = value;
+
+    if (isNewKey) table->count++;
 
     return isNewKey;
 }
