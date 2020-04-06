@@ -361,7 +361,7 @@ static bool setComparison(Value a, Value b) {
     ObjSet *setB = AS_SET(b);
 
     // Different lengths, not the same
-    if (set->count != set->count)
+    if (set->count != setB->count)
         return false;
 
     // Lengths are the same, and dict 1 has 0 length
