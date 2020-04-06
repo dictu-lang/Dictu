@@ -1,3 +1,21 @@
+/**
+ * len.du
+ *
+ * Testing the set.len() method
+ *
+ * .len() returns a number based on the amount of set elements
+ */
+
 var mySet = set();
+
 mySet.add("dictu");
 assert(mySet.len() == 1);
+
+mySet.add("is");
+assert(mySet.len() == 2);
+
+mySet.add("great");
+assert(mySet.len() == 3);
+
+
+

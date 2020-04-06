@@ -1,1 +1,19 @@
+/**
+ * len.du
+ *
+ * Testing the dict.len() method
+ *
+ * .len() returns a number based on the amount of dictionary elements
+ */
+
+assert ({ 1: "one"}.len() == 1);
+assert ({ 1: "one", 2: "two"}.len() == 2);
 assert ({ 1: "one", 2: "two", 3: "three"}.len() == 3);
+
+var x = {};
+
+for (var i = 0; i < 1000; ++i) {
+    x[i] = i;
+}
+
+assert(x.len() == 1000);

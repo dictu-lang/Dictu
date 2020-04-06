@@ -1,5 +1,16 @@
 #include "dicts.h"
 
+
+static Value lenDict(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjDict *dict = AS_DICT(args[0]);
+    return NUMBER_VAL(dict->count);
+}
+
 static Value getDictItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
@@ -94,17 +105,6 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
     ObjDict *newDict = copyDict(vm, oldDict, false);
 
     return OBJ_VAL(newDict);
-}
-
-static Value lenDict(VM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    ObjDict *dict = AS_DICT(args[0]);
-
-    return NUMBER_VAL(dict->count);
 }
 
 void declareDictMethods(VM *vm) {

@@ -3,6 +3,16 @@
 #include "../memory.h"
 
 
+static Value lenString(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    return NUMBER_VAL(string->length);
+}
+
 static Value formatString(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         runtimeError(vm, "format() takes at least 1 argument (%d given)", argCount);
@@ -412,21 +422,6 @@ static Value countString(VM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(count);
-}
-
-static Value lenString(VM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "Argument passed to len() must be a string");
-        return EMPTY_VAL;
-    }
-
-    ObjString *string = AS_STRING(args[0]);
-    return NUMBER_VAL(string->length);
 }
 
 void declareStringMethods(VM *vm) {

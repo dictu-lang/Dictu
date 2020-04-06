@@ -17,6 +17,8 @@ nav_order: 4
 ## Strings
 Strings in Dictu are an immutable data type, this means, once a string has been created there is no way to modify a string directly, and instead a new string is created. Strings are created by having some sort of text between quotes, `"hello"` or `'hello'` is fine in Dictu.
 
+### Concatenation
+
 To join strings together use the `+` operator.
 
 ```py
@@ -63,8 +65,6 @@ Returns the length of the given string.
 ```js
 "string".len(); // 6
 ```
-
-### Concatenation
 
 ### string.lower()
 

@@ -1,6 +1,16 @@
 #include "lists.h"
 
 
+static Value lenList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    return NUMBER_VAL(list->values.count);
+}
+
 static Value pushListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "push() takes 1 argument (%d given)", argCount);
@@ -196,16 +206,6 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
     ObjList *newList = copyList(vm, oldList, false);
 
     return OBJ_VAL(newList);
-}
-
-static Value lenList(VM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    ObjList *list = AS_LIST(args[0]);
-    return NUMBER_VAL(list->values.count);
 }
 
 void declareListMethods(VM *vm) {
