@@ -48,11 +48,7 @@ static Value containsSetItem(VM *vm, int argCount, Value *args) {
 
     ObjSet *set = AS_SET(args[0]);
 
-    if (setGet(set, args[1])) {
-        return TRUE_VAL;
-    }
-
-    return FALSE_VAL;
+    return setGet(set, args[1]) ? TRUE_VAL : FALSE_VAL;
 }
 
 void declareSetMethods(VM *vm) {

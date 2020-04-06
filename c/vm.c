@@ -76,6 +76,8 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->currentScriptName = scriptName;
     vm->frameCapacity = 4;
     vm->frames = NULL;
+    vm->initString = NULL;
+    vm->replVar = NULL;
     vm->bytesAllocated = 0;
     vm->nextGC = 1024 * 1024;
     vm->grayCount = 0;

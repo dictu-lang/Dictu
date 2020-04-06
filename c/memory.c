@@ -200,7 +200,7 @@ void freeObject(VM *vm, Obj *object) {
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
-            FREE_ARRAY(vm, Value*, closure->upvalues, closure->upvalueCount);
+            FREE_ARRAY(vm, ObjUpvalue*, closure->upvalues, closure->upvalueCount);
             FREE(vm, ObjClosure, object);
             break;
         }
