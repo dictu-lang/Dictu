@@ -19,6 +19,7 @@
 #undef DEBUG_TRACE_MEM
 
 // #define DEBUG_STRESS_GC
+// #define DEBUG_FINAL_MEM
 
 #define UINT8_COUNT (UINT8_MAX + 1)
 

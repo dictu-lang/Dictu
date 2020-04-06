@@ -136,7 +136,7 @@ void freeVM(VM *vm) {
     vm->replVar = NULL;
     freeObjects(vm);
 
-#ifdef DEBUG_TRACE_MEM
+#if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
     printf("Total memory usage: %zu\n", vm->bytesAllocated);
 #endif
 
