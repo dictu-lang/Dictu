@@ -66,6 +66,14 @@ myList.insert(11, 1); // [10, 11, 12]
 myList + [13]; // [10, 11, 12, 13]
 ```
 
+### list.len()
+
+Returns the length of the given list.
+
+```js
+[1, 2, 3].len(); // 3
+```
+
 ### list.contains(value)
 
 To check if a value contains within a list we use `.contains()`
@@ -171,6 +179,13 @@ Adding a value to a dictionary is the same as updating a value, however if the k
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
+### dict.len()
+
+Returns the length of the given dictionary.
+
+```js
+{1: "one", 2: "two", 3: "three"}.len(); // 3
+```
 
 ### dict.exists(string)
 
@@ -210,6 +225,16 @@ Sets are an unordered collection of unique hashable values. Currently Dictu requ
 
 ```js
 var mySet = set();
+```
+
+### set.len()
+
+Returns the length of the given set.
+
+```js
+var mySet = set();
+mySet.add("Dictu!");
+mySet.len(); // 1
 ```
 
 ### set.add(value)
