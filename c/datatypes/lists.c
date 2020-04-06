@@ -198,7 +198,18 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newList);
 }
 
+static Value lenList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    return NUMBER_VAL(list->values.count);
+}
+
 void declareListMethods(VM *vm) {
+    defineNative(vm, &vm->listMethods, "len", lenList);
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);
