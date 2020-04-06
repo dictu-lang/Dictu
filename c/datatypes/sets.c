@@ -6,14 +6,9 @@ static Value addSetItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to add() must be a string", argCount);
-        return EMPTY_VAL;
-    }
-
 
     ObjSet *set = AS_SET(args[0]);
-    insertSet(vm, set, args[1]);
+    setInsert(vm, set, args[1]);
 
     return NIL_VAL;
 }
@@ -24,35 +19,14 @@ static Value removeSetItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to remove() must be a string");
+    ObjSet *set = AS_SET(args[0]);
+
+    if (!setDelete(vm, set, args[1])) {
+        runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", AS_CSTRING(args[1]));
         return EMPTY_VAL;
     }
 
-    ObjSet *set = AS_SET(args[0]);
-    ObjString *string = AS_STRING(args[1]);
-    int index = string->hash % set->capacity;
-
-    while (set->items[index] && !(strcmp(set->items[index]->item->chars, string->chars) == 0 && !set->items[index]->deleted)) {
-        index++;
-        if (index == set->capacity) {
-            index = 0;
-        }
-    }
-
-    if (set->items[index]) {
-        set->items[index]->deleted = true;
-        set->count--;
-
-        if (set->capacity != 8 && set->count * 100 / set->capacity <= 35) {
-            resizeSet(vm, set, false);
-        }
-
-        return NIL_VAL;
-    }
-
-    runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", string->chars);
-    return EMPTY_VAL;
+    return NIL_VAL;
 }
 
 static Value containsSetItem(VM *vm, int argCount, Value *args) {
@@ -61,15 +35,9 @@ static Value containsSetItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to contains() must be a string", argCount);
-        return EMPTY_VAL;
-    }
-
     ObjSet *set = AS_SET(args[0]);
-    ObjString *string = AS_STRING(args[1]);
 
-    if (searchSet(set, string)) {
+    if (setGet(set, args[1])) {
         return TRUE_VAL;
     }
 

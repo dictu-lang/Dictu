@@ -45,7 +45,7 @@ static Entry *findEntry(Entry *entries, int capacityMask,
 }
 
 bool tableGet(Table *table, ObjString *key, Value *value) {
-    if (table->entries == NULL) return false;
+    if (table->count == 0) return false;
 
     Entry *entry = findEntry(table->entries, table->capacityMask, key);
     if (entry->key == NULL) return false;
@@ -87,10 +87,11 @@ bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
 
     Entry *entry = findEntry(table->entries, table->capacityMask, key);
     bool isNewKey = entry->key == NULL;
+    if (isNewKey && IS_NIL(entry->value)) table->count++;
+
     entry->key = key;
     entry->value = value;
 
-    if (isNewKey) table->count++;
     return isNewKey;
 }
 
@@ -117,10 +118,11 @@ void tableAddAll(VM *vm, Table *from, Table *to) {
     }
 }
 
+// TODO: Return entry here rather than string
 ObjString *tableFindString(Table *table, const char *chars, int length,
                            uint32_t hash) {
     // If the table is empty, we definitely won't find it.
-    if (table->entries == NULL) return NULL;
+    if (table->count == 0) return NULL;
 
     // Figure out where to insert it in the table. Use open addressing and
     // basic linear probing.
@@ -133,6 +135,7 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
         if (entry->key == NULL) {
             if (IS_NIL(entry->value)) return NULL;
         } else if (entry->key->length == length &&
+            entry->key->hash == hash &&
             memcmp(entry->key->chars, chars, length) == 0) {
             // We found it.
             return entry->key;

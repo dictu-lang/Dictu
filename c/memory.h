@@ -35,6 +35,4 @@ void freeObjects(VM *vm);
 
 void freeObject(VM *vm, Obj *object);
 
-void freeSetValue(setItem *item);
-
 #endif
