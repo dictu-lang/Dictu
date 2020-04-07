@@ -984,7 +984,7 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(DONE): {
+        CASE_CODE(IMPORT_END): {
             vm->scriptNameCount--;
             DISPATCH();
         }
