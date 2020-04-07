@@ -21,12 +21,12 @@ struct _vm {
     Value stack[STACK_MAX];
     Value *stackTop;
     bool repl;
-    const char *scriptName;
-    const char *currentScriptName;
+    const char **scriptNames;
+    int scriptNameCount;
+    int scriptNameCapacity;
     CallFrame *frames;
     int frameCount;
     int frameCapacity;
-    int currentFrameCount;
     Table globals;
     Table strings;
     Table imports;
