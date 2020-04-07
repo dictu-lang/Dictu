@@ -98,7 +98,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
     setupFilenameStack(vm, scriptName);
 
-    vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame, 0, vm->frameCapacity);
+    vm->frames = ALLOCATE(vm,  CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
