@@ -1589,6 +1589,7 @@ ObjFunction *compile(VM *vm, const char *source) {
         } while (!match(&compiler, TOKEN_EOF));
     }
 
+    emitByte(&compiler, OP_DONE);
     ObjFunction *function = endCompiler(&compiler);
 
     // If there was a compile error, the code is not valid, so don't

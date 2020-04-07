@@ -40,7 +40,7 @@ void runtimeError(VM *vm, const char *format, ...) {
                 function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "%s: ", vm->scriptNames[--vm->scriptNameCount]);
+            fprintf(stderr, "%s: ", vm->scriptNames[vm->scriptNameCount]);
             i = -1;
         } else {
             fprintf(stderr, "%s(): ", function->name->chars);
@@ -60,7 +60,7 @@ void setupFilenameStack(VM *vm, const char *scriptName) {
     vm->scriptNameCapacity = 8;
     vm->scriptNames = ALLOCATE(vm, const char*, vm->scriptNameCapacity);
     vm->scriptNameCount = 0;
-    vm->scriptNames[vm->scriptNameCount++] = scriptName;
+    vm->scriptNames[vm->scriptNameCount] = scriptName;
 }
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
@@ -958,14 +958,15 @@ static InterpretResult run(VM *vm) {
 
             char *s = readFile(fileName->chars);
 
-            if (vm->scriptNameCapacity < vm->scriptNameCount + 1) {
+            if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
+                printf("grow?\n");
                 int oldCapacity = vm->scriptNameCapacity;
                 vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
                 vm->scriptNames = GROW_ARRAY(vm, vm->scriptNames, const char*,
                                            oldCapacity, vm->scriptNameCapacity);
             }
 
-            vm->scriptNames[vm->scriptNameCount++] = fileName->chars;
+            vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
 
             ObjFunction *function = compile(vm, s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
@@ -978,9 +979,13 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
-            vm->scriptNameCount--;
 
             free(s);
+            DISPATCH();
+        }
+
+        CASE_CODE(DONE): {
+            vm->scriptNameCount--;
             DISPATCH();
         }
 
