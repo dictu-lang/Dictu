@@ -517,7 +517,7 @@ static InterpretResult run(VM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    #define BINARY_OP(valueType, op) \
+    #define BINARY_OP(valueType, op, type) \
         do { \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
             frame->ip = ip; \
@@ -525,22 +525,8 @@ static InterpretResult run(VM *vm) {
             return INTERPRET_RUNTIME_ERROR; \
           } \
           \
-          double b = AS_NUMBER(pop(vm)); \
-          double a = AS_NUMBER(pop(vm)); \
-          push(vm, valueType(a op b)); \
-        } while (false)
-
-
-    #define BITWISE_OP(valueType, op) \
-        do { \
-          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-          } \
-          \
-          int b = AS_NUMBER(pop(vm)); \
-          int a = AS_NUMBER(pop(vm)); \
+          type b = AS_NUMBER(pop(vm)); \
+          type a = AS_NUMBER(pop(vm)); \
           push(vm, valueType(a op b)); \
         } while (false)
 
@@ -807,11 +793,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >);
+            BINARY_OP(BOOL_VAL, >, double);
             DISPATCH();
 
         CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <);
+            BINARY_OP(BOOL_VAL, <, double);
             DISPATCH();
 
         CASE_CODE(ADD): {
@@ -865,11 +851,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(MULTIPLY):
-            BINARY_OP(NUMBER_VAL, *);
+            BINARY_OP(NUMBER_VAL, *, double);
             DISPATCH();
 
         CASE_CODE(DIVIDE):
-            BINARY_OP(NUMBER_VAL, /);
+            BINARY_OP(NUMBER_VAL, /, double);
             DISPATCH();
 
         CASE_CODE(POW): {
@@ -901,15 +887,15 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(BITWISE_AND):
-            BITWISE_OP(NUMBER_VAL, &);
+            BINARY_OP(NUMBER_VAL, &, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_XOR):
-            BITWISE_OP(NUMBER_VAL, ^);
+            BINARY_OP(NUMBER_VAL, ^, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_OR):
-            BITWISE_OP(NUMBER_VAL, |);
+            BINARY_OP(NUMBER_VAL, |, int);
             DISPATCH();
 
         CASE_CODE(NOT):
@@ -949,7 +935,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            ObjString *fileName = AS_STRING(peek(vm, 0));
+            ObjString *fileName = READ_STRING();
 
             // If we have imported this file already, skip.
             if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
@@ -959,7 +945,6 @@ static InterpretResult run(VM *vm) {
             char *s = readFile(fileName->chars);
 
             if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
-                printf("grow?\n");
                 int oldCapacity = vm->scriptNameCapacity;
                 vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
                 vm->scriptNames = GROW_ARRAY(vm, vm->scriptNames, const char*,

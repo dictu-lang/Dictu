@@ -134,7 +134,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_LOOP:
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_IMPORT:
-            return simpleInstruction("OP_IMPORT", offset);
+            return constantInstruction("OP_IMPORT", chunk, offset);
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:

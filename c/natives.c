@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "memory.h"
 #include "natives.h"
 #include "vm.h"
 
@@ -104,7 +105,7 @@ static Value boolNative(VM *vm, int argCount, Value *args) {
 
 static Value inputNative(VM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "input() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -118,10 +119,8 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
         printf("%s", AS_CSTRING(prompt));
     }
 
-    uint8_t len_max = 128;
-    uint8_t current_size = len_max;
-
-    char *line = malloc(len_max);
+    uint8_t current_size = 128;
+    char *line = malloc(current_size);
 
     if (line == NULL) {
         runtimeError(vm, "Memory error on input()!");
@@ -134,7 +133,7 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
         line[i++] = (char) c;
 
         if (i == current_size) {
-            current_size = i + len_max;
+            current_size = GROW_CAPACITY(current_size);
             line = realloc(line, current_size);
 
             if (line == NULL) {
@@ -148,7 +147,6 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
 
     Value l = OBJ_VAL(copyString(vm, line, strlen(line)));
     free(line);
-
     return l;
 }
 
@@ -159,8 +157,7 @@ static Value printNative(VM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        Value value = args[i];
-        printValue(value);
+        printValue(args[i]);
         printf("\n");
     }
 
@@ -168,15 +165,12 @@ static Value printNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value assertNative(VM *vm, int argCount, Value *args) {
-    Value value = args[0];
-
-    if (!IS_BOOL(value)) {
-        runtimeError(vm, "assert() only takes a boolean as an argument.", argCount);
+    if (argCount != 1) {
+        runtimeError(vm, "assert() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    value = AS_BOOL(value);
-    if (!value) {
+    if (isFalsey(args[0])) {
         runtimeError(vm, "assert() was false!");
         return EMPTY_VAL;
     }
@@ -199,9 +193,9 @@ static Value isDefinedNative(VM *vm, int argCount, Value *args) {
 
     Value value;
     if (tableGet(&vm->globals, string, &value))
-       return BOOL_VAL(true);
+       return TRUE_VAL;
 
-    return BOOL_VAL(false);
+    return FALSE_VAL;
 }
 
 // End of natives

@@ -8,7 +8,9 @@
 #include "vm.h"
 
 #ifdef DEBUG_PRINT_CODE
+
 #include "debug.h"
+
 #endif
 
 static Chunk *currentChunk(Compiler *compiler) {
@@ -201,8 +203,9 @@ static ObjFunction *endCompiler(Compiler *compiler) {
 #ifdef DEBUG_PRINT_CODE
     if (!compiler->parser->hadError) {
 
-      disassembleChunk(currentChunk(compiler),
-          function->name != NULL ? function->name->chars : "<top>");
+        disassembleChunk(currentChunk(compiler),
+                         function->name != NULL ? function->name->chars
+                                                : compiler->parser->vm->scriptNames[compiler->parser->vm->scriptNameCount]);
     }
 #endif
     if (compiler->enclosing != NULL) {
@@ -1424,15 +1427,16 @@ static void returnStatement(Compiler *compiler) {
 
 static void importStatement(Compiler *compiler) {
     consume(compiler, TOKEN_STRING, "Expect string after import.");
-    emitConstant(compiler, OBJ_VAL(copyString(
+
+    int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
             compiler->parser->vm,
             compiler->parser->previous.start + 1,
-            compiler->parser->previous.length - 2))
-    );
+            compiler->parser->previous.length - 2)));
+
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
 
-    emitByte(compiler, OP_IMPORT);
-    emitByte(compiler, OP_POP);
+    emitBytes(compiler, OP_IMPORT, importConstant);
+    emitByte(compiler, OP_IMPORT_END);
 }
 
 static void whileStatement(Compiler *compiler) {
@@ -1589,7 +1593,6 @@ ObjFunction *compile(VM *vm, const char *source) {
         } while (!match(&compiler, TOKEN_EOF));
     }
 
-    emitByte(&compiler, OP_IMPORT_END);
     ObjFunction *function = endCompiler(&compiler);
 
     // If there was a compile error, the code is not valid, so don't
