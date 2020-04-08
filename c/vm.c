@@ -20,12 +20,9 @@
 #include "natives.h"
 #include "optionals/optionals.h"
 
-void defineAllNatives();
-
 static void resetStack(VM *vm) {
     vm->stackTop = vm->stack;
     vm->frameCount = 0;
-    vm->currentFrameCount = 0;
     vm->openUpvalues = NULL;
     vm->compiler = NULL;
 }
@@ -43,7 +40,7 @@ void runtimeError(VM *vm, const char *format, ...) {
                 function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "%s: ", vm->currentScriptName);
+            fprintf(stderr, "%s: ", vm->scriptNames[vm->scriptNameCount]);
             i = -1;
         } else {
             fprintf(stderr, "%s(): ", function->name->chars);
@@ -59,6 +56,13 @@ void runtimeError(VM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
+void setupFilenameStack(VM *vm, const char *scriptName) {
+    vm->scriptNameCapacity = 8;
+    vm->scriptNames = ALLOCATE(vm, const char*, vm->scriptNameCapacity);
+    vm->scriptNameCount = 0;
+    vm->scriptNames[vm->scriptNameCount] = scriptName;
+}
+
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     VM *vm = malloc(sizeof(*vm));
 
@@ -72,10 +76,10 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     resetStack(vm);
     vm->objects = NULL;
     vm->repl = repl;
-    vm->scriptName = scriptName;
-    vm->currentScriptName = scriptName;
     vm->frameCapacity = 4;
-    vm->frames = realloc(NULL, sizeof(CallFrame) * 4);
+    vm->frames = NULL;
+    vm->initString = NULL;
+    vm->replVar = NULL;
     vm->bytesAllocated = 0;
     vm->nextGC = 1024 * 1024;
     vm->grayCount = 0;
@@ -92,6 +96,9 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->instanceMethods);
 
+    setupFilenameStack(vm, scriptName);
+
+    vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
@@ -129,9 +136,15 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->fileMethods);
     freeTable(vm, &vm->instanceMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
+    FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
+
+#if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
+    printf("Total memory usage: %zu\n", vm->bytesAllocated);
+#endif
+
     free(vm);
 }
 
@@ -170,8 +183,7 @@ static bool call(VM *vm, ObjClosure *closure, int argCount) {
     frame->closure = closure;
     frame->ip = closure->function->chunk.code;
 
-    // +1 to include either the called function or the receiver.
-    frame->slots = vm->stackTop - (argCount + 1);
+    frame->slots = vm->stackTop - argCount - 1;
 
     return true;
 }
@@ -505,7 +517,7 @@ static InterpretResult run(VM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    #define BINARY_OP(valueType, op) \
+    #define BINARY_OP(valueType, op, type) \
         do { \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
             frame->ip = ip; \
@@ -513,22 +525,8 @@ static InterpretResult run(VM *vm) {
             return INTERPRET_RUNTIME_ERROR; \
           } \
           \
-          double b = AS_NUMBER(pop(vm)); \
-          double a = AS_NUMBER(pop(vm)); \
-          push(vm, valueType(a op b)); \
-        } while (false)
-
-
-    #define BITWISE_OP(valueType, op) \
-        do { \
-          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-          } \
-          \
-          int b = AS_NUMBER(pop(vm)); \
-          int a = AS_NUMBER(pop(vm)); \
+          type b = AS_NUMBER(pop(vm)); \
+          type a = AS_NUMBER(pop(vm)); \
           push(vm, valueType(a op b)); \
         } while (false)
 
@@ -692,6 +690,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
+                tableDelete(&vm->globals, name);
                 frame->ip = ip;
                 runtimeError(vm, "Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
@@ -794,11 +793,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >);
+            BINARY_OP(BOOL_VAL, >, double);
             DISPATCH();
 
         CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <);
+            BINARY_OP(BOOL_VAL, <, double);
             DISPATCH();
 
         CASE_CODE(ADD): {
@@ -852,11 +851,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(MULTIPLY):
-            BINARY_OP(NUMBER_VAL, *);
+            BINARY_OP(NUMBER_VAL, *, double);
             DISPATCH();
 
         CASE_CODE(DIVIDE):
-            BINARY_OP(NUMBER_VAL, /);
+            BINARY_OP(NUMBER_VAL, /, double);
             DISPATCH();
 
         CASE_CODE(POW): {
@@ -888,15 +887,15 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(BITWISE_AND):
-            BITWISE_OP(NUMBER_VAL, &);
+            BINARY_OP(NUMBER_VAL, &, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_XOR):
-            BITWISE_OP(NUMBER_VAL, ^);
+            BINARY_OP(NUMBER_VAL, ^, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_OR):
-            BITWISE_OP(NUMBER_VAL, |);
+            BINARY_OP(NUMBER_VAL, |, int);
             DISPATCH();
 
         CASE_CODE(NOT):
@@ -936,7 +935,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            ObjString *fileName = AS_STRING(peek(vm, 0));
+            ObjString *fileName = READ_STRING();
 
             // If we have imported this file already, skip.
             if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
@@ -944,7 +943,15 @@ static InterpretResult run(VM *vm) {
             }
 
             char *s = readFile(fileName->chars);
-            vm->currentScriptName = fileName->chars;
+
+            if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
+                int oldCapacity = vm->scriptNameCapacity;
+                vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
+                vm->scriptNames = GROW_ARRAY(vm, vm->scriptNames, const char*,
+                                           oldCapacity, vm->scriptNameCapacity);
+            }
+
+            vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
 
             ObjFunction *function = compile(vm, s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
@@ -957,7 +964,13 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
+
             free(s);
+            DISPATCH();
+        }
+
+        CASE_CODE(IMPORT_END): {
+            vm->scriptNameCount--;
             DISPATCH();
         }
 
@@ -1396,12 +1409,10 @@ static InterpretResult run(VM *vm) {
 
             vm->frameCount--;
 
-            if (vm->frameCount == vm->currentFrameCount) {
-                vm->currentScriptName = vm->scriptName;
-                vm->currentFrameCount = -1;
+            if (vm->frameCount == 0) {
+                pop(vm);
+                return INTERPRET_OK;
             }
-
-            if (vm->frameCount == 0) return INTERPRET_OK;
 
             vm->stackTop = frame->slots;
             push(vm, result);
@@ -1516,6 +1527,7 @@ InterpretResult interpret(VM *vm, const char *source) {
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
+    push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);
     InterpretResult result = run(vm);
 

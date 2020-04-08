@@ -15,6 +15,10 @@
 void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
     vm->bytesAllocated += newSize - oldSize;
 
+#ifdef DEBUG_TRACE_MEM
+    printf("Total memory usage: %zu\nNew allocation: %zu\nOld allocation: %zu\n\n", vm->bytesAllocated, newSize, oldSize);
+#endif
+
     if (newSize > oldSize) {
 #ifdef DEBUG_STRESS_GC
         collectGarbage(vm);
@@ -31,21 +35,6 @@ void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize) {
     }
 
     return realloc(previous, newSize);
-}
-
-void freeSetValue (setItem *item) {
-    free(item);
-}
-
-static void freeSet(ObjSet *set) {
-    for (int i = 0; i < set->capacity; i++) {
-        setItem *item = set->items[i];
-        if (item != NULL) {
-            freeSetValue(item);
-        }
-    }
-    free(set->items);
-    free(set);
 }
 
 void grayObject(VM *vm, Obj *object) {
@@ -164,12 +153,7 @@ static void blackenObject(VM *vm, Obj *object) {
 
         case OBJ_SET: {
             ObjSet *set = (ObjSet *) object;
-            for (int i = 0; i < set->capacity; ++i) {
-                if (!set->items[i])
-                    continue;
-
-                grayObject(vm, (Obj *) set->items[i]->item);
-            }
+            graySet(vm, set);
             break;
         }
 
@@ -203,20 +187,20 @@ void freeObject(VM *vm, Obj *object) {
             ObjClassNative *klass = (ObjClassNative *) object;
             freeTable(vm, &klass->methods);
             freeTable(vm, &klass->properties);
-            FREE(vm, ObjClass, object);
+            FREE(vm, ObjClassNative, object);
             break;
         }
 
         case OBJ_TRAIT: {
             ObjTrait *trait = (ObjTrait *) object;
             freeTable(vm, &trait->methods);
-            FREE(vm, ObjClass, object);
+            FREE(vm, ObjTrait, object);
             break;
         }
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
-            FREE_ARRAY(vm, Value*, closure->upvalues, closure->upvalueCount);
+            FREE_ARRAY(vm, ObjUpvalue*, closure->upvalues, closure->upvalueCount);
             FREE(vm, ObjClosure, object);
             break;
         }
@@ -256,13 +240,15 @@ void freeObject(VM *vm, Obj *object) {
 
         case OBJ_DICT: {
             ObjDict *dict = (ObjDict *) object;
-            freeDict(vm, dict);
+            FREE_ARRAY(vm, DictItem, dict->entries, dict->capacityMask + 1);
+            FREE(vm, ObjDict, dict);
             break;
         }
 
         case OBJ_SET: {
             ObjSet *set = (ObjSet *) object;
-            freeSet(set);
+            FREE_ARRAY(vm, SetItem, set->entries, set->capacityMask + 1);
+            FREE(vm, ObjSet, set);
             break;
         }
 
