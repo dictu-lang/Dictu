@@ -226,7 +226,7 @@ char *dictToString(Value value) {
    char *dictString = malloc(sizeof(char) * size);
    int dictStringLength = snprintf(dictString, size, "%s", "{");
 
-   for (int i = 0; i <= dict->capacityMask + 1; ++i) {
+   for (int i = 0; i <= dict->capacityMask; ++i) {
        DictItem *item = &dict->entries[i];
        if (IS_EMPTY(item->key)) {
            continue;
@@ -409,7 +409,7 @@ char *objectToString(Value value) {
             char *setString = malloc(sizeof(char) * size);
             int setStringLength = snprintf(setString, size, "%s", "{");
 
-            for (int i = 0; i < set->capacityMask + 1; ++i) {
+            for (int i = 0; i <= set->capacityMask; ++i) {
                 SetItem *item = &set->entries[i];
                 if (IS_EMPTY(item->value) || item->deleted)
                     continue;
