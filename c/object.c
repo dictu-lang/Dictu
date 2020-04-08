@@ -176,6 +176,47 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
     return upvalue;
 }
 
+char *listToString(Value value) {
+    int size = 50;
+    ObjList *list = AS_LIST(value);
+    char *listString = calloc(size, sizeof(char));
+    int listStringLength = snprintf(listString, 2, "%s", "[");
+
+    for (int i = 0; i < list->values.count; ++i) {
+        char *element = valueToString(list->values.values[i]);
+
+        int elementSize = strlen(element);
+
+        if (elementSize > (size - listStringLength - 3)) {
+            if (elementSize > size * 2) {
+                size += elementSize * 2 + 3;
+            } else {
+                size = size * 2 + 3;
+            }
+
+            char *newB = realloc(listString, sizeof(char) * size);
+
+            if (newB == NULL) {
+                printf("Unable to allocate memory\n");
+                exit(71);
+            }
+
+            listString = newB;
+        }
+
+        listStringLength += snprintf(listString + listStringLength, size - listStringLength, "%s", element);
+
+        free(element);
+
+        if (i != list->values.count - 1) {
+            listStringLength += snprintf(listString + listStringLength, size - listStringLength, ", ");
+        }
+    }
+
+    snprintf(listString + listStringLength, size - listStringLength, "]");
+    return listString;
+}
+
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_NATIVE_CLASS:
@@ -268,44 +309,7 @@ char *objectToString(Value value) {
         }
 
         case OBJ_LIST: {
-            int size = 50;
-            ObjList *list = AS_LIST(value);
-            char *listString = calloc(size, sizeof(char));
-            int listStringLength = snprintf(listString, 2, "%s", "[");
-
-            for (int i = 0; i < list->values.count; ++i) {
-                char *element = valueToString(list->values.values[i]);
-
-                int elementSize = strlen(element);
-
-                if (elementSize > (size - listStringLength - 3)) {
-                    if (elementSize > size * 2) {
-                        size += elementSize * 2 + 3;
-                    } else {
-                        size = size * 2 + 3;
-                    }
-
-                    char *newB = realloc(listString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    listString = newB;
-                }
-
-                listStringLength += snprintf(listString + listStringLength, size - listStringLength, "%s", element);
-
-                free(element);
-
-                if (i != list->values.count - 1) {
-                    listStringLength += snprintf(listString + listStringLength, size - listStringLength, ", ");
-                }
-            }
-
-            snprintf(listString + listStringLength, size - listStringLength, "]");
-            return listString;
+            return listToString(value);
         }
 
         case OBJ_DICT: {

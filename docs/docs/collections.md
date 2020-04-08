@@ -66,6 +66,13 @@ myList.insert(11, 1); // [10, 11, 12]
 myList + [13]; // [10, 11, 12, 13]
 ```
 
+### list.toString()
+Converts a given list to a string.
+
+```js
+["1", 11].toString();        // ['1', 11]
+["1", [11, "1"]].toString(); // ['1', [11, '1']]
+```
 ### list.len()
 
 Returns the length of the given list.

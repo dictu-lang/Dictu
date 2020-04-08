@@ -1,5 +1,18 @@
 #include "lists.h"
 
+static Value toStringList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *valueString = listToString(args[0]);
+
+    ObjString *string = copyString(vm, valueString, strlen(valueString));
+    free(valueString);
+
+    return OBJ_VAL(string);
+}
 
 static Value lenList(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -209,6 +222,7 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareListMethods(VM *vm) {
+    defineNative(vm, &vm->listMethods, "toString", toStringList);
     defineNative(vm, &vm->listMethods, "len", lenList);
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
