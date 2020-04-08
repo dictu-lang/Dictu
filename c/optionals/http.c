@@ -7,7 +7,7 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = malloc(response->len + 1);
+    response->res = ALLOCATE(vm, char, 1);
     if (response->res == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
@@ -19,7 +19,7 @@ static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
 {
     Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
-    response->res = realloc(response->res, new_len + 1);
+    response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len);
     if (response->res == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
@@ -108,8 +108,7 @@ static char *dictToPostArgs(ObjDict *dict) {
 static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-    ObjString *content = copyString(vm, response.res, response.len);
-    free(response.res);
+    ObjString *content = takeString(vm, response.res, response.len);
 
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
