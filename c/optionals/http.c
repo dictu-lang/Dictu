@@ -7,19 +7,14 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = ALLOCATE(vm, char, 1);
-    if (response->res == NULL) {
-        printf("Unable to allocate memory\n");
-        exit(71);
-    }
-    response->res[0] = '\0';
+    response->res = NULL;
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
 {
     Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
-    response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len);
+    response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len + 1);
     if (response->res == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
