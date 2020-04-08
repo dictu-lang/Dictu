@@ -68,12 +68,7 @@ static uint32_t hashValue(Value value) {
     return hashBits(value);
 }
 
-void freeDict(VM *vm, ObjDict *dict) {
-    FREE_ARRAY(vm, DictItem, dict->entries, dict->capacityMask + 1);
-    FREE(vm, ObjDict, dict);
-}
-
-static DictItem *findEntry(DictItem *entries, int capacityMask,
+static DictItem *findDictEntry(DictItem *entries, int capacityMask,
                            Value key) {
     uint32_t index = hashValue(key) & capacityMask;
     DictItem *tombstone = NULL;
@@ -99,16 +94,16 @@ static DictItem *findEntry(DictItem *entries, int capacityMask,
 }
 
 bool dictGet(ObjDict *dict, Value key, Value *value) {
-    if (dict->entries == NULL) return false;
+    if (dict->count == 0) return false;
 
-    DictItem *entry = findEntry(dict->entries, dict->capacityMask, key);
+    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
     if (IS_EMPTY(entry->key)) return false;
 
     *value = entry->value;
     return true;
 }
 
-static void adjustCapacity(VM *vm, ObjDict *dict, int capacityMask) {
+static void adjustDictCapacity(VM *vm, ObjDict *dict, int capacityMask) {
     DictItem *entries = ALLOCATE(vm, DictItem, capacityMask + 1);
     for (int i = 0; i <= capacityMask; i++) {
         entries[i].key = EMPTY_VAL;
@@ -121,7 +116,7 @@ static void adjustCapacity(VM *vm, ObjDict *dict, int capacityMask) {
         DictItem *entry = &dict->entries[i];
         if (IS_EMPTY(entry->key)) continue;
 
-        DictItem *dest = findEntry(entries, capacityMask, entry->key);
+        DictItem *dest = findDictEntry(entries, capacityMask, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
         dict->count++;
@@ -136,22 +131,24 @@ bool dictSet(VM *vm, ObjDict *dict, Value key, Value value) {
     if (dict->count + 1 > (dict->capacityMask + 1) * TABLE_MAX_LOAD) {
         // Figure out the new table size.
         int capacityMask = GROW_CAPACITY(dict->capacityMask + 1) - 1;
-        adjustCapacity(vm, dict, capacityMask);
+        adjustDictCapacity(vm, dict, capacityMask);
     }
 
-    DictItem *entry = findEntry(dict->entries, dict->capacityMask, key);
+    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
     bool isNewKey = IS_EMPTY(entry->key);
+
     entry->key = key;
     entry->value = value;
 
     if (isNewKey) dict->count++;
+
     return isNewKey;
 }
 
 bool dictDelete(VM *vm, ObjDict *dict, Value key) {
     if (dict->count == 0) return false;
 
-    DictItem *entry = findEntry(dict->entries, dict->capacityMask, key);
+    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
     if (IS_EMPTY(entry->key)) return false;
 
     // Place a tombstone in the entry.
@@ -162,7 +159,7 @@ bool dictDelete(VM *vm, ObjDict *dict, Value key) {
     if (dict->count - 1 < dict->capacityMask * TABLE_MIN_LOAD) {
         // Figure out the new table size.
         int capacityMask = SHRINK_CAPACITY(dict->capacityMask);
-        adjustCapacity(vm, dict, capacityMask);
+        adjustDictCapacity(vm, dict, capacityMask);
     }
 
     return true;
@@ -176,115 +173,104 @@ void grayDict(VM *vm, ObjDict *dict) {
     }
 }
 
-void initSetValues(ObjSet *set, uint32_t capacity) {
-    set->capacity = capacity;
+
+static SetItem *findSetEntry(SetItem *entries, int capacityMask,
+                           Value value) {
+    uint32_t index = hashValue(value) & capacityMask;
+    SetItem *tombstone = NULL;
+
+    for (;;) {
+        SetItem *entry = &entries[index];
+
+        if (IS_EMPTY(entry->value)) {
+            if (!entry->deleted) {
+                // Empty entry.
+                return tombstone != NULL ? tombstone : entry;
+            } else {
+                // We found a tombstone.
+                if (tombstone == NULL) tombstone = entry;
+            }
+        } else if (valuesEqual(value, entry->value)) {
+            // We found the key.
+            return entry;
+        }
+
+        index = (index + 1) & capacityMask;
+    }
+}
+
+bool setGet(ObjSet *set, Value value) {
+    if (set->count == 0) return false;
+
+    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    if (IS_EMPTY(entry->value) || entry->deleted) return false;
+
+    return true;
+}
+
+static void adjustSetCapacity(VM *vm, ObjSet *set, int capacityMask) {
+    SetItem *entries = ALLOCATE(vm, SetItem, capacityMask + 1);
+    for (int i = 0; i <= capacityMask; i++) {
+        entries[i].value = EMPTY_VAL;
+        entries[i].deleted = false;
+    }
+
     set->count = 0;
-    set->items = calloc(capacity, sizeof(*set->items));
+
+    for (int i = 0; i <= set->capacityMask; i++) {
+        SetItem *entry = &set->entries[i];
+        if (IS_EMPTY(entry->value) || entry->deleted) continue;
+
+        SetItem *dest = findSetEntry(entries, capacityMask, entry->value);
+        dest->value = entry->value;
+        set->count++;
+    }
+
+    FREE_ARRAY(vm, SetItem, set->entries, set->capacityMask + 1);
+    set->entries = entries;
+    set->capacityMask = capacityMask;
 }
 
-void insertSet(VM *vm, ObjSet *set, Value value) {
-    if (!IS_STRING(value)) {
-        printf("Sets can only store string values!"); // TODO: To be revised as more values support hashing
-        return;
+bool setInsert(VM *vm, ObjSet *set, Value value) {
+    if (set->count + 1 > (set->capacityMask + 1) * TABLE_MAX_LOAD) {
+        // Figure out the new table size.
+        int capacityMask = GROW_CAPACITY(set->capacityMask + 1) - 1;
+        adjustSetCapacity(vm, set, capacityMask);
     }
 
-    ObjString *string = AS_STRING(value);
+    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    bool isNewKey = IS_EMPTY(entry->value);
+    entry->value = value;
 
-    // If the value is already in the set, exit
-    if (searchSetMarkActive(set, string)) {
-        return;
-    }
+    if (isNewKey) set->count++;
 
-    int index = string->hash % set->capacity;
-
-    setItem *item = ALLOCATE(vm, setItem, sizeof(setItem));
-
-    if (set->count * 100 / set->capacity >= 60) {
-        resizeSet(vm, set, true);
-    }
-
-    item->item = string;
-    item->hash = string->hash;
-    item->deleted = false;
-
-    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
-        index++;
-        if (index == set->capacity) {
-            index = 0;
-        }
-    }
-
-    set->items[index] = item;
-    set->count++;
+    return isNewKey;
 }
 
-bool searchSet(ObjSet *set, ObjString *string) {
-    int index = string->hash % set->capacity;
+bool setDelete(VM *vm, ObjSet *set, Value value) {
+    if (set->count == 0) return false;
 
-    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
-        index++;
-        if (index == set->capacity) {
-            index = 0;
-        }
+    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    if (IS_EMPTY(entry->value)) return false;
+
+    // Place a tombstone in the entry.
+    set->count--;
+    entry->deleted = true;
+
+    if (set->count - 1 < set->capacityMask * TABLE_MIN_LOAD) {
+        // Figure out the new table size.
+        int capacityMask = SHRINK_CAPACITY(set->capacityMask);
+        adjustSetCapacity(vm, set, capacityMask);
     }
 
-    return set->items[index] && !set->items[index]->deleted;
+    return true;
 }
 
-bool searchSetMarkActive(ObjSet *set, ObjString *string) {
-    int index = string->hash % set->capacity;
-
-    while (set->items[index] && strcmp(set->items[index]->item->chars, string->chars) != 0) {
-        index++;
-        if (index == set->capacity) {
-            index = 0;
-        }
+void graySet(VM *vm, ObjSet *set) {
+    for (int i = 0; i <= set->capacityMask; i++) {
+        SetItem *entry = &set->entries[i];
+        grayValue(vm, entry->value);
     }
-
-    if (set->items[index]) {
-        // If we found the value but it's been "deleted" mark it as active
-        if (set->items[index]->deleted) {
-            set->items[index]->deleted = false;
-            set->count++;
-        }
-        return true;
-    }
-
-    return false;
-}
-
-void resizeSet(VM *vm, ObjSet *set, bool grow) {
-    int newSize;
-
-    if (grow)
-        newSize = set->capacity << 1;
-    else
-        newSize = set->capacity >> 1;
-
-    setItem **items = (setItem **)ALLOCATE(vm, setItem, newSize);
-
-    for (int j = 0; j < set->capacity; ++j) {
-        if (!set->items[j])
-            continue;
-
-        if (set->items[j]->deleted) {
-            freeSetValue(set->items[j]);
-            continue;
-        }
-
-        int index = set->items[j]->hash % newSize;
-
-        while (items[index]) {
-            index = (index + 1) % newSize; // Handles wrap around indexes
-        }
-
-        items[index] = set->items[j];
-    }
-
-    free(set->items);
-
-    set->capacity = newSize;
-    set->items = items;
 }
 
 // Calling function needs to free memory
@@ -374,12 +360,26 @@ static bool setComparison(Value a, Value b) {
     ObjSet *set = AS_SET(a);
     ObjSet *setB = AS_SET(b);
 
+    // Different lengths, not the same
     if (set->count != setB->count)
         return false;
 
-    for (int i = 0; i < set->count; ++i) {
-        if (set->items[i]!= setB->items[i])
+    // Lengths are the same, and dict 1 has 0 length
+    // therefore both are empty
+    if (set->count == 0)
+        return true;
+
+    for (int i = 0; i <= set->capacityMask; ++i) {
+        SetItem *item = &set->entries[i];
+
+        if (IS_EMPTY(item->value) || item->deleted)
+            continue;
+
+        // Check if key from dict A is in dict B
+        if (!setGet(setB, item->value)) {
+            // Key doesn't exist
             return false;
+        }
     }
 
     return true;
@@ -389,16 +389,24 @@ bool valuesEqual(Value a, Value b) {
 #ifdef NAN_TAGGING
 
     if (IS_OBJ(a) && IS_OBJ(b)) {
-        if (AS_OBJ(a)->type == OBJ_LIST && AS_OBJ(b)->type == OBJ_LIST) {
-            return listComparison(a, b);
-        }
+        if (AS_OBJ(a)->type != AS_OBJ(b)->type) return false;
 
-        if (AS_OBJ(a)->type == OBJ_DICT && AS_OBJ(b)->type == OBJ_DICT) {
-            return dictComparison(a, b);
-        }
+        switch (AS_OBJ(a)->type) {
+            case OBJ_LIST: {
+                return listComparison(a, b);
+            }
 
-        if (AS_OBJ(a)->type == OBJ_SET && AS_OBJ(b)->type == OBJ_SET) {
-            return setComparison(a, b);
+            case OBJ_DICT: {
+                return dictComparison(a, b);
+            }
+
+            case OBJ_SET: {
+                return setComparison(a, b);
+            }
+
+            // Pass through
+            default:
+                break;
         }
     }
 

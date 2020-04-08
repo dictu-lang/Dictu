@@ -123,7 +123,9 @@ ObjDict *initDict(VM *vm) {
 
 ObjSet *initSet(VM *vm) {
     ObjSet *set = ALLOCATE_OBJ(vm, ObjSet, OBJ_SET);
-    initSetValues(set, 8);
+    set->count = 0;
+    set->capacityMask = -1;
+    set->entries = NULL;
     return set;
 }
 
@@ -148,7 +150,7 @@ ObjString *takeString(VM *vm, char *chars, int length) {
     ObjString *interned = tableFindString(&vm->strings, chars, length,
                                           hash);
     if (interned != NULL) {
-        FREE_ARRAY(vm, char, chars, length);
+        FREE_ARRAY(vm, char, chars, length + 1);
         return interned;
     }
 
@@ -403,15 +405,24 @@ char *objectToString(Value value) {
             char *setString = malloc(sizeof(char) * size);
             int setStringLength = snprintf(setString, size, "%s", "{");
 
-            for (int i = 0; i < set->capacity; ++i) {
-                setItem *item = set->items[i];
-                if (!item || item->deleted)
+            for (int i = 0; i < set->capacityMask; ++i) {
+                SetItem *item = &set->entries[i];
+                if (IS_EMPTY(item->value) || item->deleted)
                     continue;
 
                 count++;
 
-                char *element = item->item->chars;
-                int elementSize = item->item->length;
+                char *element;
+                int elementSize;
+
+                if (IS_STRING(item->value)) {
+                    ObjString *s = AS_STRING(item->value);
+                    element = s->chars;
+                    elementSize = s->length;
+                } else {
+                    element = valueToString(item->value);
+                    elementSize = strlen(element);
+                }
 
                 if (elementSize > (size - setStringLength - 5)) {
                     if (elementSize > size * 2) {
@@ -430,7 +441,13 @@ char *objectToString(Value value) {
                     setString = newB;
                 }
 
-                setStringLength += snprintf(setString + setStringLength, size - setStringLength, "'%s'", element);
+
+                if (IS_STRING(item->value)) {
+                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+                } else {
+                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+                    free(element);
+                }
 
                 if (count != set->count) {
                     setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
