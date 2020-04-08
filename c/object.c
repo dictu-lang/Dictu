@@ -464,67 +464,7 @@ char *objectToString(Value value) {
         }
 
         case OBJ_SET: {
-<<<<<<< HEAD
             return setToString(value);
-=======
-            int count = 0;
-            int size = 50;
-            ObjSet *set = AS_SET(value);
-            char *setString = malloc(sizeof(char) * size);
-            int setStringLength = snprintf(setString, size, "%s", "{");
-
-            for (int i = 0; i <= set->capacityMask; ++i) {
-                SetItem *item = &set->entries[i];
-                if (IS_EMPTY(item->value) || item->deleted)
-                    continue;
-
-                count++;
-
-                char *element;
-                int elementSize;
-
-                if (IS_STRING(item->value)) {
-                    ObjString *s = AS_STRING(item->value);
-                    element = s->chars;
-                    elementSize = s->length;
-                } else {
-                    element = valueToString(item->value);
-                    elementSize = strlen(element);
-                }
-
-                if (elementSize > (size - setStringLength - 5)) {
-                    if (elementSize > size * 2) {
-                        size += elementSize * 2 + 5;
-                    } else {
-                        size = size * 2 + 5;
-                    }
-
-                    char *newB = realloc(setString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    setString = newB;
-                }
-
-
-                if (IS_STRING(item->value)) {
-                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
-                } else {
-                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
-                    free(element);
-                }
-
-                if (count != set->count) {
-                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
-                }
-            }
-
-            snprintf(setString + setStringLength, size - setStringLength, "}");
-            return setString;
->>>>>>> 9dfb5f3532ca9892302ba28e56c54578fbe7ce7e
         }
 
         case OBJ_UPVALUE: {
