@@ -105,6 +105,46 @@ static char *dictToPostArgs(ObjDict *dict) {
     return ret;
 }
 
+static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
+    // Get status code
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
+    ObjString *content = copyString(vm, response.res, response.len);
+    free(response.res);
+
+    // Push to stack to avoid GC
+    push(vm, OBJ_VAL(content));
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    ObjDict *responseVal = initDict(vm);
+    // Push to stack to avoid GC
+    push(vm, OBJ_VAL(responseVal));
+
+    ObjString *string = copyString(vm, "content", 7);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(content));
+    pop(vm);
+
+    string = copyString(vm, "headers", 7);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(response.headers));
+    pop(vm);
+
+    string = copyString(vm, "statusCode", 10);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), NUMBER_VAL(response.statusCode));
+    pop(vm);
+
+    // Pop
+    pop(vm);
+    pop(vm);
+    pop(vm);
+
+    return responseVal;
+}
+
 static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
@@ -154,31 +194,7 @@ static Value get(VM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-        ObjString *content = copyString(vm, response.res, response.len);
-        free(response.res);
-
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(content));
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        curl_global_cleanup();
-
-        ObjDict *responseVal = initDict(vm);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(responseVal));
-
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "content", 7)), OBJ_VAL(content));
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "headers", 7)), OBJ_VAL(response.headers));
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "statusCode", 10)), NUMBER_VAL(response.statusCode));
-
-        // Pop header list, content and response dict return off stack
-        pop(vm);
-        pop(vm);
-        pop(vm);
-
-        return OBJ_VAL(responseVal);
+        return OBJ_VAL(endRequest(vm, curl, response));
     }
 
     runtimeError(vm, "cURL failed to initialise");
@@ -228,10 +244,10 @@ static Value post(VM *vm, int argCount, Value *args) {
     curl = curl_easy_init();
 
     if (curl) {
-        char *url = AS_CSTRING(args[0]);
-        char *postValue = "";
         Response response;
         createResponse(vm, &response);
+        char *url = AS_CSTRING(args[0]);
+        char *postValue = "";
 
         if (dict != NULL) {
             postValue = dictToPostArgs(dict);
@@ -249,42 +265,17 @@ static Value post(VM *vm, int argCount, Value *args) {
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
 
+        if (dict != NULL) {
+            free(postValue);
+        }
+
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
             runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
-        // Get status code
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-        ObjString *content = copyString(vm, response.res, response.len);
-        free(response.res);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(content));
-
-        if (dict != NULL) {
-            free(postValue);
-        }
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-
-        curl_global_cleanup();
-
-        ObjDict *responseVal = initDict(vm);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(responseVal));
-
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "content", 7)), OBJ_VAL(content));
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "headers", 7)), OBJ_VAL(response.headers));
-        dictSet(vm, responseVal, OBJ_VAL(copyString(vm, "statusCode", 10)), NUMBER_VAL(response.statusCode));
-
-        // Pop header list and dict return off stack
-        pop(vm);
-        pop(vm);
-        pop(vm);
-
-        return OBJ_VAL(responseVal);
+        return OBJ_VAL(endRequest(vm, curl, response));
     }
 
     runtimeError(vm, "cURL failed to initialise");

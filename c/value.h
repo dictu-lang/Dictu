@@ -126,9 +126,6 @@ bool dictGet(ObjDict *dict, Value key, Value *value);
 
 bool dictDelete(VM *vm, ObjDict *dict, Value key);
 
-
-
-
 bool setGet(ObjSet *set, Value value);
 
 bool setInsert(VM *vm, ObjSet *set, Value value);
@@ -136,8 +133,6 @@ bool setInsert(VM *vm, ObjSet *set, Value value);
 bool setDelete(VM *vm, ObjSet *set, Value value);
 
 void graySet(VM *vm, ObjSet *set);
-
-
 
 char *valueToString(Value value);
 
