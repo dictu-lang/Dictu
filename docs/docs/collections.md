@@ -243,6 +243,24 @@ Sets are an unordered collection of unique hashable values. Currently Dictu requ
 var mySet = set();
 ```
 
+### set.toString()
+Converts a given set to a string.
+
+```js
+var set_a = set();
+
+set_a.add("one");
+set_a.add("two");
+
+var set_b = set();
+set_b.add(1);
+set_b.add(set_a);
+set_b.add(2);
+
+set_a.toString(); // '{"two", "one"}');
+set_b.toString(); // '{"2", "1", "{"two", "one"}"}'
+```
+
 ### set.len()
 
 Returns the length of the given set.
