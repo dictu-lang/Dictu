@@ -11,10 +11,13 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
-#include "datatypes/sets.h"
-#include "datatypes/dicts.h"
-#include "datatypes/lists.h"
+#include "datatypes/number.h"
+#include "datatypes/bool.h"
+#include "datatypes/nil.h"
 #include "datatypes/strings.h"
+#include "datatypes/lists.h"
+#include "datatypes/dicts.h"
+#include "datatypes/sets.h"
 #include "datatypes/files.h"
 #include "datatypes/instance.h"
 #include "natives.h"
@@ -89,6 +92,9 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->strings);
     initTable(&vm->imports);
 
+    initTable(&vm->numberMethods);
+    initTable(&vm->boolMethods);
+    initTable(&vm->nilMethods);
     initTable(&vm->stringMethods);
     initTable(&vm->listMethods);
     initTable(&vm->dictMethods);
@@ -103,6 +109,9 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->replVar = copyString(vm, "_", 1);
 
     // Native methods
+    declareNumberMethods(vm);
+    declareBoolMethods(vm);
+    declareNilMethods(vm);
     declareStringMethods(vm);
     declareListMethods(vm);
     declareDictMethods(vm);
@@ -129,6 +138,9 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
+    freeTable(vm, &vm->numberMethods);
+    freeTable(vm, &vm->boolMethods);
+    freeTable(vm, &vm->nilMethods);
     freeTable(vm, &vm->stringMethods);
     freeTable(vm, &vm->listMethods);
     freeTable(vm, &vm->dictMethods);
@@ -271,111 +283,142 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
 static bool invoke(VM *vm, ObjString *name, int argCount) {
     Value receiver = peek(vm, argCount);
 
+//    if (!IS_OBJ(receiver)) {
+//        runtimeError(vm, "Can only invoke on objects.");
+//        return false;
+//    }
+
     if (!IS_OBJ(receiver)) {
-        runtimeError(vm, "Can only invoke on objects.");
-        return false;
+        if (IS_NUMBER(receiver)) {
+            Value value;
+            if (tableGet(&vm->numberMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Number has no method %s()", name->chars);
+            return false;
+        } else if (IS_BOOL(receiver)) {
+            Value value;
+            if (tableGet(&vm->numberMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Bool has no method %s()", name->chars);
+            return false;
+        } else if (IS_NIL(receiver)) {
+            Value value;
+            if (tableGet(&vm->numberMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Nil has no method %s()", name->chars);
+            return false;
+        }
+    } else {
+        switch (getObjType(receiver)) {
+            case OBJ_NATIVE_CLASS: {
+                ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
+                Value function;
+                if (!tableGet(&instance->methods, name, &function)) {
+                    runtimeError(vm, "Undefined property '%s'.", name->chars);
+                    return false;
+                }
+
+                return callValue(vm, function, argCount);
+            }
+
+            case OBJ_CLASS: {
+                ObjClass *instance = AS_CLASS(receiver);
+                Value method;
+                if (!tableGet(&instance->methods, name, &method)) {
+                    runtimeError(vm, "Undefined property '%s'.", name->chars);
+                    return false;
+                }
+
+                if (!AS_CLOSURE(method)->function->staticMethod) {
+                    runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                                 name->chars);
+                    return false;
+                }
+
+                return callValue(vm, method, argCount);
+            }
+
+            case OBJ_INSTANCE: {
+                ObjInstance *instance = AS_INSTANCE(receiver);
+
+                Value value;
+                // First look for a field which may shadow a method.
+                if (tableGet(&instance->fields, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
+
+                // Check for instance methods.
+                if (tableGet(&vm->instanceMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                return invokeFromClass(vm, instance->klass, name, argCount);
+            }
+
+            case OBJ_STRING: {
+                Value value;
+                if (tableGet(&vm->stringMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "String has no method %s()", name->chars);
+                return false;
+            }
+
+            case OBJ_LIST: {
+                Value value;
+                if (tableGet(&vm->listMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "List has no method %s()", name->chars);
+                return false;
+            }
+
+            case OBJ_DICT: {
+                Value value;
+                if (tableGet(&vm->dictMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Dict has no method %s()", name->chars);
+                return false;
+            }
+
+            case OBJ_SET: {
+                Value value;
+                if (tableGet(&vm->setMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Set has no method %s()", name->chars);
+                return false;
+            }
+
+            case OBJ_FILE: {
+                Value value;
+                if (tableGet(&vm->fileMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "File has no method %s()", name->chars);
+                return false;
+            }
+
+            default:
+                break;
+        }
     }
 
-    switch (getObjType(receiver)) {
-        case OBJ_NATIVE_CLASS: {
-            ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
-            Value function;
-            if (!tableGet(&instance->methods, name, &function)) {
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
-                return false;
-            }
-
-            return callValue(vm, function, argCount);
-        }
-
-        case OBJ_CLASS: {
-            ObjClass *instance = AS_CLASS(receiver);
-            Value method;
-            if (!tableGet(&instance->methods, name, &method)) {
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
-                return false;
-            }
-
-            if (!AS_CLOSURE(method)->function->staticMethod) {
-                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.", name->chars);
-                return false;
-            }
-
-            return callValue(vm, method, argCount);
-        }
-
-        case OBJ_STRING: {
-            Value value;
-            if (tableGet(&vm->stringMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "String has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_LIST: {
-            Value value;
-            if (tableGet(&vm->listMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "List has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_DICT: {
-            Value value;
-            if (tableGet(&vm->dictMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "Dict has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_SET: {
-            Value value;
-            if (tableGet(&vm->setMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "Set has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_FILE: {
-            Value value;
-            if (tableGet(&vm->fileMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "File has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_INSTANCE: {
-            ObjInstance *instance = AS_INSTANCE(receiver);
-
-            Value value;
-            // First look for a field which may shadow a method.
-            if (tableGet(&instance->fields, name, &value)) {
-                vm->stackTop[-argCount - 1] = value;
-                return callValue(vm, value, argCount);
-            }
-
-            // Check for instance methods.
-            if (tableGet(&vm->instanceMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            return invokeFromClass(vm, instance->klass, name, argCount);
-        }
-
-        default:
-            runtimeError(vm, "Only instances have methods.");
-            return false;
-    }
+    runtimeError(vm, "Only instances have methods.");
+    return false;
 }
 
 static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
