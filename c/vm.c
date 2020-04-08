@@ -283,11 +283,6 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
 static bool invoke(VM *vm, ObjString *name, int argCount) {
     Value receiver = peek(vm, argCount);
 
-//    if (!IS_OBJ(receiver)) {
-//        runtimeError(vm, "Can only invoke on objects.");
-//        return false;
-//    }
-
     if (!IS_OBJ(receiver)) {
         if (IS_NUMBER(receiver)) {
             Value value;
@@ -299,7 +294,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             return false;
         } else if (IS_BOOL(receiver)) {
             Value value;
-            if (tableGet(&vm->numberMethods, name, &value)) {
+            if (tableGet(&vm->boolMethods, name, &value)) {
                 return callNativeMethod(vm, value, argCount);
             }
 
@@ -307,7 +302,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             return false;
         } else if (IS_NIL(receiver)) {
             Value value;
-            if (tableGet(&vm->numberMethods, name, &value)) {
+            if (tableGet(&vm->nilMethods, name, &value)) {
                 return callNativeMethod(vm, value, argCount);
             }
 
