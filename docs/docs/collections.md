@@ -186,6 +186,15 @@ Adding a value to a dictionary is the same as updating a value, however if the k
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
+
+### dict.toString()
+Converts a given dictionary to a string.
+
+```js
+{"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: \'1\'}'
+{"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: \'1\'}, 1: \'1\'}'
+```
+
 ### dict.len()
 
 Returns the length of the given dictionary.

@@ -210,6 +210,7 @@ ObjFile *initFile(VM *vm);
 
 ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 
+char *dictToString(Value value);
 char *listToString(Value value);
 char *objectToString(Value value);
 
