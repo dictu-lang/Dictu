@@ -119,8 +119,8 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
         printf("%s", AS_CSTRING(prompt));
     }
 
-    uint8_t current_size = 128;
-    char *line = malloc(current_size);
+    uint64_t currentSize = 128;
+    char *line = malloc(currentSize);
 
     if (line == NULL) {
         runtimeError(vm, "Memory error on input()!");
@@ -128,13 +128,13 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
     }
 
     int c = EOF;
-    uint8_t i = 0;
+    uint64_t i = 0;
     while ((c = getchar()) != '\n' && c != EOF) {
         line[i++] = (char) c;
 
-        if (i == current_size) {
-            current_size = GROW_CAPACITY(current_size);
-            line = realloc(line, current_size);
+        if (i + 1 == currentSize) {
+            currentSize = GROW_CAPACITY(currentSize);
+            line = realloc(line, currentSize);
 
             if (line == NULL) {
                 printf("Unable to allocate memory\n");
