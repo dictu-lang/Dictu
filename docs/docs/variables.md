@@ -22,7 +22,8 @@ nav_order: 3
 | String       | "Hello World!", 'Hello World!'                                                                            |
 | Boolean      | true, false                                                                                               |
 | List         | Lists can contain any value. <br/><br/>[1, 2, "hi", true, nil]                                            |
-| Dictionary   | Dictionaries are key value pairs. Currently keys have to be strings. <br/><br/>{"key1": 10, "key2": true} |
+| Dictionary   | Dictionaries are key value pairs. Currently keys have to be strings, nil, boolean, number). <br/><br/>{"key1": 10, 2: "two", true: "true", nil: "nill"} |
+| Set          | Sets are an unordered collection of unique hashable values.
 | nil          | nil                                                                                                       |
 
 ## Declaring a variable
@@ -38,6 +39,7 @@ var someNilValue = nil;
 var someOtherNilValue; // Variables declared without a value are set to nil
 var someList = [1, 2, "hi", 'hi', nil, true, false]; // Lists can hold any value
 var someDict = {"key": 10, "key1": true, "key2": [1, "2", false], "key3": {"1": 2}}; // Dictionaries must have a string key, but can hold any value
+var someSet = set();
 ```
 
 
@@ -66,4 +68,15 @@ You can also define multiple variables with a single statement.
 ```js
 var a, b = 10, c = "hello!";
 print(a, b, c); // nil, 10, 'hello!'
+```
+
+You can convert types into strings with the toString() method.
+
+```js
+true.toString();
+nil.toString();
+1.toString();
+somedict.toString();
+somelist.toString();
+someset.toString();
 ```
