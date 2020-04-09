@@ -190,6 +190,7 @@ static TokenType identifierType() {
                     return TOKEN_R;
                 }
             }
+            break;
         case 's':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
