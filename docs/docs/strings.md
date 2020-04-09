@@ -34,7 +34,7 @@ var x = "Dictu";
 
 x[0]; // D
 
-for (var i = 0; i < len(x); ++i) {
+for (var i = 0; i < x.len(); ++i) {
     print(x[i]);
 }
 // D

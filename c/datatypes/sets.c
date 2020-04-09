@@ -1,5 +1,18 @@
 #include "sets.h"
 
+static Value toStringSet(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *valueString = setToString(args[0]);
+
+    ObjString *string = copyString(vm, valueString, strlen(valueString));
+    free(valueString);
+
+    return OBJ_VAL(string);
+}
 
 static Value lenSet(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -52,6 +65,7 @@ static Value containsSetItem(VM *vm, int argCount, Value *args) {
 }
 
 void declareSetMethods(VM *vm) {
+    defineNative(vm, &vm->setMethods, "toString", toStringSet);
     defineNative(vm, &vm->setMethods, "len", lenSet);
     defineNative(vm, &vm->setMethods, "add", addSetItem);
     defineNative(vm, &vm->setMethods, "remove", removeSetItem);
