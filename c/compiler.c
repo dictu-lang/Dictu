@@ -625,6 +625,10 @@ int parseString(char *string, int length) {
                     string[i + 1] = '\v';
                     break;
                 }
+                case '\\': {
+                    string[i + 1] = '\\';
+                    break;
+                }
                 case '\'':
                 case '"': {
                     break;
@@ -642,11 +646,15 @@ int parseString(char *string, int length) {
 }
 
 static void rString(Compiler *compiler, bool canAssign) {
-    consume(compiler, TOKEN_STRING, "Expected string after r delimiter");
-    Parser *parser = compiler->parser;
+    if (match(compiler, TOKEN_STRING)) {
+        Parser *parser = compiler->parser;
+        emitConstant(compiler, OBJ_VAL(copyString(parser->vm, parser->previous.start + 1,
+                                                  parser->previous.length - 2)));
 
-    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, parser->previous.start + 1,
-                                    parser->previous.length - 2)));
+        return;
+    }
+
+    consume(compiler, TOKEN_STRING, "Expected string after r delimiter");
 }
 
 static void string(Compiler *compiler, bool canAssign) {
