@@ -15,7 +15,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-16.04]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Make dictu and run tests (No HTTP)
         run: |
           make debug DISABLE_HTTP=1
@@ -36,7 +36,7 @@ jobs:
         os: [macOS-latest]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Make dictu and run tests (No HTTP)
         run: |
           make debug DISABLE_HTTP=1
