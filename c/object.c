@@ -354,7 +354,8 @@ char *setToString(Value value) {
     int size = 50;
     ObjSet *set = AS_SET(value);
     char *setString = malloc(sizeof(char) * size);
-    int setStringLength = snprintf(setString, size, "%s", "{");
+    memcpy(setString, "{", 1);
+    int setStringLength = 1;
 
     for (int i = 0; i <= set->capacityMask; ++i) {
         SetItem *item = &set->entries[i];
@@ -394,20 +395,26 @@ char *setToString(Value value) {
 
 
         if (IS_STRING(item->value)) {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+            memcpy(setString + setStringLength, "\"", 1);
+            memcpy(setString + setStringLength + 1, element, elementSize);
+            memcpy(setString + setStringLength + 1 + elementSize, "\"", 1);
+            setStringLength += 2 + elementSize;
         } else {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+            memcpy(setString + setStringLength, element, elementSize);
+            setStringLength += elementSize;
             free(element);
         }
 
         if (count != set->count) {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
+            memcpy(setString + setStringLength, ", ", 2);
+            setStringLength += 2;
         }
     }
 
-    snprintf(setString + setStringLength, size - setStringLength, "}");
-    return setString;
+    memcpy(setString + setStringLength, "}", 1);
+    setString[setStringLength + 1] = '\0';
 
+    return setString;
 }
 
 char *objectToString(Value value) {
