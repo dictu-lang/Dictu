@@ -1,3 +1,6 @@
+import "tests/bool/import.du";
+import "tests/nil/import.du";
+import "tests/number/import.du";
 import "tests/strings/import.du";
 import "tests/variables/import.du";
 import "tests/lists/import.du";
