@@ -10,3 +10,4 @@
 import "tests/sets/add.du";
 import "tests/sets/remove.du";
 import "tests/sets/len.du";
+import "tests/sets/toString.du";

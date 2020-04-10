@@ -6,5 +6,5 @@
  * .toString() returns the string represantation of a list
  */
 
-assert(["1", 11].toString() == "['1', 11]");
-assert(["1", [11, "1"]].toString() == "['1', [11, '1']]");
+assert(["1", 11].toString() == '["1", 11]');
+assert(["1", [11, "1"]].toString() == '["1", [11, "1"]]');
