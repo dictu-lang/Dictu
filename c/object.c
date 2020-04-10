@@ -419,7 +419,7 @@ char *setToString(Value value) {
 
 char *classToString(Value value) {
     ObjClass *klass = AS_CLASS(value);
-    char *classString = malloc(sizeof(char) * (klass->name->length + 6));
+    char *classString = malloc(sizeof(char) * (klass->name->length + 7));
     memcpy(classString, "<cls ", 5);
     memcpy(classString + 5, klass->name->chars, klass->name->length);
     memcpy(classString + 5 + klass->name->length, ">", 1);
@@ -429,7 +429,7 @@ char *classToString(Value value) {
 
 char *instanceToString(Value value) {
     ObjInstance *instance = AS_INSTANCE(value);
-    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 11));
+    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
     memcpy(instanceString, "<", 1);
     memcpy(instanceString + 1, instance->klass->name->chars, instance->klass->name->length);
     memcpy(instanceString + 1 + instance->klass->name->length, " instance>", 10);
