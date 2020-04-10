@@ -191,8 +191,8 @@ var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 Converts a given dictionary to a string.
 
 ```js
-{"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: \'1\'}'
-{"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: \'1\'}, 1: \'1\'}'
+{"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: "1"}'
+{"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: "1"}, 1: "1"}'
 ```
 
 ### dict.len()
@@ -258,7 +258,7 @@ set_b.add(set_a);
 set_b.add(2);
 
 set_a.toString(); // '{"two", "one"}');
-set_b.toString(); // '{"2", "1", "{"two", "one"}"}'
+set_b.toString(); // '{2, 1, {"two", "one"}}'
 ```
 
 ### set.len()

@@ -181,13 +181,24 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
 char *listToString(Value value) {
     int size = 50;
     ObjList *list = AS_LIST(value);
-    char *listString = calloc(size, sizeof(char));
-    int listStringLength = snprintf(listString, 2, "%s", "[");
+    char *listString = malloc(sizeof(char) * size);
+    memcpy(listString, "[", 1);
+    int listStringLength = 1;
 
     for (int i = 0; i < list->values.count; ++i) {
-        char *element = valueToString(list->values.values[i]);
+        Value listValue = list->values.values[i];
 
-        int elementSize = strlen(element);
+        char *element;
+        int elementSize;
+
+        if (IS_STRING(listValue)) {
+            ObjString *s = AS_STRING(listValue);
+            element = s->chars;
+            elementSize = s->length;
+        } else {
+            element = valueToString(listValue);
+            elementSize = strlen(element);
+        }
 
         if (elementSize > (size - listStringLength - 3)) {
             if (elementSize > size * 2) {
@@ -206,16 +217,26 @@ char *listToString(Value value) {
             listString = newB;
         }
 
-        listStringLength += snprintf(listString + listStringLength, size - listStringLength, "%s", element);
-
-        free(element);
+        if (IS_STRING(listValue)) {
+            memcpy(listString + listStringLength, "\"", 1);
+            memcpy(listString + listStringLength + 1, element, elementSize);
+            memcpy(listString + listStringLength + 1 + elementSize, "\"", 1);
+            listStringLength += elementSize + 2;
+        } else {
+            memcpy(listString + listStringLength, element, elementSize);
+            listStringLength += elementSize;
+            free(element);
+        }
 
         if (i != list->values.count - 1) {
-            listStringLength += snprintf(listString + listStringLength, size - listStringLength, ", ");
+            memcpy(listString + listStringLength, ", ", 2);
+            listStringLength += 2;
         }
     }
 
-    snprintf(listString + listStringLength, size - listStringLength, "]");
+    memcpy(listString + listStringLength, "]", 1);
+    listString[listStringLength + 1] = '\0';
+
     return listString;
 }
 
@@ -224,7 +245,8 @@ char *dictToString(Value value) {
    int size = 50;
    ObjDict *dict = AS_DICT(value);
    char *dictString = malloc(sizeof(char) * size);
-   int dictStringLength = snprintf(dictString, size, "%s", "{");
+   memcpy(dictString, "{", 1);
+   int dictStringLength = 1;
 
    for (int i = 0; i <= dict->capacityMask; ++i) {
        DictItem *item = &dict->entries[i];
@@ -240,10 +262,10 @@ char *dictToString(Value value) {
        if (IS_STRING(item->key)) {
            ObjString *s = AS_STRING(item->key);
            key = s->chars;
-           keySize = s->length + 5;
+           keySize = s->length;
        } else {
            key = valueToString(item->key);
-           keySize = strlen(key) + 5;
+           keySize = strlen(key);
        }
 
        if (keySize > (size - dictStringLength - 1)) {
@@ -264,14 +286,28 @@ char *dictToString(Value value) {
        }
 
        if (IS_STRING(item->key)) {
-           dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", key);
+           memcpy(dictString + dictStringLength, "\"", 1);
+           memcpy(dictString + dictStringLength + 1, key, keySize);
+           memcpy(dictString + dictStringLength + 1 + keySize, "\": ", 3);
+           dictStringLength += 4 + keySize;
        } else {
-           dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s: ", key);
+           memcpy(dictString + dictStringLength, key, keySize);
+           memcpy(dictString + dictStringLength + keySize, ": ", 2);
+           dictStringLength += 2 + keySize;
            free(key);
        }
 
-       char *element = valueToString(item->value);
-       int elementSize = strlen(element);
+       char *element;
+       int elementSize;
+
+       if (IS_STRING(item->value)) {
+           ObjString *s = AS_STRING(item->value);
+           element = s->chars;
+           elementSize = s->length;
+       } else {
+           element = valueToString(item->value);
+           elementSize = strlen(element);
+       }
 
        if (elementSize > (size - dictStringLength - 3)) {
            if (elementSize > size * 2) {
@@ -290,16 +326,26 @@ char *dictToString(Value value) {
            dictString = newB;
        }
 
-       dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s", element);
-
-       free(element);
+       if (IS_STRING(item->value)) {
+           memcpy(dictString + dictStringLength, "\"", 1);
+           memcpy(dictString + dictStringLength + 1, element, elementSize);
+           memcpy(dictString + dictStringLength + 1 + elementSize, "\"", 1);
+           dictStringLength += 2 + elementSize;
+       } else {
+           memcpy(dictString + dictStringLength, element, elementSize);
+           dictStringLength += elementSize;
+           free(element);
+       }
 
        if (count != dict->count) {
-           dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
+           memcpy(dictString + dictStringLength, ", ", 2);
+           dictStringLength += 2;
        }
    }
 
-   snprintf(dictString + dictStringLength, size - dictStringLength, "}");
+   memcpy(dictString + dictStringLength, "}", 1);
+   dictString[dictStringLength + 1] = '\0';
+
    return dictString;
 }
 
@@ -308,7 +354,8 @@ char *setToString(Value value) {
     int size = 50;
     ObjSet *set = AS_SET(value);
     char *setString = malloc(sizeof(char) * size);
-    int setStringLength = snprintf(setString, size, "%s", "{");
+    memcpy(setString, "{", 1);
+    int setStringLength = 1;
 
     for (int i = 0; i <= set->capacityMask; ++i) {
         SetItem *item = &set->entries[i];
@@ -348,20 +395,26 @@ char *setToString(Value value) {
 
 
         if (IS_STRING(item->value)) {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+            memcpy(setString + setStringLength, "\"", 1);
+            memcpy(setString + setStringLength + 1, element, elementSize);
+            memcpy(setString + setStringLength + 1 + elementSize, "\"", 1);
+            setStringLength += 2 + elementSize;
         } else {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, "\"%s\"", element);
+            memcpy(setString + setStringLength, element, elementSize);
+            setStringLength += elementSize;
             free(element);
         }
 
         if (count != set->count) {
-            setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
+            memcpy(setString + setStringLength, ", ", 2);
+            setStringLength += 2;
         }
     }
 
-    snprintf(setString + setStringLength, size - setStringLength, "}");
-    return setString;
+    memcpy(setString + setStringLength, "}", 1);
+    setString[setStringLength + 1] = '\0';
 
+    return setString;
 }
 
 char *objectToString(Value value) {
