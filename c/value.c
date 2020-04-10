@@ -239,7 +239,7 @@ bool setInsert(VM *vm, ObjSet *set, Value value) {
     }
 
     SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
-    bool isNewKey = IS_EMPTY(entry->value);
+    bool isNewKey = IS_EMPTY(entry->value) || !entry->deleted;
     entry->value = value;
 
     if (isNewKey) set->count++;

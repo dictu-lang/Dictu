@@ -13,3 +13,4 @@ import "tests/lists/copy.du";
 import "tests/lists/slicing.du";
 import "tests/lists/join.du";
 import "tests/lists/len.du";
+import "tests/lists/toString.du";

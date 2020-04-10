@@ -1,0 +1,11 @@
+/**
+ * toString.du
+ *
+ * Testing the nil.toString() method
+ *
+ * .toString() returns the string represantation of nil
+ */
+
+assert(nil.toString() == "nil");
+var testnil = nil;
+assert(testnil.toString() == "nil");

@@ -34,7 +34,7 @@ var x = "Dictu";
 
 x[0]; // D
 
-for (var i = 0; i < len(x); ++i) {
+for (var i = 0; i < x.len(); ++i) {
     print(x[i]);
 }
 // D
@@ -94,6 +94,15 @@ To make all characters within a string lowercase, use the `.lower()` method.
 ```py
 "DICTU".lower(); // dictu
 "DiCtU".lower(); // dictu
+```
+
+### string.toNumber()
+
+Converts a string to number.
+
+```py
+"10.2".toNumber(); // 10.2
+"10".toNumber(); // 10
 ```
 
 ### string.upper()

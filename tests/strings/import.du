@@ -19,3 +19,4 @@ import "tests/strings/count.du";
 import "tests/strings/slicing.du";
 import "tests/strings/len.du";
 import "tests/strings/rawStrings.du";
+import "tests/strings/toNumber.du";

@@ -1,5 +1,18 @@
 #include "dicts.h"
 
+static Value toStringDict(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *valueString = dictToString(args[0]);
+
+    ObjString *string = copyString(vm, valueString, strlen(valueString));
+    free(valueString);
+
+    return OBJ_VAL(string);
+}
 
 static Value lenDict(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -108,6 +121,7 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareDictMethods(VM *vm) {
+    defineNative(vm, &vm->dictMethods, "toString", toStringDict);
     defineNative(vm, &vm->dictMethods, "len", lenDict);
     defineNative(vm, &vm->dictMethods, "get", getDictItem);
     defineNative(vm, &vm->dictMethods, "remove", removeDictItem);

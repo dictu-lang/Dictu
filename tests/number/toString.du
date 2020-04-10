@@ -1,0 +1,15 @@
+/**
+ * toString.du
+ *
+ * Testing the number.toString() method
+ *
+ * .toString() returns the string represantation of a number
+ */
+
+assert(1.toString() == "1");
+assert(11.1.toString() == "11.1");
+
+var testnum = 123;
+assert(testnum.toString() == "123");
+
+/* TODO: add more */
