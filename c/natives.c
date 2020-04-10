@@ -7,23 +7,6 @@
 #include "vm.h"
 
 // Native functions
-static Value numberNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "number() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "number() only takes a string as an argument");
-        return EMPTY_VAL;
-    }
-
-    char *numberString = AS_CSTRING(args[0]);
-    double number = strtod(numberString, NULL);
-
-    return NUMBER_VAL(number);
-}
-
 static Value typeNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "type() takes 1 argument (%d given).", argCount);
@@ -186,7 +169,6 @@ void defineAllNatives(VM *vm) {
     char *nativeNames[] = {
             "bool",
             "input",
-            "number",
             "type",
             "set",
             "print",
@@ -197,7 +179,6 @@ void defineAllNatives(VM *vm) {
     NativeFn nativeFunctions[] = {
             boolNative,
             inputNative,
-            numberNative,
             typeNative,
             setNative,
             printNative,

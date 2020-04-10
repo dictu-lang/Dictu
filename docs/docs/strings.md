@@ -75,6 +75,15 @@ To make all characters within a string lowercase, use the `.lower()` method.
 "DiCtU".lower(); // dictu
 ```
 
+### string.toNumber()
+
+Converts a string to number.
+
+```py
+"10.2".toNumber(); // 10.2
+"10".toNumber(); // 10
+```
+
 ### string.upper()
 
 To make all characters within a string uppercase, use the `.upper()` method.

@@ -5,12 +5,24 @@
 
 static Value lenString(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     ObjString *string = AS_STRING(args[0]);
     return NUMBER_VAL(string->length);
+}
+
+static Value toNumberString(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toNumber() takes no arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *numberString = AS_CSTRING(args[0]);
+    double number = strtod(numberString, NULL);
+
+    return NUMBER_VAL(number);
 }
 
 static Value formatString(VM *vm, int argCount, Value *args) {
@@ -426,6 +438,7 @@ static Value countString(VM *vm, int argCount, Value *args) {
 
 void declareStringMethods(VM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
+    defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
     defineNative(vm, &vm->stringMethods, "format", formatString);
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);

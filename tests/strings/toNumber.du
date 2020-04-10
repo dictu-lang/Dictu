@@ -1,0 +1,12 @@
+/**
+* toNumber.du
+*
+* Testing the str.toNumber() method
+*
+* .toNumber() converts a string to a number
+*/
+
+assert("10".toNumber() == 10);
+assert("10.2".toNumber() == 10.2);
+assert("10.123456".toNumber() == 10.123456);
+assert("1000000".toNumber() == 1000000);

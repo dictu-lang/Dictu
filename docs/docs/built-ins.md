@@ -60,15 +60,6 @@ bool(1); // true
 bool("some string"); // true
 ```
 
-### number(string)
-
-Converts a string to number.
-
-```js
-number("10.2"); // 10.2
-number("10"); // 10
-```
-
 ### assert(boolean)
 
 Raise a runtime error if the given boolean is not true.
