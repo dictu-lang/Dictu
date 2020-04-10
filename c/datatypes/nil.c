@@ -12,5 +12,5 @@ static Value toStringNil(VM *vm, int argCount, Value *args) {
 
 void declareNilMethods(VM *vm) {
     defineNative(vm, &vm->nilMethods, "toString", toStringNil);
-    defineNative(vm, &vm->setMethods, "toBool", boolNative); // Defined in util
+    defineNative(vm, &vm->nilMethods, "toBool", boolNative); // Defined in util
 }

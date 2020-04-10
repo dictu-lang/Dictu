@@ -1,0 +1,16 @@
+/**
+ * toBool.du
+ *
+ * Testing the set.toBool() method
+ *
+ * .toBool() returns the boolean representation of a set
+ */
+
+var set_a = set();
+assert(set_a.toBool() == false);
+
+set_a.add("one");
+assert(set_a.toBool() == true);
+
+set_a.remove("one");
+assert(set_a.toBool() == false);
