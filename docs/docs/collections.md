@@ -67,7 +67,8 @@ myList + [13]; // [10, 11, 12, 13]
 ```
 
 ### list.toString()
-Converts a given list to a string.
+
+Converts a list to a string.
 
 ```js
 ["1", 11].toString();        // ['1', 11]
@@ -79,6 +80,16 @@ Returns the length of the given list.
 
 ```js
 [1, 2, 3].len(); // 3
+```
+
+### list.toBool()
+
+Converts a list to a boolean. A list is a "truthy" value when it has a length greater than 0.
+
+```js
+[].toBool(); // false
+[1].toBool(); // true
+[[]].toBool(); // true
 ```
 
 ### list.contains(value)
@@ -188,11 +199,23 @@ var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
 ### dict.toString()
-Converts a given dictionary to a string.
+Converts a dictionary to a string.
 
 ```js
 {"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: "1"}'
 {"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: "1"}, 1: "1"}'
+```
+
+### dict.toBool()
+
+Converts a dictionary to a boolean. A dictionary is a "truthy" value when it has a length greater than 0.
+
+```js
+var x = {};
+
+x.toBool(); // false
+x["test"] = 1;
+x.toBool(); // true
 ```
 
 ### dict.len()
@@ -237,7 +260,7 @@ var myDict2 = myDict.deepCopy(); // Deep copy
 
 ## Sets
 
-Sets are an unordered collection of unique hashable values. Currently Dictu requires that the hashable value be a string.
+Sets are an unordered collection of unique hashable values. Set values must be of type string, number, boolean or nil.
 
 ```js
 var mySet = set();
@@ -254,11 +277,22 @@ set_a.add("two");
 
 var set_b = set();
 set_b.add(1);
-set_b.add(set_a);
 set_b.add(2);
 
 set_a.toString(); // '{"two", "one"}');
-set_b.toString(); // '{2, 1, {"two", "one"}}'
+set_b.toString(); // '{2, 1}'
+```
+
+### set.toBool()
+
+Converts a set to a boolean. A set is a "truthy" value when it has a length greater than 0.
+
+```js
+var x = set();
+
+x.toBool(); // false
+x.add("test");
+x.toBool(); // true
 ```
 
 ### set.len()

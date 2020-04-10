@@ -5,3 +5,4 @@
 */
 
 import "tests/nil/toString.du";
+import "tests/nil/toBool.du";

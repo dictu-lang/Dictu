@@ -60,3 +60,12 @@ bool isValidKey(Value value) {
 
     return false;
 }
+
+Value boolNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "bool() takes no arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    return BOOL_VAL(!isFalsey(args[0]));
+}

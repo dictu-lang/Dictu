@@ -1,0 +1,15 @@
+/**
+ * toBool.du
+ *
+ * Testing the dict.toBool() method
+ *
+ * .toBool() returns the boolean representation of a dict
+ */
+
+var x = {};
+
+assert(x.toBool() == false);
+x["test"] = 10;
+assert(x.toBool() == true);
+x.remove("test");
+assert(x.toBool() == false);

@@ -49,17 +49,6 @@ type(true); // "bool"
 type([]); // "list"
 ```
 
-### bool(value)
-
-Converts a given value to the boolean value.
-
-```js
-bool(0); // false
-bool(""); // false
-bool(1); // true
-bool("some string"); // true
-```
-
 ### assert(boolean)
 
 Raise a runtime error if the given boolean is not true.

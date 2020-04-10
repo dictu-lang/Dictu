@@ -11,3 +11,4 @@ import "tests/dicts/remove.du";
 import "tests/dicts/copy.du";
 import "tests/dicts/len.du";
 import "tests/dicts/toString.du";
+import "tests/dicts/toBool.du";

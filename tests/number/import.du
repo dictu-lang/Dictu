@@ -5,3 +5,4 @@
 */
 
 import "tests/number/toString.du";
+import "tests/number/toBool.du";

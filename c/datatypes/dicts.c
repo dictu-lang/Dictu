@@ -128,4 +128,5 @@ void declareDictMethods(VM *vm) {
     defineNative(vm, &vm->dictMethods, "exists", dictItemExists);
     defineNative(vm, &vm->dictMethods, "copy", copyDictShallow);
     defineNative(vm, &vm->dictMethods, "deepCopy", copyDictDeep);
+    defineNative(vm, &vm->dictMethods, "toBool", boolNative); // Defined in util
 }
