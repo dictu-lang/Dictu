@@ -7,6 +7,6 @@
 #include "system.h"
 #include "json.h"
 #include "http.h"
-
+#include "path.h"
 
 #endif //dictu_optionals_h

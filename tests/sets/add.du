@@ -10,12 +10,35 @@ var mySet = set();
 
 mySet.add("dictu");
 assert(mySet.contains("dictu"));
-assert(len(mySet) == 1);
+assert(mySet.len() == 1);
 
 mySet.add("is");
 assert(mySet.contains("is"));
-assert(len(mySet) == 2);
+assert(mySet.len() == 2);
 
 mySet.add("great!");
 assert(mySet.contains("great!"));
-assert(len(mySet) == 3);
+assert(mySet.len() == 3);
+
+
+var myNewSet = set();
+
+myNewSet.add(1);
+assert(myNewSet.contains(1));
+assert(myNewSet.len() == 1);
+
+myNewSet.add(true);
+assert(myNewSet.contains(true));
+assert(myNewSet.len() == 2);
+
+myNewSet.add(nil);
+assert(myNewSet.contains(nil));
+assert(myNewSet.len() == 3);
+
+myNewSet.add(false);
+assert(myNewSet.contains(false));
+assert(myNewSet.len() == 4);
+
+myNewSet.add(10.5);
+assert(myNewSet.contains(10.5));
+assert(myNewSet.len() == 5);

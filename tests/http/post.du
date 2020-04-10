@@ -5,9 +5,18 @@
  *
  */
 
+// HTTP
+var response = HTTP.post("http://httpbin.org/post", {"test": 10});
+
+assert(response["statusCode"] == 200);
+assert(response["headers"].len() > 0);
+assert(response["content"].contains("origin"));
+assert(response["content"].contains('"test": "10"'));
+
+// HTTPS
 var response = HTTP.post("https://httpbin.org/post", {"test": 10});
 
 assert(response["statusCode"] == 200);
-assert(len(response["headers"]) > 0);
+assert(response["headers"].len() > 0);
 assert(response["content"].contains("origin"));
 assert(response["content"].contains('"test": "10"'));

@@ -11,21 +11,22 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
-#include "datatypes/sets.h"
-#include "datatypes/dicts.h"
-#include "datatypes/lists.h"
+#include "datatypes/number.h"
+#include "datatypes/bool.h"
+#include "datatypes/nil.h"
 #include "datatypes/strings.h"
+#include "datatypes/lists.h"
+#include "datatypes/dicts.h"
+#include "datatypes/sets.h"
 #include "datatypes/files.h"
+#include "datatypes/class.h"
 #include "datatypes/instance.h"
 #include "natives.h"
 #include "optionals/optionals.h"
 
-void defineAllNatives();
-
 static void resetStack(VM *vm) {
     vm->stackTop = vm->stack;
     vm->frameCount = 0;
-    vm->currentFrameCount = 0;
     vm->openUpvalues = NULL;
     vm->compiler = NULL;
 }
@@ -43,7 +44,7 @@ void runtimeError(VM *vm, const char *format, ...) {
                 function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "%s: ", vm->currentScriptName);
+            fprintf(stderr, "%s: ", vm->scriptNames[vm->scriptNameCount]);
             i = -1;
         } else {
             fprintf(stderr, "%s(): ", function->name->chars);
@@ -59,19 +60,11 @@ void runtimeError(VM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-void initArgv(VM *vm, int argc, const char *argv[]) {
-    ObjList *list = initList(vm);
-    push(vm, OBJ_VAL(list));
-
-    for (int i = 1; i < argc; i++) {
-        Value arg = OBJ_VAL(copyString(vm, argv[i], strlen(argv[i])));
-        push(vm, arg);
-        writeValueArray(vm, &list->values, arg);
-        pop(vm);
-    }
-
-    tableSet(vm, &vm->globals, copyString(vm, "argv", 4), OBJ_VAL(list));
-    pop(vm);
+void setupFilenameStack(VM *vm, const char *scriptName) {
+    vm->scriptNameCapacity = 8;
+    vm->scriptNames = ALLOCATE(vm, const char*, vm->scriptNameCapacity);
+    vm->scriptNameCount = 0;
+    vm->scriptNames[vm->scriptNameCount] = scriptName;
 }
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
@@ -87,10 +80,10 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     resetStack(vm);
     vm->objects = NULL;
     vm->repl = repl;
-    vm->scriptName = scriptName;
-    vm->currentScriptName = scriptName;
     vm->frameCapacity = 4;
-    vm->frames = realloc(NULL, sizeof(CallFrame) * 4);
+    vm->frames = NULL;
+    vm->initString = NULL;
+    vm->replVar = NULL;
     vm->bytesAllocated = 0;
     vm->nextGC = 1024 * 1024;
     vm->grayCount = 0;
@@ -100,22 +93,33 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->strings);
     initTable(&vm->imports);
 
+    initTable(&vm->numberMethods);
+    initTable(&vm->boolMethods);
+    initTable(&vm->nilMethods);
     initTable(&vm->stringMethods);
     initTable(&vm->listMethods);
     initTable(&vm->dictMethods);
     initTable(&vm->setMethods);
     initTable(&vm->fileMethods);
+    initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
 
+    setupFilenameStack(vm, scriptName);
+
+    vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
     // Native methods
+    declareNumberMethods(vm);
+    declareBoolMethods(vm);
+    declareNilMethods(vm);
     declareStringMethods(vm);
     declareListMethods(vm);
     declareDictMethods(vm);
     declareSetMethods(vm);
     declareFileMethods(vm);
+    declareClassMethods(vm);
     declareInstanceMethods(vm);
 
     // Native functions
@@ -124,17 +128,12 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     // Native classes
     createMathsClass(vm);
     createEnvClass(vm);
-    createSystemClass(vm);
+    createSystemClass(vm, argc, argv);
     createJSONClass(vm);
+    createPathClass(vm);
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
-
-
-    if (!vm->repl) {
-        initArgv(vm, argc, argv);
-    }
-
     return vm;
 }
 
@@ -142,16 +141,26 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
+    freeTable(vm, &vm->numberMethods);
+    freeTable(vm, &vm->boolMethods);
+    freeTable(vm, &vm->nilMethods);
     freeTable(vm, &vm->stringMethods);
     freeTable(vm, &vm->listMethods);
     freeTable(vm, &vm->dictMethods);
     freeTable(vm, &vm->setMethods);
     freeTable(vm, &vm->fileMethods);
+    freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
+    FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
+
+#if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
+    printf("Total memory usage: %zu\n", vm->bytesAllocated);
+#endif
+
     free(vm);
 }
 
@@ -190,8 +199,7 @@ static bool call(VM *vm, ObjClosure *closure, int argCount) {
     frame->closure = closure;
     frame->ip = closure->function->chunk.code;
 
-    // +1 to include either the called function or the receiver.
-    frame->slots = vm->stackTop - (argCount + 1);
+    frame->slots = vm->stackTop - argCount - 1;
 
     return true;
 }
@@ -280,110 +288,150 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
     Value receiver = peek(vm, argCount);
 
     if (!IS_OBJ(receiver)) {
-        runtimeError(vm, "Can only invoke on objects.");
-        return false;
-    }
+        if (IS_NUMBER(receiver)) {
+            Value value;
+            if (tableGet(&vm->numberMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
 
-    switch (getObjType(receiver)) {
-        case OBJ_NATIVE_CLASS: {
-            ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
-            Value function;
-            if (!tableGet(&instance->methods, name, &function)) {
+            runtimeError(vm, "Number has no method %s()", name->chars);
+            return false;
+        } else if (IS_BOOL(receiver)) {
+            Value value;
+            if (tableGet(&vm->boolMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Bool has no method %s()", name->chars);
+            return false;
+        } else if (IS_NIL(receiver)) {
+            Value value;
+            if (tableGet(&vm->nilMethods, name, &value)) {
+                return callNativeMethod(vm, value, argCount);
+            }
+
+            runtimeError(vm, "Nil has no method %s()", name->chars);
+            return false;
+        }
+    } else {
+        switch (getObjType(receiver)) {
+            case OBJ_NATIVE_CLASS: {
+                ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
+                Value function;
+                if (!tableGet(&instance->methods, name, &function)) {
+                    runtimeError(vm, "Undefined property '%s'.", name->chars);
+                    return false;
+                }
+
+                return callValue(vm, function, argCount);
+            }
+
+            case OBJ_CLASS: {
+                ObjClass *instance = AS_CLASS(receiver);
+                Value method;
+                if (tableGet(&instance->methods, name, &method)) {
+                    if (!AS_CLOSURE(method)->function->staticMethod) {
+                        if (tableGet(&vm->classMethods, name, &method)) {
+                            return callNativeMethod(vm, method, argCount);
+                        }
+
+                        runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                                     name->chars);
+                        return false;
+                    }
+
+                    return callValue(vm, method, argCount);
+                }
+
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
                 return false;
             }
 
-            return callValue(vm, function, argCount);
-        }
+            case OBJ_INSTANCE: {
+                ObjInstance *instance = AS_INSTANCE(receiver);
 
-        case OBJ_CLASS: {
-            ObjClass *instance = AS_CLASS(receiver);
-            Value method;
-            if (!tableGet(&instance->methods, name, &method)) {
+                Value value;
+                // First look for a field which may shadow a method.
+                if (tableGet(&instance->fields, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
+
+                // Look for the method.
+                if (tableGet(&instance->klass->methods, name, &value)) {
+                    return call(vm, AS_CLOSURE(value), argCount);
+                }
+
+                // Check for instance methods.
+                if (tableGet(&vm->instanceMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
                 return false;
             }
 
-            if (!AS_CLOSURE(method)->function->staticMethod) {
-                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.", name->chars);
+            case OBJ_STRING: {
+                Value value;
+                if (tableGet(&vm->stringMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "String has no method %s()", name->chars);
                 return false;
             }
 
-            return callValue(vm, method, argCount);
-        }
+            case OBJ_LIST: {
+                Value value;
+                if (tableGet(&vm->listMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
 
-        case OBJ_STRING: {
-            Value value;
-            if (tableGet(&vm->stringMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
+                runtimeError(vm, "List has no method %s()", name->chars);
+                return false;
             }
 
-            runtimeError(vm, "String has no method %s()", name->chars);
-            return false;
-        }
+            case OBJ_DICT: {
+                Value value;
+                if (tableGet(&vm->dictMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
 
-        case OBJ_LIST: {
-            Value value;
-            if (tableGet(&vm->listMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
+                runtimeError(vm, "Dict has no method %s()", name->chars);
+                return false;
             }
 
-            runtimeError(vm, "List has no method %s()", name->chars);
-            return false;
-        }
+            case OBJ_SET: {
+                Value value;
+                if (tableGet(&vm->setMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
 
-        case OBJ_DICT: {
-            Value value;
-            if (tableGet(&vm->dictMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
+                runtimeError(vm, "Set has no method %s()", name->chars);
+                return false;
             }
 
-            runtimeError(vm, "Dict has no method %s()", name->chars);
-            return false;
-        }
+            case OBJ_FILE: {
+                Value value;
+                if (tableGet(&vm->fileMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
 
-        case OBJ_SET: {
-            Value value;
-            if (tableGet(&vm->setMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
+                runtimeError(vm, "File has no method %s()", name->chars);
+                return false;
             }
 
-            runtimeError(vm, "Set has no method %s()", name->chars);
-            return false;
+            default:
+                break;
         }
-
-        case OBJ_FILE: {
-            Value value;
-            if (tableGet(&vm->fileMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            runtimeError(vm, "File has no method %s()", name->chars);
-            return false;
-        }
-
-        case OBJ_INSTANCE: {
-            ObjInstance *instance = AS_INSTANCE(receiver);
-
-            Value value;
-            // First look for a field which may shadow a method.
-            if (tableGet(&instance->fields, name, &value)) {
-                vm->stackTop[-argCount - 1] = value;
-                return callValue(vm, value, argCount);
-            }
-
-            // Check for instance methods.
-            if (tableGet(&vm->instanceMethods, name, &value)) {
-                return callNativeMethod(vm, value, argCount);
-            }
-
-            return invokeFromClass(vm, instance->klass, name, argCount);
-        }
-
-        default:
-            runtimeError(vm, "Only instances have methods.");
-            return false;
     }
+
+    runtimeError(vm, "Only instances have methods.");
+    return false;
 }
 
 static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
@@ -485,7 +533,7 @@ bool isFalsey(Value value) {
            (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->items.count == 0) ||
+           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
@@ -525,7 +573,7 @@ static InterpretResult run(VM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    #define BINARY_OP(valueType, op) \
+    #define BINARY_OP(valueType, op, type) \
         do { \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
             frame->ip = ip; \
@@ -533,22 +581,8 @@ static InterpretResult run(VM *vm) {
             return INTERPRET_RUNTIME_ERROR; \
           } \
           \
-          double b = AS_NUMBER(pop(vm)); \
-          double a = AS_NUMBER(pop(vm)); \
-          push(vm, valueType(a op b)); \
-        } while (false)
-
-
-    #define BITWISE_OP(valueType, op) \
-        do { \
-          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-          } \
-          \
-          int b = AS_NUMBER(pop(vm)); \
-          int a = AS_NUMBER(pop(vm)); \
+          type b = AS_NUMBER(pop(vm)); \
+          type a = AS_NUMBER(pop(vm)); \
           push(vm, valueType(a op b)); \
         } while (false)
 
@@ -611,6 +645,10 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(NIL):
             push(vm, NIL_VAL);
+            DISPATCH();
+
+        CASE_CODE(EMPTY):
+            push(vm, EMPTY_VAL);
             DISPATCH();
 
         CASE_CODE(TRUE):
@@ -708,6 +746,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
+                tableDelete(&vm->globals, name);
                 frame->ip = ip;
                 runtimeError(vm, "Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
@@ -728,25 +767,34 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GET_PROPERTY): {
-            if (!IS_INSTANCE(peek(vm, 0))) {
-                runtimeError(vm, "Only instances have properties.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
+            if (IS_INSTANCE(peek(vm, 0))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&instance->fields, name, &value)) {
+                    pop(vm); // Instance.
+                    push(vm, value);
+                    DISPATCH();
+                }
 
-            ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
-            Value value;
-            if (tableGet(&instance->fields, name, &value)) {
-                pop(vm); // Instance.
-                push(vm, value);
+                if (!bindMethod(vm, instance->klass, name)) {
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
                 DISPATCH();
+            } else if (IS_NATIVE_CLASS(peek(vm, 0))) {
+                ObjClassNative *klass = AS_CLASS_NATIVE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&klass->properties, name, &value)) {
+                    pop(vm); // Class.
+                    push(vm, value);
+                    DISPATCH();
+                }
             }
 
-            if (!bindMethod(vm, instance->klass, name)) {
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            DISPATCH();
+            runtimeError(vm, "Only instances have properties.");
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
@@ -801,11 +849,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >);
+            BINARY_OP(BOOL_VAL, >, double);
             DISPATCH();
 
         CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <);
+            BINARY_OP(BOOL_VAL, <, double);
             DISPATCH();
 
         CASE_CODE(ADD): {
@@ -859,11 +907,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(MULTIPLY):
-            BINARY_OP(NUMBER_VAL, *);
+            BINARY_OP(NUMBER_VAL, *, double);
             DISPATCH();
 
         CASE_CODE(DIVIDE):
-            BINARY_OP(NUMBER_VAL, /);
+            BINARY_OP(NUMBER_VAL, /, double);
             DISPATCH();
 
         CASE_CODE(POW): {
@@ -895,15 +943,15 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(BITWISE_AND):
-            BITWISE_OP(NUMBER_VAL, &);
+            BINARY_OP(NUMBER_VAL, &, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_XOR):
-            BITWISE_OP(NUMBER_VAL, ^);
+            BINARY_OP(NUMBER_VAL, ^, int);
             DISPATCH();
 
         CASE_CODE(BITWISE_OR):
-            BITWISE_OP(NUMBER_VAL, |);
+            BINARY_OP(NUMBER_VAL, |, int);
             DISPATCH();
 
         CASE_CODE(NOT):
@@ -943,7 +991,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT): {
-            ObjString *fileName = AS_STRING(peek(vm, 0));
+            ObjString *fileName = READ_STRING();
 
             // If we have imported this file already, skip.
             if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
@@ -951,7 +999,15 @@ static InterpretResult run(VM *vm) {
             }
 
             char *s = readFile(fileName->chars);
-            vm->currentScriptName = fileName->chars;
+
+            if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
+                int oldCapacity = vm->scriptNameCapacity;
+                vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
+                vm->scriptNames = GROW_ARRAY(vm, vm->scriptNames, const char*,
+                                           oldCapacity, vm->scriptNameCapacity);
+            }
+
+            vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
 
             ObjFunction *function = compile(vm, s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
@@ -964,7 +1020,13 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
+
             free(s);
+            DISPATCH();
+        }
+
+        CASE_CODE(IMPORT_END): {
+            vm->scriptNameCount--;
             DISPATCH();
         }
 
@@ -997,18 +1059,14 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(ADD_DICT): {
             Value value = peek(vm, 0);
             Value key = peek(vm, 1);
-            Value dictValue = peek(vm, 2);
 
-            if (!IS_STRING(key)) {
-                frame->ip = ip;
-                runtimeError(vm, "Dictionary key must be a string.");
+            if (!isValidKey(key)) {
+                runtimeError(vm, "Dictionary key must be an immutable type");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjDict *dict = AS_DICT(dictValue);
-            ObjString *keyString = AS_STRING(key);
-
-            tableSet(vm, &dict->items, keyString, value);
+            ObjDict *dict = AS_DICT(peek(vm, 2));
+            dictSet(vm, dict, key, value);
 
             pop(vm);
             pop(vm);
@@ -1072,17 +1130,14 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *key = AS_STRING(indexValue);
-
                     Value v;
-                    if (tableGet(&dict->items, key, &v)) {
+                    if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
                     } else {
                         push(vm, NIL_VAL);
@@ -1143,16 +1198,13 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *keyString = AS_STRING(indexValue);
-
-                    tableSet(vm, &dict->items, keyString, assignValue);
+                    dictSet(vm, dict, indexValue, assignValue);
 
                     // Pop after the values have been inserted to stop GC cleanup
                     pop(vm);
@@ -1186,7 +1238,7 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if ((!IS_NUMBER(sliceStartIndex) && !IS_NIL(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_NIL(sliceEndIndex))) {
+            if ((!IS_NUMBER(sliceStartIndex) && !IS_EMPTY(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_EMPTY(sliceEndIndex))) {
                 frame->ip = ip;
                 runtimeError(vm, "Slice index must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -1196,7 +1248,7 @@ static InterpretResult run(VM *vm) {
             int indexEnd;
             Value returnVal;
 
-            if (IS_NIL(sliceStartIndex)) {
+            if (IS_EMPTY(sliceStartIndex)) {
                 indexStart = 0;
             } else {
                 indexStart = AS_NUMBER(sliceStartIndex);
@@ -1212,7 +1264,7 @@ static InterpretResult run(VM *vm) {
                     push(vm, OBJ_VAL(newList));
                     ObjList *list = AS_LIST(objectValue);
 
-                    if (IS_NIL(sliceEndIndex)) {
+                    if (IS_EMPTY(sliceEndIndex)) {
                         indexEnd = list->values.count;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
@@ -1236,7 +1288,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(objectValue);
 
-                    if (IS_NIL(sliceEndIndex)) {
+                    if (IS_EMPTY(sliceEndIndex)) {
                         indexEnd = string->length;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
@@ -1308,17 +1360,14 @@ static InterpretResult run(VM *vm) {
                 }
 
                 case OBJ_DICT: {
-                    if (!IS_STRING(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be a string.");
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        runtimeError(vm, "Dictionary key must be an immutable type");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    ObjString *key = AS_STRING(indexValue);
-
                     Value v;
-                    bool found = tableGet(&dict->items, key, &v);
+                    bool found = dictGet(dict, indexValue, &v);
 
                     push(vm, subscriptValue);
                     push(vm, indexValue);
@@ -1327,8 +1376,8 @@ static InterpretResult run(VM *vm) {
                     } else {
                         push(vm, NIL_VAL);
                     }
-                    push(vm, value);
 
+                    push(vm, value);
                     DISPATCH();
                 }
 
@@ -1416,12 +1465,10 @@ static InterpretResult run(VM *vm) {
 
             vm->frameCount--;
 
-            if (vm->frameCount == vm->currentFrameCount) {
-                vm->currentScriptName = vm->scriptName;
-                vm->currentFrameCount = -1;
+            if (vm->frameCount == 0) {
+                pop(vm);
+                return INTERPRET_OK;
             }
-
-            if (vm->frameCount == 0) return INTERPRET_OK;
 
             vm->stackTop = frame->slots;
             push(vm, result);
@@ -1536,6 +1583,7 @@ InterpretResult interpret(VM *vm, const char *source) {
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
+    push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);
     InterpretResult result = run(vm);
 

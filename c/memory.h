@@ -13,6 +13,9 @@
 #define GROW_CAPACITY(capacity) \
     ((capacity) < 8 ? 8 : (capacity) * 2)
 
+#define SHRINK_CAPACITY(capacity) \
+    ((capacity) < 16 ? 7 : (capacity) / 2)
+
 #define GROW_ARRAY(vm, previous, type, oldCount, count) \
     (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \
         sizeof(type) * (count))
@@ -31,7 +34,5 @@ void collectGarbage(VM *vm);
 void freeObjects(VM *vm);
 
 void freeObject(VM *vm, Obj *object);
-
-void freeSetValue(setItem *item);
 
 #endif

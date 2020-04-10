@@ -6,14 +6,29 @@
 * .remove() mutates the dictionary to remove a key:value pair
 */
 
-var myDict = {"key": 1, "key1": true};
+var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
 // First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true});
+assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 // Test .remove()
 myDict.remove("key");
-assert(myDict == {"key1": true});
+assert(myDict == {"key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 myDict.remove("key1");
+assert(myDict == {true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+myDict.remove(true);
+assert(myDict == {false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+myDict.remove(false);
+assert(myDict == {nil: 10, 10: nil, 10.5: 10.5});
+
+myDict.remove(nil);
+assert(myDict == {10: nil, 10.5: 10.5});
+
+myDict.remove(10);
+assert(myDict == {10.5: 10.5});
+
+myDict.remove(10.5);
 assert(myDict == {});

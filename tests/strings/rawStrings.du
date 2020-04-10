@@ -1,0 +1,13 @@
+/**
+ * rawStrings.du
+ *
+ * Testing the "r" string prefix
+ *
+ * "r" parses a string literally, ignoring escape codes passed
+ */
+
+assert(r"test\ntest".len() == 10);
+assert(r"test\ntest"[4] == "\\");
+assert(r"test\ntest"[4] == r"\");
+assert(r"test\ntest"[5] == "n");
+assert(r"test\ntest"[5] == r"n");

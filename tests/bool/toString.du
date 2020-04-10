@@ -1,0 +1,14 @@
+/**
+ * toString.du
+ *
+ * Testing the bool.toString() method
+ *
+ * .toString() returns the string representation of a bool
+ */
+
+assert(true.toString() == "true");
+assert(false.toString() == "false");
+var testbool = true;
+assert(testbool.toString() == "true");
+testbool = false;
+assert(testbool.toString() == "false");

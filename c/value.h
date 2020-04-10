@@ -8,7 +8,6 @@ typedef struct sObjString ObjString;
 typedef struct sObjList ObjList;
 typedef struct sObjDict ObjDict;
 typedef struct sObjSet  ObjSet;
-typedef struct setItem  setItem;
 typedef struct sObjFile ObjFile;
 
 #ifdef NAN_TAGGING
@@ -119,15 +118,21 @@ void writeValueArray(VM *vm, ValueArray *array, Value value);
 
 void freeValueArray(VM *vm, ValueArray *array);
 
-void initSetValues(ObjSet *set, uint32_t capacity);
+void grayDict(VM *vm, ObjDict *dict);
 
-void insertSet(VM *vm, ObjSet *set, Value value);
+bool dictSet(VM *vm, ObjDict *dict, Value key, Value value);
 
-bool searchSet(ObjSet *set, ObjString *string);
+bool dictGet(ObjDict *dict, Value key, Value *value);
 
-bool searchSetMarkActive(ObjSet *set, ObjString *string);
+bool dictDelete(VM *vm, ObjDict *dict, Value key);
 
-void resizeSet(VM *vm, ObjSet *set, bool grow);
+bool setGet(ObjSet *set, Value value);
+
+bool setInsert(VM *vm, ObjSet *set, Value value);
+
+bool setDelete(VM *vm, ObjSet *set, Value value);
+
+void graySet(VM *vm, ObjSet *set);
 
 char *valueToString(Value value);
 

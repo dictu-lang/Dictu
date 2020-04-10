@@ -49,46 +49,6 @@ type(true); // "bool"
 type([]); // "list"
 ```
 
-### len(string OR collection)
-
-Returns the length of a given string or collection (list, dictionary, set).
-
-```js
-len("Hello"); // 5
-len([1, 2]); // 2
-len({"test": 10}); // 1
-```
-
-### bool(value)
-
-Converts a given value to the boolean value.
-
-```js
-bool(0); // false
-bool(""); // false
-bool(1); // true
-bool("some string"); // true
-```
-
-### str(value)
-
-Converts a given value to a string.
-
-```js
-str(10.2); // "10.2"
-str([1, 2]); "[1, 2]"
-str({"hi": 10}); '{"hi": 10}'
-```
-
-### number(string)
-
-Converts a string to number.
-
-```js
-number("10.2"); // 10.2
-number("10"); // 10
-```
-
 ### assert(boolean)
 
 Raise a runtime error if the given boolean is not true.

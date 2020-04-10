@@ -66,6 +66,32 @@ myList.insert(11, 1); // [10, 11, 12]
 myList + [13]; // [10, 11, 12, 13]
 ```
 
+### list.toString()
+
+Converts a list to a string.
+
+```js
+["1", 11].toString();        // ['1', 11]
+["1", [11, "1"]].toString(); // ['1', [11, '1']]
+```
+### list.len()
+
+Returns the length of the given list.
+
+```js
+[1, 2, 3].len(); // 3
+```
+
+### list.toBool()
+
+Converts a list to a boolean. A list is a "truthy" value when it has a length greater than 0.
+
+```js
+[].toBool(); // false
+[1].toBool(); // true
+[[]].toBool(); // true
+```
+
 ### list.contains(value)
 
 To check if a value contains within a list we use `.contains()`
@@ -139,7 +165,7 @@ print(list2); // [[10, 2]]
 
 ## Dictionaries
 
-Dictionaries are a key:value pair data type. Currently Dictu requires that the dictionary key be a string, however the value can be any type.
+Dictionaries are a key:value pair data type. Dictu requires that the dictionary key be an immutable type (nil, boolean, number, string), however the value can be any type.
 
 ```js
 var myDict = {"key": 1, "key1": true};
@@ -147,7 +173,7 @@ var myDict = {"key": 1, "key1": true};
 
 ### Indexing
 
-Accessing dictionary items is the same syntax as lists, except instead of an index, it expects a **string key**.
+Accessing dictionary items is the same syntax as lists, except instead of an index, it expects an immutable type (nil, boolean, number, string) for it's key.
 If you try to access a key that does not exist, `nil` is returned. If you expect a key may not exist `.get()` can be used to return a default value.
 
 ```js
@@ -170,6 +196,34 @@ Adding a value to a dictionary is the same as updating a value, however if the k
 ```js
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
+```
+
+### dict.toString()
+Converts a dictionary to a string.
+
+```js
+{"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: "1"}'
+{"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: "1"}, 1: "1"}'
+```
+
+### dict.toBool()
+
+Converts a dictionary to a boolean. A dictionary is a "truthy" value when it has a length greater than 0.
+
+```js
+var x = {};
+
+x.toBool(); // false
+x["test"] = 1;
+x.toBool(); // true
+```
+
+### dict.len()
+
+Returns the length of the given dictionary.
+
+```js
+{1: "one", 2: "two", 3: "three"}.len(); // 3
 ```
 
 ### dict.exists(string)
@@ -206,10 +260,49 @@ var myDict2 = myDict.deepCopy(); // Deep copy
 
 ## Sets
 
-Sets are an unordered collection of unique hashable values. Currently Dictu requires that the hashable value be a string.
+Sets are an unordered collection of unique hashable values. Set values must be of type string, number, boolean or nil.
 
 ```js
 var mySet = set();
+```
+
+### set.toString()
+Converts a given set to a string.
+
+```js
+var set_a = set();
+
+set_a.add("one");
+set_a.add("two");
+
+var set_b = set();
+set_b.add(1);
+set_b.add(2);
+
+set_a.toString(); // '{"two", "one"}');
+set_b.toString(); // '{2, 1}'
+```
+
+### set.toBool()
+
+Converts a set to a boolean. A set is a "truthy" value when it has a length greater than 0.
+
+```js
+var x = set();
+
+x.toBool(); // false
+x.add("test");
+x.toBool(); // true
+```
+
+### set.len()
+
+Returns the length of the given set.
+
+```js
+var mySet = set();
+mySet.add("Dictu!");
+mySet.len(); // 1
 ```
 
 ### set.add(value)

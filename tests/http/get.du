@@ -5,8 +5,16 @@
  *
  */
 
+// HTTP
+var response = HTTP.get("http://httpbin.org/get");
+
+assert(response["statusCode"] == 200);
+assert(response["content"].contains("headers"));
+assert(response["headers"].len() > 0);
+
+// HTTPS
 var response = HTTP.get("https://httpbin.org/get");
 
 assert(response["statusCode"] == 200);
 assert(response["content"].contains("headers"));
-assert(len(response["headers"]) > 0);
+assert(response["headers"].len() > 0);

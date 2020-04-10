@@ -6,15 +6,21 @@
 * .exists() returns a boolean based on whether the given key exists
 */
 
-var myDict = {"key": 1, "key1": true};
+var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
 // First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true});
+assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
 assert(myDict.get("key") == 1);
 
 // Explicit compare to true to make the test more obvious
 assert(myDict.get("key1") == true);
+
+assert(myDict.get(true) == false);
+assert(myDict.get(false) == true);
+assert(myDict.get(nil) == 10);
+assert(myDict.get(10) == nil);
+assert(myDict.get(10.5) == 10.5);
 
 // Return a default value if key is not found
 assert(myDict.get("unknown", 10) == 10);

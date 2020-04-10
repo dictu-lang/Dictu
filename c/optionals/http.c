@@ -7,19 +7,14 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = malloc(response->len + 1);
-    if (response->res == NULL) {
-        printf("Unable to allocate memory\n");
-        exit(71);
-    }
-    response->res[0] = '\0';
+    response->res = NULL;
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
 {
     Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
-    response->res = realloc(response->res, new_len + 1);
+    response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len + 1);
     if (response->res == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
@@ -50,10 +45,17 @@ static char *dictToPostArgs(ObjDict *dict) {
     char *ret = malloc(sizeof(char) * len);
     int currentLen = 0;
 
-    for (int i = 0; i <= dict->items.capacityMask; i++) {
-        Entry *entry = &dict->items.entries[i];
-        if (entry->key == NULL) {
+    for (int i = 0; i <= dict->capacityMask; i++) {
+        DictItem *entry = &dict->entries[i];
+        if (IS_EMPTY(entry->key)) {
             continue;
+        }
+
+        char *key;
+        if (IS_STRING(entry->key)) {
+            key = AS_CSTRING(entry->key);
+        } else {
+            key = valueToString(entry->key);
         }
 
         char *value;
@@ -63,8 +65,7 @@ static char *dictToPostArgs(ObjDict *dict) {
             value = valueToString(entry->value);
         }
 
-        int keyLen = entry->key->length;
-
+        int keyLen = strlen(key);
         int valLen = strlen(value);
 
         if (currentLen + keyLen + valLen > len) {
@@ -77,7 +78,7 @@ static char *dictToPostArgs(ObjDict *dict) {
             }
         }
 
-        memcpy(ret + currentLen, entry->key->chars, keyLen);
+        memcpy(ret + currentLen, key, keyLen);
         currentLen += keyLen;
         memcpy(ret + currentLen, "=", 1);
         currentLen += 1;
@@ -86,6 +87,9 @@ static char *dictToPostArgs(ObjDict *dict) {
         memcpy(ret + currentLen, "&", 1);
         currentLen += 1;
 
+        if (!IS_STRING(entry->key)) {
+            free(key);
+        }
         if (!IS_STRING(entry->value)) {
             free(value);
         }
@@ -94,6 +98,45 @@ static char *dictToPostArgs(ObjDict *dict) {
     ret[currentLen] = '\0';
 
     return ret;
+}
+
+static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
+    // Get status code
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
+    ObjString *content = takeString(vm, response.res, response.len);
+
+    // Push to stack to avoid GC
+    push(vm, OBJ_VAL(content));
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    ObjDict *responseVal = initDict(vm);
+    // Push to stack to avoid GC
+    push(vm, OBJ_VAL(responseVal));
+
+    ObjString *string = copyString(vm, "content", 7);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(content));
+    pop(vm);
+
+    string = copyString(vm, "headers", 7);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(response.headers));
+    pop(vm);
+
+    string = copyString(vm, "statusCode", 10);
+    push(vm, OBJ_VAL(string));
+    dictSet(vm, responseVal, OBJ_VAL(string), NUMBER_VAL(response.statusCode));
+    pop(vm);
+
+    // Pop
+    pop(vm);
+    pop(vm);
+    pop(vm);
+
+    return responseVal;
 }
 
 static Value get(VM *vm, int argCount, Value *args) {
@@ -145,31 +188,7 @@ static Value get(VM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-        ObjString *content = copyString(vm, response.res, response.len);
-        free(response.res);
-
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(content));
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        curl_global_cleanup();
-
-        ObjDict *responseVal = initDict(vm);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(responseVal));
-
-        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
-        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
-        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
-
-        // Pop header list, content and response dict return off stack
-        pop(vm);
-        pop(vm);
-        pop(vm);
-
-        return OBJ_VAL(responseVal);
+        return OBJ_VAL(endRequest(vm, curl, response));
     }
 
     runtimeError(vm, "cURL failed to initialise");
@@ -219,10 +238,10 @@ static Value post(VM *vm, int argCount, Value *args) {
     curl = curl_easy_init();
 
     if (curl) {
-        char *url = AS_CSTRING(args[0]);
-        char *postValue = "";
         Response response;
         createResponse(vm, &response);
+        char *url = AS_CSTRING(args[0]);
+        char *postValue = "";
 
         if (dict != NULL) {
             postValue = dictToPostArgs(dict);
@@ -240,42 +259,17 @@ static Value post(VM *vm, int argCount, Value *args) {
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
 
+        if (dict != NULL) {
+            free(postValue);
+        }
+
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
             runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
-        // Get status code
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-        ObjString *content = copyString(vm, response.res, response.len);
-        free(response.res);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(content));
-
-        if (dict != NULL) {
-            free(postValue);
-        }
-
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-
-        curl_global_cleanup();
-
-        ObjDict *responseVal = initDict(vm);
-        // Push to stack to avoid GC
-        push(vm, OBJ_VAL(responseVal));
-
-        tableSet(vm, &responseVal->items, copyString(vm, "content", 7), OBJ_VAL(content));
-        tableSet(vm, &responseVal->items, copyString(vm, "headers", 7), OBJ_VAL(response.headers));
-        tableSet(vm, &responseVal->items, copyString(vm, "statusCode", 10), NUMBER_VAL(response.statusCode));
-
-        // Pop header list and dict return off stack
-        pop(vm);
-        pop(vm);
-        pop(vm);
-
-        return OBJ_VAL(responseVal);
+        return OBJ_VAL(endRequest(vm, curl, response));
     }
 
     runtimeError(vm, "cURL failed to initialise");

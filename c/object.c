@@ -47,6 +47,7 @@ ObjClassNative *newClassNative(VM *vm, ObjString *name) {
     ObjClassNative *klass = ALLOCATE_OBJ(vm, ObjClassNative, OBJ_NATIVE_CLASS);
     klass->name = name;
     initTable(&klass->methods);
+    initTable(&klass->properties);
     return klass;
 }
 
@@ -114,13 +115,17 @@ ObjList *initList(VM *vm) {
 
 ObjDict *initDict(VM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
-    initTable(&dict->items);
+    dict->count = 0;
+    dict->capacityMask = -1;
+    dict->entries = NULL;
     return dict;
 }
 
 ObjSet *initSet(VM *vm) {
     ObjSet *set = ALLOCATE_OBJ(vm, ObjSet, OBJ_SET);
-    initSetValues(set, 8);
+    set->count = 0;
+    set->capacityMask = -1;
+    set->entries = NULL;
     return set;
 }
 
@@ -145,7 +150,7 @@ ObjString *takeString(VM *vm, char *chars, int length) {
     ObjString *interned = tableFindString(&vm->strings, chars, length,
                                           hash);
     if (interned != NULL) {
-        FREE_ARRAY(vm, char, chars, length);
+        FREE_ARRAY(vm, char, chars, length + 1);
         return interned;
     }
 
@@ -173,14 +178,270 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
     return upvalue;
 }
 
+char *listToString(Value value) {
+    int size = 50;
+    ObjList *list = AS_LIST(value);
+    char *listString = malloc(sizeof(char) * size);
+    memcpy(listString, "[", 1);
+    int listStringLength = 1;
+
+    for (int i = 0; i < list->values.count; ++i) {
+        Value listValue = list->values.values[i];
+
+        char *element;
+        int elementSize;
+
+        if (IS_STRING(listValue)) {
+            ObjString *s = AS_STRING(listValue);
+            element = s->chars;
+            elementSize = s->length;
+        } else {
+            element = valueToString(listValue);
+            elementSize = strlen(element);
+        }
+
+        if (elementSize > (size - listStringLength - 3)) {
+            if (elementSize > size * 2) {
+                size += elementSize * 2 + 3;
+            } else {
+                size = size * 2 + 3;
+            }
+
+            char *newB = realloc(listString, sizeof(char) * size);
+
+            if (newB == NULL) {
+                printf("Unable to allocate memory\n");
+                exit(71);
+            }
+
+            listString = newB;
+        }
+
+        if (IS_STRING(listValue)) {
+            memcpy(listString + listStringLength, "\"", 1);
+            memcpy(listString + listStringLength + 1, element, elementSize);
+            memcpy(listString + listStringLength + 1 + elementSize, "\"", 1);
+            listStringLength += elementSize + 2;
+        } else {
+            memcpy(listString + listStringLength, element, elementSize);
+            listStringLength += elementSize;
+            free(element);
+        }
+
+        if (i != list->values.count - 1) {
+            memcpy(listString + listStringLength, ", ", 2);
+            listStringLength += 2;
+        }
+    }
+
+    memcpy(listString + listStringLength, "]", 1);
+    listString[listStringLength + 1] = '\0';
+
+    return listString;
+}
+
+char *dictToString(Value value) {
+   int count = 0;
+   int size = 50;
+   ObjDict *dict = AS_DICT(value);
+   char *dictString = malloc(sizeof(char) * size);
+   memcpy(dictString, "{", 1);
+   int dictStringLength = 1;
+
+   for (int i = 0; i <= dict->capacityMask; ++i) {
+       DictItem *item = &dict->entries[i];
+       if (IS_EMPTY(item->key)) {
+           continue;
+       }
+
+       count++;
+
+       char *key;
+       int keySize;
+
+       if (IS_STRING(item->key)) {
+           ObjString *s = AS_STRING(item->key);
+           key = s->chars;
+           keySize = s->length;
+       } else {
+           key = valueToString(item->key);
+           keySize = strlen(key);
+       }
+
+       if (keySize > (size - dictStringLength - 1)) {
+           if (keySize > size * 2) {
+               size += keySize * 2;
+           } else {
+               size *= 2;
+           }
+
+           char *newB = realloc(dictString, sizeof(char) * size);
+
+           if (newB == NULL) {
+               printf("Unable to allocate memory\n");
+               exit(71);
+           }
+
+           dictString = newB;
+       }
+
+       if (IS_STRING(item->key)) {
+           memcpy(dictString + dictStringLength, "\"", 1);
+           memcpy(dictString + dictStringLength + 1, key, keySize);
+           memcpy(dictString + dictStringLength + 1 + keySize, "\": ", 3);
+           dictStringLength += 4 + keySize;
+       } else {
+           memcpy(dictString + dictStringLength, key, keySize);
+           memcpy(dictString + dictStringLength + keySize, ": ", 2);
+           dictStringLength += 2 + keySize;
+           free(key);
+       }
+
+       char *element;
+       int elementSize;
+
+       if (IS_STRING(item->value)) {
+           ObjString *s = AS_STRING(item->value);
+           element = s->chars;
+           elementSize = s->length;
+       } else {
+           element = valueToString(item->value);
+           elementSize = strlen(element);
+       }
+
+       if (elementSize > (size - dictStringLength - 3)) {
+           if (elementSize > size * 2) {
+               size += elementSize * 2 + 3;
+           } else {
+               size = size * 2 + 3;
+           }
+
+           char *newB = realloc(dictString, sizeof(char) * size);
+
+           if (newB == NULL) {
+               printf("Unable to allocate memory\n");
+               exit(71);
+           }
+
+           dictString = newB;
+       }
+
+       if (IS_STRING(item->value)) {
+           memcpy(dictString + dictStringLength, "\"", 1);
+           memcpy(dictString + dictStringLength + 1, element, elementSize);
+           memcpy(dictString + dictStringLength + 1 + elementSize, "\"", 1);
+           dictStringLength += 2 + elementSize;
+       } else {
+           memcpy(dictString + dictStringLength, element, elementSize);
+           dictStringLength += elementSize;
+           free(element);
+       }
+
+       if (count != dict->count) {
+           memcpy(dictString + dictStringLength, ", ", 2);
+           dictStringLength += 2;
+       }
+   }
+
+   memcpy(dictString + dictStringLength, "}", 1);
+   dictString[dictStringLength + 1] = '\0';
+
+   return dictString;
+}
+
+char *setToString(Value value) {
+    int count = 0;
+    int size = 50;
+    ObjSet *set = AS_SET(value);
+    char *setString = malloc(sizeof(char) * size);
+    memcpy(setString, "{", 1);
+    int setStringLength = 1;
+
+    for (int i = 0; i <= set->capacityMask; ++i) {
+        SetItem *item = &set->entries[i];
+        if (IS_EMPTY(item->value) || item->deleted)
+            continue;
+
+        count++;
+
+        char *element;
+        int elementSize;
+
+        if (IS_STRING(item->value)) {
+            ObjString *s = AS_STRING(item->value);
+            element = s->chars;
+            elementSize = s->length;
+        } else {
+            element = valueToString(item->value);
+            elementSize = strlen(element);
+        }
+
+        if (elementSize > (size - setStringLength - 5)) {
+            if (elementSize > size * 2) {
+                size += elementSize * 2 + 5;
+            } else {
+                size = size * 2 + 5;
+            }
+
+            char *newB = realloc(setString, sizeof(char) * size);
+
+            if (newB == NULL) {
+                printf("Unable to allocate memory\n");
+                exit(71);
+            }
+
+            setString = newB;
+        }
+
+
+        if (IS_STRING(item->value)) {
+            memcpy(setString + setStringLength, "\"", 1);
+            memcpy(setString + setStringLength + 1, element, elementSize);
+            memcpy(setString + setStringLength + 1 + elementSize, "\"", 1);
+            setStringLength += 2 + elementSize;
+        } else {
+            memcpy(setString + setStringLength, element, elementSize);
+            setStringLength += elementSize;
+            free(element);
+        }
+
+        if (count != set->count) {
+            memcpy(setString + setStringLength, ", ", 2);
+            setStringLength += 2;
+        }
+    }
+
+    memcpy(setString + setStringLength, "}", 1);
+    setString[setStringLength + 1] = '\0';
+
+    return setString;
+}
+
+char *classToString(Value value) {
+    ObjClass *klass = AS_CLASS(value);
+    char *classString = malloc(sizeof(char) * (klass->name->length + 7));
+    memcpy(classString, "<cls ", 5);
+    memcpy(classString + 5, klass->name->chars, klass->name->length);
+    memcpy(classString + 5 + klass->name->length, ">", 1);
+    classString[klass->name->length + 6] = '\0';
+    return classString;
+}
+
+char *instanceToString(Value value) {
+    ObjInstance *instance = AS_INSTANCE(value);
+    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
+    memcpy(instanceString, "<", 1);
+    memcpy(instanceString + 1, instance->klass->name->chars, instance->klass->name->length);
+    memcpy(instanceString + 1 + instance->klass->name->length, " instance>", 10);
+    instanceString[instance->klass->name->length + 11] = '\0';
+    return instanceString;
+}
+
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
-            ObjClass *klass = AS_CLASS(value);
-            char *classString = malloc(sizeof(char) * (klass->name->length + 8));
-            snprintf(classString, klass->name->length + 7, "<cls %s>", klass->name->chars);
-            return classString;
+            return classToString(value);
         }
 
         case OBJ_TRAIT: {
@@ -238,10 +499,7 @@ char *objectToString(Value value) {
         }
 
         case OBJ_INSTANCE: {
-            ObjInstance *instance = AS_INSTANCE(value);
-            char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
-            snprintf(instanceString, instance->klass->name->length + 12, "<%s instance>", instance->klass->name->chars);
-            return instanceString;
+            return instanceToString(value);
         }
 
         case OBJ_NATIVE: {
@@ -265,158 +523,15 @@ char *objectToString(Value value) {
         }
 
         case OBJ_LIST: {
-            int size = 50;
-            ObjList *list = AS_LIST(value);
-            char *listString = calloc(size, sizeof(char));
-            int listStringLength = snprintf(listString, 2, "%s", "[");
-
-            for (int i = 0; i < list->values.count; ++i) {
-                char *element = valueToString(list->values.values[i]);
-
-                int elementSize = strlen(element);
-
-                if (elementSize > (size - listStringLength - 3)) {
-                    if (elementSize > size * 2) {
-                        size += elementSize * 2 + 3;
-                    } else {
-                        size = size * 2 + 3;
-                    }
-
-                    char *newB = realloc(listString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    listString = newB;
-                }
-
-                listStringLength += snprintf(listString + listStringLength, size - listStringLength, "%s", element);
-
-                free(element);
-
-                if (i != list->values.count - 1) {
-                    listStringLength += snprintf(listString + listStringLength, size - listStringLength, ", ");
-                }
-            }
-
-            snprintf(listString + listStringLength, size - listStringLength, "]");
-            return listString;
+            return listToString(value);
         }
 
         case OBJ_DICT: {
-            int count = 0;
-            int size = 50;
-            ObjDict *dict = AS_DICT(value);
-            char *dictString = malloc(sizeof(char) * size);
-            int dictStringLength = snprintf(dictString, size, "%s", "{");
-
-            for (int i = 0; i <= dict->items.capacityMask; ++i) {
-                Entry *item = &dict->items.entries[i];
-                if (item->key == NULL) {
-                    continue;
-                }
-
-                count++;
-
-                int keySize = item->key->length + 5;
-
-                if (keySize > (size - dictStringLength - 1)) {
-                    if (keySize > size * 2) {
-                        size += keySize * 2;
-                    } else {
-                        size *= 2;
-                    }
-
-                    char *newB = realloc(dictString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    dictString = newB;
-                }
-
-                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "\"%s\": ", item->key->chars);
-
-                char *element = valueToString(item->value);
-                int elementSize = strlen(element);
-
-                if (elementSize > (size - dictStringLength - 3)) {
-                    if (elementSize > size * 2) {
-                        size += elementSize * 2 + 3;
-                    } else {
-                        size = size * 2 + 3;
-                    }
-
-                    char *newB = realloc(dictString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    dictString = newB;
-                }
-
-                dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, "%s", element);
-
-                free(element);
-
-                if (count != dict->items.count) {
-                    dictStringLength += snprintf(dictString + dictStringLength, size - dictStringLength, ", ");
-                }
-            }
-
-            snprintf(dictString + dictStringLength, size - dictStringLength, "}");
-            return dictString;
+            return dictToString(value);
         }
 
         case OBJ_SET: {
-            int count = 0;
-            int size = 50;
-            ObjSet *set = AS_SET(value);
-            char *setString = malloc(sizeof(char) * size);
-            int setStringLength = snprintf(setString, size, "%s", "{");
-
-            for (int i = 0; i < set->capacity; ++i) {
-                setItem *item = set->items[i];
-                if (!item || item->deleted)
-                    continue;
-
-                count++;
-
-                char *element = item->item->chars;
-                int elementSize = item->item->length;
-
-                if (elementSize > (size - setStringLength - 5)) {
-                    if (elementSize > size * 2) {
-                        size += elementSize * 2 + 5;
-                    } else {
-                        size = size * 2 + 5;
-                    }
-
-                    char *newB = realloc(setString, sizeof(char) * size);
-
-                    if (newB == NULL) {
-                        printf("Unable to allocate memory\n");
-                        exit(71);
-                    }
-
-                    setString = newB;
-                }
-
-                setStringLength += snprintf(setString + setStringLength, size - setStringLength, "'%s'", element);
-
-                if (count != set->count) {
-                    setStringLength += snprintf(setString + setStringLength, size - setStringLength, ", ");
-                }
-            }
-
-            snprintf(setString + setStringLength, size - setStringLength, "}");
-            return setString;
+            return setToString(value);
         }
 
         case OBJ_UPVALUE: {

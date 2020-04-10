@@ -92,29 +92,28 @@ struct sObjList {
     ValueArray values;
 };
 
-struct dictItem {
-    char *key;
-    Value item;
-    bool deleted;
-    uint32_t hash;
-};
+typedef struct {
+    Value key;
+    Value value;
+} DictItem;
 
 struct sObjDict {
     Obj obj;
-    Table items;
+    int count;
+    int capacityMask;
+    DictItem *entries;
 };
 
-struct setItem {
-    ObjString *item;
+typedef struct {
+    Value value;
     bool deleted;
-    uint32_t hash;
-};
+} SetItem;
 
 struct sObjSet {
     Obj obj;
-    int capacity;
     int count;
-    setItem **items;
+    int capacityMask;
+    SetItem *entries;
 };
 
 struct sObjFile {
@@ -159,6 +158,7 @@ typedef struct sObjClassNative {
     Obj obj;
     ObjString *name;
     Table methods;
+    Table properties;
 } ObjClassNative;
 
 typedef struct sObjTrait {
@@ -209,6 +209,11 @@ ObjFile *initFile(VM *vm);
 
 ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 
+char *setToString(Value value);
+char *dictToString(Value value);
+char *listToString(Value value);
+char *classToString(Value value);
+char *instanceToString(Value value);
 char *objectToString(Value value);
 
 static inline bool isObjType(Value value, ObjType type) {

@@ -8,6 +8,7 @@ typedef struct {
     const char *start;
     const char *current;
     int line;
+    bool rawString;
 } Scanner;
 
 Scanner scanner;
@@ -16,6 +17,7 @@ void initScanner(const char *source) {
     scanner.start = source;
     scanner.current = source;
     scanner.line = 1;
+    scanner.rawString = false;
 }
 
 static bool isAlpha(char c) {
@@ -177,7 +179,18 @@ static TokenType identifierType() {
         case 'o':
             return checkKeyword(1, 1, "r", TOKEN_OR);
         case 'r':
-            return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'e':
+                        return checkKeyword(2, 4, "turn", TOKEN_RETURN);
+                }
+            } else {
+                if (scanner.start[1] == '"' || scanner.start[1] == '\'') {
+                    scanner.rawString = true;
+                    return TOKEN_R;
+                }
+            }
+            break;
         case 's':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
@@ -194,7 +207,7 @@ static TokenType identifierType() {
                     case 'h':
                         return checkKeyword(2, 2, "is", TOKEN_THIS);
                     case 'r':
-                        if (scanner.current - scanner.start > 1) {
+                        if (scanner.current - scanner.start > 2) {
                             switch (scanner.start[2]) {
                                 case 'u':
                                     return checkKeyword(3, 1, "e", TOKEN_TRUE);
@@ -249,8 +262,8 @@ static Token string(char stringToken) {
     while (peek() != stringToken && !isAtEnd()) {
         if (peek() == '\n') {
             scanner.line++;
-        } else if (peek() == '\\') {
-            scanner.current++;
+        } else if (peek() == '\\' && !scanner.rawString) {
+             scanner.current++;
         }
         advance();
     }
@@ -259,6 +272,7 @@ static Token string(char stringToken) {
 
     // The closing " or '.
     advance();
+    scanner.rawString = false;
     return makeToken(TOKEN_STRING);
 }
 

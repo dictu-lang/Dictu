@@ -1,3 +1,6 @@
+import "tests/bool/import.du";
+import "tests/nil/import.du";
+import "tests/number/import.du";
 import "tests/strings/import.du";
 import "tests/variables/import.du";
 import "tests/lists/import.du";
@@ -12,6 +15,7 @@ import "tests/loops/import.du";
 import "tests/env/import.du";
 import "tests/system/import.du";
 import "tests/json/import.du";
+import "tests/path/path.du";
 
 if (isDefined("HTTP")) {
   import "tests/http/import.du";

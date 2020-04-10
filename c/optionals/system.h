@@ -2,8 +2,9 @@
 #define dictu_system_h
 
 #include <time.h>
-#include <unistd.h>
 #include <limits.h>
+#include <sys/utsname.h>
+#include <ctype.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -15,6 +16,6 @@
 #include "../vm.h"
 #include "../memory.h"
 
-void createSystemClass();
+void createSystemClass(VM *vm, int argc, const char *argv[]);
 
 #endif //dictu_system_h

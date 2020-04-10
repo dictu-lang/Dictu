@@ -1,0 +1,21 @@
+/**
+ * constants.du
+ *
+ * Testing the System constants
+ *
+ */
+
+/**
+ * argv is a list of all parameters passed to the interpreter.
+ * The first element is always the script name
+ */
+assert(type(System.argv) == 'list');
+assert(len(System.argv) > 0);
+assert(System.argv[0] == "tests/runTests.du");
+
+
+/**
+ * platform stores the current OS platform as a string
+ */
+assert(type(System.platform) == 'string');
+assert(len(System.platform) > 0);

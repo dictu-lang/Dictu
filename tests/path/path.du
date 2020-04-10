@@ -1,0 +1,26 @@
+/* here we might want to know the underlying system isUNIX() or|and isWIN() */
+assert(Path.isAbsolute ("/root") == true);
+assert(Path.isAbsolute ("root") == false);
+
+assert(Path.basename ("") == "");
+assert(Path.basename ("/") == "/");
+assert(Path.basename ("//a") == "a");
+assert(Path.basename ("//") == "/");
+assert(Path.basename ("/////") == "/");
+assert(Path.basename ("/root/t.ext") == "t.ext");
+
+assert(Path.extname("/t.ext") == ".ext");
+assert(Path.extname("/text") == "");
+
+assert(Path.dirname("/") == "/");
+assert(Path.dirname("//") == "/");
+assert(Path.dirname("") == ".");
+assert(Path.dirname("a") == ".");
+assert(Path.dirname("/root") == "/");
+assert(Path.dirname("///root") == "/");
+assert(Path.dirname("/root///a") == "/root");
+
+assert(Path.delimiter == ":");
+assert(Path.dirSeparator == "/");
+
+assert(Path.realpath("/usr/../usr/../usr") == "/usr");

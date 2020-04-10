@@ -34,7 +34,7 @@ var x = "Dictu";
 
 x[0]; // D
 
-for (var i = 0; i < len(x); ++i) {
+for (var i = 0; i < x.len(); ++i) {
     print(x[i]);
 }
 // D
@@ -58,6 +58,35 @@ E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive 
 "Dictu"[2:4]; // ct
 ```
 
+### Escape codes
+
+|--------------|--------------------------------------------|
+| Escape code  | Description                                |
+| \n           | \n is the escape code for a new line       |
+| \t           | \t is the escape code for a horizontal tab |
+| \v           | \v is the escape code for a vertical tab   |
+| \\\          | \\\ is the escape code for a backslash      |
+| \\"          | \\" is the escape code for double quotes    |
+| \\'          | \\' is the escape code for single quotes    |
+
+#### Raw strings
+
+Sometimes when you are creating a string, you want the escape codes to be ignored, and
+instead work with the literal values. Prefixing a string with r will create a "raw string".
+
+```py
+r"test\ntest"; // "test\ntest"
+r"test\ntest".len(); // 10
+```
+
+### string.len()
+
+Returns the length of the given string.
+
+```py
+"string".len(); // 6
+```
+
 ### string.lower()
 
 To make all characters within a string lowercase, use the `.lower()` method.
@@ -65,6 +94,24 @@ To make all characters within a string lowercase, use the `.lower()` method.
 ```py
 "DICTU".lower(); // dictu
 "DiCtU".lower(); // dictu
+```
+
+### string.toNumber()
+
+Converts a string to number.
+
+```py
+"10.2".toNumber(); // 10.2
+"10".toNumber(); // 10
+```
+
+### string.toBool()
+
+Converts a string to a boolean. Strings are "truthy" when they have a length greater than 1.
+
+```py
+"".toBool(); // false
+"false".toBool(); // true
 ```
 
 ### string.upper()

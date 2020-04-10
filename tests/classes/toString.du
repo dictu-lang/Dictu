@@ -1,0 +1,24 @@
+/**
+ * toString.du
+ *
+ * Testing the class.toString() and instance.toString() method
+ *
+ * .toString() returns the string representation of a class / object
+ */
+
+class Test {}
+
+class TestOverload {
+    init() {
+        this.name = "Testing";
+    }
+
+    toString() {
+        return "{} object".format(this.name);
+    }
+}
+
+assert(Test.toString() == '<cls Test>');
+assert(Test().toString() == '<Test instance>');
+assert(TestOverload.toString() == '<cls TestOverload>');
+assert(TestOverload().toString() == 'Testing object');

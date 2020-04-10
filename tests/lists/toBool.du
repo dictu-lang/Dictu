@@ -1,0 +1,18 @@
+/**
+ * toBool.du
+ *
+ * Testing the list.toBool() method
+ *
+ * .toBool() returns the boolean representation of a list
+ */
+
+assert(["1", 11].toBool() == true);
+assert([].toBool() == false);
+
+var myList = [];
+
+assert(myList.toBool() == false);
+myList.push(10);
+assert(myList.toBool() == true);
+myList.pop();
+assert(myList.toBool() == false);

@@ -11,15 +11,46 @@ var mySet = set();
 mySet.add("dictu");
 mySet.add("is");
 mySet.add("great!");
+mySet.add(true);
+mySet.add(false);
+mySet.add(10);
+mySet.add(10.5);
+mySet.add(nil);
 
 assert(mySet.contains("dictu"));
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));
+assert(mySet.contains(true));
+assert(mySet.contains(false));
+assert(mySet.contains(10));
+assert(mySet.contains(10.5));
+assert(mySet.contains(nil));
+
+assert(mySet.len() == 8);
 
 mySet.remove("dictu");
 
-assert(len(mySet) == 2);
+assert(mySet.len() == 7);
 
 assert(!mySet.contains("dictu"));
+assert(mySet.contains("is"));
+assert(mySet.contains("great!"));
+
+
+mySet.remove(true);
+assert(!mySet.contains(true));
+
+mySet.remove(false);
+assert(!mySet.contains(false));
+
+mySet.remove(10);
+assert(!mySet.contains(10));
+
+mySet.remove(10.5);
+assert(!mySet.contains(10.5));
+
+mySet.remove(nil);
+assert(!mySet.contains(nil));
+
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));

@@ -1,5 +1,28 @@
 #include "lists.h"
 
+static Value toStringList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *valueString = listToString(args[0]);
+
+    ObjString *string = copyString(vm, valueString, strlen(valueString));
+    free(valueString);
+
+    return OBJ_VAL(string);
+}
+
+static Value lenList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    return NUMBER_VAL(list->values.count);
+}
 
 static Value pushListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
@@ -199,6 +222,8 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareListMethods(VM *vm) {
+    defineNative(vm, &vm->listMethods, "toString", toStringList);
+    defineNative(vm, &vm->listMethods, "len", lenList);
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);
@@ -206,4 +231,5 @@ void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "join", joinListItem);
     defineNative(vm, &vm->listMethods, "copy", copyListShallow);
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
+    defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
 }

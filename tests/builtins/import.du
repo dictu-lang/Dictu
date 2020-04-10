@@ -4,8 +4,5 @@
 * General import file for all the builtin function tests
 */
 
-import "tests/builtins/str.du";
-import "tests/builtins/number.du";
 import "tests/builtins/type.du";
-import "tests/builtins/len.du";
 import "tests/builtins/isDefined.du";

@@ -2,45 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "memory.h"
 #include "natives.h"
 #include "vm.h"
 
 // Native functions
-static Value numberNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "number() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "number() only takes a string as an argument");
-        return EMPTY_VAL;
-    }
-
-    char *numberString = AS_CSTRING(args[0]);
-    double number = strtod(numberString, NULL);
-
-    return NUMBER_VAL(number);
-}
-
-static Value strNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "str() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        char *valueString = valueToString(args[0]);
-
-        ObjString *string = copyString(vm, valueString, strlen(valueString));
-        free(valueString);
-
-        return OBJ_VAL(string);
-    }
-
-    return args[0];
-}
-
 static Value typeNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "type() takes 1 argument (%d given).", argCount);
@@ -93,38 +59,9 @@ static Value setNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(initSet(vm));
 }
 
-static Value lenNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "len() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (IS_STRING(args[0])) {
-        return NUMBER_VAL(AS_STRING(args[0])->length);
-    } else if (IS_LIST(args[0])) {
-        return NUMBER_VAL(AS_LIST(args[0])->values.count);
-    } else if (IS_DICT(args[0])) {
-        return NUMBER_VAL(AS_DICT(args[0])->items.count);
-    } else if (IS_SET(args[0])) {
-        return NUMBER_VAL(AS_SET(args[0])->count);
-    }
-
-    runtimeError(vm, "Unsupported type passed to len()", argCount);
-    return EMPTY_VAL;
-}
-
-static Value boolNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "bool() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    return BOOL_VAL(!isFalsey(args[0]));
-}
-
 static Value inputNative(VM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "input() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -138,10 +75,8 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
         printf("%s", AS_CSTRING(prompt));
     }
 
-    uint8_t len_max = 128;
-    uint8_t current_size = len_max;
-
-    char *line = malloc(len_max);
+    uint64_t currentSize = 128;
+    char *line = malloc(currentSize);
 
     if (line == NULL) {
         runtimeError(vm, "Memory error on input()!");
@@ -149,13 +84,13 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
     }
 
     int c = EOF;
-    uint8_t i = 0;
+    uint64_t i = 0;
     while ((c = getchar()) != '\n' && c != EOF) {
         line[i++] = (char) c;
 
-        if (i == current_size) {
-            current_size = i + len_max;
-            line = realloc(line, current_size);
+        if (i + 1 == currentSize) {
+            currentSize = GROW_CAPACITY(currentSize);
+            line = realloc(line, currentSize);
 
             if (line == NULL) {
                 printf("Unable to allocate memory\n");
@@ -168,7 +103,6 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
 
     Value l = OBJ_VAL(copyString(vm, line, strlen(line)));
     free(line);
-
     return l;
 }
 
@@ -179,8 +113,7 @@ static Value printNative(VM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        Value value = args[i];
-        printValue(value);
+        printValue(args[i]);
         printf("\n");
     }
 
@@ -188,15 +121,12 @@ static Value printNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value assertNative(VM *vm, int argCount, Value *args) {
-    Value value = args[0];
-
-    if (!IS_BOOL(value)) {
-        runtimeError(vm, "assert() only takes a boolean as an argument.", argCount);
+    if (argCount != 1) {
+        runtimeError(vm, "assert() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    value = AS_BOOL(value);
-    if (!value) {
+    if (isFalsey(args[0])) {
         runtimeError(vm, "assert() was false!");
         return EMPTY_VAL;
     }
@@ -219,20 +149,16 @@ static Value isDefinedNative(VM *vm, int argCount, Value *args) {
 
     Value value;
     if (tableGet(&vm->globals, string, &value))
-       return BOOL_VAL(true);
+       return TRUE_VAL;
 
-    return BOOL_VAL(false);
+    return FALSE_VAL;
 }
 
 // End of natives
 
 void defineAllNatives(VM *vm) {
     char *nativeNames[] = {
-            "len",
-            "bool",
             "input",
-            "number",
-            "str",
             "type",
             "set",
             "print",
@@ -241,11 +167,7 @@ void defineAllNatives(VM *vm) {
     };
 
     NativeFn nativeFunctions[] = {
-            lenNative,
-            boolNative,
             inputNative,
-            numberNative,
-            strNative,
             typeNative,
             setNative,
             printNative,

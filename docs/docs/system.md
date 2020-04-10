@@ -1,7 +1,7 @@
 ---
 layout: default
 title: System
-nav_order: 13
+nav_order: 12
 ---
 
 # System
@@ -14,6 +14,13 @@ nav_order: 13
 {:toc}
 
 ---
+
+### Constants
+
+| Constant        | Description                                                                                       |
+|-----------------|---------------------------------------------------------------------------------------------------|
+| System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
+| System.platform | This string identifies the underlying system platform.                                            |
 
 ### System.getCWD()
 

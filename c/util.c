@@ -42,3 +42,30 @@ void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
     pop(vm);
     pop(vm);
 }
+
+void defineNativeProperty(VM *vm, Table *table, const char *name, Value value) {
+    push(vm, value);
+    ObjString *propertyName = copyString(vm, name, strlen(name));
+    push(vm, OBJ_VAL(propertyName));
+    tableSet(vm, table, propertyName, value);
+    pop(vm);
+    pop(vm);
+}
+
+bool isValidKey(Value value) {
+    if (IS_NIL(value) || IS_BOOL(value) || IS_NUMBER(value) ||
+    IS_STRING(value)) {
+        return true;
+    }
+
+    return false;
+}
+
+Value boolNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "bool() takes no arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    return BOOL_VAL(!isFalsey(args[0]));
+}
