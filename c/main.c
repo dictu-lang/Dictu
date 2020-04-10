@@ -3,14 +3,12 @@
 #include <string.h>
 
 #include "common.h"
-#include "chunk.h"
-#include "debug.h"
 #include "vm.h"
 #include "util.h"
 
 #include "linenoise.h"
 
-#define VERSION "Dictu Version: 0.4.1\n"
+#define VERSION "Dictu Version: 0.5.0\n"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
