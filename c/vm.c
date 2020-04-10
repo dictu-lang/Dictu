@@ -19,6 +19,7 @@
 #include "datatypes/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
+#include "datatypes/class.h"
 #include "datatypes/instance.h"
 #include "natives.h"
 #include "optionals/optionals.h"
@@ -100,6 +101,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->dictMethods);
     initTable(&vm->setMethods);
     initTable(&vm->fileMethods);
+    initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
 
     setupFilenameStack(vm, scriptName);
@@ -117,6 +119,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     declareDictMethods(vm);
     declareSetMethods(vm);
     declareFileMethods(vm);
+    declareClassMethods(vm);
     declareInstanceMethods(vm);
 
     // Native functions
@@ -146,6 +149,7 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->dictMethods);
     freeTable(vm, &vm->setMethods);
     freeTable(vm, &vm->fileMethods);
+    freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
@@ -325,18 +329,26 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
             case OBJ_CLASS: {
                 ObjClass *instance = AS_CLASS(receiver);
                 Value method;
-                if (!tableGet(&instance->methods, name, &method)) {
-                    runtimeError(vm, "Undefined property '%s'.", name->chars);
-                    return false;
+                if (tableGet(&instance->methods, name, &method)) {
+                    if (!AS_CLOSURE(method)->function->staticMethod) {
+                        if (tableGet(&vm->classMethods, name, &method)) {
+                            return callNativeMethod(vm, method, argCount);
+                        }
+
+                        runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                                     name->chars);
+                        return false;
+                    }
+
+                    return callValue(vm, method, argCount);
                 }
 
-                if (!AS_CLOSURE(method)->function->staticMethod) {
-                    runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
-                                 name->chars);
-                    return false;
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
                 }
 
-                return callValue(vm, method, argCount);
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                return false;
             }
 
             case OBJ_INSTANCE: {
@@ -349,12 +361,18 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callValue(vm, value, argCount);
                 }
 
+                // Look for the method.
+                if (tableGet(&instance->klass->methods, name, &value)) {
+                    return call(vm, AS_CLOSURE(value), argCount);
+                }
+
                 // Check for instance methods.
                 if (tableGet(&vm->instanceMethods, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                return invokeFromClass(vm, instance->klass, name, argCount);
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                return false;
             }
 
             case OBJ_STRING: {

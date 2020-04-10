@@ -3,7 +3,7 @@
  *
  * Testing the bool.toString() method
  *
- * .toString() returns the string represantation of a bool
+ * .toString() returns the string representation of a bool
  */
 
 assert(true.toString() == "true");
