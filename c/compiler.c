@@ -625,6 +625,10 @@ int parseString(char *string, int length) {
                     string[i + 1] = '\v';
                     break;
                 }
+                case '\\': {
+                    string[i + 1] = '\\';
+                    break;
+                }
                 case '\'':
                 case '"': {
                     break;
@@ -641,8 +645,21 @@ int parseString(char *string, int length) {
     return length;
 }
 
+static void rString(Compiler *compiler, bool canAssign) {
+    if (match(compiler, TOKEN_STRING)) {
+        Parser *parser = compiler->parser;
+        emitConstant(compiler, OBJ_VAL(copyString(parser->vm, parser->previous.start + 1,
+                                                  parser->previous.length - 2)));
+
+        return;
+    }
+
+    consume(compiler, TOKEN_STRING, "Expected string after r delimiter");
+}
+
 static void string(Compiler *compiler, bool canAssign) {
     Parser *parser = compiler->parser;
+
     char *string = malloc(sizeof(char) * parser->previous.length - 1);
     memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
     int length = parseString(string, parser->previous.length - 2);
@@ -977,6 +994,7 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_GREATER_EQUAL
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS_EQUAL
+        {rString,  NULL,      PREC_NONE},               // TOKEN_R
         {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
         {string,   NULL,      PREC_NONE},               // TOKEN_STRING
         {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER

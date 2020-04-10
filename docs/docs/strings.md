@@ -58,11 +58,32 @@ E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive 
 "Dictu"[2:4]; // ct
 ```
 
+### Escape codes
+
+|--------------|--------------------------------------------|
+| Escape code  | Description                                |
+| \n           | \n is the escape code for a new line       |
+| \t           | \t is the escape code for a horizontal tab |
+| \v           | \v is the escape code for a vertical tab   |
+| \\\          | \\\ is the escape code for a backslash      |
+| \\"          | \\" is the escape code for double quotes    |
+| \\'          | \\' is the escape code for single quotes    |
+
+#### Raw strings
+
+Sometimes when you are creating a string, you want the escape codes to be ignored, and
+instead work with the literal values. Prefixing a string with r will create a "raw string".
+
+```py
+r"test\ntest"; // "test\ntest"
+r"test\ntest".len(); // 10
+```
+
 ### string.len()
 
 Returns the length of the given string.
 
-```js
+```py
 "string".len(); // 6
 ```
 
