@@ -3,7 +3,7 @@
  *
  * Testing the nil.toString() method
  *
- * .toString() returns the string represantation of nil
+ * .toString() returns the string representation of nil
  */
 
 assert(nil.toString() == "nil");

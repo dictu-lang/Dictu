@@ -3,7 +3,7 @@
  *
  * Testing the list.toString() method
  *
- * .toString() returns the string represantation of a list
+ * .toString() returns the string representation of a list
  */
 
 assert(["1", 11].toString() == '["1", 11]');
