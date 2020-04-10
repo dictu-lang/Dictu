@@ -331,6 +331,10 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 Value method;
                 if (tableGet(&instance->methods, name, &method)) {
                     if (!AS_CLOSURE(method)->function->staticMethod) {
+                        if (tableGet(&vm->classMethods, name, &method)) {
+                            return callNativeMethod(vm, method, argCount);
+                        }
+
                         runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
                                      name->chars);
                         return false;
