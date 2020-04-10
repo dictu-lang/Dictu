@@ -84,7 +84,7 @@ Returns the length of the given list.
 
 ### list.toBool()
 
-Converts a list to a boolean. A list is a "truthy" value with it has a length greater than 1.
+Converts a list to a boolean. A list is a "truthy" value when it has a length greater than 0.
 
 ```js
 [].toBool(); // false
@@ -208,7 +208,7 @@ Converts a dictionary to a string.
 
 ### dict.toBool()
 
-Converts a dictionary to a boolean. A dictionary is a "truthy" value with it has a length greater than 1.
+Converts a dictionary to a boolean. A dictionary is a "truthy" value when it has a length greater than 0.
 
 ```js
 var x = {};
@@ -285,7 +285,7 @@ set_b.toString(); // '{2, 1}'
 
 ### set.toBool()
 
-Converts a set to a boolean. A set is a "truthy" value with it has a length greater than 1.
+Converts a set to a boolean. A set is a "truthy" value when it has a length greater than 0.
 
 ```js
 var x = set();
