@@ -30,6 +30,10 @@ static Value addSetItem(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
+    if (!isValidKey(args[1])) {
+        runtimeError(vm, "Set value must be an immutable type");
+        return EMPTY_VAL;
+    }
 
     ObjSet *set = AS_SET(args[0]);
     setInsert(vm, set, args[1]);
@@ -70,5 +74,6 @@ void declareSetMethods(VM *vm) {
     defineNative(vm, &vm->setMethods, "add", addSetItem);
     defineNative(vm, &vm->setMethods, "remove", removeSetItem);
     defineNative(vm, &vm->setMethods, "contains", containsSetItem);
+    defineNative(vm, &vm->setMethods, "toBool", boolNative); // Defined in util
 }
 

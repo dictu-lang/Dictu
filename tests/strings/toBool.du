@@ -1,0 +1,10 @@
+/**
+* toBool.du
+*
+* Testing the str.toBool() method
+*
+* .toNumber() converts a string to a boolean
+*/
+
+assert("10".toBool() == true);
+assert("".toBool() == false);
