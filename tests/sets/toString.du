@@ -3,7 +3,7 @@
  *
  * Testing the set.toString() method
  *
- * .toString() returns the string represantation of a set
+ * .toString() returns the string representation of a set
  */
 
 var set_a = set();
@@ -13,8 +13,7 @@ set_a.add("two");
 
 var set_b = set();
 set_b.add(1);
-set_b.add(set_a);
 set_b.add(2);
 
 assert(set_a.toString() == '{"two", "one"}');
-assert(set_b.toString() == '{"2", "1", "{"two", "one"}"}');
+assert(set_b.toString() == '{2, 1}');

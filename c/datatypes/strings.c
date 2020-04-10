@@ -452,4 +452,5 @@ void declareStringMethods(VM *vm) {
     defineNative(vm, &vm->stringMethods, "rightStrip", rightStripString);
     defineNative(vm, &vm->stringMethods, "strip", stripString);
     defineNative(vm, &vm->stringMethods, "count", countString);
+    defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
 }

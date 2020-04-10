@@ -3,10 +3,8 @@
  *
  * Testing the dict.toString() method
  *
- * .toString() returns the string represantation of a dict
+ * .toString() returns the string representation of a dict
  */
 
-/* FIX: inconsistency with the quotes */
-
-assert({"1": 1, 1: "1"}.toString() == '{"1": 1, 1: \'1\'}');
-assert({"1": {1: "1", "1": 1}, 1: "1"}.toString() == '{"1": {"1": 1, 1: \'1\'}, 1: \'1\'}');
+assert({"1": 1, 1: "1"}.toString() == '{"1": 1, 1: "1"}');
+assert({"1": {1: "1", "1": 1}, 1: "1"}.toString() == '{"1": {"1": 1, 1: "1"}, 1: "1"}');

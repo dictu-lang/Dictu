@@ -10,3 +10,4 @@ import "tests/classes/properties.du";
 import "tests/classes/inherit.du";
 import "tests/classes/traits.du";
 import "tests/classes/copy.du";
+import "tests/classes/toString.du";

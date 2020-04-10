@@ -59,15 +59,6 @@ static Value setNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(initSet(vm));
 }
 
-static Value boolNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "bool() takes 1 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    return BOOL_VAL(!isFalsey(args[0]));
-}
-
 static Value inputNative(VM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
@@ -167,7 +158,6 @@ static Value isDefinedNative(VM *vm, int argCount, Value *args) {
 
 void defineAllNatives(VM *vm) {
     char *nativeNames[] = {
-            "bool",
             "input",
             "type",
             "set",
@@ -177,7 +167,6 @@ void defineAllNatives(VM *vm) {
     };
 
     NativeFn nativeFunctions[] = {
-            boolNative,
             inputNative,
             typeNative,
             setNative,

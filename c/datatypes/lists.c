@@ -231,4 +231,5 @@ void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "join", joinListItem);
     defineNative(vm, &vm->listMethods, "copy", copyListShallow);
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
+    defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
 }

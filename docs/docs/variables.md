@@ -72,6 +72,8 @@ print(a, b, c); // nil, 10, 'hello!'
 
 ## Casting
 
+### value.toString()
+
 You can convert values into strings with the toString() method.
 
 ```js
@@ -81,4 +83,23 @@ nil.toString();
 someDict.toString();
 someList.toString();
 someSet.toString();
+```
+
+### value.toBool()
+
+You can convert values into booleans with the toBool method. This is based on whether the
+value is "truthy" or not. A "truthy" value is a value which has a length greater than 0
+or is not 0 when checking number types. `nil` is always false.
+
+```js
+"".toBool(); // false
+"test".toBool(); // true
+"false".toBool(); // true
+
+0.toBool(); // false
+10.toBool(); // true
+
+[].toBool(); // false
+[1].toBool(); // true
+[[]].toBool(); // true
 ```

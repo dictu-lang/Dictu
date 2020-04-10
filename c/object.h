@@ -212,6 +212,8 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 char *setToString(Value value);
 char *dictToString(Value value);
 char *listToString(Value value);
+char *classToString(Value value);
+char *instanceToString(Value value);
 char *objectToString(Value value);
 
 static inline bool isObjType(Value value, ObjType type) {

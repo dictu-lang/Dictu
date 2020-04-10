@@ -105,6 +105,15 @@ Converts a string to number.
 "10".toNumber(); // 10
 ```
 
+### string.toBool()
+
+Converts a string to a boolean. Strings are "truthy" when they have a length greater than 1.
+
+```py
+"".toBool(); // false
+"false".toBool(); // true
+```
+
 ### string.upper()
 
 To make all characters within a string uppercase, use the `.upper()` method.

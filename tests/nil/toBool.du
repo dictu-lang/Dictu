@@ -1,0 +1,9 @@
+/**
+ * toBool.du
+ *
+ * Testing the nil.toBool() method
+ *
+ * .toBool() returns the boolean representation of nil (always false)
+ */
+
+assert(nil.toBool() == false);

@@ -16,4 +16,5 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
 
 void declareNumberMethods(VM *vm) {
     defineNative(vm, &vm->numberMethods, "toString", toStringNumber);
+    defineNative(vm, &vm->numberMethods, "toBool", boolNative); // Defined in util
 }

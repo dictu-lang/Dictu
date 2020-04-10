@@ -55,6 +55,12 @@ static uint32_t hashObject(Obj* object) {
 
         // Should never get here
         default: {
+#ifdef DEBUG_PRINT_CODE
+            printf("Object: ");
+            printValue(OBJ_VAL(object));
+            printf(" not hashable!\n");
+            exit(1);
+#endif
             return -1;
         }
     }
