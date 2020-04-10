@@ -16,7 +16,7 @@ static Value toStringSet(VM *vm, int argCount, Value *args) {
 
 static Value lenSet(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "len() takes 0 argument (%d given)", argCount);
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
