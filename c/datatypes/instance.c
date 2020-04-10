@@ -2,6 +2,21 @@
 #include "../vm.h"
 #include "../memory.h"
 
+static Value toString(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *valueString = instanceToString(args[0]);
+
+    ObjString *string = copyString(vm, valueString, strlen(valueString));
+    free(valueString);
+
+    return OBJ_VAL(string);
+}
+
+
 static Value hasAttribute(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "hasAttribute() takes 1 argument (%d given)", argCount);
@@ -98,6 +113,7 @@ static Value copyDeep(VM *vm, int argCount, Value *args) {
 }
 
 void declareInstanceMethods(VM *vm) {
+    defineNative(vm, &vm->instanceMethods, "toString", toString);
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);

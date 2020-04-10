@@ -3,7 +3,7 @@
  *
  * Testing the dict.toString() method
  *
- * .toString() returns the string represantation of a dict
+ * .toString() returns the string representation of a dict
  */
 
 /* FIX: inconsistency with the quotes */

@@ -3,7 +3,7 @@
  *
  * Testing the number.toString() method
  *
- * .toString() returns the string represantation of a number
+ * .toString() returns the string representation of a number
  */
 
 assert(1.toString() == "1");

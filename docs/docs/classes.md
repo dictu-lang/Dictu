@@ -62,6 +62,32 @@ class SomeClass {
 SomeClass().printMessage(); // Hello!
 ```
 
+### toString
+
+Classes and instances can both be converted to a string using the toString method. If you want a different string
+representation for an object you can overload the toString method in your class.
+
+```js
+class Test {}
+
+class TestOverload {
+    init() {
+        this.name = "Testing";
+    }
+
+    toString() {
+        return "{} object".format(this.name);
+    }
+}
+
+print(Test.toString()); // '<cls Test>'
+print(Test().toString()); // '<Test instance>'
+
+print(TestOverload.toString()); // '<cls TestOverload>'
+print(TestOverload().toString()); // 'Testing object'
+
+```
+
 ## This
 
 `this` is a variable which is passed to all methods which are not marked as static. `this` is a reference to the object you are currently accessing. `this` allows you to modify instance variables of a particular object.
