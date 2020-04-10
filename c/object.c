@@ -364,14 +364,31 @@ char *setToString(Value value) {
 
 }
 
+char *classToString(Value value) {
+    ObjClass *klass = AS_CLASS(value);
+    char *classString = malloc(sizeof(char) * (klass->name->length + 6));
+    memcpy(classString, "<cls ", 5);
+    memcpy(classString + 5, klass->name->chars, klass->name->length);
+    memcpy(classString + 5 + klass->name->length, ">", 1);
+    classString[klass->name->length + 6] = '\0';
+    return classString;
+}
+
+char *instanceToString(Value value) {
+    ObjInstance *instance = AS_INSTANCE(value);
+    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 11));
+    memcpy(instanceString, "<", 1);
+    memcpy(instanceString + 1, instance->klass->name->chars, instance->klass->name->length);
+    memcpy(instanceString + 1 + instance->klass->name->length, " instance>", 10);
+    instanceString[instance->klass->name->length + 11] = '\0';
+    return instanceString;
+}
+
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
-            ObjClass *klass = AS_CLASS(value);
-            char *classString = malloc(sizeof(char) * (klass->name->length + 8));
-            snprintf(classString, klass->name->length + 7, "<cls %s>", klass->name->chars);
-            return classString;
+            return classToString(value);
         }
 
         case OBJ_TRAIT: {
@@ -429,10 +446,7 @@ char *objectToString(Value value) {
         }
 
         case OBJ_INSTANCE: {
-            ObjInstance *instance = AS_INSTANCE(value);
-            char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
-            snprintf(instanceString, instance->klass->name->length + 12, "<%s instance>", instance->klass->name->chars);
-            return instanceString;
+            return instanceToString(value);
         }
 
         case OBJ_NATIVE: {

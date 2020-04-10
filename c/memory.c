@@ -297,6 +297,7 @@ void collectGarbage(VM *vm) {
     grayTable(vm, &vm->dictMethods);
     grayTable(vm, &vm->setMethods);
     grayTable(vm, &vm->fileMethods);
+    grayTable(vm, &vm->classMethods);
     grayTable(vm, &vm->instanceMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
