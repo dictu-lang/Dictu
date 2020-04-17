@@ -1,0 +1,9 @@
+/**
+* __file__.du
+*
+* Testing __file__
+*/
+
+assert(Path.basename(__file__) == "__file__.du");
+assert(Path.dirname(__file__) == "tests/builtins");
+print (__file__);
