@@ -9,7 +9,7 @@
 var cwd = System.getCWD();
 assert(type(cwd) == 'string');
 assert(cwd.len() > 0);
-System.setCWD("/");
+assert(System.setCWD("/") == 0);
 assert(System.getCWD() == "/");
-System.setCWD(cwd);
+assert(System.setCWD(cwd) == 0);
 assert(System.getCWD() == cwd);
