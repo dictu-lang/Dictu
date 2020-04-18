@@ -175,7 +175,15 @@ static TokenType identifierType() {
             }
             break;
         case 'n':
-            return checkKeyword(1, 2, "il", TOKEN_NIL);
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'o':
+                        return checkKeyword(2, 1, "t", TOKEN_BANG);
+                    case 'i':
+                        return checkKeyword(2, 1, "l", TOKEN_NIL);
+                }
+            }
+            break;
         case 'o':
             return checkKeyword(1, 1, "r", TOKEN_OR);
         case 'r':
