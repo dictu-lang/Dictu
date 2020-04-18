@@ -15,12 +15,7 @@ static Value setCWDNative(VM *vm, int argCount, Value *args) {
 
     int retval = chdir(dir);
 
-    if (retval != 0) {
-        runtimeError(vm, "Error setting current directory");
-        return EMPTY_VAL;
-    }
-
-    return NIL_VAL;
+    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
 static Value getCWDNative(VM *vm, int argCount, Value *args) {

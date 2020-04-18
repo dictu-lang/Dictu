@@ -32,10 +32,12 @@ System.getCWD(); // '/Some/Path/To/A/Directory'
 
 ### System.setCWD()
 
-Set current working directory of the Dictu process. Raises a runtime error if it is unsuccessful.
+Set current working directory of the Dictu process. Returns 0 upon success and -1 otherwise.
 
 ```js
-System.setCWD('/');
+if (System.setCWD('/') == -1) {
+  print ("failed to change directory");
+}
 ```
 
 ### System.sleep(number)

@@ -59,6 +59,9 @@ typedef enum {
 
 // extern VM vm;
 
+#define OK     0
+#define NOTOK -1
+
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
 
 void freeVM(VM *vm);
