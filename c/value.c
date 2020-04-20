@@ -33,8 +33,7 @@ void freeValueArray(VM *vm, ValueArray *array) {
     initValueArray(array);
 }
 
-static inline uint32_t hashBits(uint64_t hash)
-{
+static inline uint32_t hashBits(uint64_t hash) {
     // From v8's ComputeLongHash() which in turn cites:
     // Thomas Wang, Integer Hash Functions.
     // http://www.concentric.net/~Ttwang/tech/inthash.htm
@@ -44,13 +43,13 @@ static inline uint32_t hashBits(uint64_t hash)
     hash = hash ^ (hash >> 11);
     hash = hash + (hash << 6);
     hash = hash ^ (hash >> 22);
-    return (uint32_t)(hash & 0x3fffffff);
+    return (uint32_t) (hash & 0x3fffffff);
 }
 
-static uint32_t hashObject(Obj* object) {
+static uint32_t hashObject(Obj *object) {
     switch (object->type) {
         case OBJ_STRING: {
-            return ((ObjString*)object)->hash;
+            return ((ObjString *) object)->hash;
         }
 
             // Should never get here
