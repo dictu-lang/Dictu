@@ -32,3 +32,14 @@ assert(myDict == {10.5: 10.5});
 
 myDict.remove(10.5);
 assert(myDict == {});
+
+for (var i = 0; i < 10000; ++i) {
+    myDict[i] = i;
+}
+
+for (var i = 0; i < 10000; ++i) {
+    myDict.remove(i);
+}
+
+assert(myDict.len() == 0);
+assert(myDict == {});

@@ -33,8 +33,7 @@ void freeValueArray(VM *vm, ValueArray *array) {
     initValueArray(array);
 }
 
-static inline uint32_t hashBits(uint64_t hash)
-{
+static inline uint32_t hashBits(uint64_t hash) {
     // From v8's ComputeLongHash() which in turn cites:
     // Thomas Wang, Integer Hash Functions.
     // http://www.concentric.net/~Ttwang/tech/inthash.htm
@@ -44,16 +43,16 @@ static inline uint32_t hashBits(uint64_t hash)
     hash = hash ^ (hash >> 11);
     hash = hash + (hash << 6);
     hash = hash ^ (hash >> 22);
-    return (uint32_t)(hash & 0x3fffffff);
+    return (uint32_t) (hash & 0x3fffffff);
 }
 
-static uint32_t hashObject(Obj* object) {
+static uint32_t hashObject(Obj *object) {
     switch (object->type) {
         case OBJ_STRING: {
-            return ((ObjString*)object)->hash;
+            return ((ObjString *) object)->hash;
         }
 
-        // Should never get here
+            // Should never get here
         default: {
 #ifdef DEBUG_PRINT_CODE
             printf("Object: ");
@@ -74,36 +73,27 @@ static uint32_t hashValue(Value value) {
     return hashBits(value);
 }
 
-static DictItem *findDictEntry(DictItem *entries, int capacityMask,
-                           Value key) {
-    uint32_t index = hashValue(key) & capacityMask;
-    DictItem *tombstone = NULL;
-
-    for (;;) {
-        DictItem *entry = &entries[index];
-
-        if (IS_EMPTY(entry->key)) {
-            if (IS_NIL(entry->value)) {
-                // Empty entry.
-                return tombstone != NULL ? tombstone : entry;
-            } else {
-                // We found a tombstone.
-                if (tombstone == NULL) tombstone = entry;
-            }
-        } else if (valuesEqual(key, entry->key)) {
-            // We found the key.
-            return entry;
-        }
-
-        index = (index + 1) & capacityMask;
-    }
-}
-
 bool dictGet(ObjDict *dict, Value key, Value *value) {
     if (dict->count == 0) return false;
 
-    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
-    if (IS_EMPTY(entry->key)) return false;
+    DictItem *entry;
+    uint32_t index = hashValue(key) & dict->capacityMask;
+    uint32_t psl = 0;
+
+    for (;;) {
+        entry = &dict->entries[index];
+
+        if (IS_EMPTY(entry->key) || psl > entry->psl) {
+            return false;
+        }
+
+        if (valuesEqual(key, entry->key)) {
+            break;
+        }
+
+        index = (index + 1) & dict->capacityMask;
+        psl++;
+    }
 
     *value = entry->value;
     return true;
@@ -114,23 +104,24 @@ static void adjustDictCapacity(VM *vm, ObjDict *dict, int capacityMask) {
     for (int i = 0; i <= capacityMask; i++) {
         entries[i].key = EMPTY_VAL;
         entries[i].value = NIL_VAL;
+        entries[i].psl = 0;
     }
+
+    DictItem *oldEntries = dict->entries;
+    int oldMask = dict->capacityMask;
 
     dict->count = 0;
-
-    for (int i = 0; i <= dict->capacityMask; i++) {
-        DictItem *entry = &dict->entries[i];
-        if (IS_EMPTY(entry->key)) continue;
-
-        DictItem *dest = findDictEntry(entries, capacityMask, entry->key);
-        dest->key = entry->key;
-        dest->value = entry->value;
-        dict->count++;
-    }
-
-    FREE_ARRAY(vm, DictItem, dict->entries, dict->capacityMask + 1);
     dict->entries = entries;
     dict->capacityMask = capacityMask;
+
+    for (int i = 0; i <= oldMask; i++) {
+        DictItem *entry = &oldEntries[i];
+        if (IS_EMPTY(entry->key)) continue;
+
+        dictSet(vm, dict, entry->key, entry->value);
+    }
+
+    FREE_ARRAY(vm, DictItem, oldEntries, oldMask + 1);
 }
 
 bool dictSet(VM *vm, ObjDict *dict, Value key, Value value) {
@@ -140,31 +131,92 @@ bool dictSet(VM *vm, ObjDict *dict, Value key, Value value) {
         adjustDictCapacity(vm, dict, capacityMask);
     }
 
-    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
-    bool isNewKey = IS_EMPTY(entry->key);
+    uint32_t index = hashValue(key) & dict->capacityMask;
+    DictItem *bucket;
+    bool isNewKey = false;
 
-    entry->key = key;
-    entry->value = value;
+    DictItem entry;
+    entry.key = key;
+    entry.value = value;
+    entry.psl = 0;
 
+    for (;;) {
+        bucket = &dict->entries[index];
+
+        if (IS_EMPTY(bucket->key)) {
+            isNewKey = true;
+            break;
+        } else {
+            if (valuesEqual(key, bucket->key)) {
+                break;
+            }
+
+            if (entry.psl > bucket->psl) {
+                isNewKey = true;
+                DictItem tmp = entry;
+                entry = *bucket;
+                *bucket = tmp;
+            }
+        }
+
+        index = (index + 1) & dict->capacityMask;
+        entry.psl++;
+    }
+
+    *bucket = entry;
     if (isNewKey) dict->count++;
-
     return isNewKey;
 }
 
 bool dictDelete(VM *vm, ObjDict *dict, Value key) {
     if (dict->count == 0) return false;
 
-    DictItem *entry = findDictEntry(dict->entries, dict->capacityMask, key);
-    if (IS_EMPTY(entry->key)) return false;
+    int capacityMask = dict->capacityMask;
+    uint32_t index = hashValue(key) & capacityMask;
+    uint32_t psl = 0;
+    DictItem *entry;
 
-    // Place a tombstone in the entry.
+    for (;;) {
+        entry = &dict->entries[index];
+
+        if (IS_EMPTY(entry->key) || psl > entry->psl) {
+            return false;
+        }
+
+        if (valuesEqual(key, entry->key)) {
+            break;
+        }
+
+        index = (index + 1) & capacityMask;
+        psl++;
+    }
+
     dict->count--;
-    entry->key = EMPTY_VAL;
-    entry->value = BOOL_VAL(true);
+
+    for (;;) {
+        DictItem *nextEntry;
+        entry->key = EMPTY_VAL;
+        entry->value = EMPTY_VAL;
+
+        index = (index + 1) & capacityMask;
+        nextEntry = &dict->entries[index];
+
+        /*
+         * Stop if we reach an empty bucket or hit a key which
+         * is in its base (original) location.
+         */
+        if (IS_EMPTY(nextEntry->key) || nextEntry->psl == 0) {
+            break;
+        }
+
+        nextEntry->psl--;
+        *entry = *nextEntry;
+        entry = nextEntry;
+    }
 
     if (dict->count - 1 < dict->capacityMask * TABLE_MIN_LOAD) {
         // Figure out the new table size.
-        int capacityMask = SHRINK_CAPACITY(dict->capacityMask);
+        capacityMask = SHRINK_CAPACITY(dict->capacityMask);
         adjustDictCapacity(vm, dict, capacityMask);
     }
 
@@ -181,7 +233,7 @@ void grayDict(VM *vm, ObjDict *dict) {
 
 
 static SetItem *findSetEntry(SetItem *entries, int capacityMask,
-                           Value value) {
+                             Value value) {
     uint32_t index = hashValue(value) & capacityMask;
     SetItem *tombstone = NULL;
 
@@ -410,7 +462,7 @@ bool valuesEqual(Value a, Value b) {
                 return setComparison(a, b);
             }
 
-            // Pass through
+                // Pass through
             default:
                 break;
         }

@@ -761,7 +761,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
-                tableDelete(&vm->globals, name);
+                tableDelete(vm, &vm->globals, name);
                 frame->ip = ip;
                 runtimeError(vm, "Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;

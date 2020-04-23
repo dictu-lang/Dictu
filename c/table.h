@@ -9,6 +9,7 @@
 typedef struct {
     ObjString *key;
     Value value;
+    uint32_t psl;
 } Entry;
 
 typedef struct {
@@ -25,14 +26,14 @@ bool tableGet(Table *table, ObjString *key, Value *value);
 
 bool tableSet(VM *vm, Table *table, ObjString *key, Value value);
 
-bool tableDelete(Table *table, ObjString *key);
+bool tableDelete(VM *vm, Table *table, ObjString *key);
 
 void tableAddAll(VM *vm, Table *from, Table *to);
 
 ObjString *tableFindString(Table *table, const char *chars, int length,
                            uint32_t hash);
 
-void tableRemoveWhite(Table *table);
+void tableRemoveWhite(VM *vm, Table *table);
 
 void grayTable(VM *vm, Table *table);
 
