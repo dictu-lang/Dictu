@@ -167,7 +167,8 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
         case TYPE_INITIALIZER:
         case TYPE_METHOD:
         case TYPE_STATIC:
-        case TYPE_FUNCTION: {
+        case TYPE_FUNCTION:
+        case TYPE_ARROW_FUNCTION: {
             compiler->function->name = copyString(
                     parser->vm,
                     parser->previous.start,
@@ -184,7 +185,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     Local *local = &compiler->locals[compiler->localCount++];
     local->depth = compiler->scopeDepth;
     local->isUpvalue = false;
-    if (type != TYPE_FUNCTION && type != TYPE_STATIC) {
+    if (type == TYPE_METHOD || type == TYPE_INITIALIZER) {
         // In a method, it holds the receiver, "this".
         local->name.start = "this";
         local->name.length = 4;
@@ -568,6 +569,50 @@ static void literal(Compiler *compiler, bool canAssign) {
         default:
             return; // Unreachable.
     }
+}
+
+static void arrow(Compiler *compiler, bool canAssign) {
+    Compiler fnCompiler;
+    initCompiler(compiler->parser, &fnCompiler, compiler, TYPE_ARROW_FUNCTION);
+    beginScope(&fnCompiler);
+
+    // Compile the parameter list.
+    consume(&fnCompiler, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+
+    if (!check(&fnCompiler, TOKEN_RIGHT_PAREN)) {
+        bool optional = false;
+        do {
+            uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.");
+            defineVariable(&fnCompiler, paramConstant);
+
+            if (match(&fnCompiler, TOKEN_EQUAL)) {
+                fnCompiler.function->arityOptional++;
+                optional = true;
+                expression(&fnCompiler);
+            } else {
+                fnCompiler.function->arity++;
+
+                if (optional) {
+                    error(fnCompiler.parser, "Cannot have non-optional parameter after optional.");
+                }
+            }
+
+            if (fnCompiler.function->arity + fnCompiler.function->arityOptional > 255) {
+                error(fnCompiler.parser, "Cannot have more than 255 parameters.");
+            }
+        } while (match(&fnCompiler, TOKEN_COMMA));
+
+        if (fnCompiler.function->arityOptional > 0) {
+            emitByte(&fnCompiler, OP_DEFINE_OPTIONAL);
+        }
+    }
+
+    consume(&fnCompiler, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(&fnCompiler, TOKEN_ARROW, "Expect '=>' after function arguments.");
+
+    expression(&fnCompiler);
+    emitByte(&fnCompiler, OP_RETURN);
+    endCompiler(&fnCompiler);
 }
 
 static void grouping(Compiler *compiler, bool canAssign) {
@@ -995,6 +1040,7 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS_EQUAL
         {rString,  NULL,      PREC_NONE},               // TOKEN_R
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ARROW
         {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
         {string,   NULL,      PREC_NONE},               // TOKEN_STRING
         {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER
@@ -1004,7 +1050,7 @@ ParseRule rules[] = {
         {static_,  NULL,      PREC_NONE},               // TOKEN_STATIC
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_DEF
+        {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
