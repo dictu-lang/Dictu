@@ -571,47 +571,68 @@ static void literal(Compiler *compiler, bool canAssign) {
     }
 }
 
-static void arrow(Compiler *compiler, bool canAssign) {
-    Compiler fnCompiler;
-    initCompiler(compiler->parser, &fnCompiler, compiler, TYPE_ARROW_FUNCTION);
-    beginScope(&fnCompiler);
+static void block(Compiler *compiler) {
+    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+        declaration(compiler);
+    }
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after block.");
+}
+
+static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type) {
+    initCompiler(compiler->parser, fnCompiler, compiler, type);
+    beginScope(fnCompiler);
 
     // Compile the parameter list.
-    consume(&fnCompiler, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+    consume(fnCompiler, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
 
-    if (!check(&fnCompiler, TOKEN_RIGHT_PAREN)) {
+    if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
         do {
-            uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.");
-            defineVariable(&fnCompiler, paramConstant);
+            uint8_t paramConstant = parseVariable(fnCompiler, "Expect parameter name.");
+            defineVariable(fnCompiler, paramConstant);
 
-            if (match(&fnCompiler, TOKEN_EQUAL)) {
-                fnCompiler.function->arityOptional++;
+            if (match(fnCompiler, TOKEN_EQUAL)) {
+                fnCompiler->function->arityOptional++;
                 optional = true;
-                expression(&fnCompiler);
+                expression(fnCompiler);
             } else {
-                fnCompiler.function->arity++;
+                fnCompiler->function->arity++;
 
                 if (optional) {
-                    error(fnCompiler.parser, "Cannot have non-optional parameter after optional.");
+                    error(fnCompiler->parser, "Cannot have non-optional parameter after optional.");
                 }
             }
 
-            if (fnCompiler.function->arity + fnCompiler.function->arityOptional > 255) {
-                error(fnCompiler.parser, "Cannot have more than 255 parameters.");
+            if (fnCompiler->function->arity + fnCompiler->function->arityOptional > 255) {
+                error(fnCompiler->parser, "Cannot have more than 255 parameters.");
             }
-        } while (match(&fnCompiler, TOKEN_COMMA));
+        } while (match(fnCompiler, TOKEN_COMMA));
 
-        if (fnCompiler.function->arityOptional > 0) {
-            emitByte(&fnCompiler, OP_DEFINE_OPTIONAL);
+        if (fnCompiler->function->arityOptional > 0) {
+            emitByte(fnCompiler, OP_DEFINE_OPTIONAL);
         }
     }
 
-    consume(&fnCompiler, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(fnCompiler, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+}
+
+static void arrow(Compiler *compiler, bool canAssign) {
+    Compiler fnCompiler;
+
+    // Setup function and parse parameters
+    beginFunction(compiler, &fnCompiler, TYPE_ARROW_FUNCTION);
+
     consume(&fnCompiler, TOKEN_ARROW, "Expect '=>' after function arguments.");
 
-    expression(&fnCompiler);
-    emitByte(&fnCompiler, OP_RETURN);
+    if (match(&fnCompiler, TOKEN_LEFT_BRACE)) {
+        // Brace so expend function body
+        block(&fnCompiler);
+    } else {
+        // No brace so expect single expression
+        expression(&fnCompiler);
+        emitByte(&fnCompiler, OP_RETURN);
+    }
     endCompiler(&fnCompiler);
 }
 
@@ -1103,57 +1124,15 @@ void expression(Compiler *compiler) {
     parsePrecedence(compiler, PREC_ASSIGNMENT);
 }
 
-static void block(Compiler *compiler) {
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        declaration(compiler);
-    }
-
-    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after block.");
-}
-
 static void function(Compiler *compiler, FunctionType type) {
     Compiler fnCompiler;
-    initCompiler(compiler->parser, &fnCompiler, compiler, type);
-    beginScope(&fnCompiler);
 
-    // Compile the parameter list.
-    consume(&fnCompiler, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
-
-    if (!check(&fnCompiler, TOKEN_RIGHT_PAREN)) {
-        bool optional = false;
-        do {
-            uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.");
-            defineVariable(&fnCompiler, paramConstant);
-
-            if (match(&fnCompiler, TOKEN_EQUAL)) {
-                fnCompiler.function->arityOptional++;
-                optional = true;
-                expression(&fnCompiler);
-            } else {
-                fnCompiler.function->arity++;
-
-                if (optional) {
-                    error(fnCompiler.parser, "Cannot have non-optional parameter after optional.");
-                }
-            }
-
-            if (fnCompiler.function->arity + fnCompiler.function->arityOptional > 255) {
-                error(fnCompiler.parser, "Cannot have more than 255 parameters.");
-            }
-        } while (match(&fnCompiler, TOKEN_COMMA));
-
-        if (fnCompiler.function->arityOptional > 0) {
-            emitByte(&fnCompiler, OP_DEFINE_OPTIONAL);
-        }
-    }
-
-    consume(&fnCompiler, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+    // Setup function and parse parameters
+    beginFunction(compiler, &fnCompiler, type);
 
     // The body.
     consume(&fnCompiler, TOKEN_LEFT_BRACE, "Expect '{' before function body.");
-
     block(&fnCompiler);
-
     /**
      * No need to explicitly reduce the scope here as endCompiler does
      * it for us.
