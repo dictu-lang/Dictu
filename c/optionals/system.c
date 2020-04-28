@@ -141,7 +141,6 @@ static Value exitNative(VM *vm, int argCount, Value *args) {
 
     exit(AS_NUMBER(args[0]));
     return EMPTY_VAL; /* satisfy the tcc compiler */
-
 }
 
 void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
