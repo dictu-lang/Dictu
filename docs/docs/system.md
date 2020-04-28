@@ -22,6 +22,14 @@ nav_order: 12
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
 
+### System.remove()
+
+Delete a file from filesystem. Returns 0 upon success and -1 otherwise.
+
+```js
+System.remove(file);
+```
+
 ### System.getCWD()
 
 Get current working directory of the Dictu process returned as a string
@@ -42,7 +50,7 @@ if (System.setCWD('/') == -1) {
 
 ### System.sleep(number)
 
-Sleep pauses execution of the program for a given amount of time in seconds
+Sleep pauses execution of the program for a given amount of time in seconds.
 
 ```js
 System.sleep(3); // Pauses execution for 3 seconds
@@ -74,7 +82,7 @@ System.collect();
 
 ### System.exit(number)
 
-When you wish to prematurely exit the script with a given exit code
+When you wish to prematurely exit the script with a given exit code.
 
 ```js
 System.exit(10);

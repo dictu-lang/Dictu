@@ -1,5 +1,23 @@
 #include "system.h"
 
+static Value removeNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "remove() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *file = AS_CSTRING(args[0]);
+
+    int retval = REMOVE(file);
+
+    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+}
+
 static Value setCWDNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "setcwd() takes 1 argument (%d given)", argCount);
@@ -121,6 +139,7 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     /**
      * Define System methods
      */
+    defineNative(vm, &klass->methods, "remove", removeNative);
     defineNative(vm, &klass->methods, "setCWD", setCWDNative);
     defineNative(vm, &klass->methods, "getCWD", getCWDNative);
     defineNative(vm, &klass->methods, "time", timeNative);

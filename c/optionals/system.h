@@ -8,8 +8,10 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#define REMOVE remove
 #else
 #include <unistd.h>
+#define REMOVE unlink
 #endif
 
 #include "optionals.h"
