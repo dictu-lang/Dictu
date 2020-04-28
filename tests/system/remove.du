@@ -1,0 +1,7 @@
+var test_remove = "tests/system/test_remove";
+
+with (test_remove, "w") {
+  file.write ("test");
+}
+
+assert(System.remove(test_remove) == 0);

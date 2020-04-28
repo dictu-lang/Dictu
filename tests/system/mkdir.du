@@ -1,0 +1,12 @@
+var
+  S_IRWXU = System.S_IRWXU,
+  S_IRGRP = System.S_IRGRP,
+  S_IXGRP = System.S_IXGRP,
+  S_IROTH = System.S_IROTH,
+  S_IXOTH = System.S_IXOTH,
+  PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
+
+var test_dir = "tests/system/test_dir";
+
+assert(System.mkdir(test_dir, PERM[0755]) == 0);
+assert(System.rmdir(test_dir) == 0);

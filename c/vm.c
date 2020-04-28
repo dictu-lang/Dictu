@@ -67,6 +67,16 @@ void setupFilenameStack(VM *vm, const char *scriptName) {
     vm->scriptNames[vm->scriptNameCount] = scriptName;
 }
 
+void setcurrentFile(VM *vm, const char *scriptname, int len) {
+    ObjString *name = copyString(vm, scriptname, len);
+    push(vm, OBJ_VAL(name));
+    ObjString *__file__ = copyString(vm, "__file__", 8);
+    push(vm, OBJ_VAL(__file__));
+    tableSet(vm, &vm->globals, __file__, OBJ_VAL(name));
+    pop(vm);
+    pop(vm);
+}
+
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     VM *vm = malloc(sizeof(*vm));
 
@@ -105,6 +115,11 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->instanceMethods);
 
     setupFilenameStack(vm, scriptName);
+    if (scriptName == NULL) {
+        setcurrentFile(vm, "", 0);
+    } else {
+        setcurrentFile(vm, scriptName, (int) strlen(scriptName));
+    }
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
@@ -746,7 +761,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(SET_GLOBAL): {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
-                tableDelete(&vm->globals, name);
+                tableDelete(vm, &vm->globals, name);
                 frame->ip = ip;
                 runtimeError(vm, "Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
@@ -1008,6 +1023,7 @@ static InterpretResult run(VM *vm) {
             }
 
             vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
+            setcurrentFile(vm, fileName->chars, fileName->length);
 
             ObjFunction *function = compile(vm, s);
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
@@ -1027,6 +1043,12 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(IMPORT_END): {
             vm->scriptNameCount--;
+            if (vm->scriptNameCount >= 0) {
+                setcurrentFile(vm, vm->scriptNames[vm->scriptNameCount],
+                     (int) strlen(vm->scriptNames[vm->scriptNameCount]));
+            } else {
+                setcurrentFile(vm, "", 0);
+            }
             DISPATCH();
         }
 

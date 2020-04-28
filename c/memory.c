@@ -311,7 +311,7 @@ void collectGarbage(VM *vm) {
     }
 
     // Delete unused interned strings.
-    tableRemoveWhite(&vm->strings);
+    tableRemoveWhite(vm, &vm->strings);
 
     // Collect the white objects.
     Obj **object = &vm->objects;

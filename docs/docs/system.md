@@ -21,6 +21,53 @@ nav_order: 12
 |-----------------|---------------------------------------------------------------------------------------------------|
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
+| System.S_IRWXU  | Read, write, and execute by owner.                                                                |
+| System.S_IRUSR  | Read by owner.                                                                                    |
+| System.S_IWUSR  | Write by owner.                                                                                   |
+| System.S_IXUSR  | Execute by owner.                                                                                 |
+| System.S_IRWXG  | Read, write, and execute by group.                                                                |
+| System.S_IRGRP  | Read by group.                                                                                    |
+| System.S_IWGRP  | Write by group.                                                                                   |
+| System.S_IXGRP  | Execute by group.                                                                                 |
+| System.S_IRWXO  | Read, write, and execute by others.                                                               |
+| System.S_IROTH  | Read by others.                                                                                   |
+| System.S_IWOTH  | Write by others.                                                                                  |
+| System.S_IXOTH  | Execute by others.                                                                                |
+| System.S_ISUID  | Set user ID on execution.                                                                         |
+| System.S_ISGID  | Set group ID on execution.                                                                        |
+
+### System.mkdir(string, number: mode -> optional)
+
+Make directory. Returns 0 upon success and -1 otherwise.
+It can take an optional number argument that specifies the mode.
+If a mode is not passed, the directory will be created with `0777` permissions.
+
+```js
+var
+  S_IRWXU = System.S_IRWXU,
+  S_IRGRP = System.S_IRGRP,
+  S_IXGRP = System.S_IXGRP,
+  S_IROTH = System.S_IROTH,
+  S_IXOTH = System.S_IXOTH;
+
+System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
+```
+
+### System.rmdir(string)
+
+Remove directory. Returns 0 upon success and -1 otherwise.
+
+```js
+System.rmdir(dir);
+```
+
+### System.remove(string)
+
+Delete a file from filesystem. Returns 0 upon success and -1 otherwise.
+
+```js
+System.remove(file);
+```
 
 ### System.getCWD()
 
@@ -30,17 +77,19 @@ Get current working directory of the Dictu process returned as a string
 System.getCWD(); // '/Some/Path/To/A/Directory'
 ```
 
-### System.setCWD()
+### System.setCWD(string)
 
-Set current working directory of the Dictu process. Raises a runtime error if it is unsuccessful.
+Set current working directory of the Dictu process. Returns 0 upon success and -1 otherwise.
 
 ```js
-System.setCWD('/');
+if (System.setCWD('/') == -1) {
+  print ("failed to change directory");
+}
 ```
 
 ### System.sleep(number)
 
-Sleep pauses execution of the program for a given amount of time in seconds
+Sleep pauses execution of the program for a given amount of time in seconds.
 
 ```js
 System.sleep(3); // Pauses execution for 3 seconds
@@ -72,7 +121,7 @@ System.collect();
 
 ### System.exit(number)
 
-When you wish to prematurely exit the script with a given exit code
+When you wish to prematurely exit the script with a given exit code.
 
 ```js
 System.exit(10);

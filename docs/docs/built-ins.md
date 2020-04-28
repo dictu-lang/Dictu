@@ -15,6 +15,12 @@ nav_order: 8
 
 ---
 
+## Built in variables
+
+### __file__
+
+The path name of the compilation unit.
+
 ## Built in functions
 
 Global functions which are built into Dictu.
