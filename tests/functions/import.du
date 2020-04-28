@@ -6,3 +6,4 @@
 
 import "tests/functions/parameters.du";
 import "tests/functions/return.du";
+import "tests/functions/arrow.du";
