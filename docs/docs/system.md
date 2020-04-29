@@ -69,6 +69,54 @@ Delete a file from filesystem. Returns 0 upon success and -1 otherwise.
 System.remove(file);
 ```
 
+### System.getpid()
+
+Returns the process ID (PID) of the calling process.
+
+```js
+System.getpid();
+```
+
+### System.getppid()
+
+Returns the process ID of the parent of the calling process
+
+```js
+System.getppid();
+```
+
+### System.getuid()
+
+Returns the real user ID of the calling process.
+
+```js
+System.getuid();
+```
+
+### System.geteuid()
+
+Returns the effective user ID of the calling process.
+
+```js
+System.geteuid();
+```
+
+### System.getgid()
+
+Returns the real group ID of the calling process.
+
+```js
+System.getgid();
+```
+
+### System.getegid()
+
+Returns the effective group ID of the calling process.
+
+```js
+System.getegid();
+```
+
 ### System.getCWD()
 
 Get current working directory of the Dictu process returned as a string
