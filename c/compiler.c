@@ -349,7 +349,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
     return -1;
 }
 
-static void addLocal(Compiler *compiler, Token name, bool constant) {
+static void addLocal(Compiler *compiler, Token name) {
     if (compiler->localCount == UINT8_COUNT) {
         error(compiler->parser, "Too many local variables in function.");
         return;
@@ -361,13 +361,13 @@ static void addLocal(Compiler *compiler, Token name, bool constant) {
     // The local is declared but not yet defined.
     local->depth = -1;
     local->isUpvalue = false;
-    local->constant = constant;
+    local->constant = false;
     compiler->localCount++;
 }
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler, bool constant) {
+static void declareVariable(Compiler *compiler) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
@@ -382,7 +382,7 @@ static void declareVariable(Compiler *compiler, bool constant) {
         }
     }
 
-    addLocal(compiler, *name, constant);
+    addLocal(compiler, *name);
 }
 
 static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool constant) {
@@ -393,16 +393,21 @@ static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool 
         return identifierConstant(compiler, &compiler->parser->previous);
     }
 
-    declareVariable(compiler, constant);
+    declareVariable(compiler);
     return 0;
 }
 
 static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
     if (compiler->scopeDepth == 0) {
+        if (constant) {
+            tableSet(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]), NIL_VAL);
+        }
+
         emitBytes(compiler, OP_DEFINE_GLOBAL, global);
     } else {
         // Mark the local as defined now.
         compiler->locals[compiler->localCount - 1].depth = compiler->scopeDepth;
+        compiler->locals[compiler->localCount - 1].constant = constant;
     }
 }
 
@@ -781,27 +786,15 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
-        printf("here?\n");
         if (setOp == OP_SET_LOCAL) {
-            printf("here1?\n");
-            Local *local = &compiler->locals[arg];
-
-            if (local->constant) {
-                printf("here2?\n");
+            if (compiler->locals[arg].constant) {
                 error(compiler->parser, "Cannot assign to a constant variable");
             }
-        } else if (setOp == OP_SET_UPVALUE) {
-            printf("really??\n");
         } else if (setOp == OP_SET_GLOBAL) {
             Value _;
-            printf("%d\n", compiler->constants.count);
-
-
-            if (tableGet(&compiler->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
+            if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
                 error(compiler->parser, "Cannot assign to a constant variable");
             }
-
-            printf("global\n");
         }
 
         expression(compiler);
@@ -1102,7 +1095,7 @@ static void function(Compiler *compiler, FunctionType type) {
         bool optional = false;
         do {
             uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.", false);
-            defineVariable(&fnCompiler, paramConstant);
+            defineVariable(&fnCompiler, paramConstant, false);
 
             if (match(&fnCompiler, TOKEN_EQUAL)) {
                 fnCompiler.function->arityOptional++;
@@ -1173,7 +1166,7 @@ static void method(Compiler *compiler, bool trait) {
 static void classDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler, false);
+    declareVariable(compiler);
 
     ClassCompiler classCompiler;
     classCompiler.name = compiler->parser->previous;
@@ -1190,7 +1183,7 @@ static void classDeclaration(Compiler *compiler) {
 
         // Store the superclass in a local variable named "super".
         variable(compiler, false);
-        addLocal(compiler, syntheticToken("super"), true);
+        addLocal(compiler, syntheticToken("super"));
 
         emitBytes(compiler, OP_SUBCLASS, nameConstant);
     } else {
@@ -1212,7 +1205,7 @@ static void classDeclaration(Compiler *compiler) {
         endScope(compiler);
     }
 
-    defineVariable(compiler, nameConstant);
+    defineVariable(compiler, nameConstant, false);
 
     compiler->class = compiler->class->enclosing;
 }
@@ -1220,7 +1213,7 @@ static void classDeclaration(Compiler *compiler) {
 static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect trait name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler, false);
+    declareVariable(compiler);
 
     ClassCompiler classCompiler;
     classCompiler.name = compiler->parser->previous;
@@ -1237,7 +1230,7 @@ static void traitDeclaration(Compiler *compiler) {
     }
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
-    defineVariable(compiler, nameConstant);
+    defineVariable(compiler, nameConstant, false);
 
     compiler->class = compiler->class->enclosing;
 }
@@ -1245,7 +1238,7 @@ static void traitDeclaration(Compiler *compiler) {
 static void funDeclaration(Compiler *compiler) {
     uint8_t global = parseVariable(compiler, "Expect function name.", false);
     function(compiler, TYPE_FUNCTION);
-    defineVariable(compiler, global);
+    defineVariable(compiler, global, false);
 }
 
 static void varDeclaration(Compiler *compiler, bool constant) {
@@ -1655,7 +1648,6 @@ void grayCompilerRoots(VM *vm) {
     while (compiler != NULL) {
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
-        grayTable(vm, &compiler->constants);
         compiler = compiler->enclosing;
     }
 }

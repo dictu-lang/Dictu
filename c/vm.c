@@ -100,6 +100,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
     initTable(&vm->globals);
+    initTable(&vm->constants);
     initTable(&vm->strings);
     initTable(&vm->imports);
 
@@ -154,6 +155,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
 void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
+    freeTable(vm, &vm->constants);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
     freeTable(vm, &vm->numberMethods);
