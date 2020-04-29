@@ -1,0 +1,10 @@
+const x = 10;
+
+def test() {
+    x = 100;
+}
+
+test();
+
+print(x);
+

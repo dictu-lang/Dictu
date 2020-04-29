@@ -349,7 +349,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
     return -1;
 }
 
-static void addLocal(Compiler *compiler, Token name) {
+static void addLocal(Compiler *compiler, Token name, bool constant) {
     if (compiler->localCount == UINT8_COUNT) {
         error(compiler->parser, "Too many local variables in function.");
         return;
@@ -361,12 +361,13 @@ static void addLocal(Compiler *compiler, Token name) {
     // The local is declared but not yet defined.
     local->depth = -1;
     local->isUpvalue = false;
+    local->constant = constant;
     compiler->localCount++;
 }
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler) {
+static void declareVariable(Compiler *compiler, bool constant) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
@@ -381,10 +382,10 @@ static void declareVariable(Compiler *compiler) {
         }
     }
 
-    addLocal(compiler, *name);
+    addLocal(compiler, *name, constant);
 }
 
-static uint8_t parseVariable(Compiler *compiler, const char *errorMessage) {
+static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool constant) {
     consume(compiler, TOKEN_IDENTIFIER, errorMessage);
 
     // If it's a global variable, create a string constant for it.
@@ -392,11 +393,11 @@ static uint8_t parseVariable(Compiler *compiler, const char *errorMessage) {
         return identifierConstant(compiler, &compiler->parser->previous);
     }
 
-    declareVariable(compiler);
+    declareVariable(compiler, constant);
     return 0;
 }
 
-static void defineVariable(Compiler *compiler, uint8_t global) {
+static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
     if (compiler->scopeDepth == 0) {
         emitBytes(compiler, OP_DEFINE_GLOBAL, global);
     } else {
@@ -780,6 +781,29 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
+        printf("here?\n");
+        if (setOp == OP_SET_LOCAL) {
+            printf("here1?\n");
+            Local *local = &compiler->locals[arg];
+
+            if (local->constant) {
+                printf("here2?\n");
+                error(compiler->parser, "Cannot assign to a constant variable");
+            }
+        } else if (setOp == OP_SET_UPVALUE) {
+            printf("really??\n");
+        } else if (setOp == OP_SET_GLOBAL) {
+            Value _;
+            printf("%d\n", compiler->constants.count);
+
+
+            if (tableGet(&compiler->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
+                error(compiler->parser, "Cannot assign to a constant variable");
+            }
+
+            printf("global\n");
+        }
+
         expression(compiler);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
@@ -1010,6 +1034,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
         {NULL,     or_,       PREC_OR},                 // TOKEN_OR
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_CONST
         {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
         {literal,  NULL,      PREC_NONE},               // TOKEN_FALSE
         {literal,  NULL,      PREC_NONE},               // TOKEN_NIL
@@ -1076,7 +1101,7 @@ static void function(Compiler *compiler, FunctionType type) {
     if (!check(&fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
         do {
-            uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.");
+            uint8_t paramConstant = parseVariable(&fnCompiler, "Expect parameter name.", false);
             defineVariable(&fnCompiler, paramConstant);
 
             if (match(&fnCompiler, TOKEN_EQUAL)) {
@@ -1148,7 +1173,7 @@ static void method(Compiler *compiler, bool trait) {
 static void classDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, false);
 
     ClassCompiler classCompiler;
     classCompiler.name = compiler->parser->previous;
@@ -1165,7 +1190,7 @@ static void classDeclaration(Compiler *compiler) {
 
         // Store the superclass in a local variable named "super".
         variable(compiler, false);
-        addLocal(compiler, syntheticToken("super"));
+        addLocal(compiler, syntheticToken("super"), true);
 
         emitBytes(compiler, OP_SUBCLASS, nameConstant);
     } else {
@@ -1195,7 +1220,7 @@ static void classDeclaration(Compiler *compiler) {
 static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect trait name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, false);
 
     ClassCompiler classCompiler;
     classCompiler.name = compiler->parser->previous;
@@ -1218,14 +1243,14 @@ static void traitDeclaration(Compiler *compiler) {
 }
 
 static void funDeclaration(Compiler *compiler) {
-    uint8_t global = parseVariable(compiler, "Expect function name.");
+    uint8_t global = parseVariable(compiler, "Expect function name.", false);
     function(compiler, TYPE_FUNCTION);
     defineVariable(compiler, global);
 }
 
-static void varDeclaration(Compiler *compiler) {
+static void varDeclaration(Compiler *compiler, bool constant) {
     do {
-        uint8_t global = parseVariable(compiler, "Expect variable name.");
+        uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
 
         if (match(compiler, TOKEN_EQUAL)) {
             // Compile the initializer.
@@ -1235,7 +1260,7 @@ static void varDeclaration(Compiler *compiler) {
             emitByte(compiler, OP_NIL);
         }
 
-        defineVariable(compiler, global);
+        defineVariable(compiler, global, constant);
     } while (match(compiler, TOKEN_COMMA));
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
@@ -1292,7 +1317,9 @@ static void forStatement(Compiler *compiler) {
     // The initialization clause.
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     if (match(compiler, TOKEN_VAR)) {
-        varDeclaration(compiler);
+        varDeclaration(compiler, false);
+    } else if (match(compiler, TOKEN_CONST)) {
+        varDeclaration(compiler, true);
     } else if (match(compiler, TOKEN_SEMICOLON)) {
         // No initializer.
     } else {
@@ -1418,6 +1445,7 @@ static void withStatement(Compiler *compiler) {
     local->depth = compiler->scopeDepth;
     local->isUpvalue = false;
     local->name = syntheticToken("file");
+    local->constant = true;
 
     emitByte(compiler, OP_OPEN_FILE);
     statement(compiler);
@@ -1497,6 +1525,7 @@ static void synchronize(Parser *parser) {
             case TOKEN_DEF:
             case TOKEN_STATIC:
             case TOKEN_VAR:
+            case TOKEN_CONST:
             case TOKEN_FOR:
             case TOKEN_IF:
             case TOKEN_WHILE:
@@ -1523,7 +1552,9 @@ static void declaration(Compiler *compiler) {
     } else if (match(compiler, TOKEN_DEF)) {
         funDeclaration(compiler);
     } else if (match(compiler, TOKEN_VAR)) {
-        varDeclaration(compiler);
+        varDeclaration(compiler, false);
+    } else if (match(compiler, TOKEN_CONST)) {
+        varDeclaration(compiler, true);
     } else {
         statement(compiler);
     }
@@ -1624,6 +1655,7 @@ void grayCompilerRoots(VM *vm) {
     while (compiler != NULL) {
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
+        grayTable(vm, &compiler->constants);
         compiler = compiler->enclosing;
     }
 }
