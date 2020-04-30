@@ -21,7 +21,7 @@ static void errorAt(Parser *parser, Token *token, const char *message) {
     if (parser->panicMode) return;
     parser->panicMode = true;
 
-    fprintf(stderr, "[line %d] Error", token->line);
+    fprintf(stderr, "[%s line %d] Error", parser->vm->scriptNames[parser->vm->scriptNameCount], token->line);
 
     if (token->type == TOKEN_EOF) {
         fprintf(stderr, " at end");
@@ -770,6 +770,19 @@ static void subscript(Compiler *compiler, bool canAssign) {
     }
 }
 
+static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
+    if (setOp == OP_SET_LOCAL) {
+        if (compiler->locals[arg].constant) {
+            error(compiler->parser, "Cannot assign to a constant variable");
+        }
+    } else if (setOp == OP_SET_GLOBAL) {
+        Value _;
+        if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
+            error(compiler->parser, "Cannot assign to a constant variable");
+        }
+    }
+}
+
 static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
     uint8_t getOp, setOp;
     int arg = resolveLocal(compiler, &name, false);
@@ -786,50 +799,47 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
-        if (setOp == OP_SET_LOCAL) {
-            if (compiler->locals[arg].constant) {
-                error(compiler->parser, "Cannot assign to a constant variable");
-            }
-        } else if (setOp == OP_SET_GLOBAL) {
-            Value _;
-            if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
-                error(compiler->parser, "Cannot assign to a constant variable");
-            }
-        }
-
+        checkConst(compiler, setOp, arg);
         expression(compiler);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_ADD);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitBytes(compiler, OP_NEGATE, OP_ADD);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_MULTIPLY);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_DIVIDE);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_AND);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_XOR);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
+        checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_OR);
@@ -970,6 +980,7 @@ static void prefix(Compiler *compiler, bool canAssign) {
             setOp = OP_SET_GLOBAL;
         }
 
+        checkConst(compiler, setOp, arg);
         emitBytes(compiler, setOp, (uint8_t) arg);
     }
 }
