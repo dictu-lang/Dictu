@@ -1,3 +1,12 @@
+/**
+ * mkdir.du
+ *
+ * Testing the System.mkdir() and System.rmdir() functions
+ *
+ * mkdir() creates a new directory with the given permissions
+ * rmdir() removes a directory
+ */
+
 var
   S_IRWXU = System.S_IRWXU,
   S_IRGRP = System.S_IRGRP,
@@ -9,4 +18,6 @@ var
 var test_dir = "tests/system/test_dir";
 
 assert(System.mkdir(test_dir, PERM[0755]) == 0);
+assert(System.mkdir(test_dir, PERM[0755]) == -1); // Directory already exists
 assert(System.rmdir(test_dir) == 0);
+assert(System.rmdir(test_dir) == -1); // Directory doesn't exist

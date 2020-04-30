@@ -1,3 +1,11 @@
+/**
+ * remove.du
+ *
+ * Testing the System.remove() function
+ *
+ * remove() removes a file from the system
+ */
+
 var test_remove = "tests/system/test_remove";
 
 with (test_remove, "w") {
