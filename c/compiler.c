@@ -773,12 +773,12 @@ static void subscript(Compiler *compiler, bool canAssign) {
 static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
     if (setOp == OP_SET_LOCAL) {
         if (compiler->locals[arg].constant) {
-            error(compiler->parser, "Cannot assign to a constant variable");
+            error(compiler->parser, "Cannot assign to a constant.");
         }
     } else if (setOp == OP_SET_GLOBAL) {
         Value _;
         if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
-            error(compiler->parser, "Cannot assign to a constant variable");
+            error(compiler->parser, "Cannot assign to a constant.");
         }
     }
 }

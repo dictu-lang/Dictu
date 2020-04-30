@@ -141,7 +141,7 @@ static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
 
 static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
@@ -149,7 +149,7 @@ static Value get(VM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "Timeout passed to get() must be a number");
+            runtimeError(vm, "Timeout passed to get() must be a number.");
             return EMPTY_VAL;
         }
 
@@ -157,7 +157,7 @@ static Value get(VM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to get() must be a string");
+        runtimeError(vm, "URL passed to get() must be a string.");
         return EMPTY_VAL;
     }
 
@@ -184,20 +184,20 @@ static Value get(VM *vm, int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
+            runtimeError(vm, "cURL request failed: %s.", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
 
-    runtimeError(vm, "cURL failed to initialise");
+    runtimeError(vm, "cURL failed to initialise.");
     return EMPTY_VAL;
 }
 
 static Value post(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 && argCount != 3) {
-        runtimeError(vm, "post() takes between 1 and 3 arguments (%d given)", argCount);
+        runtimeError(vm, "post() takes between 1 and 3 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
@@ -206,12 +206,12 @@ static Value post(VM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "Timeout passed to post() must be a number");
+            runtimeError(vm, "Timeout passed to post() must be a number.");
             return EMPTY_VAL;
         }
 
         if (!IS_DICT(args[1])) {
-            runtimeError(vm, "Post values passed to post() must be a dictionary");
+            runtimeError(vm, "Post values passed to post() must be a dictionary.");
             return EMPTY_VAL;
         }
 
@@ -219,7 +219,7 @@ static Value post(VM *vm, int argCount, Value *args) {
         dict = AS_DICT(args[1]);
     } else if (argCount == 2) {
         if (!IS_DICT(args[1])) {
-            runtimeError(vm, "Post values passed to post() must be a dictionary");
+            runtimeError(vm, "Post values passed to post() must be a dictionary.");
             return EMPTY_VAL;
         }
 
@@ -227,7 +227,7 @@ static Value post(VM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to post() must be a string");
+        runtimeError(vm, "URL passed to post() must be a string.");
         return EMPTY_VAL;
     }
 
@@ -265,14 +265,14 @@ static Value post(VM *vm, int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
+            runtimeError(vm, "cURL request failed: %s.", curl_easy_strerror(curlResponse));
             return EMPTY_VAL;
         }
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
 
-    runtimeError(vm, "cURL failed to initialise");
+    runtimeError(vm, "cURL failed to initialise.");
     return EMPTY_VAL;
 }
 
