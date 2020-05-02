@@ -1296,14 +1296,11 @@ static InterpretResult run(VM *vm) {
                         }
                     }
 
-                    printf("Start: %d\nEnd: %d\n", indexStart, indexEnd);
-
                     for (int i = indexStart; i < indexEnd; i++) {
                         writeValueArray(vm, &newList->values, list->values.values[i]);
                     }
 
                     pop(vm);
-
                     returnVal = OBJ_VAL(newList);
 
                     break;
