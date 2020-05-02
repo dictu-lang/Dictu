@@ -1296,6 +1296,8 @@ static InterpretResult run(VM *vm) {
                         }
                     }
 
+                    printf("Start: %d\nEnd: %d\n", indexStart, indexEnd);
+
                     for (int i = indexStart; i < indexEnd; i++) {
                         writeValueArray(vm, &newList->values, list->values.values[i]);
                     }
@@ -1320,10 +1322,15 @@ static InterpretResult run(VM *vm) {
                         }
                     }
 
-                    char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
-                    memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
-                    returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
-                    free(newString);
+                    // Ensure the start index is below the end index
+                    if (indexStart > indexEnd) {
+                        returnVal = OBJ_VAL(copyString(vm, "", 0));
+                    } else {
+                        char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
+                        memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
+                        returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
+                        free(newString);
+                    }
                     break;
                 }
 
