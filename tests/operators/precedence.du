@@ -1,8 +1,8 @@
 /**
-* precedence.du
-*
-* Testing operator precedence
-*/
+ * precedence.du
+ *
+ * Testing operator precedence
+ */
 
 var x = 10;
 

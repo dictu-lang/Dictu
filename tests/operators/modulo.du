@@ -1,8 +1,8 @@
 /**
-* modulo.du
-*
-* Testing modulo
-*/
+ * modulo.du
+ *
+ * Testing modulo
+ */
 
 var x = 10;
 
