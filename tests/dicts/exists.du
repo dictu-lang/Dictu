@@ -20,3 +20,5 @@ assert(myDict.exists(nil));
 assert(myDict.exists(10));
 assert(myDict.exists(10.5));
 assert(!(myDict.exists("unknown")));
+assert(!(myDict.exists(100)));
+assert(!(myDict.exists(100.5)));

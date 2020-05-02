@@ -202,7 +202,7 @@ To strip whitespace at the beginning and end of a string, use the `.strip()` met
 "    hello    ".strip(); // "hello"
 ```
 
-### string.format(...Value: args...)
+### string.format(...value: args...)
 
 To format a string with any type of value `.format()` can be used. This will convert any type
 to a string and swap placeholders `{}` for values.

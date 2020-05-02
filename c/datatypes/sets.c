@@ -50,7 +50,9 @@ static Value removeSetItem(VM *vm, int argCount, Value *args) {
     ObjSet *set = AS_SET(args[0]);
 
     if (!setDelete(vm, set, args[1])) {
-        runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", AS_CSTRING(args[1]));
+        char *str = valueToString(args[1]);
+        runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", str);
+        free(str);
         return EMPTY_VAL;
     }
 

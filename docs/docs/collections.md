@@ -51,7 +51,7 @@ E.g `[1, 2, 3, 4, 5][1:]` or `[1, 2, 3, 4, 5][:5]` are both valid. The start ind
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
 ```
 ### Adding to lists
-#### list.push(Value)
+#### list.push(value)
 
 To add append a new value to a list, use the `.push()` method.
 
@@ -61,7 +61,7 @@ myList.push(10); // [10]
 myList.push(11); // [10, 11]
 ```
 
-#### list.insert(Value, number)
+#### list.insert(value, number)
 
 To insert a value into a list at a given index without replacing the value use .insert().
 
@@ -207,7 +207,7 @@ var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
-### dict.get(string, Value: default -> optional)
+### dict.get(string, value: default -> optional)
 
 Returns the dictionary value at the given key, or returns the default value if the key does
 not exist in the dictionary. If the key does not exist and no default is provided `nil` is returned.
@@ -261,6 +261,7 @@ var keyDoesNotExist = myDict.exists("unknown key"); // false
 ### dict.remove(string)
 
 To remove a key from a dictionary use `.remove()`.
+
 **Note**: If you try to remove a key that does not exist a runtime error is raised, use together with `.exists()`.
 
 ```js
@@ -350,6 +351,7 @@ print(mySet.contains("Other!")); // false
 ### set.remove(value)
 
 To remove a value from a set use `.remove()`.
+
 **Note**: If you try to remove a value that does not exist a runtime error is raised, use together with `.contains()`.
 
 ```js
