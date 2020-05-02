@@ -9,6 +9,7 @@
 assert([1].len() == 1);
 assert([1, 2].len() == 2);
 assert([1, 2, 3].len() == 3);
+assert([1, 2, [3, 4]].len() == 3);
 
 var x = [];
 

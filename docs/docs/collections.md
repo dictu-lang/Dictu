@@ -50,20 +50,38 @@ E.g `[1, 2, 3, 4, 5][1:]` or `[1, 2, 3, 4, 5][:5]` are both valid. The start ind
 [1, 2, 3, 4, 5][1:4]; // [2, 3, 4]
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
 ```
+### Adding to lists
+#### list.push(Value)
 
-### list.push(value, number: index -> optional)
-
-To add a new value to a list, use the `.push()` method. To insert a value at a given index, without replacing the
-current value, supply an optional index to `.push()`
+To add append a new value to a list, use the `.push()` method.
 
 ```js
 var myList = [];
 myList.push(10); // [10]
-myList.push(12); // [10, 12]
-// Can insert to an index. This will not replace the value.
+myList.push(11); // [10, 11]
+```
+
+#### list.insert(Value, number)
+
+To insert a value into a list at a given index without replacing the value use .insert().
+
+```js
+var x = [10, 12];
+
+// Can insert to a list. This will not replace the value.
 myList.insert(11, 1); // [10, 11, 12]
-// You can also use the + operator to extend lists
-myList + [13]; // [10, 11, 12, 13]
+```
+
+#### + Operator
+
+Using the + operator on lists will extend and mutate the left hand list.
+It must be used on two values which are both lists.
+
+```js
+var x = [10];
+
+x + [11, 12];
+print(x); // [10, 11, 12]
 ```
 
 ### list.toString()
@@ -145,13 +163,6 @@ list2[0] = 10;
 print(list1); // [1, 2]
 print(list2); // [10, 2]
 ```
-This works fine, however if you have a mutable datatype within the list on a shallow copy, you're back to square one.
-```js
-var list1 = [[1, 2];
-var list2 = list1.copy();
-list2[0][0] = 10;
-print(list1); // [[10, 2]]
-```
 
 #### list.deepCopy()
 To get around this, we can deepCopy the list.
@@ -180,8 +191,6 @@ If you try to access a key that does not exist, `nil` is returned. If you expect
 var myDict = {"key": 1, "key1": true};
 var someItem = myDict["key"]; // 1
 var nilValue = myDict["unknown key"]; // nil
-// Using .get() for defaults
-var defaultValue = myDict.get("unknown key", "No key!"); // No key!
 ```
 
 Updating a value within a dictionary uses the same syntax, except you supply a value via assignment.
@@ -196,6 +205,19 @@ Adding a value to a dictionary is the same as updating a value, however if the k
 ```js
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
+```
+
+### dict.get(string, Value: default -> optional)
+
+Returns the dictionary value at the given key, or returns the default value if the key does
+not exist in the dictionary. If the key does not exist and no default is provided `nil` is returned.
+
+```js
+var myDict = {};
+
+myDict.get("unknown key", "No key!"); // No key!
+myDict.get("unknown key", 10); // 10
+myDict.get("unknown key"); // nil
 ```
 
 ### dict.toString()

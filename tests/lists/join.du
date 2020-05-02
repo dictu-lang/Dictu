@@ -12,3 +12,10 @@ assert(x.join() == "1, 2, 3, 4, 5, 6");
 assert(x.join("") == "123456");
 assert(x.join(",") == "1,2,3,4,5,6");
 assert(x.join("<word>") == "1<word>2<word>3<word>4<word>5<word>6");
+
+var y = [1, 2.2, nil, true, false, [false, nil], {nil: true, "test": {"1234": false}}];
+
+assert(y.join() == '1, 2.2, nil, true, false, [false, nil], {nil: true, "test": {"1234": false}}');
+assert(y.join("") == '12.2niltruefalse[false, nil]{nil: true, "test": {"1234": false}}');
+assert(y.join(",") == '1,2.2,nil,true,false,[false, nil],{nil: true, "test": {"1234": false}}');
+assert(y.join("<word>") == '1<word>2.2<word>nil<word>true<word>false<word>[false, nil]<word>{nil: true, "test": {"1234": false}}');
