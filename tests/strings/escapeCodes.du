@@ -1,0 +1,15 @@
+/**
+ * escapeCodes.du
+ *
+ * Testing all supported string escape codes
+ *
+ */
+
+assert("\n".len() == 1);
+assert("\t".len() == 1);
+assert("\v".len() == 1);
+assert("\\".len() == 1);
+assert("\"".len() == 1);
+assert("\'".len() == 1);
+assert('\''.len() == 1);
+assert('\"'.len() == 1);

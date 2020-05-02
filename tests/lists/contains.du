@@ -1,10 +1,10 @@
 /**
-* contains.du
-*
-* Testing the list.contains() method
-*
-* .contains() returns a boolean if the given value exists within the list
-*/
+ * contains.du
+ *
+ * Testing the list.contains() method
+ *
+ * .contains() returns a boolean if the given value exists within the list
+ */
 
 var x = [1, 2, 3, 4, 5];
 

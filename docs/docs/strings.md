@@ -96,6 +96,15 @@ To make all characters within a string lowercase, use the `.lower()` method.
 "DiCtU".lower(); // dictu
 ```
 
+### string.upper()
+
+To make all characters within a string uppercase, use the `.upper()` method.
+
+```py
+"dictu".upper(); // DICTU
+"DiCtU".upper(); // DICTU
+```
+
 ### string.toNumber()
 
 Converts a string to number.
@@ -112,15 +121,6 @@ Converts a string to a boolean. Strings are "truthy" when they have a length gre
 ```py
 "".toBool(); // false
 "false".toBool(); // true
-```
-
-### string.upper()
-
-To make all characters within a string uppercase, use the `.upper()` method.
-
-```py
-"dictu".upper(); // DICTU
-"DiCtU".upper(); // DICTU
 ```
 
 ### string.startsWith(string)
@@ -149,7 +149,7 @@ To split a string up into a list by a certain character or string, use the `.spl
 "Dictu is great".split(" "); // ['Dictu', 'is', 'great']
 ```
 
-### string.replace(old, new)
+### string.replace(string: old, string: new)
 
 To replace a substring within a string, use the `.replace()` method.
 
@@ -165,11 +165,13 @@ To check if a string contains another string, use the `.contains()` method.
 "Dictu is great".contains("Dictu"); // true
 ```
 
-### string.find(string, skip: optional)
+### string.find(string, number: skip -> optional)
 
 To find the index of a given string, use the `.find()` method.
 
 Skip is an optional parameter which can be passed to skip the first `n` amount of appearances of the given substring.
+
+Returns -1 if the substring could not be found, otherwise it returns the index of the substring.
 
 ```py
 "Hello, how are you?".find("how"); // 7
@@ -200,7 +202,7 @@ To strip whitespace at the beginning and end of a string, use the `.strip()` met
 "    hello    ".strip(); // "hello"
 ```
 
-### string.format(...args...)
+### string.format(...Value: args...)
 
 To format a string with any type of value `.format()` can be used. This will convert any type
 to a string and swap placeholders `{}` for values.

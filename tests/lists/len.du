@@ -13,10 +13,16 @@ assert([1, 2, 3].len() == 3);
 var x = [];
 
 for (var i = 0; i < 1000; ++i) {
+    assert(x.len() == i);
     x.push(i);
 }
 
 assert(x.len() == 1000);
 
 
+for (var i = 1000; i > 0; --i) {
+    assert(x.len() == i);
+    x.pop();
+}
 
+assert(x.len() == 0);

@@ -1,10 +1,10 @@
 /**
-* find.du
-*
-* Testing the str.find() method
-*
-* .find() returns the index of a substring or -1 if not found
-*/
+ * find.du
+ *
+ * Testing the str.find() method
+ *
+ * .find() returns the index of a substring or -1 if not found
+ */
 
 // Exists
 assert("hello".find("hello") == 0);

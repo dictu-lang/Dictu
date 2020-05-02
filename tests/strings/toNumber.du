@@ -1,10 +1,10 @@
 /**
-* toNumber.du
-*
-* Testing the str.toNumber() method
-*
-* .toNumber() converts a string to a number
-*/
+ * toNumber.du
+ *
+ * Testing the str.toNumber() method
+ *
+ * .toNumber() converts a string to a number
+ */
 
 assert("10".toNumber() == 10);
 assert("10.2".toNumber() == 10.2);
