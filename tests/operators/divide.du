@@ -1,8 +1,8 @@
 /**
-* divide.du
-*
-* Testing division
-*/
+ * divide.du
+ *
+ * Testing division
+ */
 
 var x = 10;
 

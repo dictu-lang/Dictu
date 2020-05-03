@@ -1,22 +1,31 @@
 /**
-* strip.du
-*
-* Testing the str.leftStrip() method
-* Testing the str.strip() method
-* Testing the str.rightStrip() method
-*
-* .(left/right)strip() returns a new string with whitespace characters removed from the start, end, or both of a string
-*/
+ * strip.du
+ *
+ * Testing the str.leftStrip() method
+ * Testing the str.rightStrip() method
+ * Testing the str.strip() method
+ *
+ * .(left/right)strip() returns a new string with whitespace characters removed from the start, end, or both of a string
+ */
 
 // Left strip
 assert("  Dictu is great!".leftStrip() == "Dictu is great!");
 assert("Dictu is great!  ".leftStrip() == "Dictu is great!  ");
 assert("  Dictu is great!  ".leftStrip() == "Dictu is great!  ");
+assert("  Dictu is great!".leftStrip().len() == 15);
+assert("Dictu is great!  ".leftStrip().len() == 17);
+assert("  Dictu is great!  ".leftStrip().len() == 17);
 // Right strip
 assert("Dictu is great!  ".rightStrip() == "Dictu is great!");
 assert("  Dictu is great!".rightStrip() == "  Dictu is great!");
 assert("  Dictu is great!  ".rightStrip() == "  Dictu is great!");
+assert("Dictu is great!  ".rightStrip().len() == 15);
+assert("  Dictu is great!".rightStrip().len() == 17);
+assert("  Dictu is great!  ".rightStrip().len() == 17);
 // Strip
 assert("Dictu is great!  ".strip() == "Dictu is great!");
 assert("  Dictu is great!".strip() == "Dictu is great!");
 assert("  Dictu is great!  ".strip() == "Dictu is great!");
+assert("Dictu is great!  ".strip().len() == 15);
+assert("  Dictu is great!".strip().len() == 15);
+assert("  Dictu is great!  ".strip().len() == 15);

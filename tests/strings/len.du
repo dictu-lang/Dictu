@@ -6,6 +6,10 @@
  * .len() returns a number based on the amount of string characters
  */
 
+assert(type("qwert".len()) == "number");
 assert("qwert".len() == 5);
 assert(("test" + "ing").len() == 7);
 assert("ασδφγ".len() == 10);
+assert('qwert'.len() == 5);
+assert(('test' + 'ing').len() == 7);
+assert('ασδφγ'.len() == 10);

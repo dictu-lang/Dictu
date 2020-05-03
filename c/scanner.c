@@ -103,6 +103,9 @@ static void skipWhitespace() {
                             }
                         }
 
+                        if (isAtEnd())
+                            return;
+
                         if (peekNext() == '/') {
                             break;
                         }
