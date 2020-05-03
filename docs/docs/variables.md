@@ -44,14 +44,13 @@ var someSet = set();
 
 
 To define a variable in Dictu the syntax is as follows `var <identifier> = <value>;` where identifier
-is defined as such `[a-zA-Z_]+` and value is a valid datatype.
+is defined as such `[a-zA-Z_]+[a-zA-Z0-9_]*` and value is a valid datatype.
 
 Once a variable has been defined, `var` is no longer needed to update the value of the variable.
 
 E.g
 ```js
 var someNumber = 10;
-
 someNumber = someNumber + 1;
 ```
 
@@ -68,6 +67,22 @@ You can also define multiple variables with a single statement.
 ```js
 var a, b = 10, c = "hello!";
 print(a, b, c); // nil, 10, 'hello!'
+```
+
+### Constants
+
+Constants are like variables however they differ in that they are read-only. Once a constant has been set its value
+is unable to be changed. Constants also must have a value specified when they are declared.
+
+Constants have a set value, however the value it holds may be mutable, for example a list, if this is the case
+the mutable type ***can*** still be modified.
+
+```js
+const x = 10;
+x = 10; // [line 1] Error at '=': Cannot assign to a constant.
+print(x); // 10
+
+const y = 10, z = 20; // Both y and z are constants
 ```
 
 ## Casting

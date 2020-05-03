@@ -1,0 +1,11 @@
+/**
+ * not.du
+ *
+ * Testing the not(!) logical operator
+ */
+
+assert((not true) == false);
+assert(not false);
+
+assert(!true == false);
+assert(!false);

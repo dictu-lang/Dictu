@@ -79,14 +79,14 @@ static Value parse(VM *vm, int argCount, Value *args) {
     json_value *json_obj = json_parse(json->chars, json->length);
 
     if (json_obj == NULL) {
-        runtimeError(vm, "Invalid JSON passed to parse()");
+        runtimeError(vm, "Invalid JSON passed to parse().");
         return EMPTY_VAL;
     }
 
     Value val = parseJson(vm, json_obj);
 
     if (val == EMPTY_VAL) {
-        runtimeError(vm, "Invalid JSON passed to parse()");
+        runtimeError(vm, "Invalid JSON passed to parse().");
         return EMPTY_VAL;
     }
 
@@ -172,7 +172,7 @@ json_value* stringifyJson(Value value) {
 
 static Value stringify(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given)", argCount);
+        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
@@ -181,7 +181,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "stringify() second argument must be a number");
+            runtimeError(vm, "stringify() second argument must be a number.");
             return EMPTY_VAL;
         }
 
@@ -192,7 +192,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     json_value *json = stringifyJson(args[0]);
 
     if (json == NULL) {
-        runtimeError(vm, "Value: %s is not JSON serializable", valueToString(args[0]));
+        runtimeError(vm, "Value: %s is not JSON serializable.", valueToString(args[0]));
         return EMPTY_VAL;
     }
 

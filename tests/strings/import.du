@@ -1,8 +1,8 @@
 /**
-* import.du
-*
-* General import file for all the operator tests
-*/
+ * import.du
+ *
+ * General import file for all the string tests
+ */
 
 import "tests/strings/replace.du";
 import "tests/strings/split.du";
@@ -21,3 +21,4 @@ import "tests/strings/len.du";
 import "tests/strings/rawStrings.du";
 import "tests/strings/toNumber.du";
 import "tests/strings/toBool.du";
+import "tests/strings/escapeCodes.du";

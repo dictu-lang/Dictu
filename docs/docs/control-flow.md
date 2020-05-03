@@ -183,3 +183,34 @@ def someFunction(a, b="default!") {
 someFunction(1, 2); // 1, 2
 someFunction(1); // 1, "default!"
 ```
+
+### Arrow functions
+
+Arrow functions are anonymous functions which are a syntactically compact version of a regular function.
+Arrow functions can either return a single expression, or can act like a regular function depending
+on whether the body is enclosed in {} or not.
+
+```
+// If the arrow functions body is not enclosed in {} then a single
+// expression is allowed and the value is returned implicitly without the use of "return".
+
+var func = def () => 10;
+func(); // 10
+
+// If a function body is enclosed by {} then it acts like a regular function.
+
+var func = def() => {return 10;};
+func(); // 10
+```
+
+Arrow functions can also use optional parameters.
+
+```
+var func = def(a=10) => a;
+func(); // 10
+func(100); // 100
+
+var func = def(a=10) => {return a;};
+func(); // 10
+func(100); // 100
+```

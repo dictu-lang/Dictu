@@ -1,8 +1,8 @@
 /**
-* subtract.du
-*
-* Testing subtraction
-*/
+ * subtract.du
+ *
+ * Testing subtraction
+ */
 
 var x = 10;
 

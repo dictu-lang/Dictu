@@ -1,10 +1,15 @@
 /**
-* contains.du
-*
-* Testing the str.contains() method
-*
-* .contains() returns a boolean depending on whether a substring exists
-*/
+ * contains.du
+ *
+ * Testing the str.contains() method
+ *
+ * .contains() returns a boolean depending on whether a substring exists
+ */
 
 assert("Dictu is great!".contains("is"));
 assert(!("Dictu is great!".contains("test")));
+assert(!("Dictu is great!".contains("12345")));
+assert(!("Dictu is great!".contains("@£$%")));
+assert("Dictu is great!".contains("!"));
+assert("1Dictu is great!1".contains("1"));
+assert(("1Dictu " + "is great!").contains("1"));

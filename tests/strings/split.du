@@ -1,13 +1,15 @@
 /**
-* split.du
-*
-* Testing the str.split() method
-*
-* .split() returns a list of substrings split by a given delimiter
-*/
+ * split.du
+ *
+ * Testing the str.split() method
+ *
+ * .split() returns a list of substrings split by a given delimiter
+ */
 
 assert("Dictu is great!".split(" ") == ["Dictu", "is", "great!"]);
 assert("Dictu,is,great!".split(",") == ["Dictu", "is", "great!"]);
 assert("Dictu--is--great!".split("--") == ["Dictu", "is", "great!"]);
 assert("Dictu<spacer>is<spacer>great!".split("<spacer>") == ["Dictu", "is", "great!"]);
 assert("Dictu is great!".split(",") == ["Dictu is great!"]);
+assert("Dictu is great!".split("12345") == ["Dictu is great!"]);
+assert("Dictu is great!".split("!@£$%^") == ["Dictu is great!"]);

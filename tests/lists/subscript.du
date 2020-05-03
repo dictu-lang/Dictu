@@ -1,8 +1,8 @@
 /**
-* subscript.du
-*
-* Testing list subscripts
-*/
+ * subscript.du
+ *
+ * Testing list subscripts
+ */
 
 var x = [1, 2, 3, 4, 5];
 

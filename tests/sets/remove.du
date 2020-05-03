@@ -1,10 +1,10 @@
 /**
-* remove.du
-*
-* Testing the set.remove() method
-*
-* .remove() mutates the set to remove a value
-*/
+ * remove.du
+ *
+ * Testing the set.remove() method
+ *
+ * .remove() mutates the set to remove a value
+ */
 
 var mySet = set();
 
