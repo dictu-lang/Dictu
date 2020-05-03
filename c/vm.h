@@ -28,6 +28,7 @@ struct _vm {
     int frameCount;
     int frameCapacity;
     Table globals;
+    Table constants;
     Table strings;
     Table imports;
     Table numberMethods;

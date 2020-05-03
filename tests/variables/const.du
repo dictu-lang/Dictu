@@ -1,0 +1,15 @@
+const x = 10;
+
+{
+    const x = 100;
+    assert(x == 100);
+}
+
+assert(x == 10);
+
+{
+    var x = 100;
+    assert(x == 100);
+}
+
+assert(x == 10);

@@ -100,6 +100,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
     initTable(&vm->globals);
+    initTable(&vm->constants);
     initTable(&vm->strings);
     initTable(&vm->imports);
 
@@ -154,6 +155,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
 void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
+    freeTable(vm, &vm->constants);
     freeTable(vm, &vm->strings);
     freeTable(vm, &vm->imports);
     freeTable(vm, &vm->numberMethods);
@@ -309,7 +311,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 return callNativeMethod(vm, value, argCount);
             }
 
-            runtimeError(vm, "Number has no method %s()", name->chars);
+            runtimeError(vm, "Number has no method %s().", name->chars);
             return false;
         } else if (IS_BOOL(receiver)) {
             Value value;
@@ -317,7 +319,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 return callNativeMethod(vm, value, argCount);
             }
 
-            runtimeError(vm, "Bool has no method %s()", name->chars);
+            runtimeError(vm, "Bool has no method %s().", name->chars);
             return false;
         } else if (IS_NIL(receiver)) {
             Value value;
@@ -325,7 +327,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 return callNativeMethod(vm, value, argCount);
             }
 
-            runtimeError(vm, "Nil has no method %s()", name->chars);
+            runtimeError(vm, "Nil has no method %s().", name->chars);
             return false;
         }
     } else {
@@ -396,7 +398,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "String has no method %s()", name->chars);
+                runtimeError(vm, "String has no method %s().", name->chars);
                 return false;
             }
 
@@ -406,7 +408,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "List has no method %s()", name->chars);
+                runtimeError(vm, "List has no method %s().", name->chars);
                 return false;
             }
 
@@ -416,7 +418,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "Dict has no method %s()", name->chars);
+                runtimeError(vm, "Dict has no method %s().", name->chars);
                 return false;
             }
 
@@ -426,7 +428,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "Set has no method %s()", name->chars);
+                runtimeError(vm, "Set has no method %s().", name->chars);
                 return false;
             }
 
@@ -436,7 +438,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "File has no method %s()", name->chars);
+                runtimeError(vm, "File has no method %s().", name->chars);
                 return false;
             }
 
@@ -1083,7 +1085,7 @@ static InterpretResult run(VM *vm) {
             Value key = peek(vm, 1);
 
             if (!isValidKey(key)) {
-                runtimeError(vm, "Dictionary key must be an immutable type");
+                runtimeError(vm, "Dictionary key must be an immutable type.");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -1154,7 +1156,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
@@ -1222,7 +1224,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
@@ -1388,7 +1390,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        runtimeError(vm, "Dictionary key must be an immutable type");
+                        runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 

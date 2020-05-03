@@ -6,3 +6,4 @@
 
 import "tests/variables/scope.du";
 import "tests/variables/assignment.du";
+import "tests/variables/const.du";
