@@ -107,7 +107,7 @@ To make all characters within a string uppercase, use the `.upper()` method.
 
 ### string.toNumber()
 
-Converts a string to number.
+Converts a string to number. If it fails to parse nil is returned.
 
 ```py
 "10.2".toNumber(); // 10.2
