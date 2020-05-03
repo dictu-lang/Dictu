@@ -1284,7 +1284,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
     do {
         uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
 
-        if (match(compiler, TOKEN_EQUAL)) {
+        if (match(compiler, TOKEN_EQUAL) || constant) {
             // Compile the initializer.
             expression(compiler);
         } else {
