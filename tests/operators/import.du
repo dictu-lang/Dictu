@@ -1,9 +1,12 @@
 /**
-* import.du
-*
-* General import file for all the operator tests
-*/
+ * import.du
+ *
+ * General import file for all the operator tests
+ */
 
+import "tests/operators/and.du";
+import "tests/operators/or.du";
+import "tests/operators/not.du";
 import "tests/operators/equality.du";
 import "tests/operators/plus.du";
 import "tests/operators/subtract.du";

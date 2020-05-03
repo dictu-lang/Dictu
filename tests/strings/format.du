@@ -1,13 +1,20 @@
 /**
-* format.du
-*
-* Testing the str.format() method
-*
-* .format() interpolates values into a string
-*/
+ * format.du
+ *
+ * Testing the str.format() method
+ *
+ * .format() interpolates values into a string
+ */
 
 assert("hello {}".format("jason") == "hello jason");
 assert("hello {}".format(10) == "hello 10");
 assert("hello {}".format([10]) == "hello [10]");
 assert("hello {}. {} {}".format("jason", 10, [10]) == "hello jason. 10 [10]");
 assert("{}".format("jason") == "jason");
+assert("{}".format({"test": 10, "aaa": 10}) == '{"aaa": 10, "test": 10}');
+
+def test() {}
+class Test {}
+trait Trait {}
+
+assert("{} {} {}".format(test, Test, Trait) == '<fn test> <cls Test> <trait Trait>');

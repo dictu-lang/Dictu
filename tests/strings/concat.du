@@ -1,7 +1,13 @@
 /**
-* concat.du
-*
-* Testing string concatenation
-*/
+ * concat.du
+ *
+ * Testing string concatenation
+ */
 
 assert("Dictu" + " is " + "great!" == "Dictu is great!");
+
+var x = "Dictu" +
+    " is " +
+    "great!";
+
+assert(x == "Dictu is great!");

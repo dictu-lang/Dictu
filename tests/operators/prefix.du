@@ -1,10 +1,46 @@
 /**
-* prefix.du
-*
-* Testing prefix operators
-*/
+ * prefix.du
+ *
+ * Testing prefix operators
+ */
 
 var x = 10;
+++x;
 
-assert(++x == 11);
-assert(--x == 10);
+assert(x == 11);
+
+--x;
+assert(x == 10);
+
+/**
+ * Known issue with prefix operator not working with dictionaries
+ */
+
+// var y = {"test": 10};
+// ++y["test"];
+//
+// assert(y["test"] == 11);
+//
+// --y["test"];
+// assert(--y["test"] == 10);
+
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var obj = Test();
+++obj.x;
+assert(obj.x == 11);
+
+/**
+ * Known issue with prefix operator and nested objects
+ */
+
+// var newObj = Test();
+//
+// newObj.o = obj;
+//
+// ++newObj.o.x;
+// assert(obj.x == 12);

@@ -1,10 +1,10 @@
 /**
-* endsWith.du
-*
-* Testing the str.endsWith() method
-*
-* .endsWith() returns a boolean based on whether the string ends with a given substring
-*/
+ * endsWith.du
+ *
+ * Testing the str.endsWith() method
+ *
+ * .endsWith() returns a boolean based on whether the string ends with a given substring
+ */
 
 assert("test".endsWith("t"));
 assert("test".endsWith("st"));
@@ -12,3 +12,6 @@ assert("test".endsWith("test"));
 assert(!("test".endsWith("e")));
 assert(!("test".endsWith("he")));
 assert(!("test".endsWith("hello")));
+assert(!("test".endsWith("1234")));
+assert(!("test".endsWith("!@£$%")));
+assert(!("test".endsWith("123456789")));

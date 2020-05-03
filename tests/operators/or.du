@@ -1,0 +1,10 @@
+/**
+ * or.du
+ *
+ * Testing the or logical operator
+ */
+
+assert(true or true);
+assert(false or true);
+assert(true or false);
+assert((false or false) == false);

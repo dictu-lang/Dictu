@@ -35,6 +35,9 @@ typedef struct {
     // True if this local variable is captured as an upvalue by a
     // function.
     bool isUpvalue;
+
+    // True if it's a constant value.
+    bool constant;
 } Local;
 
 typedef struct {
