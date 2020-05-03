@@ -1,5 +1,63 @@
 #include "system.h"
 
+static Value getgidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "getgid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(getgid());
+
+}
+
+static Value getegidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "getegid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(getegid());
+
+}
+
+static Value getuidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "getuid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(getuid());
+
+}
+
+static Value geteuidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "geteuid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(geteuid());
+
+}
+
+static Value getppidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "getppid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(getppid());
+}
+
+static Value getpidNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "getpid() doesn't take any argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(getpid());
+}
+
 static Value rmdirNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "rmdir() takes 1 argument (%d given)", argCount);
@@ -185,6 +243,12 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     /**
      * Define System methods
      */
+    defineNative(vm, &klass->methods, "getgid", getgidNative);
+    defineNative(vm, &klass->methods, "getegid", getegidNative);
+    defineNative(vm, &klass->methods, "getuid", getuidNative);
+    defineNative(vm, &klass->methods, "geteuid", geteuidNative);
+    defineNative(vm, &klass->methods, "getppid", getppidNative);
+    defineNative(vm, &klass->methods, "getpid", getpidNative);
     defineNative(vm, &klass->methods, "rmdir", rmdirNative);
     defineNative(vm, &klass->methods, "mkdir", mkdirNative);
     defineNative(vm, &klass->methods, "remove", removeNative);

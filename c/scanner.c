@@ -103,6 +103,9 @@ static void skipWhitespace() {
                             }
                         }
 
+                        if (isAtEnd())
+                            return;
+
                         if (peekNext() == '/') {
                             break;
                         }
@@ -376,7 +379,13 @@ Token scanToken() {
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
-            return makeToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+            if (match('=')) {
+                return makeToken(TOKEN_EQUAL_EQUAL);
+            } else if (match('>')) {
+                return makeToken(TOKEN_ARROW);
+            } else {
+                return makeToken(TOKEN_EQUAL);
+            }
         case '<':
             return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
         case '>':

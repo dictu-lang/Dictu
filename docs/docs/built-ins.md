@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Built in functions
+title: Built-in
 nav_order: 8
 ---
 
-# Built in functions
+# Built-in
 {: .no_toc }
 
 ## Table of contents
@@ -15,13 +15,13 @@ nav_order: 8
 
 ---
 
-## Built in variables
+## Built-in variables
 
-### __file__
+### \__file__
 
 The path name of the compilation unit.
 
-## Built in functions
+## Built-in functions
 
 Global functions which are built into Dictu.
 

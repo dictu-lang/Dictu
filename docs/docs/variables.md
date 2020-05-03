@@ -44,7 +44,7 @@ var someSet = set();
 
 
 To define a variable in Dictu the syntax is as follows `var <identifier> = <value>;` where identifier
-is defined as such `[a-zA-Z_]+` and value is a valid datatype.
+is defined as such `[a-zA-Z_]+[a-zA-Z0-9_]*` and value is a valid datatype.
 
 Once a variable has been defined, `var` is no longer needed to update the value of the variable.
 

@@ -1,10 +1,10 @@
 /**
-* insert.du
-*
-* Testing the list.insert() method
-*
-* .insert() will insert a new value into a list at a given index without replacing
-*/
+ * insert.du
+ *
+ * Testing the list.insert() method
+ *
+ * .insert() will insert a new value into a list at a given index without replacing
+ */
 
 var x = [1, 2, 3, 4, 6];
 
@@ -12,7 +12,6 @@ var x = [1, 2, 3, 4, 6];
 assert(x == [1, 2, 3, 4, 6]);
 
 // Test .insert()
-
 x.insert(5, 4);
 assert(x == [1, 2, 3, 4, 5, 6]);
 

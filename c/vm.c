@@ -1303,7 +1303,6 @@ static InterpretResult run(VM *vm) {
                     }
 
                     pop(vm);
-
                     returnVal = OBJ_VAL(newList);
 
                     break;
@@ -1322,10 +1321,15 @@ static InterpretResult run(VM *vm) {
                         }
                     }
 
-                    char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
-                    memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
-                    returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
-                    free(newString);
+                    // Ensure the start index is below the end index
+                    if (indexStart > indexEnd) {
+                        returnVal = OBJ_VAL(copyString(vm, "", 0));
+                    } else {
+                        char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
+                        memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
+                        returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
+                        free(newString);
+                    }
                     break;
                 }
 

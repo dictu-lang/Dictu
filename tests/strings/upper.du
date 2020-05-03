@@ -1,11 +1,14 @@
 /**
-* upper.du
-*
-* Testing the str.upper() method
-*
-* .upper() returns an uppercase version of the given string
-*/
+ * upper.du
+ *
+ * Testing the str.upper() method
+ *
+ * .upper() returns an uppercase version of the given string
+ */
 
 assert("DiCtU".upper() == "DICTU");
 assert("DICTU".upper() == "DICTU");
 assert("dictu".upper() == "DICTU");
+assert("12345".upper() == "12345");
+assert("12Dictu45".upper() == "12DICTU45");
+assert("!@£$%^&*".upper() == "!@£$%^&*");

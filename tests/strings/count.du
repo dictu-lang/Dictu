@@ -9,3 +9,6 @@
 assert("Dictu is great!".count("D") == 1);
 assert("Dictu is great!".count("Dictu") == 1);
 assert("Dictu is great! Dictu is great!".count("Dictu is great!") == 2);
+assert("Dictu is great! Dictu is great!".count("test") == 0);
+assert("Dictu is great! Dictu is great!".count("1234") == 0);
+assert("Dictu is great! Dictu is great!".count("!") == 2);

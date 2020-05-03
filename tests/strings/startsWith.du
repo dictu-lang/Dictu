@@ -1,10 +1,10 @@
 /**
-* startsWith.du
-*
-* Testing the str.startsWith() method
-*
-* .startsWith() returns a boolean based on whether the string starts with a given substring
-*/
+ * startsWith.du
+ *
+ * Testing the str.startsWith() method
+ *
+ * .startsWith() returns a boolean based on whether the string starts with a given substring
+ */
 
 assert("test".startsWith("t"));
 assert("test".startsWith("te"));
@@ -12,3 +12,6 @@ assert("test".startsWith("test"));
 assert(!("test".startsWith("e")));
 assert(!("test".startsWith("he")));
 assert(!("test".startsWith("hello")));
+assert(!("test".startsWith("1234")));
+assert(!("test".startsWith("!@£$%")));
+assert(!("test".startsWith("123456789")));

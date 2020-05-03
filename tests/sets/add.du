@@ -1,10 +1,10 @@
 /**
-* remove.du
-*
-* Testing the set.add() method
-*
-* .add() mutates the set to add a value
-*/
+ * add.du
+ *
+ * Testing the set.add() method
+ *
+ * .add() mutates the set to add a value
+ */
 
 var mySet = set();
 
@@ -42,3 +42,13 @@ assert(myNewSet.len() == 4);
 myNewSet.add(10.5);
 assert(myNewSet.contains(10.5));
 assert(myNewSet.len() == 5);
+
+var anotherSet = set();
+
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+
+assert(anotherSet.len() == 1);

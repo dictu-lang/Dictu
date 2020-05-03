@@ -1,10 +1,10 @@
 /**
-* replace.du
-*
-* Testing the str.replace() method
-*
-* .replace() returns a new string with a given substring replaced with another
-*/
+ * replace.du
+ *
+ * Testing the str.replace() method
+ *
+ * .replace() returns a new string with a given substring replaced with another
+ */
 
 assert("a".replace("a", "b") == "b");
 assert("aa".replace("aa", "b") == "b");
@@ -14,3 +14,6 @@ assert("ab".replace("ab", "ab") == "ab");
 assert("abcabc".replace("abc", "b") == "bb");
 assert("hellohello".replace("hello", "Dictu!") == "Dictu!Dictu!");
 assert("test".replace("nowords", "b") == "test");
+assert("test".replace("12345", "b") == "test");
+assert("test".replace("t", "123456789123456789123456789123456789") ==
+    "123456789123456789123456789123456789es123456789123456789123456789123456789");

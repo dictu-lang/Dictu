@@ -1,0 +1,10 @@
+/**
+ * and.du
+ *
+ * Testing the and logical operator
+ */
+
+assert(true and true);
+assert((false and true) == false);
+assert((true and false) == false);
+assert((false and false) == false);
