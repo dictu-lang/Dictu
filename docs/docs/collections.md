@@ -74,7 +74,7 @@ myList.insert(11, 1); // [10, 11, 12]
 
 #### + Operator
 
-Using the + operator on lists will extend and mutate the left hand list.
+Using the + operator on lists will join two lists and return a new list.
 It must be used on two values which are both lists.
 
 ```js
@@ -82,6 +82,21 @@ var x = [10];
 
 x + [11, 12];
 print(x); // [10, 11, 12]
+```
+
+#### list.extend(list)
+
+Similar to the + operator however this mutates the list the method is called on rather than returning a new list.
+
+**Note:** values are not copied to the new list, they are just referenced. This means if the value is mutable
+it will mutate in the extended list as well.
+
+```js
+var x = [];
+x.extend([1, 2, 3]);
+print(x); // [1, 2, 3]
+x.extend([1, 2, 3]);
+print(x); // [1, 2, 3, 1, 2, 3]
 ```
 
 ### list.toString()

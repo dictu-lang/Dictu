@@ -881,20 +881,26 @@ static InterpretResult run(VM *vm) {
                 double a = AS_NUMBER(pop(vm));
                 push(vm, NUMBER_VAL(a + b));
             } else if (IS_LIST(peek(vm, 0)) && IS_LIST(peek(vm, 1))) {
-                Value listToAddValue = peek(vm, 0);
-                Value listValue = peek(vm, 1);
+                ObjList *listOne = AS_LIST(peek(vm, 1));
+                ObjList *listTwo = AS_LIST(peek(vm, 0));
 
-                ObjList *list = AS_LIST(listValue);
-                ObjList *listToAdd = AS_LIST(listToAddValue);
+                ObjList *finalList = initList(vm);
+                push(vm, OBJ_VAL(finalList));
 
-                for (int i = 0; i < listToAdd->values.count; ++i) {
-                    writeValueArray(vm, &list->values, listToAdd->values.values[i]);
+                for (int i = 0; i < listOne->values.count; ++i) {
+                    writeValueArray(vm, &finalList->values, listOne->values.values[i]);
+                }
+
+                for (int i = 0; i < listTwo->values.count; ++i) {
+                    writeValueArray(vm, &finalList->values, listTwo->values.values[i]);
                 }
 
                 pop(vm);
+
+                pop(vm);
                 pop(vm);
 
-                push(vm, NIL_VAL);
+                push(vm, OBJ_VAL(finalList));
             } else {
                 frame->ip = ip;
                 runtimeError(vm, "Unsupported operand types.");
