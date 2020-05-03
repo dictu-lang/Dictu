@@ -17,6 +17,11 @@ static Value get(VM *vm, int argCount, Value *args) {
         return OBJ_VAL(copyString(vm, value, strlen(value)));
     }
 
+    /* getenv() doesn't set errno, so we provide an own error */
+    errno = EINVAL; /* EINVAL seems appropriate */
+
+    SET_ERRNO(GET_SELF_CLASS);
+
     return NIL_VAL;
 }
 
@@ -33,13 +38,19 @@ static Value set(VM *vm, int argCount, Value *args) {
 
     char *key = AS_CSTRING(args[0]);
 
+    int retval;
     if (IS_NIL(args[1])) {
-        unsetenv(key);
+        retval = unsetenv(key);
     } else {
-        setenv(key, AS_CSTRING(args[1]), 1);
+        retval = setenv(key, AS_CSTRING(args[1]), 1);
     }
 
-    return NIL_VAL;
+    /* both set errno, though probably they can not fail */
+    if (retval == NOTOK) {
+        SET_ERRNO(GET_SELF_CLASS);
+    }
+
+    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
 void createEnvClass(VM *vm) {
@@ -51,6 +62,7 @@ void createEnvClass(VM *vm) {
     /**
      * Define Env methods
      */
+    defineNative(vm, &klass->methods, "strerror", strerrorNative);
     defineNative(vm, &klass->methods, "get", get);
     defineNative(vm, &klass->methods, "set", set);
 

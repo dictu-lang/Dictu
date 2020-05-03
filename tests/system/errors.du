@@ -1,0 +1,20 @@
+/**
+ * errors.du
+ *
+ * Testing System.errno and System.strerror() function
+ *
+ */
+
+var rmdir_test_file = "tests/system/rmdir_test_file";
+with(rmdir_test_file, "w") {
+  file.write ("test");
+}
+
+assert(System.rmdir(rmdir_test_file) == -1);
+assert(System.errno == C.ENOTDIR);
+assert(System.strerror() == "Not a directory");
+assert(System.remove(rmdir_test_file) == 0);
+assert(System.setCWD ("/root") == -1);
+assert(System.errno == C.EACCES);
+assert(System.strerror(C.EACCES) == "Permission denied");
+

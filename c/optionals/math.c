@@ -36,7 +36,6 @@ static Value floorNative(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-
     return NUMBER_VAL(floor(AS_NUMBER(args[0])));
 }
 
@@ -51,7 +50,6 @@ static Value roundNative(VM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-
     return NUMBER_VAL(round(AS_NUMBER(args[0])));
 }
 
@@ -65,7 +63,6 @@ static Value ceilNative(VM *vm, int argCount, Value *args) {
         runtimeError(vm, "A non-number value passed to ceil()");
         return EMPTY_VAL;
     }
-
 
     return NUMBER_VAL(ceil(AS_NUMBER(args[0])));
 }
@@ -85,6 +82,7 @@ static Value absNative(VM *vm, int argCount, Value *args) {
 
     if (absValue < 0)
         return NUMBER_VAL(absValue * -1);
+
     return NUMBER_VAL(absValue);
 }
 

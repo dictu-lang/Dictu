@@ -1,5 +1,22 @@
 #include "http.h"
 
+static Value strerrorHttpNative(VM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    int error;
+    if (argCount == 1) {
+        error = AS_NUMBER(args[0]);
+    } else {
+        error = AS_NUMBER(GET_ERRNO(GET_SELF_CLASS));
+    }
+
+    char *error_string = (char *) curl_easy_strerror(error);
+    return OBJ_VAL(copyString(vm, error_string, strlen(error_string)));
+}
+
 static void createResponse(VM *vm, Response *response) {
     response->vm = vm;
     response->headers = initList(vm);
@@ -184,15 +201,17 @@ static Value get(VM *vm, int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
-            return EMPTY_VAL;
+            errno = curlResponse;
+            SET_ERRNO(GET_SELF_CLASS);
+            return NIL_VAL;
         }
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
 
-    runtimeError(vm, "cURL failed to initialise");
-    return EMPTY_VAL;
+    errno = CURLE_FAILED_INIT;
+    SET_ERRNO(GET_SELF_CLASS);
+    return NIL_VAL;
 }
 
 static Value post(VM *vm, int argCount, Value *args) {
@@ -247,7 +266,6 @@ static Value post(VM *vm, int argCount, Value *args) {
             postValue = dictToPostArgs(dict);
         }
 
-        // Set cURL options
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postValue);
@@ -263,17 +281,18 @@ static Value post(VM *vm, int argCount, Value *args) {
             free(postValue);
         }
 
-        /* Check for errors */
         if (curlResponse != CURLE_OK) {
-            runtimeError(vm, "cURL request failed: %s", curl_easy_strerror(curlResponse));
-            return EMPTY_VAL;
+            errno = curlResponse;
+            SET_ERRNO(GET_SELF_CLASS);
+            return NIL_VAL;
         }
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
 
-    runtimeError(vm, "cURL failed to initialise");
-    return EMPTY_VAL;
+    errno = CURLE_FAILED_INIT;
+    SET_ERRNO(GET_SELF_CLASS);
+    return NIL_VAL;
 }
 
 void createHTTPClass(VM *vm) {
@@ -285,8 +304,14 @@ void createHTTPClass(VM *vm) {
     /**
      * Define Http methods
      */
+    defineNative(vm, &klass->methods, "strerror", strerrorHttpNative);
     defineNative(vm, &klass->methods, "get", get);
     defineNative(vm, &klass->methods, "post", post);
+
+    /**
+     * Define Http properties
+     */
+    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

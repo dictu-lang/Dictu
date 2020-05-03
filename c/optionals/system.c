@@ -73,6 +73,10 @@ static Value rmdirNative(VM *vm, int argCount, Value *args) {
 
     int retval = rmdir(dir);
 
+    if (-1 == retval) {
+      SET_ERRNO(GET_SELF_CLASS);
+    }
+
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
@@ -102,6 +106,10 @@ static Value mkdirNative(VM *vm, int argCount, Value *args) {
 
     int retval = MKDIR(dir, mode);
 
+    if (retval == NOTOK) {
+      SET_ERRNO(GET_SELF_CLASS);
+    }
+
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
@@ -119,6 +127,10 @@ static Value removeNative(VM *vm, int argCount, Value *args) {
     char *file = AS_CSTRING(args[0]);
 
     int retval = REMOVE(file);
+
+    if (retval == NOTOK) {
+      SET_ERRNO(GET_SELF_CLASS);
+    }
 
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
@@ -138,6 +150,10 @@ static Value setCWDNative(VM *vm, int argCount, Value *args) {
 
     int retval = chdir(dir);
 
+    if (retval == NOTOK) {
+        SET_ERRNO(GET_SELF_CLASS);
+    }
+
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
@@ -148,8 +164,9 @@ static Value getCWDNative(VM *vm, int argCount, Value *args) {
         return OBJ_VAL(copyString(vm, cwd, strlen(cwd)));
     }
 
-    runtimeError(vm, "Error getting current directory");
-    return EMPTY_VAL;
+    SET_ERRNO(GET_SELF_CLASS);
+
+    return NIL_VAL;
 }
 
 static Value timeNative(VM *vm, int argCount, Value *args) {
@@ -243,6 +260,7 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     /**
      * Define System methods
      */
+    defineNative(vm, &klass->methods, "strerror", strerrorNative);
     defineNative(vm, &klass->methods, "getgid", getgidNative);
     defineNative(vm, &klass->methods, "getegid", getegidNative);
     defineNative(vm, &klass->methods, "getuid", getuidNative);
@@ -269,6 +287,8 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     }
 
     initPlatform(vm, &klass->properties);
+
+    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
 
     defineNativeProperty(vm, &klass->properties, "S_IRWXU", NUMBER_VAL(448));
     defineNativeProperty(vm, &klass->properties, "S_IRUSR", NUMBER_VAL(256));
