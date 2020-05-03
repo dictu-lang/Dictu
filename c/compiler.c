@@ -402,6 +402,9 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
     if (compiler->scopeDepth == 0) {
         if (constant) {
             tableSet(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]), NIL_VAL);
+        } else {
+            // If it's not constant, remove
+            tableDelete(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]));
         }
 
         emitBytes(compiler, OP_DEFINE_GLOBAL, global);
@@ -595,8 +598,8 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
     if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
         do {
-            uint8_t paramConstant = parseVariable(fnCompiler, "Expect parameter name.");
-            defineVariable(fnCompiler, paramConstant);
+            uint8_t paramConstant = parseVariable(fnCompiler, "Expect parameter name.", false);
+            defineVariable(fnCompiler, paramConstant, false);
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
                 fnCompiler->function->arityOptional++;
