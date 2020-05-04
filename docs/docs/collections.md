@@ -286,7 +286,8 @@ var myDict2 = myDict.deepCopy(); // Deep copy
 Sets are an unordered collection of unique hashable values. Set values must be of type string, number, boolean or nil.
 
 ```js
-var mySet = set();
+var mySet = set("test", 10);
+print(mySet); // {10, "test"}
 ```
 
 ### set.toString()
