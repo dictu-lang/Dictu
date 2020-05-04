@@ -1,0 +1,19 @@
+/**
+ * push.du
+ *
+ * Testing the list.extend() method
+ *
+ * .extend() will insert all the values of one list into another.
+ * Values are not copied, and are merely referenced. So if a list contains
+ * a mutable value it will mutate in the extended list.
+ */
+
+var x = [];
+
+x.extend([1, 2, 3]);
+assert(x.len() == 3);
+assert(x == [1, 2, 3]);
+
+x.extend([1, 2, 3]);
+assert(x.len() == 6);
+assert(x == [1, 2, 3, 1, 2, 3]);

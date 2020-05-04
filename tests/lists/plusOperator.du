@@ -1,0 +1,16 @@
+/**
+ * plusOperator.du
+ *
+ * Testing the + operator on lists
+ *
+ * + operator joins two lists and returns a new list
+ */
+
+var x = [1, 2];
+assert(x + [3, 4] == [1, 2, 3, 4]);
+
+// Check to ensure original hasn't mutated
+assert(x = [1, 2]);
+
+var y = x + [3, 4];
+assert(y.len() == 4);
