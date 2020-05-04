@@ -17,3 +17,6 @@ set_b.add(2);
 
 assert(set_a.toString() == '{"two", "one"}');
 assert(set_b.toString() == '{2, 1}');
+
+var set_a = set("one", 2, 3.3, true, false, nil);
+assert(set_a.toString() == '{2, 3.3, false, true, nil, "one"}');

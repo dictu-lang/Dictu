@@ -14,3 +14,12 @@ assert(set_a.toBool() == true);
 
 set_a.remove("one");
 assert(set_a.toBool() == false);
+
+var set_a = set(true, false);
+assert(set_a.toBool() == true);
+
+set_a.remove(true);
+assert(set_a.toBool() == true);
+
+set_a.remove(false);
+assert(set_a.toBool() == false);

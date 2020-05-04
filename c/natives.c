@@ -56,7 +56,15 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value setNative(VM *vm, int argCount, Value *args) {
-    return OBJ_VAL(initSet(vm));
+    ObjSet *set = initSet(vm);
+    push(vm, OBJ_VAL(set));
+
+    for (int i = 0; i < argCount; i++) {
+        setInsert(vm, set, args[i]);
+    }
+    pop(vm);
+
+    return OBJ_VAL(set);
 }
 
 static Value inputNative(VM *vm, int argCount, Value *args) {
