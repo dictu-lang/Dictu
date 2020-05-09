@@ -4,7 +4,6 @@
  * General import file for all the System methods
  */
 
-import "tests/system/errors.du";
 import "tests/system/sleep.du";
 import "tests/system/getCWD.du";
 import "tests/system/setCWD.du";
@@ -12,3 +11,4 @@ import "tests/system/clock.du";
 import "tests/system/time.du";
 import "tests/system/remove.du";
 import "tests/system/process.du";
+import "tests/system/mkdir.du";

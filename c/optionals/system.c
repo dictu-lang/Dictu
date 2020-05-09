@@ -7,7 +7,6 @@ static Value getgidNative(VM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(getgid());
-
 }
 
 static Value getegidNative(VM *vm, int argCount, Value *args) {
@@ -17,7 +16,6 @@ static Value getegidNative(VM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(getegid());
-
 }
 
 static Value getuidNative(VM *vm, int argCount, Value *args) {
@@ -27,7 +25,6 @@ static Value getuidNative(VM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(getuid());
-
 }
 
 static Value geteuidNative(VM *vm, int argCount, Value *args) {
@@ -37,7 +34,6 @@ static Value geteuidNative(VM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(geteuid());
-
 }
 
 static Value getppidNative(VM *vm, int argCount, Value *args) {

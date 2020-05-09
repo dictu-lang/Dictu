@@ -6,10 +6,15 @@
  * remove() removes a file from the system
  */
 
-var test_remove = "tests/system/test_remove";
+var sys_test_remove = "tests/system/sys_test_remove";
 
-with (test_remove, "w") {
+with (sys_test_remove, "w") {
   file.write ("test");
 }
 
-assert(System.remove(test_remove) == 0);
+assert(System.remove(sys_test_remove) == 0);
+assert(System.mkdir(sys_test_remove) == 0);
+assert(System.remove(sys_test_remove) == -1);
+assert(System.errno == C.EISDIR);
+assert(System.strerror() == "Is a directory");
+assert(System.rmdir(sys_test_remove) == 0);
