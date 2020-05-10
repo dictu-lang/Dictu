@@ -1,26 +1,6 @@
 #include "path.h"
 
-static Value strerrorPathNative(VM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    int error;
-    if (argCount == 1) {
-      error = AS_NUMBER(args[0]);
-    } else {
-        ObjClassNative *Path = GET_SELF_CLASS;
-        ObjString *name = copyString(vm, "errno", 5);
-        Value value;
-        tableGet(&Path->properties, name, &value);
-        error = AS_NUMBER(value);
-    }
-
-    return strerrorGeneric(vm, error);
-}
-
-#ifndef _WIN32
+#ifdef HAS_REALPATH
 static Value realpathNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "realpath() takes 1 argument (%d given)", argCount);
@@ -179,16 +159,16 @@ void createPathClass(VM *vm) {
     /**
      * Define Path methods
      */
-#ifndef _WIN32
+#ifdef HAS_REALPATH
     defineNative(vm, &klass->methods, "realpath", realpathNative);
+    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
+    defineNative(vm, &klass->methods, "strerror", strerrorNative); // only realpath uset errno
 #endif
-    defineNative(vm, &klass->methods, "strerror", strerrorPathNative);
     defineNative(vm, &klass->methods, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &klass->methods, "basename", basenameNative);
     defineNative(vm, &klass->methods, "extname", extnameNative);
     defineNative(vm, &klass->methods, "dirname", dirnameNative);
 
-    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &klass->properties, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
     defineNativeProperty(vm, &klass->properties, "dirSeparator", OBJ_VAL(
