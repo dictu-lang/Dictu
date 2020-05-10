@@ -15,10 +15,25 @@ nav_order: 14
 
 ---
 
+### Constants
+
+| Constant        | Description               |
+|-----------------|---------------------------|
+| Env.errno       | Number of the last error. |
+
+### Env.strerror(number error -> optional)
+Get the string represantation of an error.
+It can an optional number error argument, otherwise the default is Env.errno.
+It returns a string that describes the error.
+
+```js
+print(Env.strerror());
+```
+
 ### Env.get(string)
 
-You can access ENV vars through the use of the Env.get() method. If the ENV var does not exist nil is returned, other wise
-a string value is returned.
+Get an environment variable. If the ENV var does not exist nil is returned and sets errno accordingly,
+other wise a string value is returned.
 
 ```js
 Env.get("bad key!"); // nil
@@ -27,8 +42,9 @@ Env.get("valid key"); // "value"
 
 ### Env.set(string, value)
 
-You can set ENV vars through the use of the Env.set() method. You can also clear an ENV var by passing a `nil` value.
-When setting an ENV var the key must be a string and the value must be either a string or nil;
+Change or add an environment variable. You can clear an ENV var by passing a `nil` value.
+When setting an ENV var the key must be a string and the value must be either a string or nil.
+Returns 0 upon success or -1 otherwise and sets Env.errno accordingly.
 
 ```js
 Env.set("key", "test");
