@@ -219,7 +219,7 @@ json_value* stringifyJson(Value value) {
 
 static Value stringify(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given)", argCount);
+        runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
@@ -228,7 +228,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "stringify() second argument must be a number");
+            runtimeError(vm, "stringify() second argument must be a number.");
             return EMPTY_VAL;
         }
 
@@ -243,7 +243,6 @@ static Value stringify(VM *vm, int argCount, Value *args) {
         SET_ERRNO(GET_SELF_CLASS);
         return NIL_VAL;
         // return EMPTY_VAL;
-
     }
 
     json_serialize_opts default_opts =

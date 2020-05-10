@@ -9,14 +9,21 @@
 assert([1].len() == 1);
 assert([1, 2].len() == 2);
 assert([1, 2, 3].len() == 3);
+assert([1, 2, [3, 4]].len() == 3);
 
 var x = [];
 
 for (var i = 0; i < 1000; ++i) {
+    assert(x.len() == i);
     x.push(i);
 }
 
 assert(x.len() == 1000);
 
 
+for (var i = 1000; i > 0; --i) {
+    assert(x.len() == i);
+    x.pop();
+}
 
+assert(x.len() == 0);

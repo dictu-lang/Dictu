@@ -1,8 +1,8 @@
 /**
-* plus.du
-*
-* Testing addition
-*/
+ * plus.du
+ *
+ * Testing addition
+ */
 
 var x = 10;
 
