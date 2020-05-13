@@ -13,6 +13,12 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef __APPLE__
+#define LAST_ERROR 106
+#else
+#define LAST_ERROR EHWPOISON
+#endif
+
 #include "optionals.h"
 #include "../vm.h"
 #include "../memory.h"

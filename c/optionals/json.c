@@ -27,8 +27,12 @@ static Value strerrorJsonNative(VM *vm, int argCount, Value *args) {
         error = AS_NUMBER(GET_ERRNO(GET_SELF_CLASS));
     }
 
-    if (error <= 0) {
-        runtimeError(vm, "strerror() argument should be > 0");
+    if (error == 0) {
+        return OBJ_VAL(copyString(vm, "", 0));
+    }
+
+    if (error < 0) {
+        runtimeError(vm, "strerror() argument should be greater than or equal to 0");
         return EMPTY_VAL;
     }
 
@@ -47,7 +51,7 @@ static Value parseJson(VM *vm, json_value *json) {
     switch (json->type) {
         case json_none:
         case json_null: {
-            return NIL_VAL;
+            return EMPTY_VAL;
         }
 
         case json_object: {
@@ -125,16 +129,14 @@ static Value parse(VM *vm, int argCount, Value *args) {
     if (json_obj == NULL) {
         errno = JSON_EINVAL;
         SET_ERRNO(GET_SELF_CLASS);
-        // return NIL_VAL;
-        return EMPTY_VAL;
+        return NIL_VAL;
     }
 
     Value val = parseJson(vm, json_obj);
 
     if (val == EMPTY_VAL) {
         SET_ERRNO(GET_SELF_CLASS);
-        // return NIL_VAL;
-        return EMPTY_VAL;
+        return NIL_VAL;
     }
 
     json_value_free(json_obj);
@@ -242,16 +244,14 @@ static Value stringify(VM *vm, int argCount, Value *args) {
         errno = JSON_ENOSERIAL;
         SET_ERRNO(GET_SELF_CLASS);
         return NIL_VAL;
-        // return EMPTY_VAL;
     }
 
     json_serialize_opts default_opts =
     {
-            lineType,
-            json_serialize_opt_pack_brackets,
-            indent
+        lineType,
+        json_serialize_opt_pack_brackets,
+        indent
     };
-
 
     char *buf = malloc(json_measure(json));
     json_serialize_ex(buf, json, default_opts);
