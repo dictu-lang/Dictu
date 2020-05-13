@@ -17,7 +17,7 @@
   defineNativeProperty(vm, &klass_->properties, "errno", NUMBER_VAL(errno))
 
 #define GET_ERRNO(klass_)({                          \
-  Value errno_value;                                 \
+  Value errno_value = 0;                             \
   ObjString *name = copyString(vm, "errno", 5);      \
   tableGet(&klass_->properties, name, &errno_value); \
   errno_value;                                       \
