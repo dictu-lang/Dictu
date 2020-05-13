@@ -51,7 +51,9 @@ static Value parseJson(VM *vm, json_value *json) {
     switch (json->type) {
         case json_none:
         case json_null: {
-            return EMPTY_VAL;
+            // TODO: We return nil on failure however "null" is valid JSON
+            // TODO: We need a better way of handling this scenario
+            return NIL_VAL;
         }
 
         case json_object: {
