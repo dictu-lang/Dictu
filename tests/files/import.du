@@ -4,4 +4,4 @@
  * General import file for all the file tests
  */
 
-import "tests/files/read.du";
+import "tests/files/readLine.du";

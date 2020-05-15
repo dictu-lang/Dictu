@@ -1,7 +1,7 @@
 /**
- * read.du
+ * readLine.du
  *
- * Testing file reading
+ * Testing file reading with readLine()
  */
 
 with("tests/files/read.txt", "r") {
