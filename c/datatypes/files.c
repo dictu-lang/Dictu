@@ -109,7 +109,7 @@ static Value readLineFile(VM *vm, int argCount, Value *args) {
         return OBJ_VAL(copyString(vm, line, lineLength));
     }
 
-    return OBJ_VAL(copyString(vm, "", 0));
+    return NIL_VAL;
 }
 
 static Value seekFile(VM *vm, int argCount, Value *args) {

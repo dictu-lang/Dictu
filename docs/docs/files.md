@@ -63,8 +63,8 @@ with("test.txt", "r") {
 // Read a file line by line
 with("test.txt", "r") {
     var line;
-    // When you reach the end of the file, an empty string is returned, which is a falsey value
-    while((line = file.readLine())) {
+    // When you reach the end of the file, nil is returned
+    while((line = file.readLine()) != nil) {
         print(line);
     }
 }
