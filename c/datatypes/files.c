@@ -105,7 +105,10 @@ static Value readLineFile(VM *vm, int argCount, Value *args) {
     if (fgets(line, 4096, file->file) != NULL) {
         int lineLength = strlen(line);
         // Remove newline char
-        line[lineLength - 1] = '\0';
+        if (line[lineLength - 1] == '\n') {
+            lineLength--;
+            line[lineLength] = '\0';
+        }
         return OBJ_VAL(copyString(vm, line, lineLength));
     }
 
