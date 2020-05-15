@@ -34,27 +34,23 @@ $ ./dictu examples/guessingGame.du
 
 ## Example program
 ```js
-def guessingGame() {
-    var userInput;
-    var guess = 10;
+var userInput;
+var guess = 10;
 
-    while {
-        userInput = number(input("Input your guess: "));
-        print(userInput);
-        if (userInput == guess) {
-            print("Well done!");
-            return;
-        } else if (userInput < guess) {
-            print("Too low!");
-        } else {
-            print("Too high!");
-        }
-
-        sleep(1);
+while {
+    userInput = input("Input your guess: ").toNumber();
+    print(userInput);
+    if (userInput == guess) {
+        print("Well done!");
+        break;
+    } else if (userInput < guess) {
+        print("Too low!");
+    } else {
+        print("Too high!");
     }
-}
 
-guessingGame();
+    System.sleep(1);
+}
 ```
 
 More [here.](https://github.com/Jason2605/Dictu/tree/develop/examples)

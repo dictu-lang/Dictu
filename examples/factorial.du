@@ -1,4 +1,4 @@
-var amount = number(input("Enter a number: "));
+var amount = input("Enter a number: ").toNumber();
 var num = 1;
 
 if (amount > 0) {
