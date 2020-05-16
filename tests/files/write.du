@@ -1,0 +1,32 @@
+/**
+ * write.du
+ *
+ * Testing file writing with write()
+ */
+var contents;
+
+with("tests/files/read.txt", "r") {
+    // Save contents to reset the file
+    contents = file.read();
+}
+
+with("tests/files/read.txt", "w") {
+    // Save contents to reset the file
+    var count = file.write("Dictu is great!");
+    assert(count == 15);
+    count = file.write("Dictu is great!");
+    assert(count == 15);
+    count = file.write("Dictu is great!");
+    assert(count == 15);
+}
+
+with("tests/files/read.txt", "r") {
+    // Save contents to reset the file
+    assert(file.read() == "Dictu is great!Dictu is great!Dictu is great!");
+}
+
+with("tests/files/read.txt", "w") {
+    // Reset the file
+    file.write(contents);
+}
+

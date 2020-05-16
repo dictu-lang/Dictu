@@ -18,13 +18,18 @@ nav_order: 10
 
 ### Opening files
 
-Opening files is very easy in Dictu. Syntax is `with(<file name>, <open mode>) {}`
+Opening files is very easy in Dictu. Syntax is `with(<file name>, <open mode>) {}`. Inside the `with` block, `file` is declared
+as a constant for you, and is the file object which has just been opened. Dictu will handle closing the file for you and happens
+when you leave the with scope automatically.
 
 | Open Mode | Description                                            |
 |-----------|--------------------------------------------------------|
 | r         | Opens a file for reading, the file must exist already. |
-| w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten |
-| a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file |
+| w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten. |
+| a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file. |
+| r+        | Opens a file for updating (read + write), the file must exist already. |
+| w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten |
+| a+        | Opens a file for updating (read + write), if a file does not exist one is created, else appends text to the end of a file. |
 
 ```js
 with("test.txt", "r") {
@@ -72,12 +77,13 @@ with("test.txt", "r") {
 
 Another method which may come in useful when reading files is `seek()`. `seek()` allows you to move the file cursor so you can re-read a file, for example, without closing the file and reopening.
 
-<br/>
-#### Seek(offset, from)
-Both arguments passed to seek need to be of numeric value, however the `from` argument is opentional. Offset is the amount of characters you wish to move (negative offset for seeking backwards), and from can be 0, 1 or 2.
-- 0 => Seek from the start of the file
-- 1 => Seek from the current cursor position
-- 2 => Seek from the end of the file
+### Seek(number, number: from  -> optional)
+Both arguments passed to seek need to be of numeric value, however the `from` argument is optional.
+The first argument (offset) is the amount of characters you wish to move from the cursor position (negative offset for seeking backwards).
+The second argument (from) is for controlling where the cursor will be within the file, options are 0, 1 or 2.
+- 0 => Seek from the start of the file.
+- 1 => Seek from the current cursor position.
+- 2 => Seek from the end of the file.
 
 If the `from` parameter is not supplied, `seek()` will occur from the beginning of the file.
 
