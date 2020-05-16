@@ -1,0 +1,23 @@
+/**
+ * seek.du
+ *
+ * Testing file seeking with seek()
+ */
+
+var contents;
+
+with("tests/files/read.txt", "r") {
+    contents = file.read();
+}
+
+assert(type(contents) == "string");
+
+with("tests/files/read.txt", "r") {
+    var fileContents = file.read();
+    file.seek(0);
+    assert(file.read() == fileContents);
+    file.seek(-(fileContents.len()), 1);
+    assert(file.read() == fileContents);
+    file.seek(-(fileContents.len()), 2);
+    assert(file.read() == fileContents);
+}

@@ -8,3 +8,4 @@ import "tests/files/read.du";
 import "tests/files/readLine.du";
 import "tests/files/write.du";
 import "tests/files/writeLine.du";
+import "tests/files/seek.du";
