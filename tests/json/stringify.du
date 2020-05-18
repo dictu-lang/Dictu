@@ -31,7 +31,7 @@ assert(JSON.stringify({"test": 10.5}) == '{"test": 10.5}');
 assert(JSON.stringify({"test": "test"}) == '{"test": "test"}');
 assert(JSON.stringify({"test": []}) == '{"test": []}');
 assert(JSON.stringify({"test": {}}) == '{"test": {}}');
-assert(JSON.stringify({10: {}}) == '{10: {}}');
+assert(JSON.stringify({10: {}}) == '{"10": {}}');
 assert(JSON.stringify({true: false}) == '{"true": false}');
 assert(JSON.stringify({nil: 10.5}) == '{"null": 10.5}');
 
