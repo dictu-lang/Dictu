@@ -6,10 +6,14 @@
 * type() returns the type of a value as a string
 */
 
+assert(type(nil) == "nil");
+assert(type(true) == "bool");
+assert(type(false) == "bool");
 assert(type(10) == "number");
 assert(type("test") == "string");
 assert(type([1, 2]) == "list");
 assert(type({"hi": 10}) == "dict");
+assert(type(set(1)) == "set");
 
 def testing() {}
 
@@ -21,3 +25,7 @@ class Test {
 
 assert(type(Test) == "class");
 assert(type(Test().test) == "method");
+
+with("tests/builtins/type.du", "r") {
+    assert(type(file) == "file");
+}

@@ -204,7 +204,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     };
 
 
-    char *buf = malloc(json_measure(json));
+    char *buf = malloc(json_measure_ex(json, default_opts));
     json_serialize_ex(buf, json, default_opts);
     ObjString *string = copyString(vm, buf, strlen(buf));
     free(buf);

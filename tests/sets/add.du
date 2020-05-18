@@ -62,3 +62,4 @@ anotherSet.add(10);
 anotherSet.add(10);
 
 assert(anotherSet.len() == 1);
+assert(anotherSet == set(10));
