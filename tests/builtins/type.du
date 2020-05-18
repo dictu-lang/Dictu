@@ -14,6 +14,7 @@ assert(type("test") == "string");
 assert(type([1, 2]) == "list");
 assert(type({"hi": 10}) == "dict");
 assert(type(set(1)) == "set");
+assert(type(type) == "native");
 
 def testing() {}
 
