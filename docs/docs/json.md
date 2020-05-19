@@ -26,7 +26,7 @@ JSON.parse('[1, 2, 3]'); // [1, 2, 3]
 JSON.parse('null'); // nil
 ```
 
-### JSON.stringify(value)
+### JSON.stringify(value, number: indent -> optional)
 
 Stringify converts a Dictu value into a valid JSON string.
 
@@ -37,7 +37,8 @@ JSON.stringify([1, 2, 3]); // '[1, 2, 3]'
 JSON.stringify(nil); // 'null'
 ```
 
-Stringify also takes an optional `indent` parameter, which is a number of the amount of spaces to indent by.
+Stringify also takes an optional `indent` parameter, which is a number of the amount of spaces to indent by, while
+also making the response multiline.
 ```js
 JSON.stringify([1, 2, 3], 4);
 

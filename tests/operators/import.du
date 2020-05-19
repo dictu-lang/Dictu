@@ -16,4 +16,5 @@ import "tests/operators/pow.du";
 import "tests/operators/modulo.du";
 import "tests/operators/prefix.du";
 import "tests/operators/assignment.du";
+import "tests/operators/bitwise.du";
 import "tests/operators/precedence.du";

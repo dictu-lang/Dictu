@@ -1350,8 +1350,6 @@ static void forStatement(Compiler *compiler) {
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     if (match(compiler, TOKEN_VAR)) {
         varDeclaration(compiler, false);
-    } else if (match(compiler, TOKEN_CONST)) {
-        varDeclaration(compiler, true);
     } else if (match(compiler, TOKEN_SEMICOLON)) {
         // No initializer.
     } else {

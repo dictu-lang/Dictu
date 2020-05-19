@@ -16,6 +16,8 @@ with("tests/files/read.txt", "r") {
     var fileContents = file.read();
     file.seek(0);
     assert(file.read() == fileContents);
+    file.seek(0, 0);
+    assert(file.read() == fileContents);
     file.seek(-(fileContents.len()), 1);
     assert(file.read() == fileContents);
     file.seek(-(fileContents.len()), 2);

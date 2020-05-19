@@ -5,6 +5,10 @@
 */
 
 class Base {
+    init() {
+        this.x = 100;
+    }
+
     func() {
         return 10;
     }
@@ -15,8 +19,10 @@ class Test < Base {}
 class Testing < Base {
     init() {
         this.value = super.func();
+        this.newFunc = super.func;
     }
 }
 
 assert(Test().func() == 10);
 assert(Testing().value == 10);
+assert(Testing().newFunc() == 10);
