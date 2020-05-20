@@ -10,7 +10,7 @@
  * The first element is always the script name
  */
 assert(type(System.argv) == 'list');
-assert(len(System.argv) > 0);
+assert(System.argv.len() > 0);
 assert(System.argv[0] == "tests/runTests.du");
 
 
@@ -18,4 +18,4 @@ assert(System.argv[0] == "tests/runTests.du");
  * platform stores the current OS platform as a string
  */
 assert(type(System.platform) == 'string');
-assert(len(System.platform) > 0);
+assert(System.platform.len() > 0);
