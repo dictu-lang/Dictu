@@ -39,7 +39,7 @@ nav_order: 12
 
 ### System.strerror(number: error -> optional)
 Get the string representation of an error.
-An optional error status can be passed, otherwise the default is HTTP.errno.
+An optional error status can be passed, otherwise the default is System.errno.
 It returns a string that describes the error.
 
 ```js

@@ -59,7 +59,7 @@ Path.isAbsolute("usr");  // false
 
 ### Path.strerror(number: error -> optional)
 Get the string representation of an error.
-It can an optional number error argument, otherwise the default is Path.errno.
+An optional error status can be passed, otherwise the default is Path.errno.
 It returns a string that describes the error.
 **Note:** This is not available on windows systems.
 
