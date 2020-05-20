@@ -21,6 +21,7 @@ nav_order: 13
 |--------------------|--------------------------------------|
 | Path.delimiter     | System dependent path delimiter      |
 | Path.dirSeparator  | System dependent directory separator |
+| Path.errno         | Number of the last error (UNIX only) |
 
 ### Path.basename(string)
 
@@ -56,9 +57,19 @@ Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
 
+### Path.strerror(number: error -> optional)
+Get the string representation of an error.
+It can an optional number error argument, otherwise the default is Path.errno.
+It returns a string that describes the error.
+**Note:** This is not available on windows systems.
+
+```js
+print(Path.strerror());
+```
+
 ### Path.realpath(string)
 
-Returns the canonicalized absolute pathname or nil on error.
+Returns the canonicalized absolute pathname or nil on error and sets Path.errno accordingly.
 
 **Note:** This is not available on windows systems.
 

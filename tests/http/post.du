@@ -20,3 +20,7 @@ assert(response["statusCode"] == 200);
 assert(response["headers"].len() > 0);
 assert(response["content"].contains("origin"));
 assert(response["content"].contains('"test": "10"'));
+
+response = HTTP.post("https://BAD_URL.test_for_error", {"test": 10});
+assert(response == nil);
+assert(HTTP.strerror() == "Couldn't resolve host name");

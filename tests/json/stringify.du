@@ -37,6 +37,19 @@ assert(JSON.stringify({nil: 10.5}) == '{"null": 10.5}');
 
 assert(JSON.stringify({"test": {"test": [1, 2, 3, {"test": true}]}}) == '{"test": {"test": [1, 2, 3, {"test": true}]}}');
 
+
+class JSON_TEST_ERROR {
+  init() {
+    this.test = 0;
+  }
+}
+
+var test_json_stringify_error = JSON_TEST_ERROR();
+assert(JSON.stringify(test_json_stringify_error) == nil);
+assert(JSON.errno != 0);
+assert(JSON.ENOSERIAL == JSON.errno);
+assert(JSON.strerror() == "Object is not serializable");
+
 // 2 space indent
 var twoSpace = '[\n' +
     '  1,\n' +

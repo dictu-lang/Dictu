@@ -1,6 +1,6 @@
 #include "path.h"
 
-#ifndef _WIN32
+#ifdef HAS_REALPATH
 static Value realpathNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "realpath() takes 1 argument (%d given)", argCount);
@@ -15,8 +15,10 @@ static Value realpathNative(VM *vm, int argCount, Value *args) {
     char *path = AS_CSTRING(args[0]);
 
     char tmp[PATH_MAX + 1];
-    if (NULL == realpath(path, tmp))
-      return NIL_VAL;
+    if (NULL == realpath(path, tmp)) {
+        SET_ERRNO(GET_SELF_CLASS);
+        return NIL_VAL;
+    }
 
     return OBJ_VAL(copyString(vm, tmp, strlen (tmp)));
 }
@@ -157,8 +159,10 @@ void createPathClass(VM *vm) {
     /**
      * Define Path methods
      */
-#ifndef _WIN32
+#ifdef HAS_REALPATH
     defineNative(vm, &klass->methods, "realpath", realpathNative);
+    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
+    defineNative(vm, &klass->methods, "strerror", strerrorNative); // only realpath uset errno
 #endif
     defineNative(vm, &klass->methods, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &klass->methods, "basename", basenameNative);

@@ -18,3 +18,7 @@ var response = HTTP.get("https://httpbin.org/get");
 assert(response["statusCode"] == 200);
 assert(response["content"].contains("headers"));
 assert(response["headers"].len() > 0);
+
+response = HTTP.get("https://BAD_URL.test_for_error");
+assert(response == nil);
+assert(HTTP.strerror() == "Couldn't resolve host name");

@@ -1,0 +1,15 @@
+/**
+ * dirname.du
+ *
+ * Testing Path.dirname()
+ *
+ * Returns the directory name of string.
+ */
+
+assert(Path.dirname("/") == "/");
+assert(Path.dirname("//") == "/");
+assert(Path.dirname("") == ".");
+assert(Path.dirname("a") == ".");
+assert(Path.dirname("/root") == "/");
+assert(Path.dirname("///root") == "/");
+assert(Path.dirname("/root///a") == "/root");
