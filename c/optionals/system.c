@@ -206,7 +206,7 @@ static Value exitNative(VM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "sleep() argument must be a number");
+        runtimeError(vm, "exit() argument must be a number");
         return EMPTY_VAL;
     }
 
