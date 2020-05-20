@@ -41,3 +41,19 @@ deepCopy[1]["test"] = 11;
 
 assert(newList == [[1, "hello"], {"test": 10}]);
 assert(deepCopy == [[10, "hello"], {"test": 11}]);
+
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var x = Test();
+
+var list = [x];
+var lCopyDeep = list.deepCopy();
+
+lCopyDeep[0].x = 100;
+
+assert(x.x == 10);
+assert(lCopyDeep[0].x == 100);

@@ -23,7 +23,7 @@ nav_order: 14
 
 ### Env.strerror(number: error -> optional)
 Get the string representation of an error.
-An optional error status can be passed, otherwise the default is HTTP.errno.
+An optional error status can be passed, otherwise the default is Env.errno.
 It returns a string that describes the error.
 
 ```js

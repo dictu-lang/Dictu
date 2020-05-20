@@ -42,3 +42,19 @@ deepCopy[false] = false;
 
 assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}, true: true, false: false, nil: 10, 10: nil, 10.5: 10.5});
+
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var x = Test();
+
+var dict = {"obj": x};
+var dCopyDeep = dict.deepCopy();
+
+dCopyDeep["obj"].x = 100;
+
+assert(x.x == 10);
+assert(dCopyDeep["obj"].x == 100);
