@@ -187,20 +187,20 @@ json_value* stringifyJson(Value value) {
                     }
 
                     char *key;
-                    int keySize;
 
                     if (IS_STRING(entry->key)) {
                         ObjString *s = AS_STRING(entry->key);
                         key = s->chars;
-                        keySize = s->length;
+                    } else if (IS_NIL(entry->key)) {
+                        key = malloc(5);
+                        memcpy(key, "null", 4);
+                        key[4] = '\0';
                     } else {
                         key = valueToString(entry->key);
-                        keySize = strlen(key);
                     }
 
-                    json_object_push_nocopy(
+                    json_object_push(
                             json,
-                            keySize,
                             key,
                             stringifyJson(entry->value)
                     );
@@ -255,11 +255,11 @@ static Value stringify(VM *vm, int argCount, Value *args) {
         indent
     };
 
-    char *buf = malloc(json_measure(json));
+    char *buf = malloc(json_measure_ex(json, default_opts));
     json_serialize_ex(buf, json, default_opts);
     ObjString *string = copyString(vm, buf, strlen(buf));
     free(buf);
-    json_value_free(json);
+    json_builder_free(json);
     return OBJ_VAL(string);
 }
 

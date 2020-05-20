@@ -7,6 +7,7 @@
 import "tests/lists/subscript.du";
 import "tests/lists/contains.du";
 import "tests/lists/push.du";
+import "tests/lists/extend.du";
 import "tests/lists/insert.du";
 import "tests/lists/pop.du";
 import "tests/lists/copy.du";
@@ -15,3 +16,4 @@ import "tests/lists/join.du";
 import "tests/lists/len.du";
 import "tests/lists/toString.du";
 import "tests/lists/toBool.du";
+import "tests/lists/plusOperator.du";

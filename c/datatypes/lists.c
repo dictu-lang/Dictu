@@ -24,6 +24,27 @@ static Value lenList(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(list->values.count);
 }
 
+static Value extendList(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "extend() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_LIST(args[1])) {
+        runtimeError(vm, "extend() argument must be a list");
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    ObjList *listArgument = AS_LIST(args[1]);
+
+    for (int i = 0; i < listArgument->values.count; i++) {
+        writeValueArray(vm, &list->values, listArgument->values.values[i]);
+    }
+
+    return NIL_VAL;
+}
+
 static Value pushListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "push() takes 1 argument (%d given)", argCount);
@@ -224,6 +245,7 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
 void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "toString", toStringList);
     defineNative(vm, &vm->listMethods, "len", lenList);
+    defineNative(vm, &vm->listMethods, "extend", extendList);
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);
