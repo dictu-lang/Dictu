@@ -21,9 +21,9 @@ nav_order: 14
 |-----------------|---------------------------|
 | Env.errno       | Number of the last error. |
 
-### Env.strerror(number error -> optional)
-Get the string represantation of an error.
-It can an optional number error argument, otherwise the default is Env.errno.
+### Env.strerror(number: error -> optional)
+Get the string representation of an error.
+An optional error status can be passed, otherwise the default is HTTP.errno.
 It returns a string that describes the error.
 
 ```js
@@ -33,7 +33,7 @@ print(Env.strerror());
 ### Env.get(string)
 
 Get an environment variable. If the ENV var does not exist nil is returned and sets errno accordingly,
-other wise a string value is returned.
+otherwise a string value is returned.
 
 ```js
 Env.get("bad key!"); // nil

@@ -37,9 +37,9 @@ nav_order: 12
 | System.S_ISUID  | Set user ID on execution.                                                                         |
 | System.S_ISGID  | Set group ID on execution.                                                                        |
 
-### System.strerror(number error -> optional)
-Get the string represantation of an error.
-It can an optional number error argument, otherwise the default is System.errno.
+### System.strerror(number: error -> optional)
+Get the string representation of an error.
+An optional error status can be passed, otherwise the default is HTTP.errno.
 It returns a string that describes the error.
 
 ```js

@@ -57,8 +57,8 @@ Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
 
-### Path.strerror(number error -> optional)
-Get the string represantation of an error.
+### Path.strerror(number: error -> optional)
+Get the string representation of an error.
 It can an optional number error argument, otherwise the default is Path.errno.
 It returns a string that describes the error.
 **Note:** This is not available on windows systems.
@@ -69,7 +69,7 @@ print(Path.strerror());
 
 ### Path.realpath(string)
 
-Returns the canonicalized absolute pathname or nil on error and set Path.errno accordingly.
+Returns the canonicalized absolute pathname or nil on error and sets Path.errno accordingly.
 
 **Note:** This is not available on windows systems.
 

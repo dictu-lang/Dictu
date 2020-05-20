@@ -90,9 +90,9 @@ Example response from [httpbin.org](https://httpbin.org)
 ', "headers": ['HTTP/1.1 200 OK', 'Date: Thu, 27 Feb 2020 19:34:04 GMT', 'Content-Type: application/json', 'Content-Length: 390', 'Connection: keep-alive', 'Server: gunicorn/19.9.0', 'Access-Control-Allow-Origin: *', 'Access-Control-Allow-Credentials: true'], "statusCode": 200}
 ```
 
-### HTTP.strerror(number error -> optional)
-Get the string represantation of an error.
-It can an optional number error argument, otherwise the default is HTTP.errno.
+### HTTP.strerror(number: error -> optional)
+Get the string representation of an error.
+An optional error status can be passed, otherwise the default is HTTP.errno.
 It returns a string that describes the error.
 
 ```js
