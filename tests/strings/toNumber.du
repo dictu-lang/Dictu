@@ -7,6 +7,14 @@
  */
 
 assert("10".toNumber() == 10);
+assert("   10".toNumber() == 10);
 assert("10.2".toNumber() == 10.2);
 assert("10.123456".toNumber() == 10.123456);
 assert("1000000".toNumber() == 1000000);
+
+// Test failed parsing
+assert("10  ".toNumber() == nil);
+assert("number".toNumber() == nil);
+assert("10number".toNumber() == nil);
+assert("10number10".toNumber() == nil);
+assert("10..".toNumber() == nil);

@@ -20,7 +20,15 @@ static Value toNumberString(VM *vm, int argCount, Value *args) {
     }
 
     char *numberString = AS_CSTRING(args[0]);
-    double number = strtod(numberString, NULL);
+    char *end;
+    errno = 0;
+
+    double number = strtod(numberString, &end);
+
+    // Failed conversion
+    if (errno != 0 || *end != '\0') {
+        return NIL_VAL;
+    }
 
     return NUMBER_VAL(number);
 }

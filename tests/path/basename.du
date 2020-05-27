@@ -1,0 +1,14 @@
+/**
+ * basename.du
+ *
+ * Testing Path.basename()
+ *
+ * Returns the basename of string.
+ */
+
+assert(Path.basename ("") == "");
+assert(Path.basename ("/") == "/");
+assert(Path.basename ("//a") == "a");
+assert(Path.basename ("//") == "/");
+assert(Path.basename ("/////") == "/");
+assert(Path.basename ("/root/t.ext") == "t.ext");

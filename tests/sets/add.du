@@ -52,3 +52,13 @@ anotherSet.add(10);
 anotherSet.add(10);
 
 assert(anotherSet.len() == 1);
+
+var anotherSet = set(10);
+
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+anotherSet.add(10);
+
+assert(anotherSet.len() == 1);

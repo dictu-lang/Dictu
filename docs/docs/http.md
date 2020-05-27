@@ -15,9 +15,14 @@ nav_order: 16
 
 ---
 
+| Constant           | Description               |
+|--------------------|---------------------------|
+| HTTP.errno         | Number of the last error  |
+
 ### HTTP.get(string, number: timeout -> optional)
 
-Sends a HTTP GET request to a given URL. Returns a dictionary. Timeout is given in seconds.
+Sends a HTTP GET request to a given URL. Timeout is given in seconds.
+Returns a dictionary upon success or nil otherwise and sets HTTP.errno accordingly.
 
 ```js
 HTTP.get("https://httpbin.org/get");
@@ -28,7 +33,8 @@ HTTP.get("https://httpbin.org/get", 1);
 
 ### HTTP.post(string, dictionary: postArgs -> optional, number: timeout -> optional)
 
-Sends a HTTP POST request to a given URL. Returns a dictionary. Timeout is given in seconds.
+Sends a HTTP POST request to a given URL.Timeout is given in seconds.
+Returns a dictionary upon success or nil otherwise and sets HTTP.errno accordingly.
 
 ```js
 HTTP.post("https://httpbin.org/post");
@@ -38,7 +44,7 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, 1);
 
 ### Response
 
-Both HTTP.get() and HTTP.post() return a dictionary, or raise a runtime error if something goes wrong with the request.
+Both HTTP.get() and HTTP.post() return a dictionary, or nil on error.
 The dictionary returned has 3 keys, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
@@ -82,4 +88,13 @@ Example response from [httpbin.org](https://httpbin.org)
   "url": "https://httpbin.org/post"
 }
 ', "headers": ['HTTP/1.1 200 OK', 'Date: Thu, 27 Feb 2020 19:34:04 GMT', 'Content-Type: application/json', 'Content-Length: 390', 'Connection: keep-alive', 'Server: gunicorn/19.9.0', 'Access-Control-Allow-Origin: *', 'Access-Control-Allow-Credentials: true'], "statusCode": 200}
+```
+
+### HTTP.strerror(number: error -> optional)
+Get the string representation of an error.
+An optional error status can be passed, otherwise the default is HTTP.errno.
+It returns a string that describes the error.
+
+```js
+print(HTTP.strerror());
 ```

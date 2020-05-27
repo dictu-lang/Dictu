@@ -11,8 +11,10 @@
 
 assert(Math.min(1, 2, 3) == 1);
 assert(Math.min([1, 2, 3]) == 1);
+assert(Math.min([3, 2, 1]) == 1);
 assert(Math.max(1, 2, 3) == 3);
 assert(Math.max([1, 2, 3]) == 3);
+assert(Math.max([3, 2, 1]) == 3);
 assert(Math.average(1, 2, 3) == 2);
 assert(Math.average([1, 2, 3]) == 2);
 assert(Math.sum(1, 2, 3) == 6);

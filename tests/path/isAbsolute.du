@@ -1,0 +1,10 @@
+/**
+ * isAbsolute.du
+ *
+ * Testing Path.isAbsolute()
+ *
+ * Returns true if string is an absolute path or false otherwise.
+ */
+
+assert(Path.isAbsolute ("/root") == true);
+assert(Path.isAbsolute ("root") == false);

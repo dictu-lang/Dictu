@@ -1,0 +1,13 @@
+/**
+ * equality.du
+ *
+ * Testing the set equality
+ *
+ */
+
+assert(set() == set());
+assert(set(1) != set());
+assert(set() != set(1));
+assert(set(2) != set(1));
+assert(set(1) == set(1));
+

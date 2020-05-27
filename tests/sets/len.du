@@ -17,5 +17,8 @@ assert(mySet.len() == 2);
 mySet.add("great");
 assert(mySet.len() == 3);
 
+var mySet = set(true, false, nil);
+assert(mySet.len() == 3);
+
 
 

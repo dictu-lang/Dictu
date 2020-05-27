@@ -10,6 +10,7 @@
 class Test {
     init() {
         this.x = [1, 2];
+        this.z = {1: 2};
     }
 }
 
@@ -17,10 +18,12 @@ var obj = Test();
 
 // First check the object was created properly
 assert(obj.x == [1, 2]);
+assert(obj.z == {1: 2});
 
 var objCopy = obj.copy(); // shallow copy
 
 assert(objCopy.x == [1, 2]);
+assert(objCopy.z == {1: 2});
 
 objCopy.y = 10;
 

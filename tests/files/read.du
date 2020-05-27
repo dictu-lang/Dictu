@@ -1,6 +1,28 @@
+/**
+ * read.du
+ *
+ * Testing file reading with read()
+ */
+
+var contents;
+
 with("tests/files/read.txt", "r") {
-    var line;
-     while (line = file.readLine()) {
-         assert(line == "Dictu is great!");
-     }
- }
+    contents = file.read();
+}
+
+assert(type(contents) == "string");
+
+var expected = "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "\n" +
+    "\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!\n" +
+    "Dictu is great!";
+
+assert(contents == expected);

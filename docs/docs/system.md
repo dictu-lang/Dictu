@@ -20,6 +20,7 @@ nav_order: 12
 | Constant        | Description                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------|
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
+| System.errno    | Number of the last error.                                                                         |
 | System.platform | This string identifies the underlying system platform.                                            |
 | System.S_IRWXU  | Read, write, and execute by owner.                                                                |
 | System.S_IRUSR  | Read by owner.                                                                                    |
@@ -36,11 +37,23 @@ nav_order: 12
 | System.S_ISUID  | Set user ID on execution.                                                                         |
 | System.S_ISGID  | Set group ID on execution.                                                                        |
 
+### System.strerror(number: error -> optional)
+Get the string representation of an error.
+An optional error status can be passed, otherwise the default is System.errno.
+It returns a string that describes the error.
+
+```js
+print(System.strerror());
+```
+
 ### System.mkdir(string, number: mode -> optional)
 
-Make directory. Returns 0 upon success and -1 otherwise.
-It can take an optional number argument that specifies the mode.
-If a mode is not passed, the directory will be created with `0777` permissions.
+Make directory.
+Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+
+It can take an optional number argument that specifies the mode. If a mode is not passed, the directory will be created with `0777` permissions.
+
+The actual permissions is modified by the process umask, which typically is S_IWGRP|S_IWOTH (octal 022).
 
 ```js
 var
@@ -55,7 +68,9 @@ System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 
 ### System.rmdir(string)
 
-Remove directory. Returns 0 upon success and -1 otherwise.
+Remove directory.
+
+Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
 ```js
 System.rmdir(dir);
@@ -63,7 +78,9 @@ System.rmdir(dir);
 
 ### System.remove(string)
 
-Delete a file from filesystem. Returns 0 upon success and -1 otherwise.
+Delete a file from filesystem.
+
+Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
 ```js
 System.remove(file);
@@ -119,7 +136,9 @@ System.getegid();
 
 ### System.getCWD()
 
-Get current working directory of the Dictu process returned as a string
+Get the current working directory of the Dictu process.
+
+Returns a string upon success or nil otherwise and sets System.errno accordingly.
 
 ```js
 System.getCWD(); // '/Some/Path/To/A/Directory'
@@ -127,7 +146,9 @@ System.getCWD(); // '/Some/Path/To/A/Directory'
 
 ### System.setCWD(string)
 
-Set current working directory of the Dictu process. Returns 0 upon success and -1 otherwise.
+Set current working directory of the Dictu process.
+
+Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
 ```js
 if (System.setCWD('/') == -1) {

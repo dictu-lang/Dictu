@@ -1,0 +1,16 @@
+/**
+ * realpath.du
+ *
+ * Testing Path.realpath()
+ *
+ * Returns the canonicalized absolute pathname or nil on error.
+ */
+
+if (System.platform != "windows") {
+  assert(Path.delimiter == ":");
+  assert(Path.dirSeparator == "/");
+  assert(Path.realpath("/usr/../usr/../usr") == "/usr");
+  assert(Path.realpath("doesnotexist/../../") == nil);
+  assert(Path.errno == C.ENOENT);
+  assert(Path.strerror() == "No such file or directory");
+}

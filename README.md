@@ -1,6 +1,7 @@
 # Dictu
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab84059049bd4ba7b7b8c1fcfaac4ea5)](https://app.codacy.com/manual/jasonhall96686/Dictu?utm_source=github.com&utm_medium=referral&utm_content=Jason2605/Dictu&utm_campaign=Badge_Grade_Dashboard)
+[![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
 
 *What is Dictu?*  
 Dictu is a very simple dynamically typed programming language 
@@ -34,27 +35,23 @@ $ ./dictu examples/guessingGame.du
 
 ## Example program
 ```js
-def guessingGame() {
-    var userInput;
-    var guess = 10;
+var userInput;
+var guess = 10;
 
-    while {
-        userInput = number(input("Input your guess: "));
-        print(userInput);
-        if (userInput == guess) {
-            print("Well done!");
-            return;
-        } else if (userInput < guess) {
-            print("Too low!");
-        } else {
-            print("Too high!");
-        }
-
-        sleep(1);
+while {
+    userInput = input("Input your guess: ").toNumber();
+    print(userInput);
+    if (userInput == guess) {
+        print("Well done!");
+        break;
+    } else if (userInput < guess) {
+        print("Too low!");
+    } else {
+        print("Too high!");
     }
-}
 
-guessingGame();
+    System.sleep(1);
+}
 ```
 
 More [here.](https://github.com/Jason2605/Dictu/tree/develop/examples)

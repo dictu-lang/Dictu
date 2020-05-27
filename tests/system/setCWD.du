@@ -3,16 +3,17 @@
  *
  * Testing the System.setCWD() function
  *
- * setCWD() sets the current working directory of the process
+ * setCWD() sets the current working directory
  */
 
 var cwd = System.getCWD();
-assert(type(cwd) == 'string');
+assert(cwd != nil);
+assert(type(cwd) == "string");
 assert(cwd.len() > 0);
 assert(System.setCWD("/") == 0);
 assert(System.getCWD() == "/");
 assert(System.setCWD(cwd) == 0);
 assert(System.getCWD() == cwd);
-
-assert(System.setCWD("/some/directory/that/doesnt/exist") == -1);
-assert(System.getCWD() == cwd);
+assert(System.setCWD("some/directory/that/doesnt/exist") == -1);
+assert(System.errno == C.ENOENT);
+assert(System.strerror() == "No such file or directory");

@@ -10,12 +10,13 @@ import "tests/operators/import.du";
 import "tests/functions/import.du";
 import "tests/classes/import.du";
 import "tests/builtins/import.du";
+import "tests/files/import.du";
 import "tests/maths/import.du";
 import "tests/loops/import.du";
 import "tests/env/import.du";
 import "tests/system/import.du";
 import "tests/json/import.du";
-import "tests/path/path.du";
+import "tests/path/import.du";
 
 if (isDefined("HTTP")) {
   import "tests/http/import.du";

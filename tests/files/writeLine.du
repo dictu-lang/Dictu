@@ -1,0 +1,28 @@
+/**
+ * writeLine.du
+ *
+ * Testing file writing with writeLine()
+ */
+var contents;
+
+with("tests/files/read.txt", "r") {
+    // Save contents to reset the file
+    contents = file.read();
+}
+
+with("tests/files/read.txt", "w") {
+    // Save contents to reset the file
+    var count = file.writeLine("Dictu is great!");
+    assert(count == 16);
+}
+
+with("tests/files/read.txt", "r") {
+    // Save contents to reset the file
+    assert(file.read() == "Dictu is great!\n");
+}
+
+with("tests/files/read.txt", "w") {
+    // Reset the file
+    file.write(contents);
+}
+

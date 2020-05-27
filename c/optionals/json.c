@@ -1,9 +1,58 @@
 #include "json.h"
 
+struct json_error_table_t {
+  int error;
+  const char *description;
+} json_error_table [] = {
+#define JSON_ENULL 1
+  { JSON_ENULL, "Json object value is nil"},
+#define JSON_ENOTYPE 2
+  { JSON_ENOTYPE, "No such type"},
+#define JSON_EINVAL 3
+  { JSON_EINVAL, "Invalid JSON object"},
+#define JSON_ENOSERIAL 4
+  { JSON_ENOSERIAL, "Object is not serializable"},
+  { -1, NULL}};
+
+static Value strerrorJsonNative(VM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    int error;
+    if (argCount == 1) {
+        error = AS_NUMBER(args[0]);
+    } else {
+        error = AS_NUMBER(GET_ERRNO(GET_SELF_CLASS));
+    }
+
+    if (error == 0) {
+        return OBJ_VAL(copyString(vm, "", 0));
+    }
+
+    if (error < 0) {
+        runtimeError(vm, "strerror() argument should be greater than or equal to 0");
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; json_error_table[i].error != -1; i++) {
+        if (error == json_error_table[i].error) {
+            return OBJ_VAL(copyString(vm, json_error_table[i].description,
+                strlen (json_error_table[i].description)));
+        }
+    }
+
+    runtimeError(vm, "strerror() argument should be <= %d", JSON_ENOSERIAL);
+    return EMPTY_VAL;
+}
+
 static Value parseJson(VM *vm, json_value *json) {
     switch (json->type) {
         case json_none:
         case json_null: {
+            // TODO: We return nil on failure however "null" is valid JSON
+            // TODO: We need a better way of handling this scenario
             return NIL_VAL;
         }
 
@@ -59,6 +108,7 @@ static Value parseJson(VM *vm, json_value *json) {
         }
 
         default: {
+            errno = JSON_ENOTYPE;
             return EMPTY_VAL;
         }
     }
@@ -79,15 +129,16 @@ static Value parse(VM *vm, int argCount, Value *args) {
     json_value *json_obj = json_parse(json->chars, json->length);
 
     if (json_obj == NULL) {
-        runtimeError(vm, "Invalid JSON passed to parse().");
-        return EMPTY_VAL;
+        errno = JSON_EINVAL;
+        SET_ERRNO(GET_SELF_CLASS);
+        return NIL_VAL;
     }
 
     Value val = parseJson(vm, json_obj);
 
     if (val == EMPTY_VAL) {
-        runtimeError(vm, "Invalid JSON passed to parse().");
-        return EMPTY_VAL;
+        SET_ERRNO(GET_SELF_CLASS);
+        return NIL_VAL;
     }
 
     json_value_free(json_obj);
@@ -136,20 +187,20 @@ json_value* stringifyJson(Value value) {
                     }
 
                     char *key;
-                    int keySize;
 
                     if (IS_STRING(entry->key)) {
                         ObjString *s = AS_STRING(entry->key);
                         key = s->chars;
-                        keySize = s->length;
+                    } else if (IS_NIL(entry->key)) {
+                        key = malloc(5);
+                        memcpy(key, "null", 4);
+                        key[4] = '\0';
                     } else {
                         key = valueToString(entry->key);
-                        keySize = strlen(key);
                     }
 
-                    json_object_push_nocopy(
+                    json_object_push(
                             json,
-                            keySize,
                             key,
                             stringifyJson(entry->value)
                     );
@@ -192,23 +243,23 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     json_value *json = stringifyJson(args[0]);
 
     if (json == NULL) {
-        runtimeError(vm, "Value: %s is not JSON serializable.", valueToString(args[0]));
-        return EMPTY_VAL;
+        errno = JSON_ENOSERIAL;
+        SET_ERRNO(GET_SELF_CLASS);
+        return NIL_VAL;
     }
 
     json_serialize_opts default_opts =
     {
-            lineType,
-            json_serialize_opt_pack_brackets,
-            indent
+        lineType,
+        json_serialize_opt_pack_brackets,
+        indent
     };
 
-
-    char *buf = malloc(json_measure(json));
+    char *buf = malloc(json_measure_ex(json, default_opts));
     json_serialize_ex(buf, json, default_opts);
     ObjString *string = copyString(vm, buf, strlen(buf));
     free(buf);
-    json_value_free(json);
+    json_builder_free(json);
     return OBJ_VAL(string);
 }
 
@@ -221,8 +272,18 @@ void createJSONClass(VM *vm) {
     /**
      * Define Json methods
      */
+    defineNative(vm, &klass->methods, "strerror", strerrorJsonNative);
     defineNative(vm, &klass->methods, "parse", parse);
     defineNative(vm, &klass->methods, "stringify", stringify);
+
+    /**
+     * Define Json properties
+     */
+    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
+    defineNativeProperty(vm, &klass->properties, "ENULL", NUMBER_VAL(JSON_ENULL));
+    defineNativeProperty(vm, &klass->properties, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
+    defineNativeProperty(vm, &klass->properties, "EINVAL", NUMBER_VAL(JSON_EINVAL));
+    defineNativeProperty(vm, &klass->properties, "ENOSERIAL", NUMBER_VAL(JSON_ENOSERIAL));
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);
