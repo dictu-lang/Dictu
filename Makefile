@@ -15,4 +15,13 @@ dictu:
 	@ $(MAKE) -f c.make NAME=dictu MODE=release SOURCE_DIR=c
 	@ cp build/dictu dictu # For convenience, copy the interpreter to the top level.
 
-.PHONY: clean dictu debug
+# Compile and run gcovr tool
+coverage:
+	@ rm -rf $(BUILD_DIR)
+	@ $(MAKE) -f c.make NAME=dictu MODE=coverage SOURCE_DIR=c
+	@ cp build/dictu dictu # For convenience, copy the interpreter to the top level.
+	@ rm -rf coverage/*
+	@ ./dictu tests/runTests.du
+	@ gcovr -r . --html --html-details -o coverage/coverage.html -e "c/linenoise.*" -e "c/debug.*" -e "c/optionals/jsonBuilderLib.*" -e "c/optionals/jsonParseLib.*" -e "c/main.*"
+
+.PHONY: clean dictu debug coverage
