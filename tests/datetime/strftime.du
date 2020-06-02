@@ -1,0 +1,20 @@
+/**
+ * strftime.du
+ *
+ * Testing the Datetime.strftime() function
+ *
+ */
+
+// 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
+assert(Datetime.strftime("%Y", 1577836800) == "2020");
+assert(Datetime.strftime("%y", 1577836800) == "20");
+
+assert(Datetime.strftime("%b", 1577836800) == "Jan");
+assert(Datetime.strftime("%B", 1577836800) == "January");
+assert(Datetime.strftime("%m", 1577836800) == "01");
+
+assert(Datetime.strftime("%d", 1577836800) == "01");
+
+assert(Datetime.strftime("%a", 1577836800) == "Wed");
+assert(Datetime.strftime("%A", 1577836800) == "Wednesday");
+assert(Datetime.strftime("%u", 1577836800) == "3");

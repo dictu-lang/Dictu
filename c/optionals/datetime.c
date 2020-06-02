@@ -62,7 +62,7 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
     int len = 100;
     char buffer[100], *point = buffer;
 
-    localtime_r(&t, &tictoc);
+    gmtime_r(&t, &tictoc);
 
     /**
      * strtime returns 0 when it fails to write - this would be due to the buffer
@@ -83,6 +83,30 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, point, strlen(point)));
 }
 
+static Value strptimeNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "strptime() takes 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "strptime() arguments must be strings");
+        return EMPTY_VAL;
+    }
+
+    struct tm tictoc = {0};
+    tictoc.tm_mday = 1;
+    tictoc.tm_isdst = -1;
+
+    char *end = strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc);
+
+    if (end == NULL) {
+        return NIL_VAL;
+    }
+
+    return NUMBER_VAL((double) mktime(&tictoc));
+}
+
 void createDatetimeClass(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
@@ -95,6 +119,7 @@ void createDatetimeClass(VM *vm) {
     defineNative(vm, &klass->methods, "now", nowNative);
     defineNative(vm, &klass->methods, "nowUTC", nowUTCNative);
     defineNative(vm, &klass->methods, "strftime", strftimeNative);
+    defineNative(vm, &klass->methods, "strptime", strptimeNative);
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
     pop(vm);

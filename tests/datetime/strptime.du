@@ -1,0 +1,44 @@
+/**
+ * strptime.du
+ *
+ * Testing the Datetime.strptime() function
+ *
+ */
+
+// 1577836800 is 1/1/2020 at 12:00 am
+assert(Datetime.strptime("%Y", "2020") == 1577836800);
+assert(Datetime.strptime("%Y-%m", "2020-1") == 1577836800);
+assert(Datetime.strptime("%Y-%m", "2020-01") == 1577836800);
+assert(Datetime.strptime("%Y-%b", "2020-Jan") == 1577836800);
+assert(Datetime.strptime("%Y-%B", "2020-January") == 1577836800);
+
+assert(Datetime.strptime("%Y-%d", "2020-1") == 1577836800);
+assert(Datetime.strptime("%Y-%d", "2020-01") == 1577836800);
+
+assert(Datetime.strptime("%Y-%m-%d", "2020-1-1") == 1577836800);
+assert(Datetime.strptime("%Y-%m-%d", "2020-01-1") == 1577836800);
+assert(Datetime.strptime("%Y-%b-%d", "2020-Jan-1") == 1577836800);
+assert(Datetime.strptime("%Y-%B-%d", "2020-January-1") == 1577836800);
+assert(Datetime.strptime("%Y-%m-%d", "2020-1-01") == 1577836800);
+assert(Datetime.strptime("%Y-%m-%d", "2020-01-01") == 1577836800);
+assert(Datetime.strptime("%Y-%b-%d", "2020-Jan-01") == 1577836800);
+assert(Datetime.strptime("%Y-%B-%d", "2020-January-01") == 1577836800);
+
+// 1577836800 is 1/1/2020 at 12:00 am
+assert(Datetime.strptime("%y", "20") == 1577836800);
+assert(Datetime.strptime("%y-%m", "20-1") == 1577836800);
+assert(Datetime.strptime("%y-%m", "20-01") == 1577836800);
+assert(Datetime.strptime("%y-%b", "20-Jan") == 1577836800);
+assert(Datetime.strptime("%y-%B", "20-January") == 1577836800);
+
+assert(Datetime.strptime("%y-%d", "20-1") == 1577836800);
+assert(Datetime.strptime("%y-%d", "20-01") == 1577836800);
+
+assert(Datetime.strptime("%y-%m-%d", "20-1-1") == 1577836800);
+assert(Datetime.strptime("%y-%m-%d", "20-01-1") == 1577836800);
+assert(Datetime.strptime("%y-%b-%d", "20-Jan-1") == 1577836800);
+assert(Datetime.strptime("%y-%B-%d", "20-January-1") == 1577836800);
+assert(Datetime.strptime("%y-%m-%d", "20-1-01") == 1577836800);
+assert(Datetime.strptime("%y-%m-%d", "20-01-01") == 1577836800);
+assert(Datetime.strptime("%y-%b-%d", "20-Jan-01") == 1577836800);
+assert(Datetime.strptime("%y-%B-%d", "20-January-01") == 1577836800);

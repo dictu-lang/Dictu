@@ -33,23 +33,10 @@ Returns a human readable UTC datetime string.
 Datetime.now(); // Fri May 29 02:12:32 2020
 ```
 
-### Datetime.strftime(string, number: time -> optional)
+### Datetime formats
 
-Returns user-defined datetime formatted string. `strftime` also takes an optional argument
-which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
-the current point in time.
-
-```js
-Datetime.strftime("Today is %A"); // Today is Friday
-
-var time = System.time();
-Datetime.strftime("Some point in time %H:%M:%S", time);
-```
-
-#### Strftime formats
-
-| Directive  | Description                                                | Example                  |
-|------------|------------------------------------------------------------|--------------------------|
+| Directive  | Description                                                                          | Example                  |
+|------------|--------------------------------------------------------------------------------------|--------------------------|
 | %a         | Abbreviated weekday name                                                             | Mon, Tue, ...            |
 | %A         | Full weekday name                                                                    | Monday, Tuesday, ...     |
 | %b         | Abbreviated month name                                                               | Jan, Feb, ...            |
@@ -78,4 +65,27 @@ Datetime.strftime("Some point in time %H:%M:%S", time);
 | %Z         | The timezone name or abbreviation                                                    | BST                      |
 | %%         | A literal %                                                                          |                          |
 
+
+### Datetime.strftime(string, number: time -> optional)
+
+Returns a user-defined datetime formatted string, see [Datetime formats](#datetime-formats). `strftime` also takes an optional argument
+which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
+the current point in time.
+
+```js
+Datetime.strftime("Today is %A"); // Today is Friday
+
+var time = System.time();
+Datetime.strftime("Some point in time %H:%M:%S", time);
+```
+
+### Datetime.strptime(string, string)
+
+Returns a number which is the number of seconds from epoch. `strptime` expects two parameters
+the first parameter being the date format, see [Datetime formats](#datetime-formats) and the second
+the date string in the format of the first parameter.
+
+```js
+Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
+```
 
