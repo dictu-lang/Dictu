@@ -18,3 +18,9 @@ assert(Datetime.strftime("%d", 1577836800) == "01");
 assert(Datetime.strftime("%a", 1577836800) == "Wed");
 assert(Datetime.strftime("%A", 1577836800) == "Wednesday");
 assert(Datetime.strftime("%u", 1577836800) == "3");
+
+assert(Datetime.strftime("%H", 1577836800) == "00");
+assert(Datetime.strftime("%M", 1577836800) == "00");
+assert(Datetime.strftime("%S", 1577836800) == "00");
+
+assert(Datetime.strftime("%Y-%m-%d %H:%M:%S", 1577836800) == "2020-01-01 00:00:00");
