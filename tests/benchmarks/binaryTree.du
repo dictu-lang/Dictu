@@ -26,7 +26,7 @@ var minDepth = 4;
 var maxDepth = 12;
 var stretchDepth = maxDepth + 1;
 
-var start = clock();
+var start = System.clock();
 
 print("stretch tree of depth: {}".format(stretchDepth));
 
@@ -51,10 +51,10 @@ while (depth < stretchDepth) {
     i = i + 1;
   }
 
-  print("Num trees: {} Depth: {} Check: {} Time: {}".format(iterations * 2, depth, check, clock() - start));
+  print("Num trees: {} Depth: {} Check: {} Time: {}".format(iterations * 2, depth, check, System.clock() - start));
 
   iterations = iterations / 4;
   depth = depth + 2;
 }
 
-print("Long lived tree of depth: {} Check: {} Elapsed: {}".format(maxDepth, longLivedTree.check(), clock() - start));
+print("Long lived tree of depth: {} Check: {} Elapsed: {}".format(maxDepth, longLivedTree.check(), System.clock() - start));
