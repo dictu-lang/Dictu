@@ -1,17 +1,17 @@
 var list = [];
 
-var start = clock();
+var start = System.clock();
 
 for (var i = 0; i < 1000000; ++i) {
     list.push(i);
 }
 
 var sum = 0;
-var leng = len(list);
+var leng = list.len();
 
 for (var i = 0; i < leng; ++i) {
     sum += i;
 }
 
 print(sum);
-print("Elapsed: {}".format(clock() - start));
+print("Elapsed: {}".format(System.clock() - start));
