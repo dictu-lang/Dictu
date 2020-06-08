@@ -1,6 +1,7 @@
 #ifndef dictu_datetime_h
 #define dictu_datetime_h
 
+#define _XOPEN_SOURCE
 #define __USE_XOPEN
 
 #include <time.h>
