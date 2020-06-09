@@ -62,6 +62,8 @@ typedef enum {
 #define OK     0
 #define NOTOK -1
 
+#define UNUSED(__x__) (void) __x__
+
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
 
 void freeVM(VM *vm);
