@@ -115,6 +115,8 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value printNative(VM *vm, int argCount, Value *args) {
+    UNUSED(vm);
+
     if (argCount == 0) {
         printf("\n");
         return NIL_VAL;

@@ -60,6 +60,8 @@ static bool replCountQuotes(char *line) {
 }
 
 static void repl(VM *vm, int argc, const char *argv[]) {
+    UNUSED(argc); UNUSED(argv);
+
     printf(VERSION);
     char *line;
 
@@ -102,6 +104,8 @@ static void repl(VM *vm, int argc, const char *argv[]) {
 }
 
 static void runFile(VM *vm, int argc, const char *argv[]) {
+    UNUSED(argc);
+
     char *source = readFile(argv[1]);
     InterpretResult result = interpret(vm, source);
     free(source); // [owner]

@@ -36,6 +36,8 @@
    #include <stdint.h>
 #endif
 
+#define UNUSED(__x__) (void) __x__
+
 const struct _json_value json_value_none;
 
 #include <stdio.h>
@@ -92,11 +94,15 @@ typedef struct
 
 static void * default_alloc (size_t size, int zero, void * user_data)
 {
+    UNUSED(user_data);
+
     return zero ? calloc (1, size) : malloc (size);
 }
 
 static void default_free (void * ptr, void * user_data)
 {
+    UNUSED(user_data);
+
     free (ptr);
 }
 
