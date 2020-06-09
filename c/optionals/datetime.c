@@ -1,6 +1,8 @@
 #include "datetime.h"
 
 static Value nowNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "now() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -18,6 +20,8 @@ static Value nowNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value nowUTCNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "nowUTC() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
