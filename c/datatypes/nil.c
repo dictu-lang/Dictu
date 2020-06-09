@@ -2,6 +2,8 @@
 #include "../vm.h"
 
 static Value toStringNil(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;

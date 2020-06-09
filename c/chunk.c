@@ -5,6 +5,8 @@
 #include "vm.h"
 
 void initChunk(VM *vm, Chunk *chunk) {
+    UNUSED(vm);
+
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->code = NULL;

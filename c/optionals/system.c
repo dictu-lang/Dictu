@@ -1,6 +1,8 @@
 #include "system.h"
 
 static Value getgidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "getgid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -10,6 +12,8 @@ static Value getgidNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value getegidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "getegid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -19,6 +23,8 @@ static Value getegidNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value getuidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "getuid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -28,6 +34,8 @@ static Value getuidNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value geteuidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "geteuid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -37,6 +45,8 @@ static Value geteuidNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value getppidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "getppid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -46,6 +56,8 @@ static Value getppidNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value getpidNative(VM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
     if (argCount != 0) {
         runtimeError(vm, "getpid() doesn't take any argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -154,6 +166,8 @@ static Value setCWDNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value getCWDNative(VM *vm, int argCount, Value *args) {
+    UNUSED(argCount); UNUSED(args);
+
     char cwd[PATH_MAX];
 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -166,14 +180,20 @@ static Value getCWDNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value timeNative(VM *vm, int argCount, Value *args) {
+    UNUSED(vm); UNUSED(argCount); UNUSED(args);
+
     return NUMBER_VAL((double) time(NULL));
 }
 
 static Value clockNative(VM *vm, int argCount, Value *args) {
+    UNUSED(vm); UNUSED(argCount); UNUSED(args);
+
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
 
 static Value collectNative(VM *vm, int argCount, Value *args) {
+    UNUSED(argCount); UNUSED(args);
+
     collectGarbage(vm);
     return NIL_VAL;
 }
