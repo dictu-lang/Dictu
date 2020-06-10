@@ -5,7 +5,7 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-CFLAGS := -Wall -Wextra -Werror -Wshadow -Wunused-function -Wunused-macros -fno-strict-aliasing
+CFLAGS := -Wall -Wextra -Werror -Wshadow -Wunused-function -Wunused-macros
 LFLAGS := -lm
 
 DISABLE_HTTP := 0
