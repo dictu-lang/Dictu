@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Math
-nav_order: 11
+nav_order: 12
 ---
 
 # Math
@@ -17,7 +17,7 @@ nav_order: 11
 
 ## Math
 
-Functions relating to mathematics are behind the Math namespace. For the purpose of the documentation, and iterable
+Functions relating to mathematics are behind the Math namespace. For the purpose of the documentation, an iterable
 is either a list, or passing multiple arguments to the function directly.
 
 ### Constants

@@ -6,7 +6,6 @@
 #include "value.h"
 #include "compiler.h"
 
-
 // TODO: Work out the maximum stack size at compilation time
 #define STACK_MAX (64 * UINT8_COUNT)
 

@@ -9,6 +9,7 @@
 #include "http.h"
 #include "path.h"
 #include "c.h"
+#include "datetime.h"
 
 #define GET_SELF_CLASS \
   AS_CLASS_NATIVE(args[-1])

@@ -148,6 +148,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createJSONClass(vm);
     createPathClass(vm);
     createCClass(vm);
+    createDatetimeClass(vm);
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
