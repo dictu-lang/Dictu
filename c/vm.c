@@ -1187,9 +1187,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
-            Value assignValue = peek(vm, 0);
-            Value indexValue = peek(vm, 1);
-            Value subscriptValue = peek(vm, 2);
+            // We are free to pop here as this is *not* adding a new entry, but simply replacing
+            // An old value, so a GC should never be triggered.
+            Value assignValue = pop(vm);
+            Value indexValue = pop(vm);
+            Value subscriptValue = pop(vm);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1217,13 +1219,6 @@ static InterpretResult run(VM *vm) {
                         DISPATCH();
                     }
 
-                    // Pop after the values have been inserted to stop GC cleanup
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
-                    push(vm, NIL_VAL);
-
                     frame->ip = ip;
                     runtimeError(vm, "List index out of bounds.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -1238,20 +1233,11 @@ static InterpretResult run(VM *vm) {
 
                     dictSet(vm, dict, indexValue, assignValue);
 
-                    // Pop after the values have been inserted to stop GC cleanup
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
                     push(vm, NIL_VAL);
                     DISPATCH();
                 }
 
                 default: {
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
                     frame->ip = ip;
                     runtimeError(vm, "Only lists and dictionaries support subscript assignment.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -1333,10 +1319,7 @@ static InterpretResult run(VM *vm) {
                     if (indexStart > indexEnd) {
                         returnVal = OBJ_VAL(copyString(vm, "", 0));
                     } else {
-                        char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
-                        memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
-                        returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
-                        free(newString);
+                        returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
                     }
                     break;
                 }
@@ -1357,9 +1340,9 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(PUSH): {
-            Value value = pop(vm);
-            Value indexValue = pop(vm);
-            Value subscriptValue = pop(vm);
+            Value value = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1383,9 +1366,7 @@ static InterpretResult run(VM *vm) {
                         index = list->values.count + index;
 
                     if (index >= 0 && index < list->values.count) {
-                        push(vm, subscriptValue);
-                        push(vm, indexValue);
-                        push(vm, list->values.values[index]);
+                        vm->stackTop[-1] = list->values.values[index];
                         push(vm, value);
                         DISPATCH();
                     }
@@ -1402,18 +1383,14 @@ static InterpretResult run(VM *vm) {
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    Value v;
-                    bool found = dictGet(dict, indexValue, &v);
-
-                    push(vm, subscriptValue);
-                    push(vm, indexValue);
-                    if (found) {
-                        push(vm, v);
-                    } else {
-                        push(vm, NIL_VAL);
+                    Value dictValue;
+                    if (!dictGet(dict, indexValue, &dictValue)) {
+                        dictValue = NIL_VAL;
                     }
 
+                    vm->stackTop[-1] = dictValue;
                     push(vm, value);
+
                     DISPATCH();
                 }
 
@@ -1563,8 +1540,8 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(OPEN_FILE): {
-            Value openType = pop(vm);
-            Value fileName = pop(vm);
+            Value openType = peek(vm, 0);
+            Value fileName = peek(vm, 1);
 
             if (!IS_STRING(openType)) {
                 frame->ip = ip;
@@ -1592,6 +1569,8 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
+            pop(vm);
+            pop(vm);
             push(vm, OBJ_VAL(file));
             DISPATCH();
         }
