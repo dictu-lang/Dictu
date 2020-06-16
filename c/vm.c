@@ -99,6 +99,8 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->grayCount = 0;
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
+    vm->lastModule = NULL;
+    initTable(&vm->modules);
     initTable(&vm->globals);
     initTable(&vm->constants);
     initTable(&vm->strings);
@@ -156,6 +158,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 }
 
 void freeVM(VM *vm) {
+    freeTable(vm, &vm->modules);
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
     freeTable(vm, &vm->strings);
@@ -334,6 +337,9 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
     } else {
         switch (getObjType(receiver)) {
+            case OBJ_MODULE: {
+                break;
+            }
             case OBJ_NATIVE_CLASS: {
                 ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
                 Value function;
@@ -708,10 +714,13 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
-            if (!tableGet(&vm->globals, name, &value)) {
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
+                // TODO: Definitely revise
+                if (!tableGet(&vm->globals, name, &value)) {
+                    frame->ip = ip;
+                    runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
             push(vm, value);
             DISPATCH();
@@ -719,10 +728,21 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(DEFINE_GLOBAL): {
             ObjString *name = READ_STRING();
-            tableSet(vm, &vm->globals, name, peek(vm, 0));
+            tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0));
             pop(vm);
             DISPATCH();
         }
+
+        CASE_CODE(SET_GLOBAL): {
+        ObjString *name = READ_STRING();
+        if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
+            tableDelete(vm, &frame->closure->function->module->values, name);
+            frame->ip = ip;
+            runtimeError(vm, "Undefined variable '%s'.", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
+        }
+        DISPATCH();
+    }
 
         CASE_CODE(DEFINE_OPTIONAL): {
             // Temp array while we shuffle the stack.
@@ -762,17 +782,6 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(SET_GLOBAL): {
-            ObjString *name = READ_STRING();
-            if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
-                tableDelete(vm, &vm->globals, name);
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
-            }
-            DISPATCH();
-        }
-
         CASE_CODE(GET_UPVALUE): {
             uint8_t slot = READ_BYTE();
             push(vm, *frame->closure->upvalues[slot]->value);
@@ -807,6 +816,15 @@ static InterpretResult run(VM *vm) {
                 Value value;
                 if (tableGet(&klass->properties, name, &value)) {
                     pop(vm); // Class.
+                    push(vm, value);
+                    DISPATCH();
+                }
+            } else if (IS_MODULE(peek(vm, 0))) {
+                ObjModule *module = AS_MODULE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&module->values, name, &value)) {
+                    pop(vm); // Module.
                     push(vm, value);
                     DISPATCH();
                 }
@@ -1019,9 +1037,9 @@ static InterpretResult run(VM *vm) {
             ObjString *fileName = READ_STRING();
 
             // If we have imported this file already, skip.
-            if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
-                DISPATCH();
-            }
+//            if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
+//                DISPATCH();
+//            }
 
             char *s = readFile(fileName->chars);
 
@@ -1035,7 +1053,14 @@ static InterpretResult run(VM *vm) {
             vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
             setcurrentFile(vm, fileName->chars, fileName->length);
 
-            ObjFunction *function = compile(vm, s);
+            ObjModule *module = newModule(vm, fileName);
+            vm->lastModule = module;
+
+            push(vm, OBJ_VAL(module));
+            ObjFunction *function = compile(vm, module, s);
+            pop(vm);
+            free(s);
+
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
             ObjClosure *closure = newClosure(vm, function);
@@ -1046,8 +1071,12 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
+            // push(vm, OBJ_VAL(module));
+            DISPATCH();
+        }
 
-            free(s);
+        CASE_CODE(IMPORT_VARIABLE): {
+            push(vm, OBJ_VAL( vm->lastModule));
             DISPATCH();
         }
 
@@ -1593,7 +1622,12 @@ static InterpretResult run(VM *vm) {
 }
 
 InterpretResult interpret(VM *vm, const char *source) {
-    ObjFunction *function = compile(vm, source);
+    ObjString *name = copyString(vm, "main", 4);
+    push(vm, OBJ_VAL(name));
+    ObjModule *module = newModule(vm, name);
+    pop(vm);
+
+    ObjFunction *function = compile(vm, module, source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);

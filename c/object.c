@@ -26,6 +26,23 @@ static Obj *allocateObject(VM *vm, size_t size, ObjType type) {
     return object;
 }
 
+ObjModule *newModule(VM *vm, ObjString *name) {
+    Value moduleVal;
+    if (tableGet(&vm->modules, name, &moduleVal)) {
+        return AS_MODULE(moduleVal);
+    }
+
+    ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
+    initTable(&module->values);
+    module->name = name;
+
+    push(vm, OBJ_VAL(module));
+    tableSet(vm, &vm->modules, name, OBJ_VAL(module));
+    pop(vm);
+
+    return module;
+}
+
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method) {
     ObjBoundMethod *bound = ALLOCATE_OBJ(vm, ObjBoundMethod,
                                          OBJ_BOUND_METHOD);
@@ -71,13 +88,14 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm, bool isStatic) {
+ObjFunction *newFunction(VM *vm, ObjModule *module, bool isStatic) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
     function->upvalueCount = 0;
     function->name = NULL;
     function->staticMethod = isStatic;
+    function->module = module;
     initChunk(vm, &function->chunk);
     return function;
 }
@@ -439,6 +457,14 @@ char *instanceToString(Value value) {
 
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
+        case OBJ_MODULE: {
+            char *moduleString = malloc(sizeof(char) * 16);
+            // char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
+            snprintf(moduleString, 16, "%s", "module");
+            // TODO: Implement
+            return moduleString;
+        }
+
         case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
             return classToString(value);
