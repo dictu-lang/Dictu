@@ -1039,6 +1039,7 @@ static InterpretResult run(VM *vm) {
 
             // If we have imported this file already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                ++vm->scriptNameCount;
                 vm->lastModule = AS_MODULE(moduleVal);
                 DISPATCH();
             }
