@@ -458,10 +458,9 @@ char *instanceToString(Value value) {
 char *objectToString(Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_MODULE: {
-            char *moduleString = malloc(sizeof(char) * 16);
-            // char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
-            snprintf(moduleString, 16, "%s", "module");
-            // TODO: Implement
+            ObjModule *module = AS_MODULE(value);
+            char *moduleString = malloc(sizeof(char) * (module->name->length + 11));
+            snprintf(moduleString, (module->name->length + 10), "<module %s>", module->name->chars);
             return moduleString;
         }
 

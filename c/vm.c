@@ -338,6 +338,13 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
     } else {
         switch (getObjType(receiver)) {
             case OBJ_MODULE: {
+                ObjModule *module = AS_MODULE(receiver);
+
+                Value value;
+                if (tableGet(&module->values, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
                 break;
             }
             case OBJ_NATIVE_CLASS: {

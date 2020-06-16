@@ -1139,6 +1139,7 @@ ParseRule rules[] = {
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
@@ -1547,7 +1548,7 @@ static void importStatement(Compiler *compiler) {
 
     emitBytes(compiler, OP_IMPORT, importConstant);
 
-    if (check(compiler, TOKEN_IDENTIFIER)) {
+    if (match(compiler, TOKEN_AS)) {
         uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
         emitByte(compiler, OP_IMPORT_VARIABLE);
         defineVariable(compiler, importName, false);
