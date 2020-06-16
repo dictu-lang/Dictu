@@ -1035,11 +1035,13 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(IMPORT): {
             ObjString *fileName = READ_STRING();
+            Value moduleVal;
 
             // If we have imported this file already, skip.
-//            if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
-//                DISPATCH();
-//            }
+            if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                vm->lastModule = AS_MODULE(moduleVal);
+                DISPATCH();
+            }
 
             char *s = readFile(fileName->chars);
 
