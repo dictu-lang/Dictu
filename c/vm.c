@@ -722,7 +722,6 @@ static InterpretResult run(VM *vm) {
             ObjString *name = READ_STRING();
             Value value;
             if (!tableGet(&frame->closure->function->module->values, name, &value)) {
-                // TODO: Definitely revise
                 if (!tableGet(&vm->globals, name, &value)) {
                     frame->ip = ip;
                     runtimeError(vm, "Undefined variable '%s'.", name->chars);
@@ -837,12 +836,14 @@ static InterpretResult run(VM *vm) {
                 }
             }
 
+            frame->ip = ip;
             runtimeError(vm, "Only instances have properties.");
             return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Only instances have properties.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -864,6 +865,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(SET_PROPERTY): {
             if (!IS_INSTANCE(peek(vm, 1))) {
+                frame->ip = ip;
                 runtimeError(vm, "Only instances have fields.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -938,6 +940,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(INCREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -948,6 +951,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(DECREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1132,6 +1136,7 @@ static InterpretResult run(VM *vm) {
             Value key = peek(vm, 1);
 
             if (!isValidKey(key)) {
+                frame->ip = ip;
                 runtimeError(vm, "Dictionary key must be an immutable type.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1203,6 +1208,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
@@ -1266,6 +1272,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
@@ -1418,6 +1425,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
