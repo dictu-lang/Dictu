@@ -151,6 +151,7 @@ static TokenType identifierType() {
                     }
                 }
             }
+            break;
         case 'b':
             return checkKeyword(1, 4, "reak", TOKEN_BREAK);
         case 'c':
