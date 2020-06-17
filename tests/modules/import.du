@@ -1,0 +1,8 @@
+/**
+ * import.du
+ *
+ * General import file for all the module tests
+ */
+
+import "tests/modules/functions.du";
+import "tests/modules/classes.du";
