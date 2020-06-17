@@ -1085,7 +1085,6 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
-            // push(vm, OBJ_VAL(module));
             DISPATCH();
         }
 
