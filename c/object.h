@@ -11,6 +11,7 @@
 
 #define OBJ_TYPE(value)         (AS_OBJ(value)->type)
 
+#define IS_MODULE(value)        isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
 #define IS_NATIVE_CLASS(value)  isObjType(value, OBJ_NATIVE_CLASS)
@@ -25,6 +26,7 @@
 #define IS_SET(value)           isObjType(value, OBJ_SET)
 #define IS_FILE(value)          isObjType(value, OBJ_FILE)
 
+#define AS_MODULE(value)        ((ObjModule*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
 #define AS_CLASS_NATIVE(value)  ((ObjClassNative*)AS_OBJ(value))
@@ -41,6 +43,7 @@
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 
 typedef enum {
+    OBJ_MODULE,
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
     OBJ_NATIVE_CLASS,
@@ -65,12 +68,19 @@ struct sObj {
 
 typedef struct {
     Obj obj;
+    ObjString* name;
+    Table values;
+} ObjModule;
+
+typedef struct {
+    Obj obj;
     int arity;
     int arityOptional;
     int upvalueCount;
     Chunk chunk;
     ObjString *name;
     bool staticMethod;
+    ObjModule* module;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);
@@ -180,6 +190,8 @@ typedef struct {
     ObjClosure *method;
 } ObjBoundMethod;
 
+ObjModule *newModule(VM *vm, ObjString *name);
+
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 
 ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass);
@@ -190,7 +202,7 @@ ObjTrait *newTrait(VM *vm, ObjString *name);
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 
-ObjFunction *newFunction(VM *vm, bool isStatic);
+ObjFunction *newFunction(VM *vm, ObjModule *module, bool isStatic);
 
 ObjInstance *newInstance(VM *vm, ObjClass *klass);
 

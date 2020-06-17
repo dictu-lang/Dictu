@@ -82,6 +82,13 @@ static void blackenObject(VM *vm, Obj *object) {
 #endif
 
     switch (object->type) {
+        case OBJ_MODULE: {
+            ObjModule *module = (ObjModule *) object;
+            grayObject(vm, (Obj *) module->name);
+            grayTable(vm, &module->values);
+            break;
+        }
+
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *bound = (ObjBoundMethod *) object;
             grayValue(vm, bound->receiver);
@@ -171,6 +178,13 @@ void freeObject(VM *vm, Obj *object) {
 #endif
 
     switch (object->type) {
+        case OBJ_MODULE: {
+            ObjModule *module = (ObjModule *) object;
+            freeTable(vm, &module->values);
+            FREE(vm, ObjModule, object);
+            break;
+        }
+
         case OBJ_BOUND_METHOD: {
             FREE(vm, ObjBoundMethod, object);
             break;
@@ -287,6 +301,7 @@ void collectGarbage(VM *vm) {
     }
 
     // Mark the global roots.
+    grayTable(vm, &vm->modules);
     grayTable(vm, &vm->globals);
     grayTable(vm, &vm->constants);
     grayTable(vm, &vm->imports);

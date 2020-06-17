@@ -26,6 +26,8 @@ struct _vm {
     CallFrame *frames;
     int frameCount;
     int frameCapacity;
+    ObjModule *lastModule;
+    Table modules;
     Table globals;
     Table constants;
     Table strings;

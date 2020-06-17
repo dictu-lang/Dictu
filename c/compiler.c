@@ -161,7 +161,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, type == TYPE_STATIC);
+    compiler->function = newFunction(parser->vm, parser->module, type == TYPE_STATIC);
 
     switch (type) {
         case TYPE_INITIALIZER:
@@ -1139,6 +1139,7 @@ ParseRule rules[] = {
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
@@ -1545,9 +1546,15 @@ static void importStatement(Compiler *compiler) {
             compiler->parser->previous.start + 1,
             compiler->parser->previous.length - 2)));
 
-    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
-
     emitBytes(compiler, OP_IMPORT, importConstant);
+
+    if (match(compiler, TOKEN_AS)) {
+        uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
+        emitByte(compiler, OP_IMPORT_VARIABLE);
+        defineVariable(compiler, importName, false);
+    }
+
+    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
     emitByte(compiler, OP_IMPORT_END);
 }
 
@@ -1690,11 +1697,12 @@ static void statement(Compiler *compiler) {
     }
 }
 
-ObjFunction *compile(VM *vm, const char *source) {
+ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
     Parser parser;
     parser.vm = vm;
     parser.hadError = false;
     parser.panicMode = false;
+    parser.module = module;
 
     initScanner(source);
     Compiler compiler;
