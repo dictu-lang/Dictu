@@ -26,7 +26,7 @@ var minDepth = 4;
 var maxDepth = 12;
 var stretchDepth = maxDepth + 1;
 
-var start = System.System.clock();
+var start = System.clock();
 
 print("stretch tree of depth: {}".format(stretchDepth));
 
