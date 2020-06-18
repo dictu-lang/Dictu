@@ -1,8 +1,8 @@
-var start = clock();
+var start = System.clock();
 var x;
 
 for (var i = 0; i < 10000; ++i) {
     x = "dictu is great!".upper();
 }
 
-print(clock() - start);
+print(System.clock() - start);

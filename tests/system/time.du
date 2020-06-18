@@ -3,7 +3,7 @@
  *
  * Testing the System.time() function
  *
- * clock() returns a UNIX timestamp.
+ * time() returns a UNIX timestamp.
  */
 
 // Time is also tested within sleep.du
