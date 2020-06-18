@@ -1,0 +1,10 @@
+/**
+ * variables.du
+ *
+ * Testing importing variables from another script works
+ */
+
+import "tests/variables/scope.du" as ScopeModule;
+
+assert(ScopeModule.x == 10);
+

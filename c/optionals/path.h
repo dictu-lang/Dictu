@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #ifndef PATH_MAX
-    PATH_MAX = 4096;
+#define PATH_MAX 4096
 #endif
 
 #ifdef _WIN32

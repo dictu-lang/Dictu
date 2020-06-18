@@ -1,13 +1,13 @@
 var x = {};
 
 for (var i = 0; i < 10000; ++i) {
-    x[str(i)] = "Dictu is great!";
+    x[i] = "Dictu is great!";
 }
 
-var start = clock();
+var start = System.clock();
 
 for (var i = 0; i < 10000; ++i) {
-    x.remove(str(i));
+    x.remove(i);
 }
 
-print(clock() - start);
+print(System.clock() - start);

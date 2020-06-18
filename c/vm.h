@@ -6,7 +6,6 @@
 #include "value.h"
 #include "compiler.h"
 
-
 // TODO: Work out the maximum stack size at compilation time
 #define STACK_MAX (64 * UINT8_COUNT)
 
@@ -27,6 +26,8 @@ struct _vm {
     CallFrame *frames;
     int frameCount;
     int frameCapacity;
+    ObjModule *lastModule;
+    Table modules;
     Table globals;
     Table constants;
     Table strings;
@@ -62,6 +63,8 @@ typedef enum {
 
 #define OK     0
 #define NOTOK -1
+
+#define UNUSED(__x__) (void) __x__
 
 VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
 

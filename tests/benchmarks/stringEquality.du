@@ -1,4 +1,4 @@
-var start = clock();
+var start = System.clock();
 
 var count = 0;
 
@@ -38,4 +38,4 @@ for (var i = 0; i < 1000000; ++i) {
 }
 
 print(count);
-print("Elapsed: {}".format(clock() - start));
+print("Elapsed: {}".format(System.clock() - start));

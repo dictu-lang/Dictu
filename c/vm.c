@@ -99,6 +99,8 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     vm->grayCount = 0;
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
+    vm->lastModule = NULL;
+    initTable(&vm->modules);
     initTable(&vm->globals);
     initTable(&vm->constants);
     initTable(&vm->strings);
@@ -148,6 +150,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     createJSONClass(vm);
     createPathClass(vm);
     createCClass(vm);
+    createDatetimeClass(vm);
 #ifndef DISABLE_HTTP
     createHTTPClass(vm);
 #endif
@@ -155,6 +158,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 }
 
 void freeVM(VM *vm) {
+    freeTable(vm, &vm->modules);
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
     freeTable(vm, &vm->strings);
@@ -333,6 +337,16 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
         }
     } else {
         switch (getObjType(receiver)) {
+            case OBJ_MODULE: {
+                ObjModule *module = AS_MODULE(receiver);
+
+                Value value;
+                if (tableGet(&module->values, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
+                break;
+            }
             case OBJ_NATIVE_CLASS: {
                 ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
                 Value function;
@@ -707,10 +721,12 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
-            if (!tableGet(&vm->globals, name, &value)) {
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
+                if (!tableGet(&vm->globals, name, &value)) {
+                    frame->ip = ip;
+                    runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
             push(vm, value);
             DISPATCH();
@@ -718,10 +734,21 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(DEFINE_GLOBAL): {
             ObjString *name = READ_STRING();
-            tableSet(vm, &vm->globals, name, peek(vm, 0));
+            tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0));
             pop(vm);
             DISPATCH();
         }
+
+        CASE_CODE(SET_GLOBAL): {
+        ObjString *name = READ_STRING();
+        if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
+            tableDelete(vm, &frame->closure->function->module->values, name);
+            frame->ip = ip;
+            runtimeError(vm, "Undefined variable '%s'.", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
+        }
+        DISPATCH();
+    }
 
         CASE_CODE(DEFINE_OPTIONAL): {
             // Temp array while we shuffle the stack.
@@ -758,17 +785,6 @@ static InterpretResult run(VM *vm) {
                 push(vm, values[i - 1]);
             }
 
-            DISPATCH();
-        }
-
-        CASE_CODE(SET_GLOBAL): {
-            ObjString *name = READ_STRING();
-            if (tableSet(vm, &vm->globals, name, peek(vm, 0))) {
-                tableDelete(vm, &vm->globals, name);
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
-            }
             DISPATCH();
         }
 
@@ -809,14 +825,25 @@ static InterpretResult run(VM *vm) {
                     push(vm, value);
                     DISPATCH();
                 }
+            } else if (IS_MODULE(peek(vm, 0))) {
+                ObjModule *module = AS_MODULE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&module->values, name, &value)) {
+                    pop(vm); // Module.
+                    push(vm, value);
+                    DISPATCH();
+                }
             }
 
+            frame->ip = ip;
             runtimeError(vm, "Only instances have properties.");
             return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Only instances have properties.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -838,6 +865,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(SET_PROPERTY): {
             if (!IS_INSTANCE(peek(vm, 1))) {
+                frame->ip = ip;
                 runtimeError(vm, "Only instances have fields.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -912,6 +940,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(INCREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -922,6 +951,7 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(DECREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
+                frame->ip = ip;
                 runtimeError(vm, "Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1016,9 +1046,12 @@ static InterpretResult run(VM *vm) {
 
         CASE_CODE(IMPORT): {
             ObjString *fileName = READ_STRING();
+            Value moduleVal;
 
             // If we have imported this file already, skip.
-            if (!tableSet(vm, &vm->imports, fileName, NIL_VAL)) {
+            if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                ++vm->scriptNameCount;
+                vm->lastModule = AS_MODULE(moduleVal);
                 DISPATCH();
             }
 
@@ -1034,7 +1067,14 @@ static InterpretResult run(VM *vm) {
             vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
             setcurrentFile(vm, fileName->chars, fileName->length);
 
-            ObjFunction *function = compile(vm, s);
+            ObjModule *module = newModule(vm, fileName);
+            vm->lastModule = module;
+
+            push(vm, OBJ_VAL(module));
+            ObjFunction *function = compile(vm, module, s);
+            pop(vm);
+            free(s);
+
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
             ObjClosure *closure = newClosure(vm, function);
@@ -1045,8 +1085,11 @@ static InterpretResult run(VM *vm) {
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
 
+            DISPATCH();
+        }
 
-            free(s);
+        CASE_CODE(IMPORT_VARIABLE): {
+            push(vm, OBJ_VAL( vm->lastModule));
             DISPATCH();
         }
 
@@ -1092,6 +1135,7 @@ static InterpretResult run(VM *vm) {
             Value key = peek(vm, 1);
 
             if (!isValidKey(key)) {
+                frame->ip = ip;
                 runtimeError(vm, "Dictionary key must be an immutable type.");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1163,6 +1207,7 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
@@ -1186,9 +1231,11 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
-            Value assignValue = peek(vm, 0);
-            Value indexValue = peek(vm, 1);
-            Value subscriptValue = peek(vm, 2);
+            // We are free to pop here as this is *not* adding a new entry, but simply replacing
+            // An old value, so a GC should never be triggered.
+            Value assignValue = pop(vm);
+            Value indexValue = pop(vm);
+            Value subscriptValue = pop(vm);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1216,13 +1263,6 @@ static InterpretResult run(VM *vm) {
                         DISPATCH();
                     }
 
-                    // Pop after the values have been inserted to stop GC cleanup
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
-                    push(vm, NIL_VAL);
-
                     frame->ip = ip;
                     runtimeError(vm, "List index out of bounds.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -1231,26 +1271,18 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
                     dictSet(vm, dict, indexValue, assignValue);
 
-                    // Pop after the values have been inserted to stop GC cleanup
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
                     push(vm, NIL_VAL);
                     DISPATCH();
                 }
 
                 default: {
-                    pop(vm);
-                    pop(vm);
-                    pop(vm);
-
                     frame->ip = ip;
                     runtimeError(vm, "Only lists and dictionaries support subscript assignment.");
                     return INTERPRET_RUNTIME_ERROR;
@@ -1332,10 +1364,7 @@ static InterpretResult run(VM *vm) {
                     if (indexStart > indexEnd) {
                         returnVal = OBJ_VAL(copyString(vm, "", 0));
                     } else {
-                        char *newString = malloc(sizeof(char) * (indexEnd - indexStart) + 1);
-                        memcpy(newString, string->chars + indexStart, indexEnd - indexStart);
-                        returnVal = OBJ_VAL(copyString(vm, newString, indexEnd - indexStart));
-                        free(newString);
+                        returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
                     }
                     break;
                 }
@@ -1356,9 +1385,9 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(PUSH): {
-            Value value = pop(vm);
-            Value indexValue = pop(vm);
-            Value subscriptValue = pop(vm);
+            Value value = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1382,9 +1411,7 @@ static InterpretResult run(VM *vm) {
                         index = list->values.count + index;
 
                     if (index >= 0 && index < list->values.count) {
-                        push(vm, subscriptValue);
-                        push(vm, indexValue);
-                        push(vm, list->values.values[index]);
+                        vm->stackTop[-1] = list->values.values[index];
                         push(vm, value);
                         DISPATCH();
                     }
@@ -1397,22 +1424,19 @@ static InterpretResult run(VM *vm) {
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
+                        frame->ip = ip;
                         runtimeError(vm, "Dictionary key must be an immutable type.");
                         return INTERPRET_RUNTIME_ERROR;
                     }
 
-                    Value v;
-                    bool found = dictGet(dict, indexValue, &v);
-
-                    push(vm, subscriptValue);
-                    push(vm, indexValue);
-                    if (found) {
-                        push(vm, v);
-                    } else {
-                        push(vm, NIL_VAL);
+                    Value dictValue;
+                    if (!dictGet(dict, indexValue, &dictValue)) {
+                        dictValue = NIL_VAL;
                     }
 
+                    vm->stackTop[-1] = dictValue;
                     push(vm, value);
+
                     DISPATCH();
                 }
 
@@ -1562,8 +1586,8 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(OPEN_FILE): {
-            Value openType = pop(vm);
-            Value fileName = pop(vm);
+            Value openType = peek(vm, 0);
+            Value fileName = peek(vm, 1);
 
             if (!IS_STRING(openType)) {
                 frame->ip = ip;
@@ -1591,6 +1615,8 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
+            pop(vm);
+            pop(vm);
             push(vm, OBJ_VAL(file));
             DISPATCH();
         }
@@ -1613,7 +1639,12 @@ static InterpretResult run(VM *vm) {
 }
 
 InterpretResult interpret(VM *vm, const char *source) {
-    ObjFunction *function = compile(vm, source);
+    ObjString *name = copyString(vm, "main", 4);
+    push(vm, OBJ_VAL(name));
+    ObjModule *module = newModule(vm, name);
+    pop(vm);
+
+    ObjFunction *function = compile(vm, module, source);
     if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);

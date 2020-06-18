@@ -36,6 +36,8 @@
    #include <stdint.h>
 #endif
 
+#define UNUSED(__x__) (void) __x__
+
 const struct _json_value json_value_none;
 
 #include <stdio.h>
@@ -92,11 +94,15 @@ typedef struct
 
 static void * default_alloc (size_t size, int zero, void * user_data)
 {
+    UNUSED(user_data);
+
     return zero ? calloc (1, size) : malloc (size);
 }
 
 static void default_free (void * ptr, void * user_data)
 {
+    UNUSED(user_data);
+
     free (ptr);
 }
 
@@ -157,7 +163,7 @@ static int new_value (json_state * state,
                     return 0;
                 }
 
-                value->_reserved.object_mem = (*(char **) &value->u.object.values) + values_size;
+                value->_reserved.object_mem = ((char *)*(json_object_entry**) &value->u.object.values) + values_size;
 
                 value->u.object.length = 0;
                 break;
@@ -419,7 +425,7 @@ json_value * json_parse_ex (json_settings * settings,
                         case json_object:
 
                             if (state.first_pass)
-                                (*(json_char **) &top->u.object.values) += string_length + 1;
+                                (*(json_object_entry**) &top->u.object.values) += string_length + 1;
                             else
                             {
                                 top->u.object.values [top->u.object.length].name

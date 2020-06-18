@@ -161,7 +161,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, type == TYPE_STATIC);
+    compiler->function = newFunction(parser->vm, parser->module, type == TYPE_STATIC);
 
     switch (type) {
         case TYPE_INITIALIZER:
@@ -387,6 +387,8 @@ static void declareVariable(Compiler *compiler) {
 }
 
 static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool constant) {
+    UNUSED(constant);
+
     consume(compiler, TOKEN_IDENTIFIER, errorMessage);
 
     // If it's a global variable, create a string constant for it.
@@ -434,6 +436,8 @@ static int argumentList(Compiler *compiler) {
 }
 
 static void and_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     // left operand...
     // OP_JUMP_IF       ------.
     // OP_POP // left operand |
@@ -452,6 +456,8 @@ static void and_(Compiler *compiler, bool canAssign) {
 }
 
 static void binary(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     TokenType operatorType = compiler->parser->previous.type;
 
     ParseRule *rule = getRule(operatorType);
@@ -509,6 +515,8 @@ static void binary(Compiler *compiler, bool canAssign) {
 }
 
 static void call(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     int argCount = argumentList(compiler);
     emitBytes(compiler, OP_CALL, argCount);
 }
@@ -565,6 +573,8 @@ static void dot(Compiler *compiler, bool canAssign) {
 }
 
 static void literal(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     switch (compiler->parser->previous.type) {
         case TOKEN_FALSE:
             emitByte(compiler, OP_FALSE);
@@ -627,6 +637,8 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 }
 
 static void arrow(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     Compiler fnCompiler;
 
     // Setup function and parse parameters
@@ -646,16 +658,22 @@ static void arrow(Compiler *compiler, bool canAssign) {
 }
 
 static void grouping(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
 static void number(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     double value = strtod(compiler->parser->previous.start, NULL);
     emitConstant(compiler, NUMBER_VAL(value));
 }
 
 static void or_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     // left operand...
     // OP_JUMP_IF       ---.
     // OP_JUMP          ---+--.
@@ -721,6 +739,8 @@ int parseString(char *string, int length) {
 }
 
 static void rString(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     if (match(compiler, TOKEN_STRING)) {
         Parser *parser = compiler->parser;
         emitConstant(compiler, OBJ_VAL(copyString(parser->vm, parser->previous.start + 1,
@@ -733,6 +753,8 @@ static void rString(Compiler *compiler, bool canAssign) {
 }
 
 static void string(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     Parser *parser = compiler->parser;
 
     char *string = malloc(sizeof(char) * parser->previous.length - 1);
@@ -745,6 +767,8 @@ static void string(Compiler *compiler, bool canAssign) {
 }
 
 static void list(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     emitByte(compiler, OP_NEW_LIST);
 
     do {
@@ -759,6 +783,8 @@ static void list(Compiler *compiler, bool canAssign) {
 }
 
 static void dict(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     emitByte(compiler, OP_NEW_DICT);
 
     do {
@@ -935,6 +961,8 @@ static void pushSuperclass(Compiler *compiler) {
 }
 
 static void super_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     if (compiler->class == NULL) {
         error(compiler->parser, "Cannot utilise 'super' outside of a class.");
     } else if (!compiler->class->hasSuperclass) {
@@ -961,6 +989,8 @@ static void super_(Compiler *compiler, bool canAssign) {
 }
 
 static void this_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     if (compiler->class == NULL) {
         error(compiler->parser, "Cannot utilise 'this' outside of a class.");
     } else if (compiler->class->staticMethod) {
@@ -971,6 +1001,8 @@ static void this_(Compiler *compiler, bool canAssign) {
 }
 
 static void static_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     if (compiler->class == NULL) {
         error(compiler->parser, "Cannot utilise 'static' outside of a class.");
     }
@@ -991,6 +1023,8 @@ static void useStatement(Compiler *compiler) {
 }
 
 static void unary(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     TokenType operatorType = compiler->parser->previous.type;
 
     parsePrecedence(compiler, PREC_UNARY);
@@ -1008,6 +1042,8 @@ static void unary(Compiler *compiler, bool canAssign) {
 }
 
 static void prefix(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
     TokenType operatorType = compiler->parser->previous.type;
     Token cur = compiler->parser->current;
     consume(compiler, TOKEN_IDENTIFIER, "Expected variable");
@@ -1103,6 +1139,7 @@ ParseRule rules[] = {
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
@@ -1509,9 +1546,15 @@ static void importStatement(Compiler *compiler) {
             compiler->parser->previous.start + 1,
             compiler->parser->previous.length - 2)));
 
-    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
-
     emitBytes(compiler, OP_IMPORT, importConstant);
+
+    if (match(compiler, TOKEN_AS)) {
+        uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
+        emitByte(compiler, OP_IMPORT_VARIABLE);
+        defineVariable(compiler, importName, false);
+    }
+
+    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
     emitByte(compiler, OP_IMPORT_END);
 }
 
@@ -1654,11 +1697,12 @@ static void statement(Compiler *compiler) {
     }
 }
 
-ObjFunction *compile(VM *vm, const char *source) {
+ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
     Parser parser;
     parser.vm = vm;
     parser.hadError = false;
     parser.panicMode = false;
+    parser.module = module;
 
     initScanner(source);
     Compiler compiler;

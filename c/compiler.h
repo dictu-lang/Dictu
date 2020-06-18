@@ -80,6 +80,7 @@ typedef struct {
     Token previous;
     bool hadError;
     bool panicMode;
+    ObjModule *module;
 } Parser;
 
 typedef struct Compiler {
@@ -109,7 +110,7 @@ typedef struct {
     Precedence precedence;
 } ParseRule;
 
-ObjFunction *compile(VM *vm, const char *source);
+ObjFunction *compile(VM *vm, ObjModule *module, const char *source);
 
 void grayCompilerRoots(VM *vm);
 

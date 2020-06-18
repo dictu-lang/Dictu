@@ -29,7 +29,7 @@ class NthToggle < Toggle {
     }
 }
 
-var start = clock();
+var start = System.clock();
 var n = 100000;
 var val = true;
 var toggle = Toggle(val);
@@ -66,4 +66,4 @@ for (var i = 0; i < n; i = i + 1) {
 }
 
 print(ntoggle.value());
-print(clock() - start);
+print(System.clock() - start);

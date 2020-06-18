@@ -1,0 +1,8 @@
+/**
+* import.du
+*
+* General import file for all the datetime tests
+*/
+
+import "tests/datetime/strftime.du";
+import "tests/datetime/strptime.du";

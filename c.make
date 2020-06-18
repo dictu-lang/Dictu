@@ -5,8 +5,7 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-CFLAGS := -Wall -Wextra -Werror -Wno-unused-parameter -fno-strict-aliasing \
-          -Wshadow -Wunused-function -Wunused-macros -fno-strict-aliasing
+CFLAGS := -Wall -Wextra -Werror -Wshadow -Wunused-function -Wunused-macros
 LFLAGS := -lm
 
 DISABLE_HTTP := 0
@@ -16,8 +15,11 @@ endif
 
 # Mode configuration.
 ifeq ($(MODE),debug)
-	CFLAGS += -O0 -DDEBUG -DDEBUG_STRESS_GC -DDEBUG_FINAL_MEM -g -fprofile-arcs -ftest-coverage
+	CFLAGS += -O0 -DDEBUG -DDEBUG_STRESS_GC -DDEBUG_FINAL_MEM -g
 	BUILD_DIR := build/debug
+else ifeq ($(MODE),coverage)
+    CFLAGS += -O0 -DDEBUG -DDEBUG_STRESS_GC -DDEBUG_FINAL_MEM -g -fprofile-arcs -ftest-coverage
+    BUILD_DIR := build/coverage
 else
 	CFLAGS += -O3 -flto
 	BUILD_DIR := build/release
