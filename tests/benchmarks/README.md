@@ -10,7 +10,7 @@
 
 ### Results
 
-All benchmarks were ran on a MacBook Pro 2.7GHz Intel Core i5, 8 GB 1867 MHz DDR3 RAM. Each benchmark was ran 5 times and the best time was kept.
+All benchmarks were ran on an Early 2015 MacBook Pro 2.7GHz Intel Core i5, 8 GB 1867 MHz DDR3 RAM. Each benchmark was ran 5 times and the best time was kept.
 
 | Benchmark            | Time       |
 |:---------------------|:-----------|
@@ -23,3 +23,15 @@ All benchmarks were ran on a MacBook Pro 2.7GHz Intel Core i5, 8 GB 1867 MHz DDR
 Benchmarks for string methods [here](string-methods/README.md)
 
 Last update 20th November 2019.
+
+### Results - Updated
+
+All benchmarks were ran on a 2020 MacBook Pro 2 GHz Quad-Core Intel Core i5, 16 GB 3733 MHz LPDDR4. Each benchmark was ran 10 times and the best time was kept.
+
+| Benchmark            | Time       |
+|:---------------------|:-----------|
+| Binary Tree          | 0.70105s   |
+| Recursive Fibonacci  | 0.198074s  |
+| For loop             | 0.069719s  |
+| Method Call          | 0.209208s  |
+| String Equality      | 0.171062s  |
