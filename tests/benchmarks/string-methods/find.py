@@ -1,8 +1,8 @@
 import time
 
-start = time.clock()
+start = time.perf_counter()
 
 for i in range(10000):
     x = "Dictu is great!".find("is")
 
-print(time.clock() - start)
+print(time.perf_counter() - start)

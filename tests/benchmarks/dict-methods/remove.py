@@ -1,9 +1,9 @@
 import time
-x = {str(i): "Dictu is great!" for i in range(10000)}
+x = {i: "Dictu is great!" for i in range(10000)}
 
-start = time.clock()
+start = time.perf_counter()
 
 for i in range(10000):
-    x.pop(str(i))
+    x.pop(i)
 
-print(time.clock() - start)
+print(time.perf_counter() - start)

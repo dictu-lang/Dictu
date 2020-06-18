@@ -1,7 +1,7 @@
 import time
-start = time.clock()
+start = time.perf_counter()
 
 for _ in range(10000):
     "test   ".strip()
 
-print(time.clock() - start)
+print(time.perf_counter() - start)
