@@ -1101,6 +1101,9 @@ static InterpretResult run(VM *vm) {
             } else {
                 setcurrentFile(vm, "", 0);
             }
+
+            vm->lastModule = frame->closure->function->module;
+
             DISPATCH();
         }
 
