@@ -25,7 +25,8 @@ jobs:
           rm -rf build
       - name: Make dictu and run tests (HTTP)
         run: |
-          sudo apt-get update && apt-get install -y libcurl4-openssl-dev
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
           make debug
           ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
   test-mac:
