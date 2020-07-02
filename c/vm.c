@@ -641,7 +641,7 @@ static InterpretResult run(VM *vm) {
                 }                                                                                 \
                 printf("\n");                                                                     \
                 disassembleInstruction(&frame->closure->function->chunk,                          \
-                        (int) (frame->ip - frame->closure->function->chunk.code));                \
+                        (int) (ip - frame->closure->function->chunk.code));                \
                 goto *dispatchTable[instruction = READ_BYTE()];                                   \
             }                                                                                     \
             while (false)
