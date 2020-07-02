@@ -288,9 +288,9 @@ char *dictToString(Value value) {
 
        if (keySize > (size - dictStringLength - 1)) {
            if (keySize > size * 2) {
-               size += keySize * 2;
+               size += keySize * 2 + 4;
            } else {
-               size *= 2;
+               size *= 2 + 4;
            }
 
            char *newB = realloc(dictString, sizeof(char) * size);
