@@ -108,7 +108,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_INCREMENT:
             return simpleInstruction("OP_INCREMENT", offset);
         case OP_DECREMENT:
-            return simpleInstruction("OP_INCREMENT", offset);
+            return simpleInstruction("OP_DECREMENT", offset);
         case OP_MULTIPLY:
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
@@ -135,6 +135,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_IMPORT:
             return constantInstruction("OP_IMPORT", chunk, offset);
+        case OP_IMPORT_VARIABLE:
+            return simpleInstruction("OP_IMPORT_VARIABLE", offset);
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:
@@ -182,6 +184,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_CLOSE_UPVALUE", offset);
         case OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
+        case OP_EMPTY:
+            return simpleInstruction("OP_EMPTY", offset);
         case OP_CLASS:
             return constantInstruction("OP_CLASS", chunk, offset);
         case OP_TRAIT:
@@ -196,6 +200,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_USE", chunk, offset);
         case OP_OPEN_FILE:
             return constantInstruction("OP_OPEN_FILE", chunk, offset);
+        case OP_CLOSE_FILE:
+            return simpleInstruction("OP_CLOSE_FILE", offset);
+        case OP_BREAK:
+            return simpleInstruction("OP_BREAK", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
