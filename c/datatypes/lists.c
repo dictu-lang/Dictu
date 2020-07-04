@@ -158,9 +158,15 @@ static Value removeListItem(VM *vm, int argCount, Value *args) {
                 found = true;
             }
 
+            // If we have found the value, shuffle the array
             if (found) {
                 list->values.values[i] = list->values.values[i + 1];
             }
+        }
+
+        // Check if it's the last element
+        if (!found && valuesEqual(remove, list->values.values[list->values.count - 1])) {
+            found = true;
         }
     } else {
         if (valuesEqual(remove, list->values.values[0])) {
