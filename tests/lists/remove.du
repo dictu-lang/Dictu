@@ -1,0 +1,56 @@
+/**
+ * remove.du
+ *
+ * Testing the list.remove() method
+ *
+ * .remove() will remove a given value from a list
+ */
+
+var x = [1, 1, "2", nil, true, false, [1, 2], {"test": 10}];
+
+// Ensure list created properly
+assert(x == [1, 1, "2", nil, true, false, [1, 2], {"test": 10}]);
+assert(x.len() == 8);
+
+x.remove(1);
+
+// Remove will remove the first element in the list with the given value, not all
+assert(x == [1, "2", nil, true, false, [1, 2], {"test": 10}]);
+assert(x.len() == 7);
+
+x.remove(1);
+
+assert(x == ["2", nil, true, false, [1, 2], {"test": 10}]);
+assert(x.len() == 6);
+
+x.remove("2");
+
+assert(x == [nil, true, false, [1, 2], {"test": 10}]);
+assert(x.len() == 5);
+
+x.remove(nil);
+
+assert(x == [true, false, [1, 2], {"test": 10}]);
+assert(x.len() == 4);
+
+x.remove(true);
+
+assert(x == [false, [1, 2], {"test": 10}]);
+assert(x.len() == 3);
+
+x.remove(false);
+
+assert(x == [[1, 2], {"test": 10}]);
+assert(x.len() == 2);
+
+x.remove([1, 2]);
+
+assert(x == [{"test": 10}]);
+assert(x.len() == 1);
+
+x.remove({"test": 10});
+
+assert(x == []);
+assert(x.len() == 0);
+
+
