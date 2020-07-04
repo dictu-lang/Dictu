@@ -137,6 +137,46 @@ static Value popListItem(VM *vm, int argCount, Value *args) {
     return element;
 }
 
+static Value removeListItem(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList *list = AS_LIST(args[0]);
+    Value remove = args[1];
+    bool found = false;
+
+    if (list->values.count == 0) {
+        runtimeError(vm, "Value passed to remove() does not exist within an empty list");
+        return EMPTY_VAL;
+    }
+
+    if (list->values.count > 1) {
+        for (int i = 0; i < list->values.count - 1; i++) {
+            if (!found && valuesEqual(remove, list->values.values[i])) {
+                found = true;
+            }
+
+            if (found) {
+                list->values.values[i] = list->values.values[i + 1];
+            }
+        }
+    } else {
+        if (valuesEqual(remove, list->values.values[0])) {
+            found = true;
+        }
+    }
+
+    if (found) {
+        list->values.count--;
+        return NIL_VAL;
+    }
+
+    runtimeError(vm, "Value passed to remove() does not exist within the list");
+    return EMPTY_VAL;
+}
+
 static Value containsListItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
@@ -249,6 +289,7 @@ void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "push", pushListItem);
     defineNative(vm, &vm->listMethods, "insert", insertListItem);
     defineNative(vm, &vm->listMethods, "pop", popListItem);
+    defineNative(vm, &vm->listMethods, "remove", removeListItem);
     defineNative(vm, &vm->listMethods, "contains", containsListItem);
     defineNative(vm, &vm->listMethods, "join", joinListItem);
     defineNative(vm, &vm->listMethods, "copy", copyListShallow);

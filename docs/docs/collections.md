@@ -147,6 +147,22 @@ print(myList.join("")); // "123"
 print(myList.join("-")); // "1-2-3"
 ```
 
+### list.remove(value)
+
+To remove a value from a list use `.remove()`. If the value does not exist within
+the list a runtime error occurs. Use together with [list.contains()](#listcontainsvalue).
+
+Note: If a list contains multiple values which are the same, a call to `.remove()` will only
+remove the first occurrence, not all.
+
+```js
+var myList = [1, 2, 3];
+myList.remove(3);
+print(myList); // [1, 2]
+myList.remove(1);
+print(myList); // [2]
+```
+
 ### list.pop(number: index -> optional)
 
 To remove a value from a list, with an optional index, use `.pop()`
@@ -155,9 +171,9 @@ To remove a value from a list, with an optional index, use `.pop()`
 var myList = [1, 2, 3];
 // If no index is given, pops from the end
 var someNumber = myList.pop(); // 3
-myList; // [1, 2]
+print(myList); // [1, 2]
 myList.pop(0); // 1
-myList; // [2]
+print(myList); // [2]
 ```
 
 ### Copying lists
