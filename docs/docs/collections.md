@@ -251,6 +251,16 @@ myDict.get("unknown key", 10); // 10
 myDict.get("unknown key"); // nil
 ```
 
+### dict.keys()
+
+Returns a list of all of the dictionary keys.
+
+```js
+var myDict = {1: 2, "test": 3};
+
+myDict.keys(); // [1, "test"]
+```
+
 ### dict.toString()
 Converts a dictionary to a string.
 
