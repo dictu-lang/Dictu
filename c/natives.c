@@ -21,11 +21,20 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
         return OBJ_VAL(copyString(vm, "number", 6));
     } else if (IS_OBJ(args[0])) {
         switch (OBJ_TYPE(args[0])) {
-            case OBJ_NATIVE_CLASS:
-            case OBJ_CLASS:
+            case OBJ_CLASS: {
+                switch (AS_CLASS(args[0])->type) {
+                    case CLASS_DEFAULT: {
+                        return OBJ_VAL(copyString(vm, "class", 5));
+                    }
+
+                    case CLASS_TRAIT: {
+                        return OBJ_VAL(copyString(vm, "trait", 5));
+                    }
+                }
+            }
+            case OBJ_NATIVE_CLASS: {
                 return OBJ_VAL(copyString(vm, "class", 5));
-            case OBJ_TRAIT:
-                return OBJ_VAL(copyString(vm, "trait", 5));
+            }
             case OBJ_INSTANCE: {
                 ObjString *className = AS_INSTANCE(args[0])->klass->name;
                 return OBJ_VAL(copyString(vm, className->chars, className->length));

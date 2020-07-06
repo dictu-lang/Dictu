@@ -11,26 +11,10 @@
 
 #define OBJ_TYPE(value)         (AS_OBJ(value)->type)
 
-#define IS_MODULE(value)        isObjType(value, OBJ_MODULE)
-#define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
-#define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
-#define IS_NATIVE_CLASS(value)  isObjType(value, OBJ_NATIVE_CLASS)
-#define IS_TRAIT(value)         isObjType(value, OBJ_TRAIT)
-#define IS_CLOSURE(value)       isObjType(value, OBJ_CLOSURE)
-#define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
-#define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
-#define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
-#define IS_STRING(value)        isObjType(value, OBJ_STRING)
-#define IS_LIST(value)          isObjType(value, OBJ_LIST)
-#define IS_DICT(value)          isObjType(value, OBJ_DICT)
-#define IS_SET(value)           isObjType(value, OBJ_SET)
-#define IS_FILE(value)          isObjType(value, OBJ_FILE)
-
 #define AS_MODULE(value)        ((ObjModule*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
 #define AS_CLASS_NATIVE(value)  ((ObjClassNative*)AS_OBJ(value))
-#define AS_TRAIT(value)         ((ObjTrait*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
@@ -42,12 +26,28 @@
 #define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 
+#define IS_MODULE(value)        isObjType(value, OBJ_MODULE)
+#define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
+#define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
+#define IS_NATIVE_CLASS(value)  isObjType(value, OBJ_NATIVE_CLASS)
+#define IS_DEFAULT_CLASS(value) isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
+#define IS_TRAIT(value)         isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
+#define IS_CLOSURE(value)       isObjType(value, OBJ_CLOSURE)
+#define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
+#define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
+#define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
+#define IS_STRING(value)        isObjType(value, OBJ_STRING)
+#define IS_LIST(value)          isObjType(value, OBJ_LIST)
+#define IS_DICT(value)          isObjType(value, OBJ_DICT)
+#define IS_SET(value)           isObjType(value, OBJ_SET)
+#define IS_FILE(value)          isObjType(value, OBJ_FILE)
+
 typedef enum {
     OBJ_MODULE,
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
     OBJ_NATIVE_CLASS,
-    OBJ_TRAIT,
+//    OBJ_TRAIT,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
@@ -59,6 +59,11 @@ typedef enum {
     OBJ_FILE,
     OBJ_UPVALUE
 } ObjType;
+
+typedef enum {
+    CLASS_DEFAULT,
+    CLASS_TRAIT
+} ClassType;
 
 struct sObj {
     ObjType type;
@@ -163,6 +168,7 @@ typedef struct sObjClass {
     ObjString *name;
     struct sObjClass *superclass;
     Table methods;
+    ClassType type;
 } ObjClass;
 
 typedef struct sObjClassNative {
@@ -172,11 +178,11 @@ typedef struct sObjClassNative {
     Table properties;
 } ObjClassNative;
 
-typedef struct sObjTrait {
-    Obj obj;
-    ObjString *name;
-    Table methods;
-} ObjTrait;
+//typedef struct sObjTrait {
+//    Obj obj;
+//    ObjString *name;
+//    Table methods;
+//} ObjTrait;
 
 typedef struct {
     Obj obj;
@@ -194,11 +200,11 @@ ObjModule *newModule(VM *vm, ObjString *name);
 
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 
-ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass);
+ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type);
 
 ObjClassNative *newClassNative(VM *vm, ObjString *name);
 
-ObjTrait *newTrait(VM *vm, ObjString *name);
+//ObjTrait *newTrait(VM *vm, ObjString *name);
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 

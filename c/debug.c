@@ -188,14 +188,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_EMPTY", offset);
         case OP_CLASS:
             return constantInstruction("OP_CLASS", chunk, offset);
-        case OP_TRAIT:
-            return constantInstruction("OP_TRAIT", chunk, offset);
         case OP_SUBCLASS:
             return constantInstruction("OP_SUBCLASS", chunk, offset);
         case OP_METHOD:
             return constantInstruction("OP_METHOD", chunk, offset);
-        case OP_TRAIT_METHOD:
-            return constantInstruction("OP_TRAIT_METHOD", chunk, offset);
         case OP_USE:
             return constantInstruction("OP_USE", chunk, offset);
         case OP_OPEN_FILE:

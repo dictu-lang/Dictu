@@ -112,13 +112,6 @@ static void blackenObject(VM *vm, Obj *object) {
             break;
         }
 
-        case OBJ_TRAIT: {
-            ObjTrait *trait = (ObjTrait *) object;
-            grayObject(vm, (Obj *) trait->name);
-            grayTable(vm, &trait->methods);
-            break;
-        }
-
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
             grayObject(vm, (Obj *) closure->function);
@@ -202,13 +195,6 @@ void freeObject(VM *vm, Obj *object) {
             freeTable(vm, &klass->methods);
             freeTable(vm, &klass->properties);
             FREE(vm, ObjClassNative, object);
-            break;
-        }
-
-        case OBJ_TRAIT: {
-            ObjTrait *trait = (ObjTrait *) object;
-            freeTable(vm, &trait->methods);
-            FREE(vm, ObjTrait, object);
             break;
         }
 

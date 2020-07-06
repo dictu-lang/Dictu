@@ -239,6 +239,11 @@ static bool callValue(VM *vm, Value callee, int argCount) {
             }
 
             case OBJ_CLASS: {
+                // If it's not a default class, e.g a trait, it is not callable
+                if (!(IS_DEFAULT_CLASS(callee))) {
+                    break;
+                }
+
                 ObjClass *klass = AS_CLASS(callee);
 
                 // Create the instance.
@@ -347,6 +352,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 }
                 break;
             }
+
             case OBJ_NATIVE_CLASS: {
                 ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
                 Value function;
@@ -542,15 +548,8 @@ static void defineMethod(VM *vm, ObjString *name) {
     pop(vm);
 }
 
-static void defineTraitMethod(VM *vm, ObjString *name) {
-    Value method = peek(vm, 0);
-    ObjTrait *trait = AS_TRAIT(peek(vm, 1));
-    tableSet(vm, &trait->methods, name, method);
-    pop(vm);
-}
-
-static void createClass(VM *vm, ObjString *name, ObjClass *superclass) {
-    ObjClass *klass = newClass(vm, name, superclass);
+static void createClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
+    ObjClass *klass = newClass(vm, name, superclass, type);
     push(vm, OBJ_VAL(klass));
 
     // Inherit methods.
@@ -811,6 +810,7 @@ static InterpretResult run(VM *vm) {
                     DISPATCH();
                 }
 
+                frame->ip = ip;
                 if (!bindMethod(vm, instance->klass, name)) {
                     return INTERPRET_RUNTIME_ERROR;
                 }
@@ -856,6 +856,7 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
+            frame->ip = ip;
             if (!bindMethod(vm, instance->klass, name)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -881,6 +882,7 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(GET_SUPER): {
             ObjString *name = READ_STRING();
             ObjClass *superclass = AS_CLASS(pop(vm));
+            frame->ip = ip;
             if (!bindMethod(vm, superclass, name)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -1540,11 +1542,16 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(CLASS):
-            createClass(vm, READ_STRING(), NULL);
+        CASE_CODE(CLASS): {
+            ClassType type = READ_BYTE();
+
+            createClass(vm, READ_STRING(), NULL, type);
             DISPATCH();
+        }
 
         CASE_CODE(SUBCLASS): {
+            ClassType type = READ_BYTE();
+
             Value superclass = peek(vm, 0);
             if (!IS_CLASS(superclass)) {
                 frame->ip = ip;
@@ -1552,25 +1559,19 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            createClass(vm, READ_STRING(), AS_CLASS(superclass));
-            DISPATCH();
-        }
+            if (IS_TRAIT(superclass)) {
+                frame->ip = ip;
+                runtimeError(vm, "Superclass can not be a trait.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
 
-        CASE_CODE(TRAIT): {
-            ObjString *name = READ_STRING();
-            ObjTrait *trait = newTrait(vm, name);
-            push(vm, OBJ_VAL(trait));
+            createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
             DISPATCH();
         }
 
         CASE_CODE(METHOD):
             defineMethod(vm, READ_STRING());
             DISPATCH();
-
-        CASE_CODE(TRAIT_METHOD): {
-            defineTraitMethod(vm, READ_STRING());
-            DISPATCH();
-        }
 
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
@@ -1582,7 +1583,7 @@ static InterpretResult run(VM *vm) {
 
             ObjClass *klass = AS_CLASS(peek(vm, 1));
 
-            tableAddAll(vm, &AS_TRAIT(trait)->methods, &klass->methods);
+            tableAddAll(vm, &AS_CLASS(trait)->methods, &klass->methods);
             pop(vm); // pop the trait
 
             DISPATCH();

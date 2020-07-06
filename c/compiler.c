@@ -1209,7 +1209,7 @@ static void function(Compiler *compiler, FunctionType type) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler, bool trait) {
+static void method(Compiler *compiler) {
     FunctionType type;
 
     if (check(compiler, TOKEN_STATIC)) {
@@ -1231,12 +1231,7 @@ static void method(Compiler *compiler, bool trait) {
     }
 
     function(compiler, type);
-
-    if (trait) {
-        emitBytes(compiler, OP_TRAIT_METHOD, constant);
-    } else {
-        emitBytes(compiler, OP_METHOD, constant);
-    }
+    emitBytes(compiler, OP_METHOD, constant);
 }
 
 static void classDeclaration(Compiler *compiler) {
@@ -1261,10 +1256,11 @@ static void classDeclaration(Compiler *compiler) {
         variable(compiler, false);
         addLocal(compiler, syntheticToken("super"));
 
-        emitBytes(compiler, OP_SUBCLASS, nameConstant);
+        emitBytes(compiler, OP_SUBCLASS, CLASS_DEFAULT);
     } else {
-        emitBytes(compiler, OP_CLASS, nameConstant);
+        emitBytes(compiler, OP_CLASS, CLASS_DEFAULT);
     }
+    emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
@@ -1272,7 +1268,7 @@ static void classDeclaration(Compiler *compiler) {
         if (match(compiler, TOKEN_USE)) {
             useStatement(compiler);
         } else {
-            method(compiler, false);
+            method(compiler);
         }
     }
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
@@ -1298,11 +1294,12 @@ static void traitDeclaration(Compiler *compiler) {
     classCompiler.staticMethod = false;
     compiler->class = &classCompiler;
 
-    emitBytes(compiler, OP_TRAIT, nameConstant);
+    emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
+    emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
     while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        method(compiler, true);
+        method(compiler);
     }
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
