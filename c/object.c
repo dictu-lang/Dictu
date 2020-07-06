@@ -52,10 +52,11 @@ ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method) {
     return bound;
 }
 
-ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass) {
+ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
     ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
     klass->name = name;
     klass->superclass = superclass;
+    klass->type = type;
     initTable(&klass->methods);
     return klass;
 }
@@ -66,13 +67,6 @@ ObjClassNative *newClassNative(VM *vm, ObjString *name) {
     initTable(&klass->methods);
     initTable(&klass->properties);
     return klass;
-}
-
-ObjTrait *newTrait(VM *vm, ObjString *name) {
-    ObjTrait *trait = ALLOCATE_OBJ(vm, ObjTrait, OBJ_TRAIT);
-    trait->name = name;
-    initTable(&trait->methods);
-    return trait;
 }
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function) {
@@ -466,14 +460,14 @@ char *objectToString(Value value) {
 
         case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
-            return classToString(value);
-        }
+            if (IS_TRAIT(value)) {
+                ObjClass *trait = AS_CLASS(value);
+                char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
+                snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
+                return traitString;
+            }
 
-        case OBJ_TRAIT: {
-            ObjTrait *trait = AS_TRAIT(value);
-            char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
-            snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
-            return traitString;
+            return classToString(value);
         }
 
         case OBJ_BOUND_METHOD: {
