@@ -177,12 +177,6 @@ typedef struct sObjClassNative {
     Table properties;
 } ObjClassNative;
 
-//typedef struct sObjTrait {
-//    Obj obj;
-//    ObjString *name;
-//    Table methods;
-//} ObjTrait;
-
 typedef struct {
     Obj obj;
     ObjClass *klass;
@@ -202,8 +196,6 @@ ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type);
 
 ObjClassNative *newClassNative(VM *vm, ObjString *name);
-
-//ObjTrait *newTrait(VM *vm, ObjString *name);
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 

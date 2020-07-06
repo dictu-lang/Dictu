@@ -31,6 +31,8 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
                         return OBJ_VAL(copyString(vm, "trait", 5));
                     }
                 }
+
+                break;
             }
             case OBJ_NATIVE_CLASS: {
                 return OBJ_VAL(copyString(vm, "class", 5));
