@@ -1251,7 +1251,11 @@ static void method(Compiler *compiler) {
     emitBytes(compiler, OP_METHOD, constant);
 }
 
-static ClassCompiler createClassCompiler(Compiler *compiler) {
+static void classDeclaration(Compiler *compiler) {
+    consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
+    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
+    declareVariable(compiler);
+
     ClassCompiler classCompiler;
     classCompiler.name = compiler->parser->previous;
     classCompiler.hasSuperclass = false;
@@ -1259,16 +1263,6 @@ static ClassCompiler createClassCompiler(Compiler *compiler) {
     classCompiler.staticMethod = false;
     classCompiler.abstractClass = false;
     compiler->class = &classCompiler;
-
-    return classCompiler;
-}
-
-static void classDeclaration(Compiler *compiler) {
-    consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
-    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
-
-    ClassCompiler classCompiler = createClassCompiler(compiler);
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1316,8 +1310,13 @@ static void abstractClassDeclaration(Compiler *compiler) {
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
     declareVariable(compiler);
 
-    ClassCompiler classCompiler = createClassCompiler(compiler);
+    ClassCompiler classCompiler;
+    classCompiler.name = compiler->parser->previous;
+    classCompiler.hasSuperclass = false;
+    classCompiler.enclosing = compiler->class;
+    classCompiler.staticMethod = false;
     classCompiler.abstractClass = true;
+    compiler->class = &classCompiler;
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1351,7 +1350,6 @@ static void abstractClassDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-    classCompiler.abstractClass = false;
 
     compiler->class = compiler->class->enclosing;
 }
@@ -1361,7 +1359,13 @@ static void traitDeclaration(Compiler *compiler) {
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
     declareVariable(compiler);
 
-    createClassCompiler(compiler);
+    ClassCompiler classCompiler;
+    classCompiler.name = compiler->parser->previous;
+    classCompiler.hasSuperclass = false;
+    classCompiler.enclosing = compiler->class;
+    classCompiler.staticMethod = false;
+    classCompiler.abstractClass = false;
+    compiler->class = &classCompiler;
 
     emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
     emitByte(compiler, nameConstant);
