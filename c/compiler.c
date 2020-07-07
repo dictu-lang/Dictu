@@ -1299,7 +1299,6 @@ static void classDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1350,7 +1349,6 @@ static void abstractClassDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1377,7 +1375,6 @@ static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
