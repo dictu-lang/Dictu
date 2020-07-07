@@ -478,7 +478,6 @@ char *objectToString(Value value) {
             if (method->method->function->name != NULL) {
                 methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
 
-
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
                         snprintf(methodString, method->method->function->name->length + 17, "<bound method %s>", method->method->function->name->chars);

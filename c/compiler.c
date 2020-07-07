@@ -1221,6 +1221,11 @@ static void method(Compiler *compiler) {
         type = TYPE_STATIC;
         compiler->class->staticMethod = true;
     } else if (match(compiler, TOKEN_ABSTRACT)) {
+        if (!compiler->class->abstractClass) {
+            error(compiler->parser, "Abstract methods can only appear within abstract classes.");
+            return;
+        }
+
         type = TYPE_ABSTRACT;
     }
 
@@ -1252,6 +1257,7 @@ static ClassCompiler createClassCompiler(Compiler *compiler) {
     classCompiler.hasSuperclass = false;
     classCompiler.enclosing = compiler->class;
     classCompiler.staticMethod = false;
+    classCompiler.abstractClass = false;
     compiler->class = &classCompiler;
 
     return classCompiler;
@@ -1311,6 +1317,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
     declareVariable(compiler);
 
     ClassCompiler classCompiler = createClassCompiler(compiler);
+    classCompiler.abstractClass = true;
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1344,6 +1351,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
+    classCompiler.abstractClass = false;
 
     compiler->class = compiler->class->enclosing;
 }

@@ -55,6 +55,7 @@ typedef struct ClassCompiler {
     Token name;
     bool hasSuperclass;
     bool staticMethod;
+    bool abstractClass;
 } ClassCompiler;
 
 typedef struct Loop {
