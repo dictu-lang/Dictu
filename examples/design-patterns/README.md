@@ -1,5 +1,5 @@
 # Design Patterns
-This directory shows some of the commonly used OOP design patterns would be 
+This directory shows how some of the commonly used OOP design patterns would be 
 implemented in Dictu. The code for the majority of the patterns has come from
 the [Refactoring Guru](https://refactoring.guru/) website.
 
