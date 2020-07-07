@@ -26,21 +26,21 @@
 #define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 
-#define IS_MODULE(value)        isObjType(value, OBJ_MODULE)
-#define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
-#define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
-#define IS_NATIVE_CLASS(value)  isObjType(value, OBJ_NATIVE_CLASS)
-#define IS_DEFAULT_CLASS(value) isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
-#define IS_TRAIT(value)         isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
-#define IS_CLOSURE(value)       isObjType(value, OBJ_CLOSURE)
-#define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
-#define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
-#define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
-#define IS_STRING(value)        isObjType(value, OBJ_STRING)
-#define IS_LIST(value)          isObjType(value, OBJ_LIST)
-#define IS_DICT(value)          isObjType(value, OBJ_DICT)
-#define IS_SET(value)           isObjType(value, OBJ_SET)
-#define IS_FILE(value)          isObjType(value, OBJ_FILE)
+#define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
+#define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
+#define IS_CLASS(value)           isObjType(value, OBJ_CLASS)
+#define IS_NATIVE_CLASS(value)    isObjType(value, OBJ_NATIVE_CLASS)
+#define IS_DEFAULT_CLASS(value)   isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
+#define IS_TRAIT(value)           isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
+#define IS_CLOSURE(value)         isObjType(value, OBJ_CLOSURE)
+#define IS_FUNCTION(value)        isObjType(value, OBJ_FUNCTION)
+#define IS_INSTANCE(value)        isObjType(value, OBJ_INSTANCE)
+#define IS_NATIVE(value)          isObjType(value, OBJ_NATIVE)
+#define IS_STRING(value)          isObjType(value, OBJ_STRING)
+#define IS_LIST(value)            isObjType(value, OBJ_LIST)
+#define IS_DICT(value)            isObjType(value, OBJ_DICT)
+#define IS_SET(value)             isObjType(value, OBJ_SET)
+#define IS_FILE(value)            isObjType(value, OBJ_FILE)
 
 typedef enum {
     OBJ_MODULE,
@@ -61,8 +61,19 @@ typedef enum {
 
 typedef enum {
     CLASS_DEFAULT,
+    CLASS_ABSTRACT,
     CLASS_TRAIT
 } ClassType;
+
+typedef enum {
+    TYPE_FUNCTION,
+    TYPE_ARROW_FUNCTION,
+    TYPE_INITIALIZER,
+    TYPE_METHOD,
+    TYPE_STATIC,
+    TYPE_ABSTRACT,
+    TYPE_TOP_LEVEL
+} FunctionType;
 
 struct sObj {
     ObjType type;
@@ -83,7 +94,7 @@ typedef struct {
     int upvalueCount;
     Chunk chunk;
     ObjString *name;
-    bool staticMethod;
+    FunctionType type;
     ObjModule* module;
 } ObjFunction;
 
@@ -167,6 +178,7 @@ typedef struct sObjClass {
     ObjString *name;
     struct sObjClass *superclass;
     Table methods;
+    Table abstractMethods;
     ClassType type;
 } ObjClass;
 
@@ -199,7 +211,7 @@ ObjClassNative *newClassNative(VM *vm, ObjString *name);
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 
-ObjFunction *newFunction(VM *vm, ObjModule *module, bool isStatic);
+ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type);
 
 ObjInstance *newInstance(VM *vm, ObjClass *klass);
 

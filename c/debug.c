@@ -32,6 +32,36 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     return offset + 3;
 }
 
+static int classInstruction(const char* name, Chunk* chunk,
+                            int offset) {
+    uint8_t type = chunk->code[offset + 1];
+    uint8_t constant = chunk->code[offset + 2];
+    char *typeString;
+
+    switch (type) {
+        case CLASS_DEFAULT: {
+            typeString = "default";
+            break;
+        }
+
+        case CLASS_ABSTRACT: {
+            typeString = "abstract";
+            break;
+        }
+
+        case CLASS_TRAIT: {
+            typeString = "trait";
+            break;
+        }
+    }
+
+
+    printf("%-16s (Type: %s) %4d '", name, typeString, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 3;
+}
+
 static int simpleInstruction(const char *name, int offset) {
     printf("%s\n", name);
     return offset + 1;
@@ -187,9 +217,11 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_EMPTY:
             return simpleInstruction("OP_EMPTY", offset);
         case OP_CLASS:
-            return constantInstruction("OP_CLASS", chunk, offset);
+            return classInstruction("OP_CLASS", chunk, offset);
         case OP_SUBCLASS:
-            return constantInstruction("OP_SUBCLASS", chunk, offset);
+            return classInstruction("OP_SUBCLASS", chunk, offset);
+        case OP_END_CLASS:
+            return simpleInstruction("OP_END_CLASS", offset);
         case OP_METHOD:
             return constantInstruction("OP_METHOD", chunk, offset);
         case OP_USE:

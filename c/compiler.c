@@ -161,12 +161,13 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, parser->module, type == TYPE_STATIC);
+    compiler->function = newFunction(parser->vm, parser->module, type);
 
     switch (type) {
         case TYPE_INITIALIZER:
         case TYPE_METHOD:
         case TYPE_STATIC:
+        case TYPE_ABSTRACT:
         case TYPE_FUNCTION:
         case TYPE_ARROW_FUNCTION: {
             compiler->function->name = copyString(
@@ -1132,6 +1133,7 @@ ParseRule rules[] = {
         {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
         {string,   NULL,      PREC_NONE},               // TOKEN_STRING
         {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ABSTRACT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CLASS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
@@ -1212,13 +1214,19 @@ static void function(Compiler *compiler, FunctionType type) {
 static void method(Compiler *compiler) {
     FunctionType type;
 
-    if (check(compiler, TOKEN_STATIC)) {
+    compiler->class->staticMethod = false;
+    type = TYPE_METHOD;
+
+    if (match(compiler, TOKEN_STATIC)) {
         type = TYPE_STATIC;
-        consume(compiler, TOKEN_STATIC, "Expect static.");
         compiler->class->staticMethod = true;
-    } else {
-        type = TYPE_METHOD;
-        compiler->class->staticMethod = false;
+    } else if (match(compiler, TOKEN_ABSTRACT)) {
+        if (!compiler->class->abstractClass) {
+            error(compiler->parser, "Abstract methods can only appear within abstract classes.");
+            return;
+        }
+
+        type = TYPE_ABSTRACT;
     }
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect method name.");
@@ -1230,7 +1238,16 @@ static void method(Compiler *compiler) {
         type = TYPE_INITIALIZER;
     }
 
-    function(compiler, type);
+    if (type != TYPE_ABSTRACT) {
+        function(compiler, type);
+    } else {
+        Compiler fnCompiler;
+
+        // Setup function and parse parameters
+        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
+        endCompiler(&fnCompiler);
+    }
+
     emitBytes(compiler, OP_METHOD, constant);
 }
 
@@ -1244,6 +1261,7 @@ static void classDeclaration(Compiler *compiler) {
     classCompiler.hasSuperclass = false;
     classCompiler.enclosing = compiler->class;
     classCompiler.staticMethod = false;
+    classCompiler.abstractClass = false;
     compiler->class = &classCompiler;
 
     if (match(compiler, TOKEN_LESS)) {
@@ -1275,10 +1293,62 @@ static void classDeclaration(Compiler *compiler) {
 
     if (classCompiler.hasSuperclass) {
         endScope(compiler);
+
+        // If there's a super class, check abstract methods have been defined
+        emitByte(compiler, OP_END_CLASS);
     }
 
     defineVariable(compiler, nameConstant, false);
+    compiler->class = compiler->class->enclosing;
+}
 
+static void abstractClassDeclaration(Compiler *compiler) {
+    consume(compiler, TOKEN_CLASS, "Expect class keyword.");
+
+    consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
+    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
+    declareVariable(compiler);
+
+    ClassCompiler classCompiler;
+    classCompiler.name = compiler->parser->previous;
+    classCompiler.hasSuperclass = false;
+    classCompiler.enclosing = compiler->class;
+    classCompiler.staticMethod = false;
+    classCompiler.abstractClass = true;
+    compiler->class = &classCompiler;
+
+    if (match(compiler, TOKEN_LESS)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
+        classCompiler.hasSuperclass = true;
+
+        beginScope(compiler);
+
+        // Store the superclass in a local variable named "super".
+        variable(compiler, false);
+        addLocal(compiler, syntheticToken("super"));
+
+        emitBytes(compiler, OP_SUBCLASS, CLASS_ABSTRACT);
+    } else {
+        emitBytes(compiler, OP_CLASS, CLASS_ABSTRACT);
+    }
+    emitByte(compiler, nameConstant);
+
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+
+    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+        if (match(compiler, TOKEN_USE)) {
+            useStatement(compiler);
+        } else {
+            method(compiler);
+        }
+    }
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+
+    if (classCompiler.hasSuperclass) {
+        endScope(compiler);
+    }
+
+    defineVariable(compiler, nameConstant, false);
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1292,6 +1362,7 @@ static void traitDeclaration(Compiler *compiler) {
     classCompiler.hasSuperclass = false;
     classCompiler.enclosing = compiler->class;
     classCompiler.staticMethod = false;
+    classCompiler.abstractClass = false;
     compiler->class = &classCompiler;
 
     emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
@@ -1304,7 +1375,6 @@ static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1619,6 +1689,8 @@ static void declaration(Compiler *compiler) {
         classDeclaration(compiler);
     } else if (match(compiler, TOKEN_TRAIT)) {
         traitDeclaration(compiler);
+    } else if (match(compiler, TOKEN_ABSTRACT)) {
+        abstractClassDeclaration(compiler);
     } else if (match(compiler, TOKEN_DEF)) {
         funDeclaration(compiler);
     } else if (match(compiler, TOKEN_VAR)) {

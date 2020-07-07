@@ -368,7 +368,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 ObjClass *instance = AS_CLASS(receiver);
                 Value method;
                 if (tableGet(&instance->methods, name, &method)) {
-                    if (!AS_CLOSURE(method)->function->staticMethod) {
+                    if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
                         if (tableGet(&vm->classMethods, name, &method)) {
                             return callNativeMethod(vm, method, argCount);
                         }
@@ -544,7 +544,12 @@ static void closeUpvalues(VM *vm, Value *last) {
 static void defineMethod(VM *vm, ObjString *name) {
     Value method = peek(vm, 0);
     ObjClass *klass = AS_CLASS(peek(vm, 1));
-    tableSet(vm, &klass->methods, name, method);
+
+    if (AS_CLOSURE(method)->function->type == TYPE_ABSTRACT) {
+        tableSet(vm, &klass->abstractMethods, name, method);
+    } else {
+        tableSet(vm, &klass->methods, name, method);
+    }
     pop(vm);
 }
 
@@ -555,6 +560,7 @@ static void createClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType
     // Inherit methods.
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->methods, &klass->methods);
+        tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
     }
 }
 
@@ -1566,6 +1572,25 @@ static InterpretResult run(VM *vm) {
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
+            DISPATCH();
+        }
+
+        CASE_CODE(END_CLASS): {
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            // If super class is abstract, ensure we have defined all abstract methods
+            for (int i = 0; i < klass->abstractMethods.capacityMask + 1; i++) {
+                if (klass->abstractMethods.entries[i].key == NULL) {
+                    continue;
+                }
+
+                Value _;
+                if (!tableGet(&klass->methods, klass->abstractMethods.entries[i].key, &_)) {
+                    frame->ip = ip;
+                    runtimeError(vm, "Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
             DISPATCH();
         }
 
