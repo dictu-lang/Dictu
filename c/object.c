@@ -57,6 +57,7 @@ ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type
     klass->name = name;
     klass->superclass = superclass;
     klass->type = type;
+    initTable(&klass->abstractMethods);
     initTable(&klass->methods);
     return klass;
 }
@@ -82,13 +83,13 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm, ObjModule *module, bool isStatic) {
+ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
     function->upvalueCount = 0;
     function->name = NULL;
-    function->staticMethod = isStatic;
+    function->type = type;
     function->module = module;
     initChunk(vm, &function->chunk);
     return function;
@@ -476,12 +477,31 @@ char *objectToString(Value value) {
 
             if (method->method->function->name != NULL) {
                 methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-                char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
-                snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+
+
+                switch (method->method->function->type) {
+                    case TYPE_STATIC: {
+                        snprintf(methodString, method->method->function->name->length + 17, "<bound method %s>", method->method->function->name->chars);
+                    }
+
+                    default: {
+                        snprintf(methodString, method->method->function->name->length + 17, "<static method %s>", method->method->function->name->chars);
+                    }
+                }
             } else {
                 methodString = malloc(sizeof(char) * 16);
-                char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
-                snprintf(methodString, 16, "%s", methodType);
+
+                switch (method->method->function->type) {
+                    case TYPE_STATIC: {
+                        memcpy(methodString, "<static method>", 15);
+                        methodString[15] = '\0';
+                    }
+
+                    default: {
+                        memcpy(methodString, "<bound method>", 15);
+                        methodString[15] = '\0';
+                    }
+                }
             }
 
             return methodString;

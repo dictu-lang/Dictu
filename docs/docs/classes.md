@@ -233,6 +233,35 @@ print(obj.someVariable); // Hello!
 
 The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
 
+## Abstract classes
+
+An abstract class is a base class that can not be instantiated, like a trait, however is much like a contract in that it defines methods that need to be implemented
+within a class. An abstract class can have methods which implement the body, and would work like a normal class being inherited, however, if it includes methods which
+have been marked as abstract, enforces the inheriting class to implement these methods.
+
+```js
+abstract class AbstractClass {
+    // We do not define the body of an abstract method
+    abstract test()
+    
+    // We can also provide methods with the body that will be inherited as normal
+    anotherFunc() {
+        print("Func!");
+    }
+}
+
+// If we left the class as is, a runtime error would occur.
+// Class Test does not implement abstract method test
+class Test < AbstractClass {}
+
+class Test < AbstractClass {
+    // We have implemented the abstract method, and therefore, satisfied the abstract class
+    test() {
+        print("Test!");
+    }
+}
+```
+
 ## Traits
 
 Dictu only allows inheritance from a single parent class, which can cause complications when we need functionality from more than one class.

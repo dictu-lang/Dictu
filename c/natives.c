@@ -23,10 +23,10 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
         switch (OBJ_TYPE(args[0])) {
             case OBJ_CLASS: {
                 switch (AS_CLASS(args[0])->type) {
-                    case CLASS_DEFAULT: {
+                    case CLASS_DEFAULT:
+                    case CLASS_ABSTRACT: {
                         return OBJ_VAL(copyString(vm, "class", 5));
                     }
-
                     case CLASS_TRAIT: {
                         return OBJ_VAL(copyString(vm, "trait", 5));
                     }

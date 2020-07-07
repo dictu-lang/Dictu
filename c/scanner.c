@@ -142,6 +142,10 @@ static TokenType identifierType() {
         case 'a':
             if (scanner.current - scanner.start > 1) {
                 switch (scanner.start[1]) {
+                    case 'b': {
+                        return checkKeyword(2, 6, "stract", TOKEN_ABSTRACT);
+                    }
+
                     case 'n': {
                         return checkKeyword(2, 1, "d", TOKEN_AND);
                     }
