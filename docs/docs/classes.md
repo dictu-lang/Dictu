@@ -237,7 +237,7 @@ The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`
 
 An abstract class is a base class that can not be instantiated, like a trait, however is much like a contract in that it defines methods that need to be implemented
 within a class. An abstract class can have methods which implement the body, and would work like a normal class being inherited, however, if it includes methods which
-have been marked as abstract, enforces the inheriting class to implement these methods.
+have been marked as abstract, it enforces the inheriting class to implement these methods.
 
 ```js
 abstract class AbstractClass {

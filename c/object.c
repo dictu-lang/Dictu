@@ -481,10 +481,12 @@ char *objectToString(Value value) {
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
                         snprintf(methodString, method->method->function->name->length + 17, "<bound method %s>", method->method->function->name->chars);
+                        break;
                     }
 
                     default: {
                         snprintf(methodString, method->method->function->name->length + 17, "<static method %s>", method->method->function->name->chars);
+                        break;
                     }
                 }
             } else {
@@ -494,11 +496,13 @@ char *objectToString(Value value) {
                     case TYPE_STATIC: {
                         memcpy(methodString, "<static method>", 15);
                         methodString[15] = '\0';
+                        break;
                     }
 
                     default: {
                         memcpy(methodString, "<bound method>", 15);
                         methodString[15] = '\0';
+                        break;
                     }
                 }
             }
