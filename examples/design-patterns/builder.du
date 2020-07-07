@@ -1,0 +1,89 @@
+class Builder {
+    init() {
+        this.reset();
+    }
+
+    reset() {
+        this.product = Product();
+    }
+
+    producePartA() {
+        this.product.parts.push("PartA");
+    }
+
+    producePartB() {
+        this.product.parts.push("PartB");
+    }
+
+    producePartC() {
+        this.product.parts.push("PartC");
+    }
+
+    getProduct() {
+        var result = this.product;
+        this.reset();
+
+        return result;
+    }
+}
+
+class Product {
+    init() {
+        this.parts = [];
+    }
+
+    listParts() {
+        print("Product parts: {}".format(this.parts.join()));
+    }
+}
+
+/**
+ * Director class is an optional class in the builder pattern
+ *
+ * It is useful if we wish to build products in a specific order
+ */
+class Director {
+    init(builder) {
+        this.builder = builder;
+    }
+
+    minimumProduct() {
+        this.builder.producePartA();
+    }
+
+    fullProduct() {
+        this.builder.producePartA();
+        this.builder.producePartB();
+        this.builder.producePartC();
+    }
+}
+
+/**
+ * We can ignore the director if we wish to build products manually
+ */
+var builder = Builder();
+
+builder.producePartA();
+builder.producePartB();
+
+var product = builder.getProduct();
+product.listParts();
+
+builder.producePartA();
+builder.producePartB();
+builder.producePartC();
+
+product = builder.getProduct();
+product.listParts();
+
+/**
+ * We can introduce a "director" to create
+ * "known" products for us.
+ */
+var director = Director(builder);
+
+director.minimumProduct();
+builder.getProduct().listParts();
+
+director.fullProduct();
+builder.getProduct().listParts();

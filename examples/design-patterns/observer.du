@@ -1,0 +1,69 @@
+class Publisher {
+    init() {
+        this.observers = [];
+    }
+
+    /**
+     * Attach an observer object to this publisher
+     *
+     * @param observer
+     */
+    attach(observer) {
+        this.observers.push(observer);
+    }
+
+    /**
+     * Remove an observer from this publisher
+     *
+     * @param observer
+     */
+    remove(observer) {
+        this.observers.remove(observer);
+    }
+
+    /**
+     * Notify all subscribed observers
+     */
+    notify() {
+        for (var i = 0; i < this.observers.len(); ++i) {
+            this.observers[i].update();
+        }
+    }
+
+    /**
+     * Main business logic
+     */
+    main() {
+        print("Super important logic!!");
+
+        this.notify();
+    }
+}
+
+class ObserverA {
+    /**
+     * Function ran when the publisher notifies us
+     */
+    update() {
+        print("ObserverA has been notified!");
+    }
+}
+
+class ObserverB {
+    /**
+     * Function ran when the publisher notifies us
+     */
+    update() {
+        print("ObserverB has been notified!");
+    }
+}
+
+var pub = Publisher();
+
+var observerA = ObserverA();
+var observerB = ObserverB();
+
+pub.attach(observerA);
+pub.attach(observerB);
+
+pub.main();
