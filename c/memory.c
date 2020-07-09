@@ -102,6 +102,7 @@ static void blackenObject(VM *vm, Obj *object) {
             grayObject(vm, (Obj *) klass->superclass);
             grayTable(vm, &klass->methods);
             grayTable(vm, &klass->abstractMethods);
+            grayTable(vm, &klass->properties);
             break;
         }
 
@@ -188,6 +189,7 @@ void freeObject(VM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             freeTable(vm, &klass->methods);
             freeTable(vm, &klass->abstractMethods);
+            freeTable(vm, &klass->properties);
             FREE(vm, ObjClass, object);
             break;
         }

@@ -1,0 +1,56 @@
+class Test {
+    var x = 10;
+
+    init() {
+        //
+    }
+}
+
+assert(Test.x == 10);
+
+// Class vars are different in that if they are changed on the class they're changed on all instances
+// E.g
+
+var x = Test();
+var y = Test();
+
+// Update class var
+Test.x = 1000;
+
+assert(x.x == 1000);
+assert(y.x == 1000);
+
+
+/**
+ * Ensure inherited classes work
+ */
+class BaseClass {
+    var x = 10;
+}
+
+class Common < BaseClass {}
+
+assert(Common.x == 10);
+assert(Common().x == 10);
+
+class AnotherClass < Common {}
+
+assert(AnotherClass.x == 10);
+assert(AnotherClass().x == 10);
+
+BaseClass.x = 100;
+
+assert(Common.x == 100);
+assert(Common().x == 100);
+assert(AnotherClass.x == 100);
+assert(AnotherClass().x == 100);
+
+
+/**
+ * Test abstract classes
+ */
+abstract class AbstractClass {
+    var x = "Hello";
+}
+
+assert(AbstractClass.x == "Hello");

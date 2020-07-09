@@ -475,7 +475,6 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
 static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
     Value method;
     if (!tableGet(&klass->methods, name, &method)) {
-        runtimeError(vm, "Undefined property '%s'.", name->chars);
         return false;
     }
 
@@ -816,12 +815,26 @@ static InterpretResult run(VM *vm) {
                     DISPATCH();
                 }
 
-                frame->ip = ip;
-                if (!bindMethod(vm, instance->klass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
+                if (bindMethod(vm, instance->klass, name)) {
+                    DISPATCH();
                 }
 
-                DISPATCH();
+                // Check class for properties
+                ObjClass *klass = instance->klass;
+
+                while (klass != NULL) {
+                    if (tableGet(&klass->properties, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
+                }
+
+                frame->ip = ip;
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
             } else if (IS_NATIVE_CLASS(peek(vm, 0))) {
                 ObjClassNative *klass = AS_CLASS_NATIVE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -839,6 +852,20 @@ static InterpretResult run(VM *vm) {
                     pop(vm); // Module.
                     push(vm, value);
                     DISPATCH();
+                }
+            } else if (IS_CLASS(peek(vm, 0))) {
+                ObjClass *klass = AS_CLASS(peek(vm, 0));
+                ObjString *name = READ_STRING();
+
+                Value value;
+                while (klass != NULL) {
+                    if (tableGet(&klass->properties, name, &value)) {
+                        pop(vm); // Class.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
                 }
             }
 
@@ -862,34 +889,54 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
-            frame->ip = ip;
-            if (!bindMethod(vm, instance->klass, name)) {
-                return INTERPRET_RUNTIME_ERROR;
+            if (bindMethod(vm, instance->klass, name)) {
+                DISPATCH();
             }
 
-            DISPATCH();
+            // Check class for properties
+            ObjClass *klass = instance->klass;
+
+            while (klass != NULL) {
+                if (tableGet(&klass->properties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                klass = klass->superclass;
+            }
+
+            frame->ip = ip;
+            runtimeError(vm, "Undefined property '%s'.", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(SET_PROPERTY): {
-            if (!IS_INSTANCE(peek(vm, 1))) {
-                frame->ip = ip;
-                runtimeError(vm, "Only instances have fields.");
-                return INTERPRET_RUNTIME_ERROR;
+            if (IS_INSTANCE(peek(vm, 1))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
+                tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
+                DISPATCH();
+            } else if (IS_CLASS(peek(vm, 1))) {
+                ObjClass *klass = AS_CLASS(peek(vm, 1));
+                tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                DISPATCH();
             }
 
-            ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-            tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
-            pop(vm);
-            pop(vm);
-            push(vm, NIL_VAL);
-            DISPATCH();
+            frame->ip = ip;
+            runtimeError(vm, "Only instances have fields.");
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_SUPER): {
             ObjString *name = READ_STRING();
             ObjClass *superclass = AS_CLASS(pop(vm));
-            frame->ip = ip;
+
             if (!bindMethod(vm, superclass, name)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             DISPATCH();
