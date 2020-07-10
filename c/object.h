@@ -179,6 +179,7 @@ typedef struct sObjClass {
     struct sObjClass *superclass;
     Table methods;
     Table abstractMethods;
+    Table properties;
     ClassType type;
 } ObjClass;
 

@@ -178,6 +178,34 @@ myObject.setAttribute("x", 100);
 print(myObject.x); // 100
 ```
 
+## Class variables
+
+A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
+to the class variable, and it is also shared across all instances.
+
+```js
+class SomeClass {
+    var classVariable = 10; // This will be shared among all "SomeClass" instances
+
+    init() {
+        this.x = 10; // "x" is set on the instance
+    }
+}
+
+print(SomeClass.classVaraible); // 10
+
+var x = SomeClass();
+var y = SomeClass();
+
+print(x.classVariable); // 10
+print(y.classVariable); // 10
+
+SomeClass.classVaraible = 100;
+
+print(x.classVariable); // 100
+print(y.classVariable); // 100
+```
+
 ## Static methods
 
 Static methods are methods which do not reference an object, and instead belong to a class. If a method is marked as static, `this` is not passed to the object. This means static methods can be invoked without instantiating an object.

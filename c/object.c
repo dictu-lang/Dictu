@@ -59,6 +59,7 @@ ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type
     klass->type = type;
     initTable(&klass->abstractMethods);
     initTable(&klass->methods);
+    initTable(&klass->properties);
     return klass;
 }
 

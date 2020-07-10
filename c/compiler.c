@@ -1251,18 +1251,41 @@ static void method(Compiler *compiler) {
     emitBytes(compiler, OP_METHOD, constant);
 }
 
+static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler, bool abstract) {
+    classCompiler->name = compiler->parser->previous;
+    classCompiler->hasSuperclass = false;
+    classCompiler->enclosing = compiler->class;
+    classCompiler->staticMethod = false;
+    classCompiler->abstractClass = abstract;
+    compiler->class = classCompiler;
+}
+
+static void parseClassBody(Compiler *compiler) {
+    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+        if (match(compiler, TOKEN_USE)) {
+            useStatement(compiler);
+        } else if (match(compiler, TOKEN_VAR)) {
+            consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
+            uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+
+            consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
+            expression(compiler);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+
+            consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+        } else {
+            method(compiler);
+        }
+    }
+}
+
 static void classDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
     declareVariable(compiler);
 
     ClassCompiler classCompiler;
-    classCompiler.name = compiler->parser->previous;
-    classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = compiler->class;
-    classCompiler.staticMethod = false;
-    classCompiler.abstractClass = false;
-    compiler->class = &classCompiler;
+    setupClassCompiler(compiler, &classCompiler, false);
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1282,13 +1305,8 @@ static void classDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        if (match(compiler, TOKEN_USE)) {
-            useStatement(compiler);
-        } else {
-            method(compiler);
-        }
-    }
+    parseClassBody(compiler);
+
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
 
     if (classCompiler.hasSuperclass) {
@@ -1310,12 +1328,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
     declareVariable(compiler);
 
     ClassCompiler classCompiler;
-    classCompiler.name = compiler->parser->previous;
-    classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = compiler->class;
-    classCompiler.staticMethod = false;
-    classCompiler.abstractClass = true;
-    compiler->class = &classCompiler;
+    setupClassCompiler(compiler, &classCompiler, true);
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1335,13 +1348,8 @@ static void abstractClassDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        if (match(compiler, TOKEN_USE)) {
-            useStatement(compiler);
-        } else {
-            method(compiler);
-        }
-    }
+    parseClassBody(compiler);
+
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
 
     if (classCompiler.hasSuperclass) {
@@ -1358,20 +1366,15 @@ static void traitDeclaration(Compiler *compiler) {
     declareVariable(compiler);
 
     ClassCompiler classCompiler;
-    classCompiler.name = compiler->parser->previous;
-    classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = compiler->class;
-    classCompiler.staticMethod = false;
-    classCompiler.abstractClass = false;
-    compiler->class = &classCompiler;
+    setupClassCompiler(compiler, &classCompiler, false);
 
     emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
     emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        method(compiler);
-    }
+
+    parseClassBody(compiler);
+
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(compiler, nameConstant, false);
