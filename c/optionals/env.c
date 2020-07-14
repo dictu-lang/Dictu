@@ -56,17 +56,17 @@ static Value set(VM *vm, int argCount, Value *args) {
 void createEnvClass(VM *vm) {
     ObjString *name = copyString(vm, "Env", 3);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Env methods
      */
-    defineNative(vm, &klass->methods, "strerror", strerrorNative);
-    defineNative(vm, &klass->methods, "get", get);
-    defineNative(vm, &klass->methods, "set", set);
+    defineNative(vm, &module->values, "strerror", strerrorNative);
+    defineNative(vm, &module->values, "get", get);
+    defineNative(vm, &module->values, "set", set);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 }

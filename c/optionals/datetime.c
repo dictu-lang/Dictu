@@ -142,18 +142,18 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
 void createDatetimeClass(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Datetime methods
      */
-    defineNative(vm, &klass->methods, "now", nowNative);
-    defineNative(vm, &klass->methods, "nowUTC", nowUTCNative);
-    defineNative(vm, &klass->methods, "strftime", strftimeNative);
-    defineNative(vm, &klass->methods, "strptime", strptimeNative);
+    defineNative(vm, &module->values, "now", nowNative);
+    defineNative(vm, &module->values, "nowUTC", nowUTCNative);
+    defineNative(vm, &module->values, "strftime", strftimeNative);
+    defineNative(vm, &module->values, "strptime", strptimeNative);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 }
