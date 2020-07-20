@@ -266,26 +266,26 @@ static Value stringify(VM *vm, int argCount, Value *args) {
 void createJSONClass(VM *vm) {
     ObjString *name = copyString(vm, "JSON", 4);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Json methods
      */
-    defineNative(vm, &klass->methods, "strerror", strerrorJsonNative);
-    defineNative(vm, &klass->methods, "parse", parse);
-    defineNative(vm, &klass->methods, "stringify", stringify);
+    defineNative(vm, &module->values, "strerror", strerrorJsonNative);
+    defineNative(vm, &module->values, "parse", parse);
+    defineNative(vm, &module->values, "stringify", stringify);
 
     /**
      * Define Json properties
      */
-    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
-    defineNativeProperty(vm, &klass->properties, "ENULL", NUMBER_VAL(JSON_ENULL));
-    defineNativeProperty(vm, &klass->properties, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
-    defineNativeProperty(vm, &klass->properties, "EINVAL", NUMBER_VAL(JSON_EINVAL));
-    defineNativeProperty(vm, &klass->properties, "ENOSERIAL", NUMBER_VAL(JSON_ENOSERIAL));
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+    defineNativeProperty(vm, &module->values, "ENULL", NUMBER_VAL(JSON_ENULL));
+    defineNativeProperty(vm, &module->values, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
+    defineNativeProperty(vm, &module->values, "EINVAL", NUMBER_VAL(JSON_EINVAL));
+    defineNativeProperty(vm, &module->values, "ENOSERIAL", NUMBER_VAL(JSON_ENOSERIAL));
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 }

@@ -261,8 +261,10 @@ static bool callValue(VM *vm, Value callee, int argCount) {
                 return true;
             }
 
-            case OBJ_CLOSURE:
+            case OBJ_CLOSURE: {
+                vm->stackTop[-argCount - 1] = callee;
                 return call(vm, AS_CLOSURE(callee), argCount);
+            }
 
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
@@ -346,22 +348,11 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 ObjModule *module = AS_MODULE(receiver);
 
                 Value value;
-                if (tableGet(&module->values, name, &value)) {
-                    vm->stackTop[-argCount - 1] = value;
-                    return callValue(vm, value, argCount);
-                }
-                break;
-            }
-
-            case OBJ_NATIVE_CLASS: {
-                ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
-                Value function;
-                if (!tableGet(&instance->methods, name, &function)) {
+                if (!tableGet(&module->values, name, &value)) {
                     runtimeError(vm, "Undefined property '%s'.", name->chars);
                     return false;
                 }
-
-                return callValue(vm, function, argCount);
+                return callValue(vm, value, argCount);
             }
 
             case OBJ_CLASS: {
@@ -835,15 +826,6 @@ static InterpretResult run(VM *vm) {
                 frame->ip = ip;
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
-            } else if (IS_NATIVE_CLASS(peek(vm, 0))) {
-                ObjClassNative *klass = AS_CLASS_NATIVE(peek(vm, 0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&klass->properties, name, &value)) {
-                    pop(vm); // Class.
-                    push(vm, value);
-                    DISPATCH();
-                }
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
                 ObjString *name = READ_STRING();
