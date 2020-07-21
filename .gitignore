@@ -25,3 +25,5 @@ time.du
 test.du
 
 coverage/
+
+compile_commands.json

@@ -153,28 +153,28 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
 void createPathClass(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Path methods
      */
 #ifdef HAS_REALPATH
-    defineNative(vm, &klass->methods, "realpath", realpathNative);
-    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
-    defineNative(vm, &klass->methods, "strerror", strerrorNative); // only realpath uset errno
+    defineNative(vm, &module->values, "realpath", realpathNative);
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uset errno
 #endif
-    defineNative(vm, &klass->methods, "isAbsolute", isAbsoluteNative);
-    defineNative(vm, &klass->methods, "basename", basenameNative);
-    defineNative(vm, &klass->methods, "extname", extnameNative);
-    defineNative(vm, &klass->methods, "dirname", dirnameNative);
+    defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
+    defineNative(vm, &module->values, "basename", basenameNative);
+    defineNative(vm, &module->values, "extname", extnameNative);
+    defineNative(vm, &module->values, "dirname", dirnameNative);
 
-    defineNativeProperty(vm, &klass->properties, "delimiter", OBJ_VAL(
+    defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
-    defineNativeProperty(vm, &klass->properties, "dirSeparator", OBJ_VAL(
+    defineNativeProperty(vm, &module->values, "dirSeparator", OBJ_VAL(
         copyString(vm, DIR_SEPARATOR_AS_STRING, DIR_SEPARATOR_STRLEN)));
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 }

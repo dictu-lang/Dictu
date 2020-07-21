@@ -34,8 +34,8 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
 
                 break;
             }
-            case OBJ_NATIVE_CLASS: {
-                return OBJ_VAL(copyString(vm, "class", 5));
+            case OBJ_MODULE: {
+                return OBJ_VAL(copyString(vm, "module", 6));
             }
             case OBJ_INSTANCE: {
                 ObjString *className = AS_INSTANCE(args[0])->klass->name;

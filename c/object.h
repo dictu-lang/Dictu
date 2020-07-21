@@ -14,7 +14,6 @@
 #define AS_MODULE(value)        ((ObjModule*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
-#define AS_CLASS_NATIVE(value)  ((ObjClassNative*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
@@ -29,7 +28,6 @@
 #define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value)           isObjType(value, OBJ_CLASS)
-#define IS_NATIVE_CLASS(value)    isObjType(value, OBJ_NATIVE_CLASS)
 #define IS_DEFAULT_CLASS(value)   isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
 #define IS_TRAIT(value)           isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
 #define IS_CLOSURE(value)         isObjType(value, OBJ_CLOSURE)
@@ -46,7 +44,6 @@ typedef enum {
     OBJ_MODULE,
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
-    OBJ_NATIVE_CLASS,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
@@ -183,13 +180,6 @@ typedef struct sObjClass {
     ClassType type;
 } ObjClass;
 
-typedef struct sObjClassNative {
-    Obj obj;
-    ObjString *name;
-    Table methods;
-    Table properties;
-} ObjClassNative;
-
 typedef struct {
     Obj obj;
     ObjClass *klass;
@@ -207,8 +197,6 @@ ObjModule *newModule(VM *vm, ObjString *name);
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 
 ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type);
-
-ObjClassNative *newClassNative(VM *vm, ObjString *name);
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 

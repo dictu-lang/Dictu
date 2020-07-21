@@ -63,14 +63,6 @@ ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type
     return klass;
 }
 
-ObjClassNative *newClassNative(VM *vm, ObjString *name) {
-    ObjClassNative *klass = ALLOCATE_OBJ(vm, ObjClassNative, OBJ_NATIVE_CLASS);
-    klass->name = name;
-    initTable(&klass->methods);
-    initTable(&klass->properties);
-    return klass;
-}
-
 ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     ObjUpvalue **upvalues = ALLOCATE(vm, ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
@@ -460,7 +452,6 @@ char *objectToString(Value value) {
             return moduleString;
         }
 
-        case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
             if (IS_TRAIT(value)) {
                 ObjClass *trait = AS_CLASS(value);

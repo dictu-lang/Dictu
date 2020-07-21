@@ -31,4 +31,4 @@ with("tests/builtins/type.du", "r") {
     assert(type(file) == "file");
 }
 
-assert(type(System) == "class");
+assert(type(System) == "module");
