@@ -166,8 +166,15 @@ static Value sumNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value sqrtNative(VM *vm, int argCount, Value *args) {
-    UNUSED(vm);
-    UNUSED(argCount);
+    if (argCount != 1) {
+        runtimeError(vm, "sqrt() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to sqrt()");
+        return EMPTY_VAL;
+    }
 
     return NUMBER_VAL(sqrt(AS_NUMBER(args[0])));
 }
