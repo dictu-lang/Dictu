@@ -716,25 +716,35 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
-            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
-                if (!tableGet(&vm->globals, name, &value)) {
-                    frame->ip = ip;
-                    runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+            if (!tableGet(&vm->globals, name, &value)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
             }
             push(vm, value);
             DISPATCH();
         }
 
-        CASE_CODE(DEFINE_GLOBAL): {
+        CASE_CODE(GET_MODULE): {
+            ObjString *name = READ_STRING();
+            Value value;
+            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(vm, value);
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_MODULE): {
             ObjString *name = READ_STRING();
             tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0));
             pop(vm);
             DISPATCH();
         }
 
-        CASE_CODE(SET_GLOBAL): {
+        CASE_CODE(SET_MODULE): {
         ObjString *name = READ_STRING();
         if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
             tableDelete(vm, &frame->closure->function->module->values, name);
