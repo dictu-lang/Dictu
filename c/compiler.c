@@ -410,7 +410,7 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
             tableDelete(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]));
         }
 
-        emitBytes(compiler, OP_DEFINE_GLOBAL, global);
+        emitBytes(compiler, OP_DEFINE_MODULE, global);
     } else {
         // Mark the local as defined now.
         compiler->locals[compiler->localCount - 1].depth = compiler->scopeDepth;
@@ -871,7 +871,7 @@ static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
         if (compiler->locals[arg].constant) {
             error(compiler->parser, "Cannot assign to a constant.");
         }
-    } else if (setOp == OP_SET_GLOBAL) {
+    } else if (setOp == OP_SET_MODULE) {
         Value _;
         if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
             error(compiler->parser, "Cannot assign to a constant.");
@@ -890,8 +890,15 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         setOp = OP_SET_UPVALUE;
     } else {
         arg = identifierConstant(compiler, &name);
-        getOp = OP_GET_GLOBAL;
-        setOp = OP_SET_GLOBAL;
+        ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
+        Value value;
+        if (tableGet(&compiler->parser->vm->globals, string, &value)) {
+            getOp = OP_GET_GLOBAL;
+            canAssign = false;
+        } else {
+            getOp = OP_GET_MODULE;
+            setOp = OP_SET_MODULE;
+        }
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
@@ -1083,7 +1090,7 @@ static void prefix(Compiler *compiler, bool canAssign) {
             setOp = OP_SET_UPVALUE;
         } else {
             arg = identifierConstant(compiler, &cur);
-            setOp = OP_SET_GLOBAL;
+            setOp = OP_SET_MODULE;
         }
 
         checkConst(compiler, setOp, arg);
