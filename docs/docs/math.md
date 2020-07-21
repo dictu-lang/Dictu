@@ -102,3 +102,12 @@ Math.abs(-10); // 10
 Math.abs(10); // 10
 Math.abs(-10.5); // 10.5
 ```
+
+### Math.sqrt(number)
+
+Returns the square root of a given number
+
+```js
+Math.sqrt(25); // 5
+Math.sqrt(100); // 10
+```
