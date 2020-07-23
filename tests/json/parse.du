@@ -4,6 +4,7 @@
  * Testing the JSON.parse() function
  *
  */
+import JSON;
 
 assert(JSON.parse('true') == true);
 assert(JSON.parse('false') == false);

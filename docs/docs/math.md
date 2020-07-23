@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Math
-nav_order: 13
+nav_order: 14
 ---
 
 # Math
@@ -17,8 +17,12 @@ nav_order: 13
 
 ## Math
 
-Functions relating to mathematics are behind the Math namespace. For the purpose of the documentation, an iterable
+To make use of the Math module an import is required. For the purpose of the documentation, an iterable 
 is either a list, or passing multiple arguments to the function directly.
+
+```js
+import Math;
+```
 
 ### Constants
 

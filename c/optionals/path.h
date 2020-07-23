@@ -32,6 +32,6 @@
 #include "../vm.h"
 #include "../memory.h"
 
-void createPathClass();
+ObjModule *createPathClass(VM *vm);
 
 #endif //dictu_path_h

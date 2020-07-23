@@ -22,8 +22,22 @@ a variable defined in `file.du` will not overwrite a variable in `file1.du` if i
 
 ### Importing
 
+#### Standard library
+
+When you wish to import a module from the standard library you use the import keyword. Importing from the standard library
+is slightly different to importing a user created script (see below).
+
+```js
+import Math;
+
+Math.PI; // 3.14... 
+```
+
+#### User created scripts
+
 When you wish to import another Dictu script, you use the import keyword. This takes an optional identifier which will be the
-identifier of the module being imported.
+identifier of the module being imported. This is different to importing from the standard library as a string path is passed rather
+than an identifier.
 
 ```js
 // Module not imported into current namespace, however the code in "some/file.du" is still ran.

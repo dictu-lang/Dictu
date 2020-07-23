@@ -179,7 +179,7 @@ static Value sqrtNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(sqrt(AS_NUMBER(args[0])));
 }
 
-void createMathsClass(VM *vm) {
+ObjModule *createMathsClass(VM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -203,8 +203,8 @@ void createMathsClass(VM *vm) {
      */
     defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
-    pop(vm);
-    pop(vm);
+    return module;
 }

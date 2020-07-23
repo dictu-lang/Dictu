@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "optionals/optionals.h"
 
 #ifdef DEBUG_PRINT_CODE
 
@@ -1616,18 +1617,34 @@ static void returnStatement(Compiler *compiler) {
 }
 
 static void importStatement(Compiler *compiler) {
-    consume(compiler, TOKEN_STRING, "Expect string after import.");
+    if (match(compiler, TOKEN_STRING)) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
+                compiler->parser->vm,
+                compiler->parser->previous.start + 1,
+                compiler->parser->previous.length - 2)));
 
-    int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
-            compiler->parser->vm,
-            compiler->parser->previous.start + 1,
-            compiler->parser->previous.length - 2)));
+        emitBytes(compiler, OP_IMPORT, importConstant);
 
-    emitBytes(compiler, OP_IMPORT, importConstant);
+        if (match(compiler, TOKEN_AS)) {
+            uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
+            emitByte(compiler, OP_IMPORT_VARIABLE);
+            defineVariable(compiler, importName, false);
+        }
+    } else {
+        uint8_t importName = parseVariable(compiler, "Expect import identifier.", false);
 
-    if (match(compiler, TOKEN_AS)) {
-        uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
-        emitByte(compiler, OP_IMPORT_VARIABLE);
+        int index = findBuiltinModule(
+            (char *)compiler->parser->previous.start,
+            compiler->parser->previous.length - compiler->parser->current.length
+        );
+
+        if (index == -1) {
+            error(compiler->parser, "Unknown module");
+        }
+
+        emitBytes(compiler, OP_IMPORT_BUILTIN, index);
+        emitByte(compiler, importName);
+
         defineVariable(compiler, importName, false);
     }
 

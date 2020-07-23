@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Datetime
-nav_order: 12
+nav_order: 13
 ---
 
 # Datetime
@@ -16,6 +16,12 @@ nav_order: 12
 ---
 
 ## Datetime
+
+To make use of the Datetime module an import is required.
+
+```js
+import Datetime;
+```
 
 ### Datetime.now()
 

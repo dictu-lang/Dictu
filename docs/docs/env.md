@@ -15,6 +15,14 @@ nav_order: 16
 
 ---
 
+## Env
+
+To make use of the Env module an import is required.
+
+```js
+import Env;
+```
+
 ### Constants
 
 | Constant        | Description               |

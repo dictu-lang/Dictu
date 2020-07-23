@@ -8,6 +8,6 @@
 
 #include "optionals.h"
 
-void createDatetimeClass(VM *vm);
+ObjModule *createDatetimeClass(VM *vm);
 
 #endif //dictu_datetime_h

@@ -5,6 +5,7 @@
  *
  * Returns the basename of string.
  */
+import Path;
 
 assert(Path.basename ("") == "");
 assert(Path.basename ("/") == "/");

@@ -5,6 +5,7 @@
  *
  * Returns the extension portion of string, including the dot.
  */
+import Path;
 
 assert(Path.extname("/t.ext") == ".ext");
 assert(Path.extname("/text") == "");

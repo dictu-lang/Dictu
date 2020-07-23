@@ -139,7 +139,7 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL((double) mktime(&tictoc));
 }
 
-void createDatetimeClass(VM *vm) {
+ObjModule *createDatetimeClass(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -152,8 +152,8 @@ void createDatetimeClass(VM *vm) {
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
     defineNative(vm, &module->values, "strftime", strftimeNative);
     defineNative(vm, &module->values, "strptime", strptimeNative);
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
-    pop(vm);
-    pop(vm);
+    return module;
 }
