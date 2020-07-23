@@ -6,13 +6,13 @@
     <meta property="og:description" content="Dictu is a very small, and simple dynamically typed programming language">
 
     <title>{{ page.title }} - {{ site.title }}</title>
-    <link rel="stylesheet" href="{{ "/assets/css/just-the-docs.css" | absolute_url }}">
+    <link rel="stylesheet" href="{{ "/assets/css/just-the-docs-default.css" | absolute_url }}">
 
     <script>
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             const cssFile = document.querySelector('[rel="stylesheet"]');
             const originalCssRef = cssFile.getAttribute('href');
-            const darkModeCssRef = originalCssRef.replace('just-the-docs.css', 'dark-mode-preview.css');
+            const darkModeCssRef = originalCssRef.replace('just-the-docs-default.css', 'just-the-docs-dark.css');
             cssFile.setAttribute('href', darkModeCssRef);
         }
     </script>
