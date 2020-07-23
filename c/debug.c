@@ -32,6 +32,15 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     return offset + 3;
 }
 
+static int builtinImportInstruction(const char* name, Chunk* chunk,
+                             int offset) {
+    uint8_t module = chunk->code[offset + 2];
+    printf("%-16s '", name);
+    printValue(chunk->constants.values[module]);
+    printf("'\n");
+    return offset + 3;
+}
+
 static int classInstruction(const char* name, Chunk* chunk,
                             int offset) {
     uint8_t type = chunk->code[offset + 1];
@@ -167,6 +176,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_IMPORT:
             return constantInstruction("OP_IMPORT", chunk, offset);
+        case OP_IMPORT_BUILTIN:
+            return builtinImportInstruction("OP_IMPORT_BUILTIN", chunk, offset);
         case OP_IMPORT_VARIABLE:
             return simpleInstruction("OP_IMPORT_VARIABLE", offset);
         case OP_IMPORT_END:

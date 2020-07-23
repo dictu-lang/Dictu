@@ -1132,6 +1132,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT_BUILTIN): {
+            int index = READ_BYTE();
             ObjString *fileName = READ_STRING();
             Value moduleVal;
 
@@ -1142,13 +1143,7 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
-            ObjModule *module = importBuiltinModule(vm, fileName->chars);
-
-            if (module == NULL) {
-                frame->ip = ip;
-                runtimeError(vm, "Unknown module '%s'.", fileName->chars);
-                return INTERPRET_RUNTIME_ERROR;
-            }
+            ObjModule *module = importBuiltinModule(vm, index);
 
             ++vm->scriptNameCount;
             push(vm, OBJ_VAL(module));

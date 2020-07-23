@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "optionals/optionals.h"
 
 #ifdef DEBUG_PRINT_CODE
 
@@ -1631,7 +1632,19 @@ static void importStatement(Compiler *compiler) {
         }
     } else {
         uint8_t importName = parseVariable(compiler, "Expect import identifier.", false);
-        emitBytes(compiler, OP_IMPORT_BUILTIN, importName);
+
+        int index = findBuiltinModule(
+            (char *)compiler->parser->previous.start,
+            compiler->parser->previous.length - compiler->parser->current.length
+        );
+
+        if (index == -1) {
+            error(compiler->parser, "Unknown module");
+        }
+
+        emitBytes(compiler, OP_IMPORT_BUILTIN, index);
+        emitByte(compiler, importName);
+
         defineVariable(compiler, importName, false);
     }
 

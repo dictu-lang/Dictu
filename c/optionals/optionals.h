@@ -31,6 +31,8 @@ typedef struct {
     BuiltinModule module;
 } BuiltinModules;
 
-ObjModule *importBuiltinModule(VM *vm, char *name);
+ObjModule *importBuiltinModule(VM *vm, int index);
+
+int findBuiltinModule(char *name, int length);
 
 #endif //dictu_optionals_h

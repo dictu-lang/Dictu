@@ -12,12 +12,16 @@ BuiltinModules modules[] = {
         {NULL, NULL}
 };
 
-ObjModule *importBuiltinModule(VM *vm, char *name) {
+ObjModule *importBuiltinModule(VM *vm, int index) {
+    return modules[index].module(vm);
+}
+
+int findBuiltinModule(char *name, int length) {
     for (int i = 0; modules[i].module != NULL; ++i) {
-        if (strcmp(modules[i].name, name) == 0) {
-            return modules[i].module(vm);
+        if (strncmp(modules[i].name, name, length) == 0) {
+            return i;
         }
     }
 
-    return NULL;
+    return -1;
 }
