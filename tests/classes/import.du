@@ -11,3 +11,5 @@ import "tests/classes/inherit.du";
 import "tests/classes/traits.du";
 import "tests/classes/copy.du";
 import "tests/classes/toString.du";
+import "tests/classes/abstract.du";
+import "tests/classes/classVariables.du";

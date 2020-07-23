@@ -3,6 +3,7 @@
 *
 * General import file for all the builtin function tests
 */
+import Path;
 
 import "tests/builtins/type.du";
 import "tests/builtins/isDefined.du";

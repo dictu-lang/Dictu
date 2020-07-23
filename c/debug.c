@@ -32,6 +32,45 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     return offset + 3;
 }
 
+static int builtinImportInstruction(const char* name, Chunk* chunk,
+                             int offset) {
+    uint8_t module = chunk->code[offset + 2];
+    printf("%-16s '", name);
+    printValue(chunk->constants.values[module]);
+    printf("'\n");
+    return offset + 3;
+}
+
+static int classInstruction(const char* name, Chunk* chunk,
+                            int offset) {
+    uint8_t type = chunk->code[offset + 1];
+    uint8_t constant = chunk->code[offset + 2];
+    char *typeString;
+
+    switch (type) {
+        case CLASS_DEFAULT: {
+            typeString = "default";
+            break;
+        }
+
+        case CLASS_ABSTRACT: {
+            typeString = "abstract";
+            break;
+        }
+
+        case CLASS_TRAIT: {
+            typeString = "trait";
+            break;
+        }
+    }
+
+
+    printf("%-16s (Type: %s) %4d '", name, typeString, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 3;
+}
+
 static int simpleInstruction(const char *name, int offset) {
     printf("%s\n", name);
     return offset + 1;
@@ -79,12 +118,14 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return byteInstruction("OP_SET_LOCAL", chunk, offset);
         case OP_GET_GLOBAL:
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
-        case OP_DEFINE_GLOBAL:
-            return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+        case OP_GET_MODULE:
+            return constantInstruction("OP_GET_MODULE", chunk, offset);
+        case OP_DEFINE_MODULE:
+            return constantInstruction("OP_DEFINE_MODULE", chunk, offset);
         case OP_DEFINE_OPTIONAL:
             return constantInstruction("OP_DEFINE_OPTIONAL", chunk, offset);
-        case OP_SET_GLOBAL:
-            return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+        case OP_SET_MODULE:
+            return constantInstruction("OP_SET_MODULE", chunk, offset);
         case OP_GET_UPVALUE:
             return byteInstruction("OP_GET_UPVALUE", chunk, offset);
         case OP_SET_UPVALUE:
@@ -108,7 +149,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_INCREMENT:
             return simpleInstruction("OP_INCREMENT", offset);
         case OP_DECREMENT:
-            return simpleInstruction("OP_INCREMENT", offset);
+            return simpleInstruction("OP_DECREMENT", offset);
         case OP_MULTIPLY:
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
@@ -135,6 +176,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_IMPORT:
             return constantInstruction("OP_IMPORT", chunk, offset);
+        case OP_IMPORT_BUILTIN:
+            return builtinImportInstruction("OP_IMPORT_BUILTIN", chunk, offset);
+        case OP_IMPORT_VARIABLE:
+            return simpleInstruction("OP_IMPORT_VARIABLE", offset);
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:
@@ -182,20 +227,24 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_CLOSE_UPVALUE", offset);
         case OP_RETURN:
             return simpleInstruction("OP_RETURN", offset);
+        case OP_EMPTY:
+            return simpleInstruction("OP_EMPTY", offset);
         case OP_CLASS:
-            return constantInstruction("OP_CLASS", chunk, offset);
-        case OP_TRAIT:
-            return constantInstruction("OP_TRAIT", chunk, offset);
+            return classInstruction("OP_CLASS", chunk, offset);
         case OP_SUBCLASS:
-            return constantInstruction("OP_SUBCLASS", chunk, offset);
+            return classInstruction("OP_SUBCLASS", chunk, offset);
+        case OP_END_CLASS:
+            return simpleInstruction("OP_END_CLASS", offset);
         case OP_METHOD:
             return constantInstruction("OP_METHOD", chunk, offset);
-        case OP_TRAIT_METHOD:
-            return constantInstruction("OP_TRAIT_METHOD", chunk, offset);
         case OP_USE:
             return constantInstruction("OP_USE", chunk, offset);
         case OP_OPEN_FILE:
             return constantInstruction("OP_OPEN_FILE", chunk, offset);
+        case OP_CLOSE_FILE:
+            return simpleInstruction("OP_CLOSE_FILE", offset);
+        case OP_BREAK:
+            return simpleInstruction("OP_BREAK", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

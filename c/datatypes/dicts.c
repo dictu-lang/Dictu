@@ -24,6 +24,29 @@ static Value lenDict(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(dict->count);
 }
 
+static Value keysDict(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "keys() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjDict *dict = AS_DICT(args[0]);
+
+    ObjList *list = initList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 0; i < dict->capacityMask + 1; ++i) {
+        if (IS_EMPTY(dict->entries[i].key)) {
+            continue;
+        }
+
+        writeValueArray(vm, &list->values, dict->entries[i].key);
+    }
+
+    pop(vm);
+    return OBJ_VAL(list);
+}
+
 static Value getDictItem(VM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
@@ -126,6 +149,7 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
 void declareDictMethods(VM *vm) {
     defineNative(vm, &vm->dictMethods, "toString", toStringDict);
     defineNative(vm, &vm->dictMethods, "len", lenDict);
+    defineNative(vm, &vm->dictMethods, "keys", keysDict);
     defineNative(vm, &vm->dictMethods, "get", getDictItem);
     defineNative(vm, &vm->dictMethods, "remove", removeDictItem);
     defineNative(vm, &vm->dictMethods, "exists", dictItemExists);

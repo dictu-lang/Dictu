@@ -1,0 +1,71 @@
+abstract class BaseHandler {
+    init() {
+        this.nextHandler = nil;
+    }
+
+    setNext(handler) {
+        this.nextHandler = handler;
+        return handler;
+    }
+
+    handle(request) {
+        if (this.nextHandler) {
+            return this.nextHandler.handle(request);
+        }
+    }
+}
+
+class MonkeyHandler < BaseHandler {
+    handle(request) {
+        if (request == "Banana") {
+            return "Monkey: I'll eat the banana";
+        }
+
+        return super.handle(request);
+    }
+}
+
+class SquirrelHandler < BaseHandler {
+    handle(request) {
+        if (request == "Nut") {
+            return "Squirrel: I'll eat the nut";
+        }
+
+        return super.handle(request);
+    }
+}
+
+class DogHandler < BaseHandler {
+    handle(request) {
+        if (request == "Meatball") {
+            return "Dog: I'll eat the meatball";
+        }
+
+        return super.handle(request);
+    }
+}
+
+def businessLogic(handler) {
+    var food = ["Nut", "Banana", "Coffee"];
+
+    for (var i = 0; i < food.len(); ++i) {
+        print("Who wants a: {}".format(food[i]));
+
+        var response = handler.handle(food[i]);
+
+        if (response) {
+            print(response);
+        } else {
+            print("No one wanted a: {}".format(food[i]));
+        }
+    }
+}
+
+var monkey = MonkeyHandler();
+var squirrel = SquirrelHandler();
+var dog = DogHandler();
+
+monkey.setNext(squirrel).setNext(dog);
+
+businessLogic(monkey);
+

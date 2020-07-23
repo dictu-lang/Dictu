@@ -5,6 +5,7 @@
  *
  * Returns the directory name of string.
  */
+import Path;
 
 assert(Path.dirname("/") == "/");
 assert(Path.dirname("//") == "/");

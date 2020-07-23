@@ -270,58 +270,58 @@ void initPlatform(VM *vm, Table *table) {
 void createSystemClass(VM *vm, int argc, const char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define System methods
      */
-    defineNative(vm, &klass->methods, "strerror", strerrorNative);
-    defineNative(vm, &klass->methods, "getgid", getgidNative);
-    defineNative(vm, &klass->methods, "getegid", getegidNative);
-    defineNative(vm, &klass->methods, "getuid", getuidNative);
-    defineNative(vm, &klass->methods, "geteuid", geteuidNative);
-    defineNative(vm, &klass->methods, "getppid", getppidNative);
-    defineNative(vm, &klass->methods, "getpid", getpidNative);
-    defineNative(vm, &klass->methods, "rmdir", rmdirNative);
-    defineNative(vm, &klass->methods, "mkdir", mkdirNative);
-    defineNative(vm, &klass->methods, "remove", removeNative);
-    defineNative(vm, &klass->methods, "setCWD", setCWDNative);
-    defineNative(vm, &klass->methods, "getCWD", getCWDNative);
-    defineNative(vm, &klass->methods, "time", timeNative);
-    defineNative(vm, &klass->methods, "clock", clockNative);
-    defineNative(vm, &klass->methods, "collect", collectNative);
-    defineNative(vm, &klass->methods, "sleep", sleepNative);
-    defineNative(vm, &klass->methods, "exit", exitNative);
+    defineNative(vm, &module->values, "strerror", strerrorNative);
+    defineNative(vm, &module->values, "getgid", getgidNative);
+    defineNative(vm, &module->values, "getegid", getegidNative);
+    defineNative(vm, &module->values, "getuid", getuidNative);
+    defineNative(vm, &module->values, "geteuid", geteuidNative);
+    defineNative(vm, &module->values, "getppid", getppidNative);
+    defineNative(vm, &module->values, "getpid", getpidNative);
+    defineNative(vm, &module->values, "rmdir", rmdirNative);
+    defineNative(vm, &module->values, "mkdir", mkdirNative);
+    defineNative(vm, &module->values, "remove", removeNative);
+    defineNative(vm, &module->values, "setCWD", setCWDNative);
+    defineNative(vm, &module->values, "getCWD", getCWDNative);
+    defineNative(vm, &module->values, "time", timeNative);
+    defineNative(vm, &module->values, "clock", clockNative);
+    defineNative(vm, &module->values, "collect", collectNative);
+    defineNative(vm, &module->values, "sleep", sleepNative);
+    defineNative(vm, &module->values, "exit", exitNative);
 
     /**
      * Define System properties
      */
     if (!vm->repl) {
         // Set argv variable
-        initArgv(vm, &klass->properties, argc, argv);
+        initArgv(vm, &module->values, argc, argv);
     }
 
-    initPlatform(vm, &klass->properties);
+    initPlatform(vm, &module->values);
 
-    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
 
-    defineNativeProperty(vm, &klass->properties, "S_IRWXU", NUMBER_VAL(448));
-    defineNativeProperty(vm, &klass->properties, "S_IRUSR", NUMBER_VAL(256));
-    defineNativeProperty(vm, &klass->properties, "S_IWUSR", NUMBER_VAL(128));
-    defineNativeProperty(vm, &klass->properties, "S_IXUSR", NUMBER_VAL(64));
-    defineNativeProperty(vm, &klass->properties, "S_IRWXG", NUMBER_VAL(56));
-    defineNativeProperty(vm, &klass->properties, "S_IRGRP", NUMBER_VAL(32));
-    defineNativeProperty(vm, &klass->properties, "S_IWGRP", NUMBER_VAL(16));
-    defineNativeProperty(vm, &klass->properties, "S_IXGRP", NUMBER_VAL(8));
-    defineNativeProperty(vm, &klass->properties, "S_IRWXO", NUMBER_VAL(7));
-    defineNativeProperty(vm, &klass->properties, "S_IROTH", NUMBER_VAL(4));
-    defineNativeProperty(vm, &klass->properties, "S_IWOTH", NUMBER_VAL(2));
-    defineNativeProperty(vm, &klass->properties, "S_IXOTH", NUMBER_VAL(1));
-    defineNativeProperty(vm, &klass->properties, "S_ISUID", NUMBER_VAL(2048));
-    defineNativeProperty(vm, &klass->properties, "S_ISGID", NUMBER_VAL(1024));
+    defineNativeProperty(vm, &module->values, "S_IRWXU", NUMBER_VAL(448));
+    defineNativeProperty(vm, &module->values, "S_IRUSR", NUMBER_VAL(256));
+    defineNativeProperty(vm, &module->values, "S_IWUSR", NUMBER_VAL(128));
+    defineNativeProperty(vm, &module->values, "S_IXUSR", NUMBER_VAL(64));
+    defineNativeProperty(vm, &module->values, "S_IRWXG", NUMBER_VAL(56));
+    defineNativeProperty(vm, &module->values, "S_IRGRP", NUMBER_VAL(32));
+    defineNativeProperty(vm, &module->values, "S_IWGRP", NUMBER_VAL(16));
+    defineNativeProperty(vm, &module->values, "S_IXGRP", NUMBER_VAL(8));
+    defineNativeProperty(vm, &module->values, "S_IRWXO", NUMBER_VAL(7));
+    defineNativeProperty(vm, &module->values, "S_IROTH", NUMBER_VAL(4));
+    defineNativeProperty(vm, &module->values, "S_IWOTH", NUMBER_VAL(2));
+    defineNativeProperty(vm, &module->values, "S_IXOTH", NUMBER_VAL(1));
+    defineNativeProperty(vm, &module->values, "S_ISUID", NUMBER_VAL(2048));
+    defineNativeProperty(vm, &module->values, "S_ISGID", NUMBER_VAL(1024));
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
+    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 }

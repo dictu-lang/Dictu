@@ -4,6 +4,7 @@
  * Testing the HTTP.get() function
  *
  */
+import HTTP;
 
 // HTTP
 var response = HTTP.get("http://httpbin.org/get");

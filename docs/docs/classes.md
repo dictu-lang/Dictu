@@ -178,6 +178,34 @@ myObject.setAttribute("x", 100);
 print(myObject.x); // 100
 ```
 
+## Class variables
+
+A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
+to the class variable, and it is also shared across all instances.
+
+```js
+class SomeClass {
+    var classVariable = 10; // This will be shared among all "SomeClass" instances
+
+    init() {
+        this.x = 10; // "x" is set on the instance
+    }
+}
+
+print(SomeClass.classVaraible); // 10
+
+var x = SomeClass();
+var y = SomeClass();
+
+print(x.classVariable); // 10
+print(y.classVariable); // 10
+
+SomeClass.classVaraible = 100;
+
+print(x.classVariable); // 100
+print(y.classVariable); // 100
+```
+
 ## Static methods
 
 Static methods are methods which do not reference an object, and instead belong to a class. If a method is marked as static, `this` is not passed to the object. This means static methods can be invoked without instantiating an object.
@@ -232,6 +260,35 @@ print(obj.someVariable); // Hello!
 ```
 
 The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
+
+## Abstract classes
+
+An abstract class is a base class that can not be instantiated, like a trait, however is much like a contract in that it defines methods that need to be implemented
+within a class. An abstract class can have methods which implement the body, and would work like a normal class being inherited, however, if it includes methods which
+have been marked as abstract, it enforces the inheriting class to implement these methods.
+
+```js
+abstract class AbstractClass {
+    // We do not define the body of an abstract method
+    abstract test()
+    
+    // We can also provide methods with the body that will be inherited as normal
+    anotherFunc() {
+        print("Func!");
+    }
+}
+
+// If we left the class as is, a runtime error would occur.
+// Class Test does not implement abstract method test
+class Test < AbstractClass {}
+
+class Test < AbstractClass {
+    // We have implemented the abstract method, and therefore, satisfied the abstract class
+    test() {
+        print("Test!");
+    }
+}
+```
 
 ## Traits
 

@@ -4,6 +4,7 @@
  * Testing the HTTP.post() function
  *
  */
+import HTTP;
 
 // HTTP
 var response = HTTP.post("http://httpbin.org/post", {"test": 10});

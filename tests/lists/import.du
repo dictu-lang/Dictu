@@ -10,6 +10,7 @@ import "tests/lists/push.du";
 import "tests/lists/extend.du";
 import "tests/lists/insert.du";
 import "tests/lists/pop.du";
+import "tests/lists/remove.du";
 import "tests/lists/copy.du";
 import "tests/lists/slicing.du";
 import "tests/lists/join.du";

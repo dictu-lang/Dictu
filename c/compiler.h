@@ -50,20 +50,12 @@ typedef struct {
     bool isLocal;
 } Upvalue;
 
-typedef enum {
-    TYPE_FUNCTION,
-    TYPE_ARROW_FUNCTION,
-    TYPE_INITIALIZER,
-    TYPE_METHOD,
-    TYPE_STATIC,
-    TYPE_TOP_LEVEL
-} FunctionType;
-
 typedef struct ClassCompiler {
     struct ClassCompiler *enclosing;
     Token name;
     bool hasSuperclass;
     bool staticMethod;
+    bool abstractClass;
 } ClassCompiler;
 
 typedef struct Loop {

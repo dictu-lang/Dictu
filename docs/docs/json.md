@@ -15,6 +15,14 @@ nav_order: 17
 
 ---
 
+## JSON
+
+To make use of the JSON module an import is required.
+
+```js
+import JSON;
+```
+
 ### JSON.parse(string)
 
 Parses a JSON string and turns it into a valid Dictu datatype.

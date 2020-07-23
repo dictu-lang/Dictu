@@ -52,27 +52,15 @@ ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method) {
     return bound;
 }
 
-ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass) {
+ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
     ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
     klass->name = name;
     klass->superclass = superclass;
-    initTable(&klass->methods);
-    return klass;
-}
-
-ObjClassNative *newClassNative(VM *vm, ObjString *name) {
-    ObjClassNative *klass = ALLOCATE_OBJ(vm, ObjClassNative, OBJ_NATIVE_CLASS);
-    klass->name = name;
+    klass->type = type;
+    initTable(&klass->abstractMethods);
     initTable(&klass->methods);
     initTable(&klass->properties);
     return klass;
-}
-
-ObjTrait *newTrait(VM *vm, ObjString *name) {
-    ObjTrait *trait = ALLOCATE_OBJ(vm, ObjTrait, OBJ_TRAIT);
-    trait->name = name;
-    initTable(&trait->methods);
-    return trait;
 }
 
 ObjClosure *newClosure(VM *vm, ObjFunction *function) {
@@ -88,13 +76,13 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm, ObjModule *module, bool isStatic) {
+ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
     function->upvalueCount = 0;
     function->name = NULL;
-    function->staticMethod = isStatic;
+    function->type = type;
     function->module = module;
     initChunk(vm, &function->chunk);
     return function;
@@ -288,9 +276,9 @@ char *dictToString(Value value) {
 
        if (keySize > (size - dictStringLength - 1)) {
            if (keySize > size * 2) {
-               size += keySize * 2;
+               size += keySize * 2 + 4;
            } else {
-               size *= 2;
+               size *= 2 + 4;
            }
 
            char *newB = realloc(dictString, sizeof(char) * size);
@@ -464,16 +452,15 @@ char *objectToString(Value value) {
             return moduleString;
         }
 
-        case OBJ_NATIVE_CLASS:
         case OBJ_CLASS: {
-            return classToString(value);
-        }
+            if (IS_TRAIT(value)) {
+                ObjClass *trait = AS_CLASS(value);
+                char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
+                snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
+                return traitString;
+            }
 
-        case OBJ_TRAIT: {
-            ObjTrait *trait = AS_TRAIT(value);
-            char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
-            snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
-            return traitString;
+            return classToString(value);
         }
 
         case OBJ_BOUND_METHOD: {
@@ -482,12 +469,34 @@ char *objectToString(Value value) {
 
             if (method->method->function->name != NULL) {
                 methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-                char *methodType = method->method->function->staticMethod ? "<static method %s>" : "<bound method %s>";
-                snprintf(methodString, method->method->function->name->length + 17, methodType, method->method->function->name->chars);
+
+                switch (method->method->function->type) {
+                    case TYPE_STATIC: {
+                        snprintf(methodString, method->method->function->name->length + 17, "<bound method %s>", method->method->function->name->chars);
+                        break;
+                    }
+
+                    default: {
+                        snprintf(methodString, method->method->function->name->length + 17, "<static method %s>", method->method->function->name->chars);
+                        break;
+                    }
+                }
             } else {
                 methodString = malloc(sizeof(char) * 16);
-                char *methodType = method->method->function->staticMethod ? "<static method>" : "<bound method>";
-                snprintf(methodString, 16, "%s", methodType);
+
+                switch (method->method->function->type) {
+                    case TYPE_STATIC: {
+                        memcpy(methodString, "<static method>", 15);
+                        methodString[15] = '\0';
+                        break;
+                    }
+
+                    default: {
+                        memcpy(methodString, "<bound method>", 15);
+                        methodString[15] = '\0';
+                        break;
+                    }
+                }
             }
 
             return methodString;

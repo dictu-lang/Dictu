@@ -12,16 +12,27 @@
 #include "datetime.h"
 
 #define GET_SELF_CLASS \
-  AS_CLASS_NATIVE(args[-1])
+  AS_MODULE(args[-1])
 
-#define SET_ERRNO(klass_)                                              \
-  defineNativeProperty(vm, &klass_->properties, "errno", NUMBER_VAL(errno))
+#define SET_ERRNO(module_)                                              \
+  defineNativeProperty(vm, &module_->values, "errno", NUMBER_VAL(errno))
 
-#define GET_ERRNO(klass_)({                          \
+#define GET_ERRNO(module_)({                         \
   Value errno_value = 0;                             \
   ObjString *name = copyString(vm, "errno", 5);      \
-  tableGet(&klass_->properties, name, &errno_value); \
+  tableGet(&module_->values, name, &errno_value);    \
   errno_value;                                       \
 })
+
+typedef ObjModule *(*BuiltinModule)(VM *vm);
+
+typedef struct {
+    char *name;
+    BuiltinModule module;
+} BuiltinModules;
+
+ObjModule *importBuiltinModule(VM *vm, int index);
+
+int findBuiltinModule(char *name, int length);
 
 #endif //dictu_optionals_h

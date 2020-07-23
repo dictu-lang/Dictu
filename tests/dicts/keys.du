@@ -1,0 +1,16 @@
+/**
+ * keys.du
+ *
+ * Testing the dict.keys() method
+ *
+ * .keys() returns a list of values of all the dictionary keys
+ */
+
+var dict = {"test": 1, 1: 2, true: false, false: true, nil: nil};
+
+// Ensure dict created properly
+assert(dict == {"test": 1, 1: 2, true: false, false: true, nil: nil});
+
+assert(dict.keys().len() == 5);
+assert(type(dict.keys()) == "list");
+assert(dict.keys() == [false, true, nil, 1, "test"]);

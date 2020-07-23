@@ -1,0 +1,34 @@
+abstract class AbstractClass {
+    init() {
+        this.x = 10;
+    }
+
+    abstract test()
+}
+
+class Test < AbstractClass {
+    test() {
+
+    }
+}
+
+var obj = Test();
+
+
+assert(obj.x == 10);
+
+
+class Testing {
+    init() {
+        this.y = 100;
+    }
+}
+
+abstract class AnotherAbstractClass < Testing {}
+
+class AnotherTestClass < AnotherAbstractClass {}
+
+obj = AnotherTestClass();
+
+assert(obj.y == 100);
+

@@ -143,17 +143,13 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     // Native functions
     defineAllNatives(vm);
 
-    // Native classes
-    createMathsClass(vm);
-    createEnvClass(vm);
+    /**
+     * Native classes which are not required to be
+     * imported. For imported natives see optionals.c
+     */
     createSystemClass(vm, argc, argv);
-    createJSONClass(vm);
-    createPathClass(vm);
     createCClass(vm);
-    createDatetimeClass(vm);
-#ifndef DISABLE_HTTP
-    createHTTPClass(vm);
-#endif
+
     return vm;
 }
 
@@ -239,6 +235,11 @@ static bool callValue(VM *vm, Value callee, int argCount) {
             }
 
             case OBJ_CLASS: {
+                // If it's not a default class, e.g a trait, it is not callable
+                if (!(IS_DEFAULT_CLASS(callee))) {
+                    break;
+                }
+
                 ObjClass *klass = AS_CLASS(callee);
 
                 // Create the instance.
@@ -256,8 +257,10 @@ static bool callValue(VM *vm, Value callee, int argCount) {
                 return true;
             }
 
-            case OBJ_CLOSURE:
+            case OBJ_CLOSURE: {
+                vm->stackTop[-argCount - 1] = callee;
                 return call(vm, AS_CLOSURE(callee), argCount);
+            }
 
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
@@ -341,28 +344,18 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 ObjModule *module = AS_MODULE(receiver);
 
                 Value value;
-                if (tableGet(&module->values, name, &value)) {
-                    vm->stackTop[-argCount - 1] = value;
-                    return callValue(vm, value, argCount);
-                }
-                break;
-            }
-            case OBJ_NATIVE_CLASS: {
-                ObjClassNative *instance = AS_CLASS_NATIVE(receiver);
-                Value function;
-                if (!tableGet(&instance->methods, name, &function)) {
+                if (!tableGet(&module->values, name, &value)) {
                     runtimeError(vm, "Undefined property '%s'.", name->chars);
                     return false;
                 }
-
-                return callValue(vm, function, argCount);
+                return callValue(vm, value, argCount);
             }
 
             case OBJ_CLASS: {
                 ObjClass *instance = AS_CLASS(receiver);
                 Value method;
                 if (tableGet(&instance->methods, name, &method)) {
-                    if (!AS_CLOSURE(method)->function->staticMethod) {
+                    if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
                         if (tableGet(&vm->classMethods, name, &method)) {
                             return callNativeMethod(vm, method, argCount);
                         }
@@ -469,7 +462,6 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
 static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
     Value method;
     if (!tableGet(&klass->methods, name, &method)) {
-        runtimeError(vm, "Undefined property '%s'.", name->chars);
         return false;
     }
 
@@ -538,24 +530,23 @@ static void closeUpvalues(VM *vm, Value *last) {
 static void defineMethod(VM *vm, ObjString *name) {
     Value method = peek(vm, 0);
     ObjClass *klass = AS_CLASS(peek(vm, 1));
-    tableSet(vm, &klass->methods, name, method);
+
+    if (AS_CLOSURE(method)->function->type == TYPE_ABSTRACT) {
+        tableSet(vm, &klass->abstractMethods, name, method);
+    } else {
+        tableSet(vm, &klass->methods, name, method);
+    }
     pop(vm);
 }
 
-static void defineTraitMethod(VM *vm, ObjString *name) {
-    Value method = peek(vm, 0);
-    ObjTrait *trait = AS_TRAIT(peek(vm, 1));
-    tableSet(vm, &trait->methods, name, method);
-    pop(vm);
-}
-
-static void createClass(VM *vm, ObjString *name, ObjClass *superclass) {
-    ObjClass *klass = newClass(vm, name, superclass);
+static void createClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
+    ObjClass *klass = newClass(vm, name, superclass, type);
     push(vm, OBJ_VAL(klass));
 
     // Inherit methods.
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->methods, &klass->methods);
+        tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
     }
 }
 
@@ -641,7 +632,7 @@ static InterpretResult run(VM *vm) {
                 }                                                                                 \
                 printf("\n");                                                                     \
                 disassembleInstruction(&frame->closure->function->chunk,                          \
-                        (int) (frame->ip - frame->closure->function->chunk.code));                \
+                        (int) (ip - frame->closure->function->chunk.code));                \
                 goto *dispatchTable[instruction = READ_BYTE()];                                   \
             }                                                                                     \
             while (false)
@@ -721,25 +712,35 @@ static InterpretResult run(VM *vm) {
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
-            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
-                if (!tableGet(&vm->globals, name, &value)) {
-                    frame->ip = ip;
-                    runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
+            if (!tableGet(&vm->globals, name, &value)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
             }
             push(vm, value);
             DISPATCH();
         }
 
-        CASE_CODE(DEFINE_GLOBAL): {
+        CASE_CODE(GET_MODULE): {
+            ObjString *name = READ_STRING();
+            Value value;
+            if (!tableGet(&frame->closure->function->module->values, name, &value)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(vm, value);
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_MODULE): {
             ObjString *name = READ_STRING();
             tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0));
             pop(vm);
             DISPATCH();
         }
 
-        CASE_CODE(SET_GLOBAL): {
+        CASE_CODE(SET_MODULE): {
         ObjString *name = READ_STRING();
         if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
             tableDelete(vm, &frame->closure->function->module->values, name);
@@ -811,20 +812,26 @@ static InterpretResult run(VM *vm) {
                     DISPATCH();
                 }
 
-                if (!bindMethod(vm, instance->klass, name)) {
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-
-                DISPATCH();
-            } else if (IS_NATIVE_CLASS(peek(vm, 0))) {
-                ObjClassNative *klass = AS_CLASS_NATIVE(peek(vm, 0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&klass->properties, name, &value)) {
-                    pop(vm); // Class.
-                    push(vm, value);
+                if (bindMethod(vm, instance->klass, name)) {
                     DISPATCH();
                 }
+
+                // Check class for properties
+                ObjClass *klass = instance->klass;
+
+                while (klass != NULL) {
+                    if (tableGet(&klass->properties, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
+                }
+
+                frame->ip = ip;
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -833,6 +840,20 @@ static InterpretResult run(VM *vm) {
                     pop(vm); // Module.
                     push(vm, value);
                     DISPATCH();
+                }
+            } else if (IS_CLASS(peek(vm, 0))) {
+                ObjClass *klass = AS_CLASS(peek(vm, 0));
+                ObjString *name = READ_STRING();
+
+                Value value;
+                while (klass != NULL) {
+                    if (tableGet(&klass->properties, name, &value)) {
+                        pop(vm); // Class.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
                 }
             }
 
@@ -856,32 +877,54 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
-            if (!bindMethod(vm, instance->klass, name)) {
-                return INTERPRET_RUNTIME_ERROR;
+            if (bindMethod(vm, instance->klass, name)) {
+                DISPATCH();
             }
 
-            DISPATCH();
+            // Check class for properties
+            ObjClass *klass = instance->klass;
+
+            while (klass != NULL) {
+                if (tableGet(&klass->properties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                klass = klass->superclass;
+            }
+
+            frame->ip = ip;
+            runtimeError(vm, "Undefined property '%s'.", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(SET_PROPERTY): {
-            if (!IS_INSTANCE(peek(vm, 1))) {
-                frame->ip = ip;
-                runtimeError(vm, "Only instances have fields.");
-                return INTERPRET_RUNTIME_ERROR;
+            if (IS_INSTANCE(peek(vm, 1))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
+                tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
+                DISPATCH();
+            } else if (IS_CLASS(peek(vm, 1))) {
+                ObjClass *klass = AS_CLASS(peek(vm, 1));
+                tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                DISPATCH();
             }
 
-            ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-            tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
-            pop(vm);
-            pop(vm);
-            push(vm, NIL_VAL);
-            DISPATCH();
+            frame->ip = ip;
+            runtimeError(vm, "Only instances have fields.");
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_SUPER): {
             ObjString *name = READ_STRING();
             ObjClass *superclass = AS_CLASS(pop(vm));
+
             if (!bindMethod(vm, superclass, name)) {
+                frame->ip = ip;
+                runtimeError(vm, "Undefined property '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             DISPATCH();
@@ -1088,8 +1131,27 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(IMPORT_BUILTIN): {
+            int index = READ_BYTE();
+            ObjString *fileName = READ_STRING();
+            Value moduleVal;
+
+            // If we have imported this module already, skip.
+            if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                ++vm->scriptNameCount;
+                push(vm, moduleVal);
+                DISPATCH();
+            }
+
+            ObjModule *module = importBuiltinModule(vm, index);
+
+            ++vm->scriptNameCount;
+            push(vm, OBJ_VAL(module));
+            DISPATCH();
+        }
+
         CASE_CODE(IMPORT_VARIABLE): {
-            push(vm, OBJ_VAL( vm->lastModule));
+            push(vm, OBJ_VAL(vm->lastModule));
             DISPATCH();
         }
 
@@ -1101,6 +1163,9 @@ static InterpretResult run(VM *vm) {
             } else {
                 setcurrentFile(vm, "", 0);
             }
+
+            vm->lastModule = frame->closure->function->module;
+
             DISPATCH();
         }
 
@@ -1537,11 +1602,16 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(CLASS):
-            createClass(vm, READ_STRING(), NULL);
+        CASE_CODE(CLASS): {
+            ClassType type = READ_BYTE();
+
+            createClass(vm, READ_STRING(), NULL, type);
             DISPATCH();
+        }
 
         CASE_CODE(SUBCLASS): {
+            ClassType type = READ_BYTE();
+
             Value superclass = peek(vm, 0);
             if (!IS_CLASS(superclass)) {
                 frame->ip = ip;
@@ -1549,25 +1619,38 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            createClass(vm, READ_STRING(), AS_CLASS(superclass));
+            if (IS_TRAIT(superclass)) {
+                frame->ip = ip;
+                runtimeError(vm, "Superclass can not be a trait.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
             DISPATCH();
         }
 
-        CASE_CODE(TRAIT): {
-            ObjString *name = READ_STRING();
-            ObjTrait *trait = newTrait(vm, name);
-            push(vm, OBJ_VAL(trait));
+        CASE_CODE(END_CLASS): {
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            // If super class is abstract, ensure we have defined all abstract methods
+            for (int i = 0; i < klass->abstractMethods.capacityMask + 1; i++) {
+                if (klass->abstractMethods.entries[i].key == NULL) {
+                    continue;
+                }
+
+                Value _;
+                if (!tableGet(&klass->methods, klass->abstractMethods.entries[i].key, &_)) {
+                    frame->ip = ip;
+                    runtimeError(vm, "Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
             DISPATCH();
         }
 
         CASE_CODE(METHOD):
             defineMethod(vm, READ_STRING());
             DISPATCH();
-
-        CASE_CODE(TRAIT_METHOD): {
-            defineTraitMethod(vm, READ_STRING());
-            DISPATCH();
-        }
 
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
@@ -1579,7 +1662,7 @@ static InterpretResult run(VM *vm) {
 
             ObjClass *klass = AS_CLASS(peek(vm, 1));
 
-            tableAddAll(vm, &AS_TRAIT(trait)->methods, &klass->methods);
+            tableAddAll(vm, &AS_CLASS(trait)->methods, &klass->methods);
             pop(vm); // pop the trait
 
             DISPATCH();

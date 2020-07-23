@@ -4,6 +4,7 @@
  * Testing the Datetime.strftime() function
  *
  */
+import Datetime;
 
 // 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
 assert(Datetime.strftime("%Y", 1577836800) == "2020");
@@ -24,3 +25,5 @@ assert(Datetime.strftime("%M", 1577836800) == "00");
 assert(Datetime.strftime("%S", 1577836800) == "00");
 
 assert(Datetime.strftime("%Y-%m-%d %H:%M:%S", 1577836800) == "2020-01-01 00:00:00");
+
+assert(Datetime.strftime("") == ""); // catch up the case of an empty string

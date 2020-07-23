@@ -4,6 +4,7 @@
  * Testing the JSON.stringify() function
  *
  */
+import JSON;
 
 assert(JSON.stringify(true) == 'true');
 assert(JSON.stringify(false) == 'false');

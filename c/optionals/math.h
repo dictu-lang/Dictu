@@ -6,6 +6,6 @@
 #include "optionals.h"
 #include "../vm.h"
 
-void createMathsClass(VM *vm);
+ObjModule *createMathsClass(VM *vm);
 
 #endif //dictu_math_h

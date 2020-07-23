@@ -295,25 +295,25 @@ static Value post(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-void createHTTPClass(VM *vm) {
+ObjModule *createHTTPClass(VM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Http methods
      */
-    defineNative(vm, &klass->methods, "strerror", strerrorHttpNative);
-    defineNative(vm, &klass->methods, "get", get);
-    defineNative(vm, &klass->methods, "post", post);
+    defineNative(vm, &module->values, "strerror", strerrorHttpNative);
+    defineNative(vm, &module->values, "get", get);
+    defineNative(vm, &module->values, "post", post);
 
     /**
      * Define Http properties
      */
-    defineNativeProperty(vm, &klass->properties, "errno", NUMBER_VAL(0));
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
-    pop(vm);
-    pop(vm);
+    return module;
 }

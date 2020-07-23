@@ -86,9 +86,7 @@ static Value absNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(absValue);
 }
 
-static Value sumNative(VM *vm, int argCount, Value *args) {
-    double sum = 0;
-
+static Value maxNative(VM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -97,16 +95,23 @@ static Value sumNative(VM *vm, int argCount, Value *args) {
         args = list->values.values;
     }
 
-    for (int i = 0; i < argCount; ++i) {
+    double maximum = AS_NUMBER(args[0]);
+
+    for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to sum()");
+            runtimeError(vm, "A non-number value passed to max()");
             return EMPTY_VAL;
         }
-        sum = sum + AS_NUMBER(value);
+
+        double current = AS_NUMBER(value);
+
+        if (maximum < current) {
+            maximum = current;
+        }
     }
 
-    return NUMBER_VAL(sum);
+    return NUMBER_VAL(maximum);
 }
 
 static Value minNative(VM *vm, int argCount, Value *args) {
@@ -137,7 +142,9 @@ static Value minNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(minimum);
 }
 
-static Value maxNative(VM *vm, int argCount, Value *args) {
+static Value sumNative(VM *vm, int argCount, Value *args) {
+    double sum = 0;
+
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -146,50 +153,58 @@ static Value maxNative(VM *vm, int argCount, Value *args) {
         args = list->values.values;
     }
 
-    double maximum = AS_NUMBER(args[0]);
-
-    for (int i = 1; i < argCount; ++i) {
+    for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to max()");
+            runtimeError(vm, "A non-number value passed to sum()");
             return EMPTY_VAL;
         }
-
-        double current = AS_NUMBER(value);
-
-        if (maximum < current) {
-            maximum = current;
-        }
+        sum = sum + AS_NUMBER(value);
     }
 
-    return NUMBER_VAL(maximum);
+    return NUMBER_VAL(sum);
 }
 
-void createMathsClass(VM *vm) {
+static Value sqrtNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "sqrt() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to sqrt()");
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(sqrt(AS_NUMBER(args[0])));
+}
+
+ObjModule *createMathsClass(VM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
-     * Define Math methods
+     * Define Math values
      */
-    defineNative(vm, &klass->methods, "average", averageNative);
-    defineNative(vm, &klass->methods, "floor", floorNative);
-    defineNative(vm, &klass->methods, "round", roundNative);
-    defineNative(vm, &klass->methods, "ceil", ceilNative);
-    defineNative(vm, &klass->methods, "abs", absNative);
-    defineNative(vm, &klass->methods, "max", maxNative);
-    defineNative(vm, &klass->methods, "min", minNative);
-    defineNative(vm, &klass->methods, "sum", sumNative);
+    defineNative(vm, &module->values, "average", averageNative);
+    defineNative(vm, &module->values, "floor", floorNative);
+    defineNative(vm, &module->values, "round", roundNative);
+    defineNative(vm, &module->values, "ceil", ceilNative);
+    defineNative(vm, &module->values, "abs", absNative);
+    defineNative(vm, &module->values, "max", maxNative);
+    defineNative(vm, &module->values, "min", minNative);
+    defineNative(vm, &module->values, "sum", sumNative);
+    defineNative(vm, &module->values, "sqrt", sqrtNative);
 
     /**
      * Define Math properties
      */
-    defineNativeProperty(vm, &klass->properties, "PI", NUMBER_VAL(3.14159265358979));
-    defineNativeProperty(vm, &klass->properties, "e", NUMBER_VAL(2.71828182845905));
+    defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
+    defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
-    pop(vm);
-    pop(vm);
+    return module;
 }

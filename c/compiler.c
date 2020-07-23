@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "optionals/optionals.h"
 
 #ifdef DEBUG_PRINT_CODE
 
@@ -161,12 +162,13 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, parser->module, type == TYPE_STATIC);
+    compiler->function = newFunction(parser->vm, parser->module, type);
 
     switch (type) {
         case TYPE_INITIALIZER:
         case TYPE_METHOD:
         case TYPE_STATIC:
+        case TYPE_ABSTRACT:
         case TYPE_FUNCTION:
         case TYPE_ARROW_FUNCTION: {
             compiler->function->name = copyString(
@@ -409,7 +411,7 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
             tableDelete(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]));
         }
 
-        emitBytes(compiler, OP_DEFINE_GLOBAL, global);
+        emitBytes(compiler, OP_DEFINE_MODULE, global);
     } else {
         // Mark the local as defined now.
         compiler->locals[compiler->localCount - 1].depth = compiler->scopeDepth;
@@ -870,7 +872,7 @@ static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
         if (compiler->locals[arg].constant) {
             error(compiler->parser, "Cannot assign to a constant.");
         }
-    } else if (setOp == OP_SET_GLOBAL) {
+    } else if (setOp == OP_SET_MODULE) {
         Value _;
         if (tableGet(&compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[arg]), &_)) {
             error(compiler->parser, "Cannot assign to a constant.");
@@ -889,8 +891,15 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         setOp = OP_SET_UPVALUE;
     } else {
         arg = identifierConstant(compiler, &name);
-        getOp = OP_GET_GLOBAL;
-        setOp = OP_SET_GLOBAL;
+        ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
+        Value value;
+        if (tableGet(&compiler->parser->vm->globals, string, &value)) {
+            getOp = OP_GET_GLOBAL;
+            canAssign = false;
+        } else {
+            getOp = OP_GET_MODULE;
+            setOp = OP_SET_MODULE;
+        }
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
@@ -1082,7 +1091,7 @@ static void prefix(Compiler *compiler, bool canAssign) {
             setOp = OP_SET_UPVALUE;
         } else {
             arg = identifierConstant(compiler, &cur);
-            setOp = OP_SET_GLOBAL;
+            setOp = OP_SET_MODULE;
         }
 
         checkConst(compiler, setOp, arg);
@@ -1132,6 +1141,7 @@ ParseRule rules[] = {
         {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
         {string,   NULL,      PREC_NONE},               // TOKEN_STRING
         {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ABSTRACT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CLASS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
@@ -1209,16 +1219,22 @@ static void function(Compiler *compiler, FunctionType type) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler, bool trait) {
+static void method(Compiler *compiler) {
     FunctionType type;
 
-    if (check(compiler, TOKEN_STATIC)) {
+    compiler->class->staticMethod = false;
+    type = TYPE_METHOD;
+
+    if (match(compiler, TOKEN_STATIC)) {
         type = TYPE_STATIC;
-        consume(compiler, TOKEN_STATIC, "Expect static.");
         compiler->class->staticMethod = true;
-    } else {
-        type = TYPE_METHOD;
-        compiler->class->staticMethod = false;
+    } else if (match(compiler, TOKEN_ABSTRACT)) {
+        if (!compiler->class->abstractClass) {
+            error(compiler->parser, "Abstract methods can only appear within abstract classes.");
+            return;
+        }
+
+        type = TYPE_ABSTRACT;
     }
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect method name.");
@@ -1230,12 +1246,44 @@ static void method(Compiler *compiler, bool trait) {
         type = TYPE_INITIALIZER;
     }
 
-    function(compiler, type);
-
-    if (trait) {
-        emitBytes(compiler, OP_TRAIT_METHOD, constant);
+    if (type != TYPE_ABSTRACT) {
+        function(compiler, type);
     } else {
-        emitBytes(compiler, OP_METHOD, constant);
+        Compiler fnCompiler;
+
+        // Setup function and parse parameters
+        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
+        endCompiler(&fnCompiler);
+    }
+
+    emitBytes(compiler, OP_METHOD, constant);
+}
+
+static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler, bool abstract) {
+    classCompiler->name = compiler->parser->previous;
+    classCompiler->hasSuperclass = false;
+    classCompiler->enclosing = compiler->class;
+    classCompiler->staticMethod = false;
+    classCompiler->abstractClass = abstract;
+    compiler->class = classCompiler;
+}
+
+static void parseClassBody(Compiler *compiler) {
+    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+        if (match(compiler, TOKEN_USE)) {
+            useStatement(compiler);
+        } else if (match(compiler, TOKEN_VAR)) {
+            consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
+            uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+
+            consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
+            expression(compiler);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+
+            consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+        } else {
+            method(compiler);
+        }
     }
 }
 
@@ -1245,11 +1293,7 @@ static void classDeclaration(Compiler *compiler) {
     declareVariable(compiler);
 
     ClassCompiler classCompiler;
-    classCompiler.name = compiler->parser->previous;
-    classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = compiler->class;
-    classCompiler.staticMethod = false;
-    compiler->class = &classCompiler;
+    setupClassCompiler(compiler, &classCompiler, false);
 
     if (match(compiler, TOKEN_LESS)) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
@@ -1261,20 +1305,59 @@ static void classDeclaration(Compiler *compiler) {
         variable(compiler, false);
         addLocal(compiler, syntheticToken("super"));
 
-        emitBytes(compiler, OP_SUBCLASS, nameConstant);
+        emitBytes(compiler, OP_SUBCLASS, CLASS_DEFAULT);
     } else {
-        emitBytes(compiler, OP_CLASS, nameConstant);
+        emitBytes(compiler, OP_CLASS, CLASS_DEFAULT);
     }
+    emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
 
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        if (match(compiler, TOKEN_USE)) {
-            useStatement(compiler);
-        } else {
-            method(compiler, false);
-        }
+    parseClassBody(compiler);
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+
+    if (classCompiler.hasSuperclass) {
+        endScope(compiler);
+
+        // If there's a super class, check abstract methods have been defined
+        emitByte(compiler, OP_END_CLASS);
     }
+
+    defineVariable(compiler, nameConstant, false);
+    compiler->class = compiler->class->enclosing;
+}
+
+static void abstractClassDeclaration(Compiler *compiler) {
+    consume(compiler, TOKEN_CLASS, "Expect class keyword.");
+
+    consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
+    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
+    declareVariable(compiler);
+
+    ClassCompiler classCompiler;
+    setupClassCompiler(compiler, &classCompiler, true);
+
+    if (match(compiler, TOKEN_LESS)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
+        classCompiler.hasSuperclass = true;
+
+        beginScope(compiler);
+
+        // Store the superclass in a local variable named "super".
+        variable(compiler, false);
+        addLocal(compiler, syntheticToken("super"));
+
+        emitBytes(compiler, OP_SUBCLASS, CLASS_ABSTRACT);
+    } else {
+        emitBytes(compiler, OP_CLASS, CLASS_ABSTRACT);
+    }
+    emitByte(compiler, nameConstant);
+
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+
+    parseClassBody(compiler);
+
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
 
     if (classCompiler.hasSuperclass) {
@@ -1282,7 +1365,6 @@ static void classDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1292,22 +1374,18 @@ static void traitDeclaration(Compiler *compiler) {
     declareVariable(compiler);
 
     ClassCompiler classCompiler;
-    classCompiler.name = compiler->parser->previous;
-    classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = compiler->class;
-    classCompiler.staticMethod = false;
-    compiler->class = &classCompiler;
+    setupClassCompiler(compiler, &classCompiler, false);
 
-    emitBytes(compiler, OP_TRAIT, nameConstant);
+    emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
+    emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
-        method(compiler, true);
-    }
+
+    parseClassBody(compiler);
+
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(compiler, nameConstant, false);
-
     compiler->class = compiler->class->enclosing;
 }
 
@@ -1539,18 +1617,34 @@ static void returnStatement(Compiler *compiler) {
 }
 
 static void importStatement(Compiler *compiler) {
-    consume(compiler, TOKEN_STRING, "Expect string after import.");
+    if (match(compiler, TOKEN_STRING)) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
+                compiler->parser->vm,
+                compiler->parser->previous.start + 1,
+                compiler->parser->previous.length - 2)));
 
-    int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
-            compiler->parser->vm,
-            compiler->parser->previous.start + 1,
-            compiler->parser->previous.length - 2)));
+        emitBytes(compiler, OP_IMPORT, importConstant);
 
-    emitBytes(compiler, OP_IMPORT, importConstant);
+        if (match(compiler, TOKEN_AS)) {
+            uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
+            emitByte(compiler, OP_IMPORT_VARIABLE);
+            defineVariable(compiler, importName, false);
+        }
+    } else {
+        uint8_t importName = parseVariable(compiler, "Expect import identifier.", false);
 
-    if (match(compiler, TOKEN_AS)) {
-        uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
-        emitByte(compiler, OP_IMPORT_VARIABLE);
+        int index = findBuiltinModule(
+            (char *)compiler->parser->previous.start,
+            compiler->parser->previous.length - compiler->parser->current.length
+        );
+
+        if (index == -1) {
+            error(compiler->parser, "Unknown module");
+        }
+
+        emitBytes(compiler, OP_IMPORT_BUILTIN, index);
+        emitByte(compiler, importName);
+
         defineVariable(compiler, importName, false);
     }
 
@@ -1622,6 +1716,8 @@ static void declaration(Compiler *compiler) {
         classDeclaration(compiler);
     } else if (match(compiler, TOKEN_TRAIT)) {
         traitDeclaration(compiler);
+    } else if (match(compiler, TOKEN_ABSTRACT)) {
+        abstractClassDeclaration(compiler);
     } else if (match(compiler, TOKEN_DEF)) {
         funDeclaration(compiler);
     } else if (match(compiler, TOKEN_VAR)) {

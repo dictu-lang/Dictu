@@ -8,6 +8,7 @@
  *    - PI, e
  *
  */
+import Math;
 
 assert(Math.min(1, 2, 3) == 1);
 assert(Math.min([1, 2, 3]) == 1);
@@ -24,6 +25,9 @@ assert(Math.round(17.5) == 18);
 assert(Math.ceil(17.0001) == 18);
 assert(Math.abs(18) == 18);
 assert(Math.abs(-18) == 18);
+assert(Math.sqrt(25) == 5);
+assert(Math.sqrt(100) == 10);
+assert(Math.sqrt(20) == 4.47213595499958);
 
 assert(Math.PI == 3.14159265358979);
 assert(Math.e == 2.71828182845905);

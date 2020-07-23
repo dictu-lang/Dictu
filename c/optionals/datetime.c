@@ -62,9 +62,17 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
         time(&t);
     }
 
+    ObjString *format = AS_STRING(args[0]);
+
+    /** this is to avoid an eternal loop while calling strftime() below */
+    if (0 == format->length)
+        return OBJ_VAL(copyString(vm, "", 0));
+
+    char *fmt = format->chars;
+
     struct tm tictoc;
-    int len = 100;
-    char buffer[100], *point = buffer;
+    int len = (format->length > 128 ? format->length * 4 : 128);
+    char buffer[len], *point = buffer;
 
     gmtime_r(&t, &tictoc);
 
@@ -73,18 +81,38 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
      * not being large enough. In that instance we double the buffer length until
      * there is a big enough buffer.
      */
-    while (strftime(point, sizeof(char) * len, AS_CSTRING(args[0]), &tictoc) == 0) {
-        len *= 2;
-        if (buffer != point)
-            free(point);
 
-        point = malloc(len);
+    /** however is not guaranteed that 0 indicates a failure (`man strftime' says so).
+     * So we might want to catch up the eternal loop, by using a maximum iterator.
+     */
+
+    ObjString *res;
+
+    int max_iterations = 8;  // maximum 65536 bytes with the default 128 len,
+                             // more if the given string is > 128
+    int iterator = 0;
+    while (strftime(point, sizeof(char) * len, fmt, &tictoc) == 0) {
+        if (++iterator > max_iterations) {
+            res = copyString(vm, "", 0);
+            goto theend;
+        }
+
+        len *= 2;
+
+        if (buffer == point)
+            point = malloc (len);
+        else
+            point = realloc (point, len);
+
     }
 
+    res = copyString(vm, point, strlen(point));
+
+theend:
     if (buffer != point)
         free(point);
 
-    return OBJ_VAL(copyString(vm, point, strlen(point)));
+    return OBJ_VAL(res);
 }
 
 static Value strptimeNative(VM *vm, int argCount, Value *args) {
@@ -111,21 +139,21 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL((double) mktime(&tictoc));
 }
 
-void createDatetimeClass(VM *vm) {
+ObjModule *createDatetimeClass(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
-    ObjClassNative *klass = newClassNative(vm, name);
-    push(vm, OBJ_VAL(klass));
+    ObjModule *module = newModule(vm, name);
+    push(vm, OBJ_VAL(module));
 
     /**
      * Define Datetime methods
      */
-    defineNative(vm, &klass->methods, "now", nowNative);
-    defineNative(vm, &klass->methods, "nowUTC", nowUTCNative);
-    defineNative(vm, &klass->methods, "strftime", strftimeNative);
-    defineNative(vm, &klass->methods, "strptime", strptimeNative);
+    defineNative(vm, &module->values, "now", nowNative);
+    defineNative(vm, &module->values, "nowUTC", nowUTCNative);
+    defineNative(vm, &module->values, "strftime", strftimeNative);
+    defineNative(vm, &module->values, "strptime", strptimeNative);
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(klass));
-    pop(vm);
-    pop(vm);
+    return module;
 }

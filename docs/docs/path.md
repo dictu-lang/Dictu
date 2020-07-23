@@ -15,6 +15,14 @@ nav_order: 15
 
 ---
 
+## Path
+
+To make use of the Path module an import is required.
+
+```js
+import Path;
+```
+
 ### Constants
 
 | Constant           | Description                          |
