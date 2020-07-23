@@ -15,6 +15,16 @@ nav_order: 18
 
 ---
 
+## HTTP
+
+To make use of the HTTP module an import is required.
+
+```js
+import HTTP;
+```
+
+### Constants
+
 | Constant           | Description               |
 |--------------------|---------------------------|
 | HTTP.errno         | Number of the last error  |
