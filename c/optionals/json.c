@@ -263,7 +263,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-void createJSONClass(VM *vm) {
+ObjModule *createJSONClass(VM *vm) {
     ObjString *name = copyString(vm, "JSON", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -284,8 +284,8 @@ void createJSONClass(VM *vm) {
     defineNativeProperty(vm, &module->values, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
     defineNativeProperty(vm, &module->values, "EINVAL", NUMBER_VAL(JSON_EINVAL));
     defineNativeProperty(vm, &module->values, "ENOSERIAL", NUMBER_VAL(JSON_ENOSERIAL));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
-    pop(vm);
-    pop(vm);
+    return module;
 }

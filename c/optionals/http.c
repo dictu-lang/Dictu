@@ -295,7 +295,7 @@ static Value post(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-void createHTTPClass(VM *vm) {
+ObjModule *createHTTPClass(VM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -312,8 +312,8 @@ void createHTTPClass(VM *vm) {
      * Define Http properties
      */
     defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
-    pop(vm);
-    pop(vm);
+    return module;
 }

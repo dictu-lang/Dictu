@@ -4,6 +4,7 @@
  * Testing the Datetime.strftime() function
  *
  */
+import Datetime;
 
 // 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
 assert(Datetime.strftime("%Y", 1577836800) == "2020");

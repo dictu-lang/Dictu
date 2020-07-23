@@ -5,6 +5,7 @@
  *
  * Returns true if string is an absolute path or false otherwise.
  */
+import Path;
 
 assert(Path.isAbsolute ("/root") == true);
 assert(Path.isAbsolute ("root") == false);

@@ -24,4 +24,13 @@
   errno_value;                                       \
 })
 
+typedef ObjModule *(*BuiltinModule)(VM *vm);
+
+typedef struct {
+    char *name;
+    BuiltinModule module;
+} BuiltinModules;
+
+ObjModule *importBuiltinModule(VM *vm, char *name);
+
 #endif //dictu_optionals_h

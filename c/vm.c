@@ -143,17 +143,13 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     // Native functions
     defineAllNatives(vm);
 
-    // Native classes
-    createMathsClass(vm);
-    createEnvClass(vm);
+    /**
+     * Native classes which are not required to be
+     * imported. For imported natives see optionals.c
+     */
     createSystemClass(vm, argc, argv);
-    createJSONClass(vm);
-    createPathClass(vm);
     createCClass(vm);
-    createDatetimeClass(vm);
-#ifndef DISABLE_HTTP
-    createHTTPClass(vm);
-#endif
+
     return vm;
 }
 
@@ -1135,8 +1131,32 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(IMPORT_BUILTIN): {
+            ObjString *fileName = READ_STRING();
+            Value moduleVal;
+
+            // If we have imported this module already, skip.
+            if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                ++vm->scriptNameCount;
+                push(vm, moduleVal);
+                DISPATCH();
+            }
+
+            ObjModule *module = importBuiltinModule(vm, fileName->chars);
+
+            if (module == NULL) {
+                frame->ip = ip;
+                runtimeError(vm, "Unknown module '%s'.", fileName->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ++vm->scriptNameCount;
+            push(vm, OBJ_VAL(module));
+            DISPATCH();
+        }
+
         CASE_CODE(IMPORT_VARIABLE): {
-            push(vm, OBJ_VAL( vm->lastModule));
+            push(vm, OBJ_VAL(vm->lastModule));
             DISPATCH();
         }
 

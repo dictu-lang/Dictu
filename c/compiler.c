@@ -1616,18 +1616,22 @@ static void returnStatement(Compiler *compiler) {
 }
 
 static void importStatement(Compiler *compiler) {
-    consume(compiler, TOKEN_STRING, "Expect string after import.");
+    if (match(compiler, TOKEN_STRING)) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
+                compiler->parser->vm,
+                compiler->parser->previous.start + 1,
+                compiler->parser->previous.length - 2)));
 
-    int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
-            compiler->parser->vm,
-            compiler->parser->previous.start + 1,
-            compiler->parser->previous.length - 2)));
+        emitBytes(compiler, OP_IMPORT, importConstant);
 
-    emitBytes(compiler, OP_IMPORT, importConstant);
-
-    if (match(compiler, TOKEN_AS)) {
-        uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
-        emitByte(compiler, OP_IMPORT_VARIABLE);
+        if (match(compiler, TOKEN_AS)) {
+            uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
+            emitByte(compiler, OP_IMPORT_VARIABLE);
+            defineVariable(compiler, importName, false);
+        }
+    } else {
+        uint8_t importName = parseVariable(compiler, "Expect import identifier.", false);
+        emitBytes(compiler, OP_IMPORT_BUILTIN, importName);
         defineVariable(compiler, importName, false);
     }
 

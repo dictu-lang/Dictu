@@ -150,7 +150,7 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, path, len));
 }
 
-void createPathClass(VM *vm) {
+ObjModule *createPathClass(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -173,8 +173,8 @@ void createPathClass(VM *vm) {
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
     defineNativeProperty(vm, &module->values, "dirSeparator", OBJ_VAL(
         copyString(vm, DIR_SEPARATOR_AS_STRING, DIR_SEPARATOR_STRLEN)));
+    pop(vm);
+    pop(vm);
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
-    pop(vm);
-    pop(vm);
+    return module;
 }
