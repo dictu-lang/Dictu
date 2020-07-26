@@ -15,6 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 # Enable or disable the site search
 search_enabled: true
+url: "https://dictu-lang.com"
 
 ga_tracking: "UA-109828853-2"
 
