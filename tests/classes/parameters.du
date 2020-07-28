@@ -1,0 +1,40 @@
+/**
+ * parameters.du
+ *
+ * Testing the parameters of a method
+ */
+
+class Test {
+    init(a=10, b=20) {
+        this.a = a;
+        this.b = b;
+    }
+}
+
+var obj = Test();
+
+assert(obj.a == 10);
+assert(obj.b == 20);
+
+var obj1 = Test(50);
+
+assert(obj1.a == 50);
+assert(obj1.b == 20);
+
+var obj2 = Test(500, 600);
+
+assert(obj2.a == 500);
+assert(obj2.b == 600);
+
+class AnotherTest {
+    test(a=10, b=20, c=30, d=40, e=50) {
+        return a + b + c + d + e;
+    }
+}
+
+assert(AnotherTest().test() == 150);
+assert(AnotherTest().test(20) == 160);
+assert(AnotherTest().test(20, 30) == 170);
+assert(AnotherTest().test(20, 30, 5) == 145);
+assert(AnotherTest().test(20, 30, 5, 0) == 105);
+assert(AnotherTest().test(20, 30, 5, 0, 1) == 56);
