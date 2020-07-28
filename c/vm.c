@@ -741,21 +741,24 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SET_MODULE): {
-        ObjString *name = READ_STRING();
-        if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
-            tableDelete(vm, &frame->closure->function->module->values, name);
-            frame->ip = ip;
-            runtimeError(vm, "Undefined variable '%s'.", name->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            ObjString *name = READ_STRING();
+            if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
+                tableDelete(vm, &frame->closure->function->module->values, name);
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            DISPATCH();
         }
-        DISPATCH();
-    }
 
         CASE_CODE(DEFINE_OPTIONAL): {
             int arity = READ_BYTE();
             int arityOptional = READ_BYTE();
             int argCount = vm->stackTop - frame->slots - arityOptional - 1;
 
+            // Temp array while we shuffle the stack.
+            // Can not have more than 255 args to a function, so
+            // we can define this with a constant limit
             Value values[255];
             int index;
 
@@ -769,6 +772,7 @@ static InterpretResult run(VM *vm) {
                 push(vm, values[index - i]);
             }
 
+            // Calculate how many "default" values are required
             int remaining = arity + arityOptional - argCount;
 
             // Push any "default" values back onto the stack
