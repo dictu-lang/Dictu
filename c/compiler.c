@@ -632,6 +632,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
         if (fnCompiler->function->arityOptional > 0) {
             emitByte(fnCompiler, OP_DEFINE_OPTIONAL);
+            emitBytes(fnCompiler, fnCompiler->function->arity, fnCompiler->function->arityOptional);
         }
     }
 

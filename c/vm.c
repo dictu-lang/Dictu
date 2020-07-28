@@ -752,34 +752,24 @@ static InterpretResult run(VM *vm) {
     }
 
         CASE_CODE(DEFINE_OPTIONAL): {
-            // Temp array while we shuffle the stack.
-            // Can not have more than 255 args to a function, so
-            // we can define this with a constant limit
+            int arity = READ_BYTE();
+            int arityOptional = READ_BYTE();
+            int argCount = vm->stackTop - frame->slots - arityOptional - 1;
+
             Value values[255];
-            int index = 0;
+            int index;
 
-            values[index] = pop(vm);
-
-            // Pop all args and default values a function has
-            while (!IS_CLOSURE(values[index])) {
-                values[++index] = pop(vm);
+            for (index = 0; index < arityOptional + argCount; index++) {
+                values[index] = pop(vm);
             }
 
-            ObjClosure *closure = AS_CLOSURE(values[index--]);
-            ObjFunction *function = closure->function;
+            --index;
 
-            int argCount = index - function->arityOptional + 1;
-
-            // Push the function back onto the stack
-            push(vm, OBJ_VAL(closure));
-
-            // Push all user given options
             for (int i = 0; i < argCount; i++) {
                 push(vm, values[index - i]);
             }
 
-            // Calculate how many "default" values are required
-            int remaining = function->arity + function->arityOptional - argCount;
+            int remaining = arity + arityOptional - argCount;
 
             // Push any "default" values back onto the stack
             for (int i = remaining; i > 0; i--) {
