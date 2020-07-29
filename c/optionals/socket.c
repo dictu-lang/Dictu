@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 
 static Value createSocket(VM *vm, int argCount, Value *args) {
-    UNUSED(vm);
     if (argCount != 2) {
         runtimeError(vm, "create() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -110,7 +109,6 @@ static Value acceptSocket(VM *vm, int argCount, Value *args) {
 }
 
 static Value writeSocket(VM *vm, int argCount, Value *args) {
-    UNUSED(vm);
     if (argCount != 1) {
         runtimeError(vm, "write() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -180,7 +178,6 @@ static Value closeSocket(VM *vm, int argCount, Value *args) {
 }
 
 static Value setSocketOpt(VM *vm, int argCount, Value *args) {
-    UNUSED(vm);
     if (argCount != 2) {
         runtimeError(vm, "setsocketopt() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
