@@ -16,7 +16,7 @@ static Value createSocket(VM *vm, int argCount, Value *args) {
     }
 
     int socketFamily = AS_NUMBER(args[0]);
-    double socketType = AS_NUMBER(args[1]);
+    int socketType = AS_NUMBER(args[1]);
 
     int sock = socket(socketFamily, socketType, 0);
     if (sock == -1) {

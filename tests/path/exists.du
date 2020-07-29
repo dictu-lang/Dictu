@@ -1,0 +1,11 @@
+/**
+ * exists.du
+ *
+ * Testing Path.exists()
+ *
+ * Returns a boolean based on whether a file exists.
+ */
+import Path;
+
+assert(Path.exists("some/dead/path.du") == false);
+assert(Path.extname("tests/runTests.du"));
