@@ -1,6 +1,8 @@
 #ifndef dictu_memory_h
 #define dictu_memory_h
 
+#include <unistd.h>
+
 #include "object.h"
 #include "common.h"
 
