@@ -160,7 +160,10 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    return OBJ_VAL(copyString(vm, buffer, strlen(buffer)));
+    ObjString *rString = copyString(vm, buffer, strlen(buffer));
+    FREE_ARRAY(vm, char, buffer, bufferSize);
+
+    return OBJ_VAL(rString);
 }
 
 static Value closeSocket(VM *vm, int argCount, Value *args) {
@@ -232,7 +235,7 @@ ObjModule *createSocketClass(VM *vm) {
     defineNative(vm, &vm->socketMethods, "write", writeSocket);
     defineNative(vm, &vm->socketMethods, "recv", recvSocket);
     defineNative(vm, &vm->socketMethods, "close", closeSocket);
-    defineNative(vm, &vm->socketMethods, "setsocketopt", setSocketOpt);
+    defineNative(vm, &vm->socketMethods, "setsockopt", setSocketOpt);
 
     pop(vm);
     pop(vm);
