@@ -8,4 +8,4 @@
 import Path;
 
 assert(Path.exists("some/dead/path.du") == false);
-assert(Path.extname("tests/runTests.du"));
+assert(Path.exists("tests/runTests.du"));
