@@ -1,0 +1,10 @@
+/**
+ * import.du
+ *
+ * General import file for all the socket tests
+ */
+
+import "tests/sockets/constants.du";
+import "tests/sockets/create.du";
+import "tests/sockets/bind.du";
+import "tests/sockets/setsockopt.du";

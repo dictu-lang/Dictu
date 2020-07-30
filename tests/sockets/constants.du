@@ -1,0 +1,13 @@
+/**
+ * constants.du
+ *
+ * Testing the socket modules constants
+ *
+ */
+import Socket;
+
+assert(type(Socket.AF_INET) == "number");
+assert(type(Socket.SOCK_STREAM) == "number");
+assert(type(Socket.SOL_SOCKET) == "number");
+assert(type(Socket.SO_REUSEADDR) == "number");
+

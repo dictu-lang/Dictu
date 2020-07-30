@@ -1,0 +1,18 @@
+/**
+ * bind.du
+ *
+ * Testing socket.setsockopt()
+ *
+ * Sets socket option
+ */
+import Socket;
+
+var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+
+assert(socket != nil);
+assert(type(socket) == "socket");
+
+assert(socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR) == true);
+
+socket.close();
+
