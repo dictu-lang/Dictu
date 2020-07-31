@@ -1,0 +1,16 @@
+/**
+ * create.du
+ *
+ * Testing Socket.create()
+ *
+ * Returns a new socket object
+ */
+import Socket;
+
+var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+
+assert(socket != nil);
+assert(type(socket) == "socket");
+
+socket.close();
+

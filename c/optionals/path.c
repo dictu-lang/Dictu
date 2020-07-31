@@ -150,6 +150,24 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, path, len));
 }
 
+static Value existsNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "exists() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "exists() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *path = AS_CSTRING(args[0]);
+
+    struct stat buffer;
+
+    return BOOL_VAL(stat(path, &buffer) == 0);
+}
+
 ObjModule *createPathClass(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
@@ -168,6 +186,7 @@ ObjModule *createPathClass(VM *vm) {
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);
     defineNative(vm, &module->values, "dirname", dirnameNative);
+    defineNative(vm, &module->values, "exists", existsNative);
 
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));

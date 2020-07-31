@@ -55,7 +55,7 @@ Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
 It can take an optional number argument that specifies the mode. If a mode is not passed, the directory will be created with `0777` permissions.
 
-The actual permissions is modified by the process umask, which typically is S_IWGRP|S_IWOTH (octal 022).
+The actual permissions is modified by the process umask, which typically is S_IWGRP\|S_IWOTH (octal 022).
 
 ```js
 var

@@ -6,6 +6,7 @@ BuiltinModules modules[] = {
         {"JSON", &createJSONClass},
         {"Path", &createPathClass},
         {"Datetime", &createDatetimeClass},
+        {"Socket", &createSocketClass},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPClass},
 #endif

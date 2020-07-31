@@ -27,3 +27,7 @@ test.du
 coverage/
 
 compile_commands.json
+
+venv/
+
+cmake-build-debug/CMakeFiles/clion-log.txt

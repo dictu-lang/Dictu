@@ -116,6 +116,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
+    initTable(&vm->socketMethods);
 
     setupFilenameStack(vm, scriptName);
     if (scriptName == NULL) {
@@ -169,6 +170,7 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->fileMethods);
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
+    freeTable(vm, &vm->socketMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
@@ -447,6 +449,17 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 }
 
                 runtimeError(vm, "File has no method %s().", name->chars);
+                return false;
+            }
+
+            // TODO: Think of a way to handle this for imported classes
+            case OBJ_SOCKET: {
+                Value value;
+                if (tableGet(&vm->socketMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Socket has no method %s().", name->chars);
                 return false;
             }
 
