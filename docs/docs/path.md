@@ -84,3 +84,11 @@ Returns the canonicalized absolute pathname or nil on error and sets Path.errno 
 ```js
 Path.realpath("/dir/../dir/../dir"); // '/dir'
 ```
+
+### Path.exists(string)
+
+Returns a boolean whether a file exists at a given path.
+
+```js
+Path.exists("some/path/to/a/file.du"); // true
+```

@@ -58,6 +58,8 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
                 return OBJ_VAL(copyString(vm, "native", 6));
             case OBJ_FILE:
                 return OBJ_VAL(copyString(vm, "file", 4));
+            case OBJ_SOCKET:
+                return OBJ_VAL(copyString(vm, "socket", 6));
             default:
                 break;
         }

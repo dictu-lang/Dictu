@@ -151,7 +151,7 @@ static void blackenObject(VM *vm, Obj *object) {
             break;
         }
 
-
+        case OBJ_SOCKET:
         case OBJ_NATIVE:
         case OBJ_STRING:
         case OBJ_FILE:
@@ -249,6 +249,11 @@ void freeObject(VM *vm, Obj *object) {
             FREE(vm, ObjUpvalue, object);
             break;
         }
+
+        case OBJ_SOCKET: {
+            FREE(vm, ObjSocket, object);
+            break;
+        }
     }
 }
 
@@ -289,6 +294,7 @@ void collectGarbage(VM *vm) {
     grayTable(vm, &vm->fileMethods);
     grayTable(vm, &vm->classMethods);
     grayTable(vm, &vm->instanceMethods);
+    grayTable(vm, &vm->socketMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->replVar);

@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096

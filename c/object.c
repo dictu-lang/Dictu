@@ -184,6 +184,16 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
     return upvalue;
 }
 
+ObjSocket *newSocket(VM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
+    ObjSocket *socket = ALLOCATE_OBJ(vm, ObjSocket, OBJ_SOCKET);
+    socket->socket = sock;
+    socket->socketFamily = socketFamily;
+    socket->socketType = socketType;
+    socket->socketProtocol = socketProtocol;
+
+    return socket;
+}
+
 char *listToString(Value value) {
     int size = 50;
     ObjList *list = AS_LIST(value);
@@ -511,7 +521,8 @@ char *objectToString(Value value) {
                 snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
             } else {
                 closureString = malloc(sizeof(char) * 9);
-                snprintf(closureString, 9, "%s", "<script>");
+                memcpy(closureString, "<script>", 8);
+                closureString[8] = '\0';
             }
 
             return closureString;
@@ -526,7 +537,8 @@ char *objectToString(Value value) {
                 snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
             } else {
                 functionString = malloc(sizeof(char) * 5);
-                snprintf(functionString, 5, "%s", "<fn>");
+                memcpy(functionString, "<fn>", 4);
+                functionString[4] = '\0';
             }
 
             return functionString;
@@ -538,7 +550,8 @@ char *objectToString(Value value) {
 
         case OBJ_NATIVE: {
             char *nativeString = malloc(sizeof(char) * 12);
-            snprintf(nativeString, 12, "%s", "<native fn>");
+            memcpy(nativeString, "<native fn>", 11);
+            nativeString[11] = '\0';
             return nativeString;
         }
 
@@ -569,9 +582,17 @@ char *objectToString(Value value) {
         }
 
         case OBJ_UPVALUE: {
-            char *nativeString = malloc(sizeof(char) * 8);
-            snprintf(nativeString, 8, "%s", "upvalue");
-            return nativeString;
+            char *upvalueString = malloc(sizeof(char) * 8);
+            memcpy(upvalueString, "upvalue", 7);
+            upvalueString[7] = '\0';
+            return upvalueString;
+        }
+
+        case OBJ_SOCKET: {
+            char *socketString = malloc(sizeof(char) * 7);
+            memcpy(socketString, "socket", 6);
+            socketString[6] = '\0';
+            return socketString;
         }
     }
 

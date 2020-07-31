@@ -116,6 +116,7 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
+    initTable(&vm->socketMethods);
 
     setupFilenameStack(vm, scriptName);
     if (scriptName == NULL) {
@@ -169,6 +170,7 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->fileMethods);
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
+    freeTable(vm, &vm->socketMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
@@ -447,6 +449,17 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
                 }
 
                 runtimeError(vm, "File has no method %s().", name->chars);
+                return false;
+            }
+
+            // TODO: Think of a way to handle this for imported classes
+            case OBJ_SOCKET: {
+                Value value;
+                if (tableGet(&vm->socketMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Socket has no method %s().", name->chars);
                 return false;
             }
 
@@ -741,45 +754,39 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SET_MODULE): {
-        ObjString *name = READ_STRING();
-        if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
-            tableDelete(vm, &frame->closure->function->module->values, name);
-            frame->ip = ip;
-            runtimeError(vm, "Undefined variable '%s'.", name->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            ObjString *name = READ_STRING();
+            if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
+                tableDelete(vm, &frame->closure->function->module->values, name);
+                frame->ip = ip;
+                runtimeError(vm, "Undefined variable '%s'.", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            DISPATCH();
         }
-        DISPATCH();
-    }
 
         CASE_CODE(DEFINE_OPTIONAL): {
+            int arity = READ_BYTE();
+            int arityOptional = READ_BYTE();
+            int argCount = vm->stackTop - frame->slots - arityOptional - 1;
+
             // Temp array while we shuffle the stack.
             // Can not have more than 255 args to a function, so
             // we can define this with a constant limit
             Value values[255];
-            int index = 0;
+            int index;
 
-            values[index] = pop(vm);
-
-            // Pop all args and default values a function has
-            while (!IS_CLOSURE(values[index])) {
-                values[++index] = pop(vm);
+            for (index = 0; index < arityOptional + argCount; index++) {
+                values[index] = pop(vm);
             }
 
-            ObjClosure *closure = AS_CLOSURE(values[index--]);
-            ObjFunction *function = closure->function;
+            --index;
 
-            int argCount = index - function->arityOptional + 1;
-
-            // Push the function back onto the stack
-            push(vm, OBJ_VAL(closure));
-
-            // Push all user given options
             for (int i = 0; i < argCount; i++) {
                 push(vm, values[index - i]);
             }
 
             // Calculate how many "default" values are required
-            int remaining = function->arity + function->arityOptional - argCount;
+            int remaining = arity + arityOptional - argCount;
 
             // Push any "default" values back onto the stack
             for (int i = remaining; i > 0; i--) {

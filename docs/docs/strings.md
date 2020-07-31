@@ -60,11 +60,12 @@ E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive 
 
 ### Escape codes
 
-|--------------|--------------------------------------------|
-| Escape code  | Description                                |
-| \n           | \n is the escape code for a new line       |
-| \t           | \t is the escape code for a horizontal tab |
-| \v           | \v is the escape code for a vertical tab   |
+|--------------|---------------------------------------------|
+| Escape code  | Description                                 |
+| \n           | \n is the escape code for a new line        |
+| \r           | \r is the escape code for a carriage return |
+| \t           | \t is the escape code for a horizontal tab  |
+| \v           | \v is the escape code for a vertical tab    |
 | \\\          | \\\ is the escape code for a backslash      |
 | \\"          | \\" is the escape code for double quotes    |
 | \\'          | \\' is the escape code for single quotes    |
