@@ -10,6 +10,16 @@
 #endif
 #endif
 
+
+// error codes taken from https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/errno.h
+#ifdef __FreeBSD__
+#define EHWPOISON 133
+#define ENOSTR 60
+#define ENODATA 61
+#define ETIME 62
+#define ENOSR 63
+#endif
+
 #include <string.h>
 #include <errno.h>
 
