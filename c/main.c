@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if (defined(__unix__) || defined(unix)) && !defined(USG)
+#include <sys/param.h>
+#endif
+
 #include "common.h"
 #include "vm.h"
 #include "util.h"
