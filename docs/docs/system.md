@@ -38,6 +38,10 @@ nav_order: 12
 | System.S_IXOTH  | Execute by others.                                                                                |
 | System.S_ISUID  | Set user ID on execution.                                                                         |
 | System.S_ISGID  | Set group ID on execution.                                                                        |
+| System.F_OK     | Test for existence.
+| System.X_OK     | Test for execute permission.
+| System.W_OK     | Test for write permission.
+| System.R_OK     | Test for read permission.
 
 ### System.strerror(number: error -> optional)
 Get the string representation of an error.
@@ -66,6 +70,19 @@ var
   S_IXOTH = System.S_IXOTH;
 
 System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
+```
+
+### System.access(string, number)
+
+Check user's permissions for a file
+Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+
+**Note:** This method and the F_OK|X_OK|W_OK|R_OK constants are not available on windows systems.
+
+```js
+var F_OK = System.F_OK;
+
+System.access("/", F_OK);
 ```
 
 ### System.rmdir(string)
