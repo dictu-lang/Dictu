@@ -121,6 +121,39 @@ static Value mkdirNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
+#ifdef HAS_ACCESS
+static Value accessNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "access() takes 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "access() first argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *file = AS_CSTRING(args[0]);
+
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm, "access() second argument must be a number");
+        return EMPTY_VAL;
+    }
+
+    int mode = AS_NUMBER(args[1]);
+
+    RESET_ERRNO(GET_SELF_CLASS);
+
+    int retval = access(file, mode);
+
+    if (retval == -1) {
+      SET_ERRNO(GET_SELF_CLASS);
+    }
+
+    return NUMBER_VAL((retval == -1 ? NOTOK : OK));
+}
+#endif
+
 static Value removeNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
@@ -285,6 +318,9 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     defineNative(vm, &module->values, "getpid", getpidNative);
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
+#ifdef HAS_ACCESS
+    defineNative(vm, &module->values, "access", accessNative);
+#endif
     defineNative(vm, &module->values, "remove", removeNative);
     defineNative(vm, &module->values, "setCWD", setCWDNative);
     defineNative(vm, &module->values, "getCWD", getCWDNative);
@@ -320,6 +356,12 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
     defineNativeProperty(vm, &module->values, "S_IXOTH", NUMBER_VAL(1));
     defineNativeProperty(vm, &module->values, "S_ISUID", NUMBER_VAL(2048));
     defineNativeProperty(vm, &module->values, "S_ISGID", NUMBER_VAL(1024));
+#ifdef HAS_ACCESS
+    defineNativeProperty(vm, &module->values, "F_OK", NUMBER_VAL(F_OK));
+    defineNativeProperty(vm, &module->values, "X_OK", NUMBER_VAL(X_OK));
+    defineNativeProperty(vm, &module->values, "W_OK", NUMBER_VAL(W_OK));
+    defineNativeProperty(vm, &module->values, "R_OK", NUMBER_VAL(R_OK));
+#endif
 
     tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);

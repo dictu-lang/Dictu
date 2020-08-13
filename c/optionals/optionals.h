@@ -18,6 +18,9 @@
 #define SET_ERRNO(module_)                                              \
   defineNativeProperty(vm, &module_->values, "errno", NUMBER_VAL(errno))
 
+#define RESET_ERRNO(module_)                                       \
+  defineNativeProperty(vm, &module_->values, "errno", 0)
+
 #define GET_ERRNO(module_)({                         \
   Value errno_value = 0;                             \
   ObjString *name = copyString(vm, "errno", 5);      \
