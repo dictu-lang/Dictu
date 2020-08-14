@@ -155,10 +155,11 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
         Value module;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
+        FREE_ARRAY(vm, char, buffer, bufferSize);
         return NIL_VAL;
     }
 
-    ObjString *rString = copyString(vm, buffer, strlen(buffer));
+    ObjString *rString = copyString(vm, buffer, read_size);
     FREE_ARRAY(vm, char, buffer, bufferSize);
 
     return OBJ_VAL(rString);
