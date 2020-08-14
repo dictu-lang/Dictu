@@ -129,6 +129,7 @@ static Value splitString(VM *vm, int argCount, Value *args) {
     char *tmp = malloc(string->length + 1);
     char *tmpFree = tmp;
     memcpy(tmp, string->chars, string->length + 1);
+    tmp[string->length] = '\0';
     int delimiterLength = strlen(delimiter);
     char *token;
 
@@ -367,23 +368,20 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
         runtimeError(vm, "leftStrip() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
+
     ObjString *string = AS_STRING(args[0]);
-
-    bool charSeen = false;
     int i, count = 0;
-
     char *temp = malloc(sizeof(char) * (string->length + 1));
 
     for (i = 0; i < string->length; ++i) {
-        if (!charSeen && isspace(string->chars[i])) {
-            count++;
-            continue;
+        if (!isspace(string->chars[i])) {
+            break;
         }
-        temp[i - count] = string->chars[i];
-        charSeen = true;
+        count++;
     }
-    temp[i - count] = '\0';
-    Value ret = OBJ_VAL(copyString(vm, temp, i - count));
+
+    memcpy(temp, string->chars + count, string->length - count);
+    Value ret = OBJ_VAL(copyString(vm, temp, string->length - count));
     free(temp);
     return ret;
 }
@@ -417,7 +415,10 @@ static Value stripString(VM *vm, int argCount, Value *args) {
     }
 
     Value string = leftStripString(vm, 0, args);
-    return rightStripString(vm, 0, &string);
+    push(vm, string);
+    string = rightStripString(vm, 0, &string);
+    pop(vm);
+    return string;
 }
 
 static Value countString(VM *vm, int argCount, Value *args) {

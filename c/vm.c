@@ -1224,8 +1224,8 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SUBSCRIPT): {
-            Value indexValue = pop(vm);
-            Value subscriptValue = pop(vm);
+            Value indexValue = peek(vm, 0);
+            Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1249,6 +1249,8 @@ static InterpretResult run(VM *vm) {
                         index = list->values.count + index;
 
                     if (index >= 0 && index < list->values.count) {
+                        pop(vm);
+                        pop(vm);
                         push(vm, list->values.values[index]);
                         DISPATCH();
                     }
@@ -1267,6 +1269,8 @@ static InterpretResult run(VM *vm) {
                         index = string->length + index;
 
                     if (index >= 0 && index < string->length) {
+                        pop(vm);
+                        pop(vm);
                         push(vm, OBJ_VAL(copyString(vm, &string->chars[index], 1)));
                         DISPATCH();
                     }
@@ -1285,6 +1289,8 @@ static InterpretResult run(VM *vm) {
                     }
 
                     Value v;
+                    pop(vm);
+                    pop(vm);
                     if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
                     } else {
@@ -1303,11 +1309,9 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(SUBSCRIPT_ASSIGN): {
-            // We are free to pop here as this is *not* adding a new entry, but simply replacing
-            // An old value, so a GC should never be triggered.
-            Value assignValue = pop(vm);
-            Value indexValue = pop(vm);
-            Value subscriptValue = pop(vm);
+            Value assignValue = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
                 frame->ip = ip;
@@ -1331,6 +1335,9 @@ static InterpretResult run(VM *vm) {
 
                     if (index >= 0 && index < list->values.count) {
                         list->values.values[index] = assignValue;
+                        pop(vm);
+                        pop(vm);
+                        pop(vm);
                         push(vm, NIL_VAL);
                         DISPATCH();
                     }
@@ -1349,7 +1356,9 @@ static InterpretResult run(VM *vm) {
                     }
 
                     dictSet(vm, dict, indexValue, assignValue);
-
+                    pop(vm);
+                    pop(vm);
+                    pop(vm);
                     push(vm, NIL_VAL);
                     DISPATCH();
                 }
