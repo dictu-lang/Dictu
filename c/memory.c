@@ -282,8 +282,6 @@ void collectGarbage(VM *vm) {
     // Mark the global roots.
     grayTable(vm, &vm->modules);
     grayTable(vm, &vm->globals);
-    grayTable(vm, &vm->constants);
-    grayTable(vm, &vm->imports);
     grayTable(vm, &vm->numberMethods);
     grayTable(vm, &vm->boolMethods);
     grayTable(vm, &vm->nilMethods);
