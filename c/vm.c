@@ -104,7 +104,6 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->globals);
     initTable(&vm->constants);
     initTable(&vm->strings);
-    initTable(&vm->imports);
 
     initTable(&vm->numberMethods);
     initTable(&vm->boolMethods);
@@ -159,7 +158,6 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
     freeTable(vm, &vm->strings);
-    freeTable(vm, &vm->imports);
     freeTable(vm, &vm->numberMethods);
     freeTable(vm, &vm->boolMethods);
     freeTable(vm, &vm->nilMethods);

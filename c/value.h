@@ -26,7 +26,7 @@ typedef struct sObjFile ObjFile;
 
 typedef uint64_t Value;
 
-#define IS_BOOL(v)    (((v) & FALSE_VAL) == FALSE_VAL)
+#define IS_BOOL(v)    (((v) | 1) == TRUE_VAL)
 #define IS_NIL(v)     ((v) == NIL_VAL)
 #define IS_EMPTY(v)   ((v) == EMPTY_VAL)
 // If the NaN bits are set, it's not a number.
