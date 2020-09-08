@@ -1,6 +1,8 @@
 <p align="center">
-    <img src="docs/assets/images/dictu-logo/dictu-light-with-clearspace-TRANSPARENT-png-8x.png" alt="Dictu logo" width="640px">
+    <img src="docs/assets/images/dictu-logo/dictu-light-png-8x.png" alt="Dictu logo" width="560px">
 </p>
+
+--------------------------------------------------------------------------------
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab84059049bd4ba7b7b8c1fcfaac4ea5)](https://app.codacy.com/manual/jasonhall96686/Dictu?utm_source=github.com&utm_medium=referral&utm_content=Jason2605/Dictu&utm_campaign=Badge_Grade_Dashboard)
 [![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
