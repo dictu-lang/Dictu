@@ -1,5 +1,7 @@
 <p align="center">
-    <img src="docs/assets/images/dictu-logo/dictu-light-png-8x.png" alt="Dictu logo" width="560px">
+    <a href="https://dictu-lang.com">
+        <img src="docs/assets/images/dictu-logo/dictu-light-png-8x.png" alt="Dictu logo" width="560px">
+    </a>
 </p>
 
 --------------------------------------------------------------------------------
