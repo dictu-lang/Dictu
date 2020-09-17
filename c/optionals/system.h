@@ -14,6 +14,7 @@
 #define MKDIR(d, m) mkdir(d)
 #else
 #include <unistd.h>
+#define HAS_ACCESS
 #define REMOVE unlink
 #define MKDIR(d, m) mkdir(d, m)
 #endif

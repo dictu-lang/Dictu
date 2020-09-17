@@ -31,7 +31,6 @@ struct _vm {
     Table globals;
     Table constants;
     Table strings;
-    Table imports;
     Table numberMethods;
     Table boolMethods;
     Table nilMethods;

@@ -6,6 +6,10 @@
 #include "../memory.h"
 #include "../object.h"
 
+#ifdef __FreeBSD__
+#include <netinet/in.h>
+#endif
+
 ObjModule *createSocketClass(VM *vm);
 
 #endif //dictu_socket_h

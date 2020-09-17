@@ -55,7 +55,7 @@ static Value bindSocket(VM *vm, int argCount, Value *args) {
     server.sin_port = htons(port);
 
     if (bind(sock->socket, (struct sockaddr *)&server , sizeof(server)) < 0) {
-        Value module;
+        Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
         return NIL_VAL;
@@ -83,7 +83,7 @@ static Value listenSocket(VM *vm, int argCount, Value *args) {
 
     ObjSocket *sock = AS_SOCKET(args[0]);
     if (listen(sock->socket, backlog) == -1) {
-        Value module;
+        Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
         return NIL_VAL;
@@ -125,7 +125,7 @@ static Value writeSocket(VM *vm, int argCount, Value *args) {
     int writeRet = write(sock->socket , message->chars, message->length);
 
     if (writeRet == -1) {
-        Value module;
+        Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
         return NIL_VAL;
@@ -152,13 +152,14 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
     int read_size = recv(sock->socket, buffer, bufferSize, 0);
 
     if (read_size == -1) {
-        Value module;
+        Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
+        FREE_ARRAY(vm, char, buffer, bufferSize);
         return NIL_VAL;
     }
 
-    ObjString *rString = copyString(vm, buffer, strlen(buffer));
+    ObjString *rString = copyString(vm, buffer, read_size);
     FREE_ARRAY(vm, char, buffer, bufferSize);
 
     return OBJ_VAL(rString);
@@ -193,7 +194,7 @@ static Value setSocketOpt(VM *vm, int argCount, Value *args) {
     int option = AS_NUMBER(args[2]);
 
     if (setsockopt(sock->socket, level, option, &(int){1}, sizeof(int)) == -1) {
-        Value module;
+        Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
         return NIL_VAL;

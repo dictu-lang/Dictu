@@ -5,8 +5,8 @@
 # NAME         Name of the output executable (and object file directory).
 # SOURCE_DIR   Directory where source files and headers are found.
 
-CFLAGS := -Wall -Wextra -Werror -Wshadow -Wunused-function -Wunused-macros
-LFLAGS := -lm
+CFLAGS := -Wall -Wextra -Werror -Wshadow -Wunused-function -Wunused-macros -I/usr/local/include
+LFLAGS := -lm -L/usr/local/lib
 
 DISABLE_HTTP := 0
 ifeq ($(DISABLE_HTTP), 0)
