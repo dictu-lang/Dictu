@@ -4,7 +4,11 @@
     <meta name="theme-color" content="#2196F3">
     <meta property="og:title" content="Dictu" />
     <meta property="og:description" content="Dictu is a very small, and simple dynamically typed programming language">
-    <link rel="shortcut icon" type="image/png" href="{{ "/assets/favicon.png" | absolute_url }}">
+    <meta property="og:site_name" content="Dictu">
+    <meta property="og:url" content="https://dictu-lang.com">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{{ "/assets/images/dictu-logo/dictu-dark-with-clearspace-png-8x.png" | absolute_url }}">
+    <link id="favicon" rel="shortcut icon" type="image/png" href="{{ "/assets/favicon.png" | absolute_url }}">
 
     <title>{{ page.title }} - {{ site.title }}</title>
     <link rel="stylesheet" href="{{ "/assets/css/just-the-docs-default.css" | absolute_url }}">
@@ -15,6 +19,17 @@
             const originalCssRef = cssFile.getAttribute('href');
             const darkModeCssRef = originalCssRef.replace('just-the-docs-default.css', 'just-the-docs-dark.css');
             cssFile.setAttribute('href', darkModeCssRef);
+
+            let oldLink = document.getElementById('favicon');
+            let link = document.createElement('link');
+            link.id = 'favicon';
+            link.rel = 'shortcut icon';
+            link.href = '{{ "/assets/favicon-dark.png" | absolute_url }}';
+
+            if (oldLink) {
+                document.head.removeChild(oldLink);
+            }
+            document.head.appendChild(link);
         }
     </script>
 
