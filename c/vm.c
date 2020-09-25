@@ -1194,6 +1194,36 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(UNPACK_LIST): {
+            int varCount = READ_BYTE();
+
+            if (!IS_LIST(peek(vm, 0))) {
+                frame->ip = ip;
+                runtimeError(vm, "Attempting to unpack a value which is not a list.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjList *list = AS_LIST(pop(vm));
+
+            if (varCount != list->values.count) {
+                frame->ip = ip;
+
+                if (varCount < list->values.count) {
+                    runtimeError(vm, "Too many values to unpack");
+                } else {
+                    runtimeError(vm, "Not enough values to unpack");
+                }
+
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            for (int i = list->values.count; i >= 0; --i) {
+                push(vm, list->values.values[i]);
+            }
+
+            DISPATCH();
+        }
+
         CASE_CODE(NEW_DICT): {
             ObjDict *dict = initDict(vm);
             push(vm, OBJ_VAL(dict));

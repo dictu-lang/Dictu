@@ -1397,19 +1397,40 @@ static void funDeclaration(Compiler *compiler) {
 }
 
 static void varDeclaration(Compiler *compiler, bool constant) {
-    do {
-        uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
+    if (match(compiler, TOKEN_LEFT_BRACKET)) {
+        uint8_t variables[255];
+        int varCount = 0;
 
-        if (match(compiler, TOKEN_EQUAL) || constant) {
-            // Compile the initializer.
-            expression(compiler);
-        } else {
-            // Default to nil.
-            emitByte(compiler, OP_NIL);
+        do {
+            variables[varCount] = parseVariable(compiler, "Expect variable name.", constant);
+            varCount++;
+        } while (match(compiler, TOKEN_COMMA));
+
+        consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
+        consume(compiler, TOKEN_EQUAL, "Expect '=' after list destructure.");
+
+        expression(compiler);
+
+        emitBytes(compiler, OP_UNPACK_LIST, varCount);
+
+        for (int i = 0; i < varCount; ++i) {
+            defineVariable(compiler, variables[i], constant);
         }
+    } else {
+        do {
+            uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
 
-        defineVariable(compiler, global, constant);
-    } while (match(compiler, TOKEN_COMMA));
+            if (match(compiler, TOKEN_EQUAL) || constant) {
+                // Compile the initializer.
+                expression(compiler);
+            } else {
+                // Default to nil.
+                emitByte(compiler, OP_NIL);
+            }
+
+            defineVariable(compiler, global, constant);
+        } while (match(compiler, TOKEN_COMMA));
+    }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 }
