@@ -1,0 +1,29 @@
+/**
+* list-unpacking.du
+*
+* Testing list unpacking for assignment
+*/
+
+var [a, b, c] = [1, 2, 3];
+
+assert(a == 1);
+assert(b == 2);
+assert(c == 3);
+
+var [d, e, f] = [1 + 1, 2 + 2, 3 + 3];
+
+assert(d == 2);
+assert(e == 4);
+assert(f == 6);
+
+var list = [1, nil, true, false, "test", ["more tests", "another"], {"key": "value"}];
+
+var [x, y, z, x1, y1, z1, x2] = list;
+
+assert(x == 1);
+assert(y == nil);
+assert(z == true);
+assert(x1 == false);
+assert(y1 == "test");
+assert(z1 == ["more tests", "another"]);
+assert(x2 == {"key": "value"});

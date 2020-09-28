@@ -85,6 +85,35 @@ print(x); // 10
 const y = 10, z = 20; // Both y and z are constants
 ```
 
+### List unpacking
+
+List unpacking is a feature in which you can define multiple variables at a given time from values within a list.
+To unpack the amount of variables being defined **must** match the amount of values within the list otherwise a runtime error will occur.
+```js
+// Fine
+var [a, b, c] = [1, 2, 3];
+print(a); // 1
+print(b); // 2
+print(c); // 3
+
+// Fine
+const [x, y, z] = [1, 2, 3];
+print(x); // 1
+print(y); // 2
+print(z); // 3
+
+// Fine
+var myList = [1, 2, 3];
+var [val1, val2, val3] = myList;
+print(val1); // 1
+print(val2); // 2
+print(val3); // 3
+
+// Error!
+var [d] = [1, 2];
+var [e, f] = [1];
+```
+
 ## Casting
 
 ### value.toString()
