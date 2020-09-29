@@ -1168,6 +1168,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_WITH
         {NULL,     NULL,      PREC_NONE},               // TOKEN_EOF
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IMPORT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_FROM
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ERROR
 };
 
@@ -1653,6 +1654,86 @@ static void importStatement(Compiler *compiler) {
     emitByte(compiler, OP_IMPORT_END);
 }
 
+static void fromImportStatement(Compiler *compiler) {
+    if (match(compiler, TOKEN_STRING)) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(copyString(
+                compiler->parser->vm,
+                compiler->parser->previous.start + 1,
+                compiler->parser->previous.length - 2)));
+
+        consume(compiler, TOKEN_IMPORT, "Expect 'import' after import path.");
+
+        emitBytes(compiler, OP_IMPORT, importConstant);
+
+
+        uint8_t variables[255];
+        int varCount = 0;
+
+        do {
+            variables[varCount] = parseVariable(compiler, "Expect variable name.", false);
+            varCount++;
+
+            if (varCount > 255) {
+                error(compiler->parser, "Cannot have more than 255 variables.");
+            }
+        } while (match(compiler, TOKEN_COMMA));
+
+        emitBytes(compiler, OP_IMPORT_FROM, varCount);
+
+        for (int i = 0; i < varCount; ++i) {
+            emitByte(compiler, variables[i]);
+        }
+
+        // This needs to be two separate loops as we need
+        // all the variables popped before defining.
+        for (int i = varCount - 1; i >= 0; --i) {
+            defineVariable(compiler, variables[i], false);
+        }
+
+        emitByte(compiler, OP_IMPORT_END);
+    } else {
+        uint8_t moduleName = parseVariable(compiler, "Expect import identifier.", false);
+
+        int index = findBuiltinModule(
+                (char *)compiler->parser->previous.start,
+                compiler->parser->previous.length
+        );
+
+        consume(compiler, TOKEN_IMPORT, "Expect 'import' after identifier.");
+
+        if (index == -1) {
+            error(compiler->parser, "Unknown module1");
+        }
+
+        uint8_t variables[255];
+        int varCount = 0;
+
+        do {
+            variables[varCount] = parseVariable(compiler, "Expect variable name.", false);
+            varCount++;
+
+            if (varCount > 255) {
+                error(compiler->parser, "Cannot have more than 255 variables.");
+            }
+        } while (match(compiler, TOKEN_COMMA));
+
+        emitBytes(compiler, OP_IMPORT_BUILTIN_VARIABLE, index);
+        emitBytes(compiler, moduleName, varCount);
+
+        for (int i = 0; i < varCount; ++i) {
+            emitByte(compiler, variables[i]);
+        }
+
+        // This needs to be two separate loops as we need
+        // all the variables popped before defining.
+        for (int i = varCount - 1; i >= 0; --i) {
+            defineVariable(compiler, variables[i], false);
+        }
+    }
+
+    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
+}
+
 static void whileStatement(Compiler *compiler) {
     Loop loop;
     loop.start = currentChunk(compiler)->count;
@@ -1743,6 +1824,8 @@ static void statement(Compiler *compiler) {
         withStatement(compiler);
     } else if (match(compiler, TOKEN_IMPORT)) {
         importStatement(compiler);
+    } else if (match(compiler, TOKEN_FROM)) {
+        fromImportStatement(compiler);
     } else if (match(compiler, TOKEN_BREAK)) {
         breakStatement(compiler);
     } else if (match(compiler, TOKEN_WHILE)) {
