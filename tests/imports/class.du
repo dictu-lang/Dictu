@@ -1,0 +1,11 @@
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+class AnotherTest {
+    init() {
+        this.y = 10;
+    }
+}

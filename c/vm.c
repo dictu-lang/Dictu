@@ -1103,7 +1103,13 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
-            char *s = readFile(fileName->chars);
+            char *source = readFile(fileName->chars);
+
+            if (source == NULL) {
+                frame->ip = ip;
+                runtimeError(vm, "Could not open file \"%s\".", fileName->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
 
             if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
                 int oldCapacity = vm->scriptNameCapacity;
@@ -1119,9 +1125,9 @@ static InterpretResult run(VM *vm) {
             vm->lastModule = module;
 
             push(vm, OBJ_VAL(module));
-            ObjFunction *function = compile(vm, module, s);
+            ObjFunction *function = compile(vm, module, source);
             pop(vm);
-            free(s);
+            free(source);
 
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
