@@ -7,5 +7,6 @@
  */
 import Path;
 
-assert(Path.isdir ("/usr/bin") == true);
-assert(Path.isdir ("/home/") ==true);
+assert(Path.isdir("/usr/bin") == true);
+assert(Path.isdir("/home/") == true);
+assert(Path.isdir("tests/runTests.du") == false);
