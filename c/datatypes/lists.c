@@ -325,11 +325,19 @@ static int partition(ObjList* arr, int start, int end) {
 // Best Case O(n log n)
 // Worst Case O(n^2) (If the list is already sorted.) 
 static void quickSort(ObjList* arr, int start, int end) {
-    if (start < end) {
+    while (start < end) {
         int part = partition(arr, start, end);
 
-        quickSort(arr, start, part);
-        quickSort(arr, part + 1, end);
+        // Recurse for the smaller halve.
+        if (part - start < end - part) {
+            quickSort(arr, start, part);
+            
+            start = start + 1;
+        } else {
+            quickSort(arr, part + 1, end);
+
+            end = end - 1;
+        }
     }
 }
 
