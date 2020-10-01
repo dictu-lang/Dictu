@@ -1126,7 +1126,6 @@ static InterpretResult run(VM *vm) {
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
             ObjClosure *closure = newClosure(vm, function);
-            pop(vm);
 
             frame->ip = ip;
             call(vm, closure, 0);
