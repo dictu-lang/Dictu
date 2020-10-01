@@ -208,7 +208,7 @@ print(list2); // [[10, 2]]
 ### Sorting Lists
 #### list.sort()
 
-To sort numeric lists (that is lists that contain only numbers) you can you the method
+To sort numeric lists (that is lists that contain only numbers) you can use the method
 sort.
 
 ```js
