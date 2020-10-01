@@ -1,0 +1,11 @@
+/**
+ * isAbsolute.du
+ *
+ * Testing Path.isdir()
+ *
+ * Returns true if the given string is a path to a directory, else false. (Linux only) 
+ */
+import Path;
+
+assert(Path.isdir ("/usr/bin") == true);
+assert(Path.isdir ("/home/") ==true);

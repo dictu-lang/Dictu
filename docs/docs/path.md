@@ -92,3 +92,14 @@ Returns a boolean whether a file exists at a given path.
 ```js
 Path.exists("some/path/to/a/file.du"); // true
 ```
+
+### Path.isdir(string)
+
+Checks whether a given path points to a directory or not. 
+
+**Note:** This is not available on windows systems yet.
+
+```js
+Path.isdir("/usr/bin/"); //true
+```
+
