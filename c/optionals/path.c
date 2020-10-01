@@ -14,7 +14,6 @@ static Value realpathNative(VM *vm, int argCount, Value *args) {
 
     char *path = AS_CSTRING(args[0]);
 
-
     char tmp[PATH_MAX + 1];
     if (NULL == realpath(path, tmp)) {
         SET_ERRNO(GET_SELF_CLASS);
