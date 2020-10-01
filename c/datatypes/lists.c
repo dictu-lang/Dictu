@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "lists.h"
 
 static Value toStringList(VM *vm, int argCount, Value *args) {
@@ -288,6 +290,70 @@ static Value copyListDeep(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newList);
 }
 
+
+static int partition(ObjList* arr, int start, int end) {
+    int pivot_index = (int)floor(start + end) / 2;
+
+    double pivot =  AS_NUMBER(arr->values.values[pivot_index]);
+
+    int i = start - 1;
+    int j = end + 1;
+
+    for (;;) {
+        do {
+            i = i + 1;
+        } while(AS_NUMBER(arr->values.values[i]) < pivot);
+
+        do {
+            j = j - 1;
+        } while(AS_NUMBER(arr->values.values[j]) > pivot);
+
+        if (i >= j) {
+            return j;
+        }
+
+        // Swap arr[i] with arr[j]
+        Value temp = arr->values.values[i];
+        
+        arr->values.values[i] = arr->values.values[j];
+        arr->values.values[j] = temp;
+    }
+}
+
+// Implementation of Quick Sort using the Hoare
+// Partition scheme.
+// Best Case O(n log n)
+// Worst Case O(n^2) (If the list is already sorted.) 
+static void quickSort(ObjList* arr, int start, int end) {
+    if (start < end) {
+        int part = partition(arr, start, end);
+
+        quickSort(arr, start, part);
+        quickSort(arr, part + 1, end);
+    }
+}
+
+static Value sortList(VM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "sort() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+
+    // Check if all the list elements are indeed numbers.
+    for (int i = 0; i < list->values.count; i++) {
+        if (!IS_NUMBER(list->values.values[i])) {
+            runtimeError(vm, "sort() takes lists with numbers (index %d was not a number)", i);
+            return EMPTY_VAL;
+        }
+    }
+
+    quickSort(list, 0, list->values.count - 1);
+
+    return NIL_VAL;
+}
+
 void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "toString", toStringList);
     defineNative(vm, &vm->listMethods, "len", lenList);
@@ -301,4 +367,5 @@ void declareListMethods(VM *vm) {
     defineNative(vm, &vm->listMethods, "copy", copyListShallow);
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
     defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
+    defineNative(vm, &vm->listMethods, "sort", sortList);
 }
