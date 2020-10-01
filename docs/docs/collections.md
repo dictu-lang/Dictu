@@ -198,11 +198,26 @@ print(list2); // [10, 2]
 #### list.deepCopy()
 To get around this, we can deepCopy the list.
 ```js
-var list1 = [[1, 2];
+var list1 = [[1, 2]];
 var list2 = list1.deepCopy();
 list2[0][0] = 10;
 print(list1); // [[1, 2]]
 print(list2); // [[10, 2]]
+```
+
+### Sorting Lists
+#### list.sort()
+
+To sort numeric lists (that is lists that contain only numbers) you can use the method
+sort.
+
+```js
+var list1 = [1, -1, 4, 2, 10, 5, 3];
+
+print(list1); // [1, -1, 4, 2, 10, 5, 3]
+list1.sort();
+
+print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
 
 ## Dictionaries
