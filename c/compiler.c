@@ -670,8 +670,28 @@ static void grouping(Compiler *compiler, bool canAssign) {
 static void number(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    double value = strtod(compiler->parser->previous.start, NULL);
+    // We allocate the whole range for the worst case.
+    char* buffer = (char *)calloc(compiler->parser->previous.length, sizeof(char));
+    char* current = buffer;
+
+    // Strip it of any underscores.
+    for(int i = 0; i < compiler->parser->previous.length; i++) {
+        char c = compiler->parser->previous.start[i];
+
+        if (c != '_') {
+            *(current++) = c;
+        }
+    }
+
+    // Terminate the string with a null character.
+    *current = '\0';
+
+    // Parse the string.
+    double value = strtod(buffer, NULL);
     emitConstant(compiler, NUMBER_VAL(value));
+
+    // Free the calloc'd buffer.
+    free(buffer);
 }
 
 static void or_(Compiler *compiler, bool canAssign) {
