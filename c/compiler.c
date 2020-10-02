@@ -370,13 +370,13 @@ static void addLocal(Compiler *compiler, Token name) {
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler) {
+static void declareVariable(Compiler *compiler, Token *name) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
-    Token *name = &compiler->parser->previous;
+    // Token *name = &compiler->parser->previous;
     for (int i = compiler->localCount - 1; i >= 0; i--) {
         Local *local = &compiler->locals[i];
         if (local->depth != -1 && local->depth < compiler->scopeDepth) break;
@@ -398,7 +398,7 @@ static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool 
         return identifierConstant(compiler, &compiler->parser->previous);
     }
 
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
     return 0;
 }
 
@@ -1291,7 +1291,7 @@ static void parseClassBody(Compiler *compiler) {
 static void classDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, false);
@@ -1334,7 +1334,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, true);
@@ -1372,7 +1372,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
 static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect trait name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, false);
@@ -1398,11 +1398,12 @@ static void funDeclaration(Compiler *compiler) {
 
 static void varDeclaration(Compiler *compiler, bool constant) {
     if (match(compiler, TOKEN_LEFT_BRACKET)) {
-        uint8_t variables[255];
+        Token variables[255];
         int varCount = 0;
 
         do {
-            variables[varCount] = parseVariable(compiler, "Expect variable name.", constant);
+            consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+            variables[varCount] = compiler->parser->previous;
             varCount++;
         } while (match(compiler, TOKEN_COMMA));
 
@@ -1413,8 +1414,16 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 
         emitBytes(compiler, OP_UNPACK_LIST, varCount);
 
-        for (int i = 0; i < varCount; ++i) {
-            defineVariable(compiler, variables[i], constant);
+        if (compiler->scopeDepth == 0) {
+            for (int i = varCount - 1; i >= 0; --i) {
+                uint8_t identifier = identifierConstant(compiler, &variables[i]);
+                defineVariable(compiler, identifier, constant);
+            }
+        } else {
+            for (int i = 0; i < varCount; ++i) {
+                declareVariable(compiler, &variables[i]);
+                defineVariable(compiler, 0, constant);
+            }
         }
     } else {
         do {

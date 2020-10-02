@@ -27,3 +27,40 @@ assert(x1 == false);
 assert(y1 == "test");
 assert(z1 == ["more tests", "another"]);
 assert(x2 == {"key": "value"});
+
+// Test it wil locals
+{
+    var [x, y, z, x1, y1, z1, x2] = list;
+
+    assert(x == 1);
+    assert(y == nil);
+    assert(z == true);
+    assert(x1 == false);
+    assert(y1 == "test");
+    assert(z1 == ["more tests", "another"]);
+    assert(x2 == {"key": "value"});
+
+    // Test with completely new identifiers
+    var [x10, y10, z10, x20, y20, z20, x30] = list;
+
+    assert(x10 == 1);
+    assert(y10 == nil);
+    assert(z10 == true);
+    assert(x20 == false);
+    assert(y20 == "test");
+    assert(z20 == ["more tests", "another"]);
+    assert(x30 == {"key": "value"});
+
+    {
+        // Test nested scope just to make sure
+        var [x, y, z, x1, y1, z1, x2] = list;
+
+        assert(x == 1);
+        assert(y == nil);
+        assert(z == true);
+        assert(x1 == false);
+        assert(y1 == "test");
+        assert(z1 == ["more tests", "another"]);
+        assert(x2 == {"key": "value"});
+    }
+}

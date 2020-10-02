@@ -1217,7 +1217,7 @@ static InterpretResult run(VM *vm) {
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            for (int i = list->values.count; i >= 0; --i) {
+            for (int i = 0; i < list->values.count; ++i) {
                 push(vm, list->values.values[i]);
             }
 
