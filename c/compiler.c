@@ -671,7 +671,8 @@ static void number(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     // We allocate the whole range for the worst case.
-    char* buffer = (char *)calloc(compiler->parser->previous.length, sizeof(char));
+    // Also account for the null-byte.
+    char* buffer = (char *)malloc((compiler->parser->previous.length + 1) * sizeof(char));
     char* current = buffer;
 
     // Strip it of any underscores.
@@ -690,7 +691,7 @@ static void number(Compiler *compiler, bool canAssign) {
     double value = strtod(buffer, NULL);
     emitConstant(compiler, NUMBER_VAL(value));
 
-    // Free the calloc'd buffer.
+    // Free the malloc'd buffer.
     free(buffer);
 }
 
