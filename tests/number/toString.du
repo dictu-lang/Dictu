@@ -12,4 +12,8 @@ assert(11.1.toString() == "11.1");
 var testnum = 123;
 assert(testnum.toString() == "123");
 
+// Check underscore parsing.
+assert(100_000.toString() == "100000");
+assert(100_001.901.toString() == "100001.901");
+
 /* TODO: add more */
