@@ -287,7 +287,7 @@ static Token number() {
         // Consume the "."
         advance();
 
-        while (isDigit(peek())) advance();
+        while (isDigit(peek()) || peek() == '_') advance();
     }
 
     return makeToken(TOKEN_NUMBER);
