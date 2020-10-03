@@ -381,7 +381,7 @@ static void declareVariable(Compiler *compiler, Token *name) {
         Local *local = &compiler->locals[i];
         if (local->depth != -1 && local->depth < compiler->scopeDepth) break;
         if (identifiersEqual(name, &local->name)) {
-            error(compiler->parser, "Variable with this name already declared in this scope.");
+            errorAt(compiler->parser, name, "Variable with this name already declared in this scope.");
         }
     }
 
