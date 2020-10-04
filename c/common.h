@@ -11,7 +11,9 @@
 #define DEBUG_TRACE_GC
 #define DEBUG_TRACE_MEM
 
+#ifndef _MSC_VER
 #define COMPUTED_GOTO
+#endif
 
 #undef DEBUG_PRINT_CODE
 #undef DEBUG_TRACE_EXECUTION
@@ -22,6 +24,11 @@
 // #define DEBUG_FINAL_MEM
 
 #define UINT8_COUNT (UINT8_MAX + 1)
+
+// MSVC does not support VLAs in C99 but also doesn't define __STDC_NO_VLA__. As such we must check _MSC_VER separately.
+#if (defined(__STDC__) && !defined(__STDC_VERSION__)) || defined(__STDC_NO_VLA__) || defined(_MSC_VER)
+#define NO_VLA
+#endif
 
 typedef struct _vm VM;
 

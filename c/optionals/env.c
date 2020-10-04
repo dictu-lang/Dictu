@@ -1,5 +1,20 @@
 #include "env.h"
 
+#ifdef _WIN32
+#define unsetenv(NAME) _putenv_s(NAME, "")
+int setenv(const char *name, const char *value, int overwrite) {
+    if (!overwrite && getenv(name) == NULL) {
+        return 0;
+    }
+
+    if (_putenv_s(name, value)) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+#endif
+
 static Value get(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "get() takes 1 argument (%d given).", argCount);

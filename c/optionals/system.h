@@ -3,17 +3,18 @@
 
 #include <time.h>
 #include <limits.h>
-#include <sys/utsname.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
 
 #ifdef _WIN32
-#include <windows.h>
+#include "../windowsapi.h"
+#include <direct.h>
 #define REMOVE remove
-#define MKDIR(d, m) mkdir(d)
+#define MKDIR(d, m) ((void)m, mkdir(d))
 #else
 #include <unistd.h>
+#include <sys/utsname.h>
 #define HAS_ACCESS
 #define REMOVE unlink
 #define MKDIR(d, m) mkdir(d, m)

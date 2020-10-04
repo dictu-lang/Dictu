@@ -1,5 +1,6 @@
 #include "system.h"
 
+#ifndef _WIN32
 static Value getgidNative(VM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -65,6 +66,7 @@ static Value getpidNative(VM *vm, int argCount, Value *args) {
 
     return NUMBER_VAL(getpid());
 }
+#endif
 
 static Value rmdirNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
@@ -285,9 +287,7 @@ void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
 void initPlatform(VM *vm, Table *table) {
 #ifdef _WIN32
     defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, "windows", 7)));
-    return;
-#endif
-
+#elif
     struct utsname u;
     if (-1 == uname(&u)) {
         defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm,
@@ -298,6 +298,7 @@ void initPlatform(VM *vm, Table *table) {
     u.sysname[0] = tolower(u.sysname[0]);
     defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, u.sysname,
         strlen(u.sysname))));
+#endif
 }
 
 void createSystemClass(VM *vm, int argc, const char *argv[]) {
@@ -310,12 +311,14 @@ void createSystemClass(VM *vm, int argc, const char *argv[]) {
      * Define System methods
      */
     defineNative(vm, &module->values, "strerror", strerrorNative);
+#ifndef _WIN32
     defineNative(vm, &module->values, "getgid", getgidNative);
     defineNative(vm, &module->values, "getegid", getegidNative);
     defineNative(vm, &module->values, "getuid", getuidNative);
     defineNative(vm, &module->values, "geteuid", geteuidNative);
     defineNative(vm, &module->values, "getppid", getppidNative);
     defineNative(vm, &module->values, "getpid", getpidNative);
+#endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
 #ifdef HAS_ACCESS

@@ -56,12 +56,12 @@ static Value basenameNative(VM *vm, int argCount, Value *args) {
 
     int len = PathString->length;
 
-    if (!len || (len == 1 && *path != DIR_SEPARATOR)) {
+    if (!len || (len == 1 && !IS_DIR_SEPARATOR(*path))) {
         return OBJ_VAL(copyString(vm, "", 0));
     }
 
     char *p = path + len - 1;
-    while (p > path && (*(p - 1) != DIR_SEPARATOR)) --p;
+    while (p > path && !IS_DIR_SEPARATOR(*(p - 1))) --p;
 
     return OBJ_VAL(copyString(vm, p, (len - (p - path))));
 }
@@ -141,7 +141,7 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
         sep--;
     }
 
-    if (sep == path && *sep != DIR_SEPARATOR) {
+    if (sep == path && !IS_DIR_SEPARATOR(*sep)) {
         return OBJ_VAL(copyString(vm, ".", 1));
     }
 

@@ -1,4 +1,16 @@
+#include <errno.h>
+#include <stdlib.h>
+
 #include "datetime.h"
+
+#ifdef _WIN32
+#define localtime_r(TIMER, BUF) localtime_s(BUF, TIMER)
+// Assumes length of BUF is 26
+#define asctime_r(TIME_PTR, BUF) (asctime_s(BUF, 26, TIME_PTR), BUF)
+#define gmtime_r(TIMER, BUF) gmtime_s(BUF, TIMER)
+#else
+#define HAS_STRPTIME
+#endif
 
 static Value nowNative(VM *vm, int argCount, Value *args) {
     UNUSED(args);
@@ -72,7 +84,16 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
 
     struct tm tictoc;
     int len = (format->length > 128 ? format->length * 4 : 128);
-    char buffer[len], *point = buffer;
+    #ifdef NO_VLA
+    char *buffer = malloc(len);
+    if (buffer == NULL) {
+        runtimeError(vm, "Memory error on toString()!");
+        return EMPTY_VAL;
+    }
+    #else
+    char buffer[len];
+    #endif
+    char *point = buffer;
 
     gmtime_r(&t, &tictoc);
 
@@ -111,10 +132,15 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
 theend:
     if (buffer != point)
         free(point);
+    
+    #ifdef NO_VLA
+    free(buffer);
+    #endif
 
     return OBJ_VAL(res);
 }
 
+#ifdef HAS_STRPTIME
 static Value strptimeNative(VM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "strptime() takes 2 arguments (%d given)", argCount);
@@ -138,6 +164,7 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
 
     return NUMBER_VAL((double) mktime(&tictoc));
 }
+#endif
 
 ObjModule *createDatetimeClass(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
@@ -151,7 +178,9 @@ ObjModule *createDatetimeClass(VM *vm) {
     defineNative(vm, &module->values, "now", nowNative);
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
     defineNative(vm, &module->values, "strftime", strftimeNative);
+    #ifdef HAS_STRPTIME
     defineNative(vm, &module->values, "strptime", strptimeNative);
+    #endif
     pop(vm);
     pop(vm);
 
