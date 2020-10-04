@@ -293,7 +293,7 @@ void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
 void initPlatform(VM *vm, Table *table) {
 #ifdef _WIN32
     defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, "windows", 7)));
-#elif
+#else
     struct utsname u;
     if (-1 == uname(&u)) {
         defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm,
