@@ -17,3 +17,18 @@ body {
 .site-logo {
     background-size: auto 20px;
 }
+
+.dark-mode {
+    .site-logo {
+        filter: invert(1);
+    }
+
+    a {
+        color: #ffffff;
+    }
+
+    .btn.btn-primary {
+        background-color: #767676;
+        background-image: linear-gradient(#858585, #767676);
+    }
+}
