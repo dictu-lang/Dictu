@@ -1,5 +1,9 @@
 #include "path.h"
 
+#if defined(_WIN32) && !defined(S_ISDIR)
+#define S_ISDIR(M) (((M) & _S_IFDIR) == _S_IFDIR)
+#endif
+
 #ifdef HAS_REALPATH
 static Value realpathNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
