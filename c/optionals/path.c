@@ -63,19 +63,24 @@ static Value isdirNative(VM *vm, int argCount, Value *args) {
 }
 
 static Value listdirNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "listdir() takes 1 argument (%d given)", argCount);
+    if (argCount > 1) {
+        runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "listdir() argument must be a string");
-        return EMPTY_VAL;
+    char *path;
+    if (argCount == 0) {
+        path = ".";
+    } else {
+        if (!IS_STRING(args[0])) {
+            runtimeError(vm, "listdir() argument must be a string");
+            return EMPTY_VAL;
+        }
+        path = AS_CSTRING(args[0]);
     }
 
     ObjList *dir_contents = initList(vm);
     push(vm, OBJ_VAL(dir_contents));
-    char *path = AS_CSTRING(args[0]);
     struct dirent *dir;
     DIR *d;
     d = opendir(path);
