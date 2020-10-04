@@ -103,3 +103,12 @@ Checks whether a given path points to a directory or not.
 Path.isdir("/usr/bin/"); //true
 ```
 
+### Path.listdir(string)
+
+Returns a list of strings containing the contents of the input path.
+
+**Note:** This function does not guarantee any ordering of the returned list.
+
+```js
+Path.listdir("/"); // ["bin", "dev", "home", "lib", ...]
+```
