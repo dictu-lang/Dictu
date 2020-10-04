@@ -16,33 +16,26 @@ nav_order: 2
 ---
 ## Hello World!
 
-We saw on the last page how to open the REPL and execute code on there, now lets create a Dictu file
-and execute that. For this step, i'm going to create an empty file via the command line, this
-is to leave it "editor agnostic".
+We've already learned how to enter the REPL and run code there. Now, let's create a Dictu file and execute it. Open your favorite code editor, and create a new file with a `.du` extension. If you're new to programming or aren't sure which editor to use, [Visual Studio Code](https://code.visualstudio.com/) (with the [Dictu extension](https://github.com/dictu-lang/DictuVSC)), [Atom](https://atom.io/), or [Sublime Text](https://www.sublimetext.com/) are all fantastic (and free) choices.
 
-```bash
-$ touch new_dictu.du
-```
-At this point, i'm going to assume you have opened `new_dictu.du` in whichever editor you use.
+We're going to call our file `hello-world.du`:
 
 ```js
-//new_dictu.du
-print("Hello World!");
+print("Hello, World!");
 ```
 
-And now lets execute our file.
+That's all we'll put in it for now. Let's execute our file. It's just like entering the REPL, except we add the path to out file after `./dictu`.
 
 ```bash
 $ ./dictu new_dictu.du
 Hello World!
 ```
 
-As you see, Hello World! is printed to the screen. You have just created your first Dictu
-program, now onto bigger and better things!
+As you see, `Hello, World!` is printed to the screen. You have just created your first Dictu program, now onto bigger and better things!
 
 ## REPL
 
-The REPL is a language shell, allowing you to run code on the fly via your terminal. This is very useful for debugging, or small little checks you may want to perform. When you enter the REPL, there is a magic variable `_` which stores the last returned value (nil excluded).
+The REPL is a language shell, allowing you to run code on the fly via your terminal. This is very useful for debugging, or small little checks you may want to perform. When you enter the REPL, there is a magic variable `_` which stores the last returned value (`nil` excluded).
 
 ```
 Dictu Version: {{ site.version }}
@@ -55,17 +48,14 @@ Dictu Version: {{ site.version }}
 
 ## Comments
 
-Comments are an important part of any language, and here in Dictu, this is no exception. Comment syntax should be very familiar to you as it's the same in a variety of languages.
+It's always important to comment your code! Comments are used to explain what your code does. Dictu's syntax will be familiar to any programmer.
 
 ```js
 // This is a single line comment
 
 /*
-this
-is
-a
-multiline
-comment
+This is a
+multiline comment
 */
 ```
 
