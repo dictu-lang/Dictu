@@ -1,39 +1,28 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely edit after that. If you find
-# yourself editing this file very often, consider using Jekyll's data files
-# feature for the data you need to update frequently.
-#
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
+title: Dictu
+description: >-
+  Dictu is a very small and simple dynamically typed programming language.
 
-# Site settings
-# These are used to personalize your new site. If you look in the HTML files,
-# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
-# You can create any custom variable you would like, and they will be accessible
-# in the templates via {{ site.myvariable }}.
-# Enable or disable the site search
+color_scheme: "dictu" # Custom theme
+logo: "/assets/images/dictu-logo/dictu-wordmark.svg"
+
+version: "0.10.0"
+github_username:  dictu-lang
 search_enabled: true
+
 url: "https://dictu-lang.com"
+# theme: "just-the-docs"
+footer_content: "This site uses Just The Docs, with modifications."
 
 ga_tracking: "UA-109828853-2"
 
-# Aux links for the upper right navigation
 aux_links:
-  "View Dictu on GitHub":
-    - "//github.com/Jason2605/dictu"
+  "Contribute on GitHub":
+    - "//github.com/dictu-lang/Dictu"
 
-# Color scheme currently only supports "dark" or nil (default)
-color_scheme: nil
+# Don't touch anything beyond this point
 
 permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "package.json", "package-lock.json",  "script/", "LICENSE.txt", "lib/", "bin/", "README.md", "Rakefile"]
-
-title: Dictu
-description: >- # this means to ignore newlines until "baseurl:"
-  Dictu is a very simple dynamically typed programming language built upon the craftinginterpreters tutorial.
-github_username:  Jason2605
 
 # Build settings
 markdown: kramdown
@@ -41,8 +30,6 @@ remote_theme: pmarsceill/just-the-docs
 plugins:
   - jekyll-feed
   - jekyll-sitemap
-
-version: "0.10.0"
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

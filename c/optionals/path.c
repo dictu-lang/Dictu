@@ -40,6 +40,28 @@ static Value isAbsoluteNative(VM *vm, int argCount, Value *args) {
     return (IS_DIR_SEPARATOR(path[0]) ? TRUE_VAL : FALSE_VAL);
 }
 
+static Value isdirNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isdir() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+    
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "isdir() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *path = AS_CSTRING(args[0]);
+    struct stat path_stat;
+    stat(path, &path_stat);
+
+    if (S_ISDIR(path_stat.st_mode))
+        return TRUE_VAL;
+   
+    return FALSE_VAL;
+
+}
+
 static Value basenameNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "basename() takes 1 argument (%d given)", argCount);
@@ -180,13 +202,14 @@ ObjModule *createPathClass(VM *vm) {
 #ifdef HAS_REALPATH
     defineNative(vm, &module->values, "realpath", realpathNative);
     defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uset errno
+    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
 #endif
     defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);
     defineNative(vm, &module->values, "dirname", dirnameNative);
     defineNative(vm, &module->values, "exists", existsNative);
+    defineNative(vm, &module->values, "isdir", isdirNative);
 
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));

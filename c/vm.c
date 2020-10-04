@@ -1132,6 +1132,8 @@ static InterpretResult run(VM *vm) {
             ObjClosure *closure = newClosure(vm, function);
             pop(vm);
 
+            push(vm, OBJ_VAL(closure));
+
             frame->ip = ip;
             call(vm, closure, 0);
             frame = &vm->frames[vm->frameCount - 1];
