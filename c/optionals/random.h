@@ -2,6 +2,7 @@
 #define dictu_random_h
 
 #include <stdlib.h>
+#include <time.h>
 
 #include "optionals.h"
 #include "../vm.h"

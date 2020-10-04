@@ -1,24 +1,33 @@
 #include "random.h"
 
-static Value randomRandom(VM *vm, int argCount, Value *args) {
+static Value randomRandom(VM *vm, int argCount, Value *args)
+{
     UNUSED(args);
-    if (argCount > 0) {
+    if (argCount > 0)
+    {
         runtimeError(vm, "random() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
-    return NUMBER_VAL(rand() % 2);
+
+    int high = 1;
+    int low = 0;
+    double random_double = ((double)rand() * (high - low)) / (double)RAND_MAX + low;
+    return NUMBER_VAL(random_double);
 }
 
-static Value randomRange(VM *vm, int argCount, Value *args) {
-    if (argCount != 2) {
+static Value randomRange(VM *vm, int argCount, Value *args)
+{
+    if (argCount != 2)
+    {
         runtimeError(vm, "range() takes 2 arguments (%0d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1]))
+    {
         runtimeError(vm, "range() arguments must be numbers");
         return EMPTY_VAL;
-    }    
+    }
 
     int upper = AS_NUMBER(args[1]);
     int lower = AS_NUMBER(args[0]);
@@ -26,24 +35,29 @@ static Value randomRange(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(random_val);
 }
 
-static Value randomSelect(VM *vm, int argCount, Value *args) {
-    if (argCount == 0) {
+static Value randomSelect(VM *vm, int argCount, Value *args)
+{
+    if (argCount == 0)
+    {
         runtimeError(vm, "select() takes one argument (%0d provided)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_LIST(args[0])) {
+    if (!IS_LIST(args[0]))
+    {
         runtimeError(vm, "select() argument must be a list");
-        return EMPTY_VAL;        
+        return EMPTY_VAL;
     }
 
     ObjList *list = AS_LIST(args[0]);
     argCount = list->values.count;
     args = list->values.values;
 
-    for (int i = 0; i < argCount; ++i) {
+    for (int i = 0; i < argCount; ++i)
+    {
         Value value = args[i];
-        if (!IS_NUMBER(value)) {
+        if (!IS_NUMBER(value))
+        {
             runtimeError(vm, "A non-number value passed to select()");
             return EMPTY_VAL;
         }
@@ -53,11 +67,14 @@ static Value randomSelect(VM *vm, int argCount, Value *args) {
     return args[index];
 }
 
-ObjModule *createRandomClass(VM *vm) {
+ObjModule *createRandomClass(VM *vm)
+{
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
+
+    srand(time(NULL));
 
     /**
      * Define Random methods
