@@ -170,13 +170,17 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->instanceMethods);
     freeTable(vm, &vm->socketMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
-    FREE_ARRAY(vm, const char*, vm->scriptNames, vm->scriptNameCapacity);
+    FREE_ARRAY(vm, const char*, (char**)vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
 
 #if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
+#ifdef __MINGW32__
+    printf("Total memory usage: %lu\n", (unsigned long)vm->bytesAllocated);
+#else
     printf("Total memory usage: %zu\n", vm->bytesAllocated);
+#endif
 #endif
 
     free(vm);
@@ -1108,7 +1112,7 @@ static InterpretResult run(VM *vm) {
             if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
                 int oldCapacity = vm->scriptNameCapacity;
                 vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
-                vm->scriptNames = GROW_ARRAY(vm, vm->scriptNames, const char*,
+                vm->scriptNames = GROW_ARRAY(vm, (char**)vm->scriptNames, const char*,
                                            oldCapacity, vm->scriptNameCapacity);
             }
 

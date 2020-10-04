@@ -11,7 +11,7 @@
 #include "../windowsapi.h"
 #include <direct.h>
 #define REMOVE remove
-#define MKDIR(d, m) ((void)m, mkdir(d))
+#define MKDIR(d, m) ((void)m, _mkdir(d))
 #else
 #include <unistd.h>
 #include <sys/utsname.h>

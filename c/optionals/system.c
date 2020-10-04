@@ -1,5 +1,11 @@
 #include "system.h"
 
+#ifdef _WIN32
+#define rmdir(DIRNAME) _rmdir(DIRNAME)
+#define chdir(DIRNAME) _chdir(DIRNAME)
+#define getcwd(BUFFER, MAXLEN) _getcwd(BUFFER, MAXLEN)
+#endif
+
 #ifndef _WIN32
 static Value getgidNative(VM *vm, int argCount, Value *args) {
     UNUSED(args);
