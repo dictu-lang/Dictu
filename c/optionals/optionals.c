@@ -7,6 +7,7 @@ BuiltinModules modules[] = {
         {"Path", &createPathClass},
         {"Datetime", &createDatetimeClass},
         {"Socket", &createSocketClass},
+        {"Random", &createRandomClass},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPClass},
 #endif
