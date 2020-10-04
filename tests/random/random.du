@@ -1,0 +1,24 @@
+/**
+ * random.du
+ *
+ * Testing the Random.random() method
+ *
+ */
+
+import Random;
+
+var histogram = {0: 0, 1: 0};
+var num_randomizations = 100;
+var percent_error = 0.05;
+for (var i = 0; i < num_randomizations; ++i) {
+    histogram[Random.random()] += 1;
+}
+
+var exp_percent = 0.5;
+var min_percent = exp_percent - percent_error;
+var max_percent = exp_percent + percent_error;
+for (var i = 0; i < histogram.len(); ++i) {
+    var percent_of_i = histogram[i] / num_randomizations;
+    assert(min_percent <= percent_of_i);
+    assert(percent_of_i <= max_percent);
+}
