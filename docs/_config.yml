@@ -1,6 +1,6 @@
 title: Dictu
 description: >-
-  Dictu is a very simple dynamically typed programming language built upon the craftinginterpreters tutorial.
+  Dictu is a very small and simple dynamically typed programming language.
 
 color_scheme: "dictu" # Custom theme
 logo: "/assets/images/dictu-logo/dictu-wordmark.svg"
