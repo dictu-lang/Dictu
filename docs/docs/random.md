@@ -18,6 +18,8 @@ nav_order: 20
 ## Random
 To make use of the Random module an import is required.
 
+**Note:** This is not cryptographically secure and should not be used for such purposes.
+
 ```js
 import Random;
 ```
@@ -31,9 +33,9 @@ Random.random(); // 0.314
 Random.random(); // 0.271
 ```
 
-### Random.range(lowest, highest)
+### Random.range(number: lowest, number: highest)
 
-Returns a random integer between the lowest and highest inputes
+Returns a random integer between the lowest and highest inputs.
 
 ```js
 Random.range(1, 5) // 2
@@ -43,7 +45,7 @@ Random.range(0, 2) // 1
 
 ### Random.select(iterable)
 
-Returns a value randomly selected from the list
+Returns a value randomly selected from the list.
 
 ```js
 Random.select([2, 4, 6])  // 6
