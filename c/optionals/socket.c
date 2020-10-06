@@ -1,8 +1,28 @@
 #include "socket.h"
 
 #include <stdio.h>
+
+#ifdef _WIN32
+#include "../windowsapi.h"
+#include <io.h>
+#define setsockopt(S, LEVEL, OPTNAME, OPTVAL, OPTLEN) setsockopt(S, LEVEL, OPTNAME, (char*)(OPTVAL), OPTLEN)
+
+#ifndef __MINGW32__
+// Fixes deprecation warning
+unsigned long inet_addr_new(const char* cp) {
+    unsigned long S_addr;
+    inet_pton(AF_INET, cp, &S_addr);
+    return S_addr;
+}
+#define inet_addr(cp) inet_addr_new(cp)
+#endif
+
+#define write(fd, buffer, count) _write(fd, buffer, count)
+#define close(fd) closesocket(fd)
+#else
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#endif
 
 static Value createSocket(VM *vm, int argCount, Value *args) {
     if (argCount != 2) {

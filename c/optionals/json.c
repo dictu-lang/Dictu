@@ -24,7 +24,7 @@ static Value strerrorJsonNative(VM *vm, int argCount, Value *args) {
     if (argCount == 1) {
         error = AS_NUMBER(args[0]);
     } else {
-        error = AS_NUMBER(GET_ERRNO(GET_SELF_CLASS));
+        error = AS_NUMBER(getErrno(vm, GET_SELF_CLASS));
     }
 
     if (error == 0) {

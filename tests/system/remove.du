@@ -32,7 +32,11 @@ if (System.platform == 'darwin') {
   assert(System.remove(sys_test_remove) == 0);
   assert(System.mkdir(sys_test_remove) == 0);
   assert(System.remove(sys_test_remove) == -1);
-  assert(System.errno == C.EISDIR);
-  assert(System.strerror() == "Is a directory");
+  assert(System.errno == C.EISDIR or System.errno == C.EACCES);
+  if (System.errno == C.EISDIR) {
+    assert(System.strerror() == "Is a directory");
+  } else if (System.errno == C.EACCES) {
+    assert(System.strerror() == "Permission denied");
+  }
   assert(System.rmdir(sys_test_remove) == 0);
 }
