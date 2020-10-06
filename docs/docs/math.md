@@ -20,7 +20,7 @@ nav_order: 14
 To make use of the Math module an import is required. For the purpose of the documentation, an iterable 
 is either a list, or passing multiple arguments to the function directly.
 
-```js
+```cs
 import Math;
 ```
 
@@ -35,7 +35,7 @@ import Math;
 
 Return the smallest number within the iterable
 
-```js
+```cs
 Math.min(1, 2, 3); // 1
 Math.min([1, 2, 3]); // 1
 ```
@@ -44,7 +44,7 @@ Math.min([1, 2, 3]); // 1
 
 Return the largest number within the iterable
 
-```js
+```cs
 Math.min(1, 2, 3); // 3
 Math.min([1, 2, 3]); // 3
 ```
@@ -53,7 +53,7 @@ Math.min([1, 2, 3]); // 3
 
 Return the average of the iterable
 
-```js
+```cs
 Math.average(1, 2, 3); // 2
 Math.average([1, 2, 3]); // 2
 ```
@@ -62,7 +62,7 @@ Math.average([1, 2, 3]); // 2
 
 Return the sum of the iterable
 
-```js
+```cs
 Math.sum(1, 2, 3); // 6
 Math.sum([1, 2, 3]); // 6
 ```
@@ -71,7 +71,7 @@ Math.sum([1, 2, 3]); // 6
 
 Return the largest integer less than or equal to the given input
 
-```js
+```cs
 Math.floor(17.4); // 17
 Math.floor(17.999); // 17
 Math.floor(17); // 17
@@ -81,7 +81,7 @@ Math.floor(17); // 17
 
 Round to the nearest integer
 
-```js
+```cs
 Math.round(17.4); // 17
 Math.round(17.49); // 17
 Math.round(17.5); // 18
@@ -91,7 +91,7 @@ Math.round(17.5); // 18
 
 Returns smallest integer greater than or equal to given input
 
-```js
+```cs
 Math.ceil(17.4); // 18
 Math.ceil(17.999); // 18
 Math.ceil(17); // 17
@@ -101,7 +101,7 @@ Math.ceil(17); // 17
 
 Returns absolute value of a given number
 
-```js
+```cs
 Math.abs(-10); // 10
 Math.abs(10); // 10
 Math.abs(-10.5); // 10.5
@@ -111,7 +111,7 @@ Math.abs(-10.5); // 10.5
 
 Returns the square root of a given number
 
-```js
+```cs
 Math.sqrt(25); // 5
 Math.sqrt(100); // 10
 ```

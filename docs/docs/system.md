@@ -48,7 +48,7 @@ Get the string representation of an error.
 An optional error status can be passed, otherwise the default is System.errno.
 It returns a string that describes the error.
 
-```js
+```cs
 print(System.strerror());
 ```
 
@@ -61,7 +61,7 @@ It can take an optional number argument that specifies the mode. If a mode is no
 
 The actual permissions is modified by the process umask, which typically is S_IWGRP\|S_IWOTH (octal 022).
 
-```js
+```cs
 var
   S_IRWXU = System.S_IRWXU,
   S_IRGRP = System.S_IRGRP,
@@ -79,7 +79,7 @@ Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
 **Note:** This method and the F_OK|X_OK|W_OK|R_OK constants are not available on windows systems.
 
-```js
+```cs
 var F_OK = System.F_OK;
 
 System.access("/", F_OK);
@@ -91,7 +91,7 @@ Remove directory.
 
 Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
-```js
+```cs
 System.rmdir(dir);
 ```
 
@@ -101,7 +101,7 @@ Delete a file from filesystem.
 
 Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
-```js
+```cs
 System.remove(file);
 ```
 
@@ -111,7 +111,7 @@ Returns the process ID (PID) of the calling process.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.getpid();
 ```
 
@@ -121,7 +121,7 @@ Returns the process ID of the parent of the calling process
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.getppid();
 ```
 
@@ -131,7 +131,7 @@ Returns the real user ID of the calling process.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.getuid();
 ```
 
@@ -141,7 +141,7 @@ Returns the effective user ID of the calling process.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.geteuid();
 ```
 
@@ -151,7 +151,7 @@ Returns the real group ID of the calling process.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.getgid();
 ```
 
@@ -161,7 +161,7 @@ Returns the effective group ID of the calling process.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 System.getegid();
 ```
 
@@ -171,7 +171,7 @@ Get the current working directory of the Dictu process.
 
 Returns a string upon success or nil otherwise and sets System.errno accordingly.
 
-```js
+```cs
 System.getCWD(); // '/Some/Path/To/A/Directory'
 ```
 
@@ -181,7 +181,7 @@ Set current working directory of the Dictu process.
 
 Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
 
-```js
+```cs
 if (System.setCWD('/') == -1) {
   print ("failed to change directory");
 }
@@ -191,7 +191,7 @@ if (System.setCWD('/') == -1) {
 
 Sleep pauses execution of the program for a given amount of time in seconds.
 
-```js
+```cs
 System.sleep(3); // Pauses execution for 3 seconds
 ```
 
@@ -199,7 +199,7 @@ System.sleep(3); // Pauses execution for 3 seconds
 
 Returns number of clock ticks since the start of the program, useful for benchmarks.
 
-```js
+```cs
 System.clock();
 ```
 
@@ -207,7 +207,7 @@ System.clock();
 
 Returns UNIX timestamp.
 
-```js
+```cs
 System.time();
 ```
 
@@ -215,7 +215,7 @@ System.time();
 
 Manually trigger a garbage collection.
 
-```js
+```cs
 System.collect();
 ```
 
@@ -223,7 +223,7 @@ System.collect();
 
 When you wish to prematurely exit the script with a given exit code.
 
-```js
+```cs
 System.exit(10);
 ```
 

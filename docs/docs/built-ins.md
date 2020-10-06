@@ -29,7 +29,7 @@ Global functions which are built into Dictu.
 
 Prints a given list of values to stdout.
 
-```js
+```cs
 print(10); // 10
 print("test"); // "test"
 print(10, "test", nil, true); // 10, "test", nil, true
@@ -40,7 +40,7 @@ print(10, "test", nil, true); // 10, "test", nil, true
 Gathers user input from stdin and returns the value as a string. `input()` has an optional prompt which will be shown to
 the user before they enter their string.
 
-```js
+```cs
 input();
 input("Input: ");
 ```
@@ -49,7 +49,7 @@ input("Input: ");
 
 Returns the type of a given value as a string.
 
-```js
+```cs
 type(10); // "number"
 type(true); // "bool"
 type([]); // "list"
@@ -59,7 +59,7 @@ type([]); // "list"
 
 Raise a runtime error if the given boolean is not true.
 
-```js
+```cs
 assert(10 > 9);
 assert(9 > 10); // assert() was false!
 ```
@@ -68,7 +68,7 @@ assert(9 > 10); // assert() was false!
 
 Returns a boolean depending on whether a variable has been defined in the global scope.
 
-```js
+```cs
 isDefined("isDefined"); // true
 isDefined("garbage value"); // false
 ```

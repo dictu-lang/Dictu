@@ -27,7 +27,7 @@ a variable defined in `file.du` will not overwrite a variable in `file1.du` if i
 When you wish to import a module from the standard library you use the import keyword. Importing from the standard library
 is slightly different to importing a user created script (see below).
 
-```js
+```cs
 import Math;
 
 Math.PI; // 3.14... 
@@ -39,7 +39,7 @@ When you wish to import another Dictu script, you use the import keyword. This t
 identifier of the module being imported. This is different to importing from the standard library as a string path is passed rather
 than an identifier.
 
-```js
+```cs
 // Module not imported into current namespace, however the code in "some/file.du" is still ran.
 import "some/file.du";
 
@@ -51,7 +51,7 @@ When importing a module with an identifer, you can access the top level module v
 like you would for a class.
 
 **some/file.du**
-```js
+```cs
 var x = 10;
 
 def test() {
@@ -60,7 +60,7 @@ def test() {
 ```
 
 **main.du**
-```js
+```cs
 import "some/file.du" as SomeModule;
 
 print(SomeModule.x); // 10

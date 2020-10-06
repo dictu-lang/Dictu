@@ -14,28 +14,32 @@ nav_order: 4
 {:toc}
 
 ---
+
 ## Strings
-Strings in Dictu are an immutable data type, this means, once a string has been created there is no way to modify a string directly, and instead a new string is created. Strings are created by having some sort of text between quotes, `"hello"` or `'hello'` is fine in Dictu.
+
+Strings in Dictu are an immutable data type. This means that once a string has been created, there is no way to modify a string directly. Instead, a new string is created. Strings are indicated with quotation marks. In Dictu, you can use `'single'` or `"double"` quotes. They are treated the same.
 
 ### Concatenation
 
-To join strings together use the `+` operator.
+Use a plus sign to join string together. This is called concatenation.
 
-```py
-"hello " + "there!"; // "hello there!"
+```cs
+"This item costs " + "27" + " euros"; // "This item costs 27 euros"
 ```
 
 ### Indexing
 
-Strings can be indexed just like you can with lists, to return single characters, or to loop over strings.
+You can access a specific letter in a string with the same syntax you would use to access an item in a list.
 
-```py
-var x = "Dictu";
+```cs
+var string = "Dictu";
 
-x[0]; // D
+string[0]; // D
+string[-1]; // u
+string[100]; // String index out of bounds.
 
 for (var i = 0; i < x.len(); ++i) {
-    print(x[i]);
+    print(string[i]);
 }
 // D
 // i
@@ -49,177 +53,191 @@ for (var i = 0; i < x.len(); ++i) {
 Slicing is technique used when we wish to return a substring. It has a syntax of <string>[start:end] where start and end are optional
 as long as one is provided.
 
-E.g `"Dictu"[1:]` or `"Dictu"[:5]` are both valid. The start index is inclusive but the end index is exclusive.
+If you want to get only part of a string, you slice it! To slice a string, use square brackets with the range you want to slice. The starting index is inclusive, but the ending index is exclusive. You can also use negative numbers to get characters from the end of a string.
 
-```py
+```cs
 "Dictu"[1:]; // ictu
 "Dictu"[:4]; // Dict
 "Dictu"[1:4]; // ict
 "Dictu"[2:4]; // ct
+"Dictu"[100:101]; // '' (empty string)
+"Dictu"[0:100]; // Dictu
 ```
 
 ### Escape codes
 
-|--------------|---------------------------------------------|
-| Escape code  | Description                                 |
-| \n           | \n is the escape code for a new line        |
-| \r           | \r is the escape code for a carriage return |
-| \t           | \t is the escape code for a horizontal tab  |
-| \v           | \v is the escape code for a vertical tab    |
-| \\\          | \\\ is the escape code for a backslash      |
-| \\"          | \\" is the escape code for double quotes    |
-| \\'          | \\' is the escape code for single quotes    |
+“Escape codes” are used to create things like new lines and tabs. Because backslashes are used in escape codes, you need to type two backshashes (`\\`) to use a single backslash.
+
+| \n | \n is the escape code for a new line |
+| \r | \r is the escape code for a carriage return |
+| \t | \t is the escape code for a horizontal tab |
+| \v | \v is the escape code for a vertical tab |
+| \\\ | \\\ is the escape code for a backslash |
+| \\" | \\" is the escape code for double quotes |
+| \\' | \\' is the escape code for single quotes |
+
+You should only need the escape codes for single and double quotes if you are using that type of quote within a string indicated with the same type. If that doesn't make sense, you'll quickly realize it won't work when you come across it.
 
 #### Raw strings
 
-Sometimes when you are creating a string, you want the escape codes to be ignored, and
-instead work with the literal values. Prefixing a string with r will create a "raw string".
+Sometimes, you wil need to ignore escape codes. Simply prefix your string with an `r` and any escape codes will be ignored.
 
-```py
-r"test\ntest"; // "test\ntest"
-r"test\ntest".len(); // 10
+```cs
+// Normal Strings
+"Dictu\trocks!"; // 'Dictu  rocks!'
+// Raw Strins
+r"Dictu\trocks!"; // 'Dictu\trocks!'
+r"Dictu\trocks!".len(); // 12
 ```
 
 ### string.len()
 
 Returns the length of the given string.
 
-```py
+```cs
 "string".len(); // 6
 ```
 
 ### string.lower()
 
-To make all characters within a string lowercase, use the `.lower()` method.
+Returns a lowercase version of the given string.
 
-```py
+```cs
 "DICTU".lower(); // dictu
 "DiCtU".lower(); // dictu
+"dictu".lower(); // dictu
 ```
 
 ### string.upper()
 
-To make all characters within a string uppercase, use the `.upper()` method.
+Returns an uppercase version of the given string.
 
-```py
+```cs
 "dictu".upper(); // DICTU
 "DiCtU".upper(); // DICTU
+"DICTU".upper(); // DICTU
 ```
 
 ### string.toNumber()
 
-Converts a string to number. If it fails to parse nil is returned.
+Casts a string to a number. Returns `nil` on failure.
 
-```py
+```cs
 "10.2".toNumber(); // 10.2
 "10".toNumber(); // 10
+"10px".toNumber(); // nil
 ```
 
 ### string.toBool()
 
-Converts a string to a boolean. Strings are "truthy" when they have a length greater than 1.
+Casts a string to a boolean value. Any string except an empty string is considered `true`.
 
-```py
+```cs
 "".toBool(); // false
 "false".toBool(); // true
 ```
 
 ### string.startsWith(string)
 
-To check if a string starts with a certain substring, use the `.startsWith()` method.
+Returns true if a string starts with a given string.
 
-```py
-"dictu".startsWith("d"); // true
-"dictu".startsWith("u"); // false
+```cs
+"Dictu".startsWith("D"); // true
+"Dictu".startsWith("Dict"); // true
+"Dictu".startsWith("Dictu"); // true
+"Dictu".startsWith("q"); // false
+"Dictu".startsWith("d"); // false
 ```
 
 ### string.endsWith(string)
 
-To check if a string ends with a certain substring, use the `.endsWith()` method.
+Returns true if a string ends with a given string.
 
-```py
-"dictu".endsWith("d"); // false
-"dictu".startsWith("u"); // true
+```cs
+"Dictu".endsWith("u"); // true
+"Dictu".endsWith("tu"); // true
+"Dictu".endsWith("Dictu"); // true
+"Dictu".endsWith("ut"); // false
+"Dictu".endsWith("q"); // false
+"Dictu".endsWith("U"); // false
 ```
 
 ### string.split(delimiter)
 
-To split a string up into a list by a certain character or string, use the `.split()` method.
+Returns a list of strings, split based on a given delimiter.
 
-```py
-"Dictu is great".split(" "); // ['Dictu', 'is', 'great']
+```cs
+"Dictu is awesome!".split(" "); // ['Dictu', 'is', 'awesome!']
 ```
 
 ### string.replace(string: old, string: new)
 
-To replace a substring within a string, use the `.replace()` method.
+Replaces part (a substring) of a string with another string.
 
-```py
-"Dictu is okay".replace("okay", "great"); // "Dictu is great"
+```cs
+"Dictu is okay...".replace("okay...", "awesome!"); // "Dictu is awesome!"
 ```
 
 ### string.contains(string)
 
-To check if a string contains another string, use the `.contains()` method.
+Returns true if a string contains another string.
 
-```py
-"Dictu is great".contains("Dictu"); // true
+```cs
+"Dictu is awesome!".contains("Dictu"); // true
+"Dictu is awesome!".contains("Dictu is awesome!"); // true
 ```
 
 ### string.find(string, number: skip -> optional)
 
-To find the index of a given string, use the `.find()` method.
+To find the index of a given substring, use the `.find()` method. This method takes an optional second parameter which can be used to skip the first `n` number of appearances of the substring. This method returns `-1` if the substring could not be found. Otherwise, it returns the index of the string.
 
-Skip is an optional parameter which can be passed to skip the first `n` amount of appearances of the given substring.
-
-Returns -1 if the substring could not be found, otherwise it returns the index of the substring.
-
-```py
+```cs
 "Hello, how are you?".find("how"); // 7
-"hello something hello".find("hello", 2); // 16 -- Skipped the first occurance of the word "hello"
+"hello something hello".find("hello", 2); // 16 (Skipped first occurrence)
+"House".find("Lost Keys"); // -1 (Not found)
 ```
 
 ### string.leftStrip()
 
-To strip all whitespace at the beginning of a string, use the `.leftStrip()` method.
+Strips whitespace from the left side of a string and returns the result.
 
-```py
-"   hello".leftStrip(); // "hello"
+```cs
+"     Dictu".leftStrip(); // "Dictu"
 ```
 
 ### string.rightStrip()
 
-To strip all whitespace at the end of a string, use the `.rightStrip()` method.
+Strips whitespace from the right side of a string and returns the result.
 
-```py
-"hello   ".rightStrip(); // "hello"
+```cs
+"Dictu     ".rightStrip(); // "Dictu"
 ```
 
 ### string.strip()
 
-To strip whitespace at the beginning and end of a string, use the `.strip()` method.
+Strips whitespace from both sides of a string and returns the result.
 
-```py
-"    hello    ".strip(); // "hello"
+```cs
+"     Dictu     ".strip(); // "Dictu"
 ```
 
 ### string.format(...value: args...)
 
-To format a string with any type of value `.format()` can be used. This will convert any type
-to a string and swap placeholders `{}` for values.
+This method will replace any instances of `{}` with the provided parameters. It also casts all arguments to strings.
 
-```py
-"Hello {}".format("Jason"); // "Hello Jason"
-
-"{} {} {} {}".format(10, "hi", [10, 20], {"test": 10}) // '10 hi [10, 20] {"test": 10}'
+```cs
+"Hello {}".format("Jerome"); // "Hello Jerome"
+"Hello".format("Jerome"); // Error: format() placeholders do not match arguments
+"Hello {}".format(); // Error: format() placeholders do not match arguments
+"String: {}, Number: {}, Boolean: {}, List: {}, Dictionary: {}".format("String", 123, true, ["String", 123, true], {"key": "value"}); // "String: String, Number: 123, Boolean: true, List: ["String", 123, true], Dictionary: {"key": "value"}"
 ```
 
 ### string.count(string)
 
-To count the amount of occurrences of a given substring within another string.
+Returns the number of occurrences of a given substring within another string.
 
-```py
+```cs
 "Dictu is great!".count("Dictu"); // 1
-
+"This documentation".count("Good jokes"); // 0
 "Sooooooooooome characters".count("o"); // 11
 ```

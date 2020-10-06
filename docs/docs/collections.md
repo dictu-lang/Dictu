@@ -16,46 +16,45 @@ nav_order: 5
 ---
 ## Lists
 
-Lists in Dictu are a type that allows you to store more than one value in a single data structure. Lists will automatically resize for you, and can hold any data type within them.
+Lists in Dictu allow you to store mutliple values of any type. Lists automatically resize for you as data is added and removed. Lists are similar to arrays in languages like Python, JavaScript, and Ruby.
 
-```js
-var myList = [1, 2, "hi", true, false, nil];
+```cs
+var list = [1, 2.3, "Mango", false, nil];
 ```
 
 ### Indexing
 
-```js
-var myList = [1, 2, 3];
-// Lists are 0 indexed.
-print(myList[0]); // 1
+Lists are 0-indexed, meaning that 0 is the first item in a list, and 1 is the second item. You can access an item at a specific index using square brackets.
+
+```cs
+var list = [1, 2, 3];
+print(list[0]); // 1
 ```
 
-Updating a value within a list uses the same syntax, except you supply a value via assignment.
+You can use the same syntax to update a value in a list, except you must provide a value.
 
-```js
-var myList = [1, 5, 3];
-myList[1] = 2; // [1, 2, 3]
+```cs
+var list = [1, 5, 3];
+list[1] = 2; // [1, 2, 3]
 ```
 
 ### Slicing
 
-Slicing is technique used when we wish to return part of a list. It has a syntax of <list>[start:end] where start and end are optional
-as long as one is provided.
+If you want to return only part of a list, you slice it! To slice a list, use square brackets with the range you want to slice. The starting index is inclusive, but the ending index is exclusive. You can also use negative numbers to get characters from the end of a list. Only one index is required.
 
-E.g `[1, 2, 3, 4, 5][1:]` or `[1, 2, 3, 4, 5][:5]` are both valid. The start index is inclusive but the end index is exclusive.
-
-```py
+```cs
 [1, 2, 3, 4, 5][1:]; // [2, 3, 4, 5]
 [1, 2, 3, 4, 5][:4]; // [1, 2, 3, 4]
 [1, 2, 3, 4, 5][1:4]; // [2, 3, 4]
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
 ```
+
 ### Adding to lists
 #### list.push(value)
 
 To add append a new value to a list, use the `.push()` method.
 
-```js
+```cs
 var myList = [];
 myList.push(10); // [10]
 myList.push(11); // [10, 11]
@@ -65,7 +64,7 @@ myList.push(11); // [10, 11]
 
 To insert a value into a list at a given index without replacing the value use .insert().
 
-```js
+```cs
 var x = [10, 12];
 
 // Can insert to a list. This will not replace the value.
@@ -77,7 +76,7 @@ myList.insert(11, 1); // [10, 11, 12]
 Using the + operator on lists will join two lists and return a new list.
 It must be used on two values which are both lists.
 
-```js
+```cs
 var x = [10];
 
 x + [11, 12];
@@ -91,7 +90,7 @@ Similar to the + operator however this mutates the list the method is called on 
 **Note:** values are not copied to the new list, they are just referenced. This means if the value is mutable
 it will mutate in the extended list as well.
 
-```js
+```cs
 var x = [];
 x.extend([1, 2, 3]);
 print(x); // [1, 2, 3]
@@ -103,7 +102,7 @@ print(x); // [1, 2, 3, 1, 2, 3]
 
 Converts a list to a string.
 
-```js
+```cs
 ["1", 11].toString();        // ['1', 11]
 ["1", [11, "1"]].toString(); // ['1', [11, '1']]
 ```
@@ -111,7 +110,7 @@ Converts a list to a string.
 
 Returns the length of the given list.
 
-```js
+```cs
 [1, 2, 3].len(); // 3
 ```
 
@@ -119,7 +118,7 @@ Returns the length of the given list.
 
 Converts a list to a boolean. A list is a "truthy" value when it has a length greater than 0.
 
-```js
+```cs
 [].toBool(); // false
 [1].toBool(); // true
 [[]].toBool(); // true
@@ -129,7 +128,7 @@ Converts a list to a boolean. A list is a "truthy" value when it has a length gr
 
 To check if a value contains within a list we use `.contains()`
 
-```js
+```cs
 var myList = [1, 2, 3];
 myList.contains(2); // true
 myList.contains(10); // false
@@ -140,7 +139,7 @@ myList.contains(10); // false
 To convert a list of elements to a string use `.join()` to concatenate elements together by a given delimiter.
 If a delimiter is not supplied `", "` is the default.
 
-```js
+```cs
 var myList = [1, 2, 3];
 print(myList.join()); // "1, 2, 3"
 print(myList.join("")); // "123"
@@ -155,7 +154,7 @@ the list a runtime error occurs. Use together with [list.contains()](#listcontai
 Note: If a list contains multiple values which are the same, a call to `.remove()` will only
 remove the first occurrence, not all.
 
-```js
+```cs
 var myList = [1, 2, 3];
 myList.remove(3);
 print(myList); // [1, 2]
@@ -167,7 +166,7 @@ print(myList); // [2]
 
 To remove a value from a list, with an optional index, use `.pop()`
 
-```js
+```cs
 var myList = [1, 2, 3];
 // If no index is given, pops from the end
 var someNumber = myList.pop(); // 3
@@ -180,14 +179,14 @@ print(myList); // [2]
 #### list.copy()
 
 When you are working with a mutable datatype taking a reference of a list when creating a new variable will modify the original list.
-```js
+```cs
 var list1 = [1, 2];
 var list2 = list1;
 list2[0] = 10;
 print(list1); // [10, 2]
 ```
 To get around this we can make copies of the list. Dictu offers the ability to both shallow and deep copy a list.
-```js
+```cs
 var list1 = [1, 2];
 var list2 = list1.copy(); // shallow copy
 list2[0] = 10;
@@ -197,7 +196,7 @@ print(list2); // [10, 2]
 
 #### list.deepCopy()
 To get around this, we can deepCopy the list.
-```js
+```cs
 var list1 = [[1, 2]];
 var list2 = list1.deepCopy();
 list2[0][0] = 10;
@@ -211,7 +210,7 @@ print(list2); // [[10, 2]]
 To sort numeric lists (that is lists that contain only numbers) you can use the method
 sort.
 
-```js
+```cs
 var list1 = [1, -1, 4, 2, 10, 5, 3];
 
 print(list1); // [1, -1, 4, 2, 10, 5, 3]
@@ -224,7 +223,7 @@ print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 
 Dictionaries are a key:value pair data type. Dictu requires that the dictionary key be an immutable type (nil, boolean, number, string), however the value can be any type.
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 ```
 
@@ -233,7 +232,7 @@ var myDict = {"key": 1, "key1": true};
 Accessing dictionary items is the same syntax as lists, except instead of an index, it expects an immutable type (nil, boolean, number, string) for it's key.
 If you try to access a key that does not exist, `nil` is returned. If you expect a key may not exist `.get()` can be used to return a default value.
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 var someItem = myDict["key"]; // 1
 var nilValue = myDict["unknown key"]; // nil
@@ -241,14 +240,14 @@ var nilValue = myDict["unknown key"]; // nil
 
 Updating a value within a dictionary uses the same syntax, except you supply a value via assignment.
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 var myDict["key"] = false; // {"key": false, "key1": true}
 ```
 
 Adding a value to a dictionary is the same as updating a value, however if the key does not exist it is created.
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
@@ -258,7 +257,7 @@ var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 Returns the dictionary value at the given key, or returns the default value if the key does
 not exist in the dictionary. If the key does not exist and no default is provided `nil` is returned.
 
-```js
+```cs
 var myDict = {};
 
 myDict.get("unknown key", "No key!"); // No key!
@@ -270,7 +269,7 @@ myDict.get("unknown key"); // nil
 
 Returns a list of all of the dictionary keys.
 
-```js
+```cs
 var myDict = {1: 2, "test": 3};
 
 myDict.keys(); // [1, "test"]
@@ -279,7 +278,7 @@ myDict.keys(); // [1, "test"]
 ### dict.toString()
 Converts a dictionary to a string.
 
-```js
+```cs
 {"1": 1, 1: "1"}.toString(); // '{"1": 1, 1: "1"}'
 {"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: "1"}, 1: "1"}'
 ```
@@ -288,7 +287,7 @@ Converts a dictionary to a string.
 
 Converts a dictionary to a boolean. A dictionary is a "truthy" value when it has a length greater than 0.
 
-```js
+```cs
 var x = {};
 
 x.toBool(); // false
@@ -300,7 +299,7 @@ x.toBool(); // true
 
 Returns the length of the given dictionary.
 
-```js
+```cs
 {1: "one", 2: "two", 3: "three"}.len(); // 3
 ```
 
@@ -308,7 +307,7 @@ Returns the length of the given dictionary.
 
 To check if a key exists within a dictionary use `.exists()`
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 var keyExists = myDict.exists("key"); // true
 var keyDoesNotExist = myDict.exists("unknown key"); // false
@@ -320,7 +319,7 @@ To remove a key from a dictionary use `.remove()`.
 
 **Note**: If you try to remove a key that does not exist a runtime error is raised, use together with `.exists()`.
 
-```js
+```cs
 var myDict = {"key": 1, "key1": true};
 myDict.remove("key");
 myDict; // {'key1': true}
@@ -331,7 +330,7 @@ myDict.remove("unknown key"); // [line 1] in script: Key 'unknown key' passed to
 
 This is the exact same scenario as lists, so refer to [copying Lists](#copying-lists) for information as to what is happening.
 
-```js
+```cs
 var myDict = {"key": {"test": 10}};
 var myDict1 = myDict.copy(); // Shallow copy
 var myDict2 = myDict.deepCopy(); // Deep copy
@@ -341,7 +340,7 @@ var myDict2 = myDict.deepCopy(); // Deep copy
 
 Sets are an unordered collection of unique hashable values. Set values must be of type string, number, boolean or nil.
 
-```js
+```cs
 var mySet = set("test", 10);
 print(mySet); // {10, "test"}
 ```
@@ -349,7 +348,7 @@ print(mySet); // {10, "test"}
 ### set.toString()
 Converts a given set to a string.
 
-```js
+```cs
 var set_a = set();
 
 set_a.add("one");
@@ -367,7 +366,7 @@ set_b.toString(); // '{2, 1}'
 
 Converts a set to a boolean. A set is a "truthy" value when it has a length greater than 0.
 
-```js
+```cs
 var x = set();
 
 x.toBool(); // false
@@ -379,7 +378,7 @@ x.toBool(); // true
 
 Returns the length of the given set.
 
-```js
+```cs
 var mySet = set();
 mySet.add("Dictu!");
 mySet.len(); // 1
@@ -389,7 +388,7 @@ mySet.len(); // 1
 
 Adding to sets is just a case of passing a value to .add()
 
-```js
+```cs
 var mySet = set();
 mySet.add("Dictu!");
 ```
@@ -398,7 +397,7 @@ mySet.add("Dictu!");
 
 To check if a set contains a value use `.contains()`
 
-```js
+```cs
 var mySet = set();
 mySet.add("Dictu!");
 print(mySet.contains("Dictu!")); // true
@@ -411,7 +410,7 @@ To remove a value from a set use `.remove()`.
 
 **Note**: If you try to remove a value that does not exist a runtime error is raised, use together with `.contains()`.
 
-```js
+```cs
 var mySet = set();
 mySet.add("Dictu!");
 mySet.remove("Dictu!");

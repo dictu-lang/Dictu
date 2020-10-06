@@ -19,7 +19,7 @@ nav_order: 19
 
 To make use of the Socket module an import is required.
 
-```js
+```cs
 import Socket;
 ```
 
@@ -38,7 +38,7 @@ import Socket;
 Create a new socket object given a socket type and socket family. This will return
 a new socket object in which the rest of the methods are ran on.
 
-```js
+```cs
 var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM);
 ```
 
@@ -47,7 +47,7 @@ var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM);
 This will bind a given socket object to an IP and port number. On failure `nil` is returned
 and `errno` is set accordingly.
 
-```js
+```cs
 if (!socket.bind("host", 10)) {
     print(Socket.strerror());
     // ...
@@ -61,7 +61,7 @@ pending connections can be queued before they begin to get rejected. If left uns
 a reasonable value is chosen. `listen()` will return `nil` on failure and set `errno` accordingly
 or `true` on success.
 
-```js
+```cs
 if (!socket.listen()) {
     print(Socket.strerror());
     // ...
@@ -73,7 +73,7 @@ if (!socket.listen()) {
 This will accept incoming connections. This will create a **new** socket object
 on which you should operate.
 
-```js
+```cs
 var client = socket.accept();
 ```
 
@@ -82,7 +82,7 @@ var client = socket.accept();
 This will write data to the remote client socket. On failure `nil` is returned and `errno` is set accordingly,
 otherwise the amount of characters sent is returned.
 
-```js
+```cs
 if (!socket.write("Some Data")) {
     print(Socket.strerror());
     // ...
@@ -97,7 +97,7 @@ otherwise a string is returned.
 
 Note: The argument passed to recv should be a relatively small power of 2, such as 2048 or 4096.
 
-```js
+```cs
 if (!socket.recv(2048)) {
     print(Socket.strerror());
     // ...
@@ -108,7 +108,7 @@ if (!socket.recv(2048)) {
 
 Closes a socket.
 
-```js
+```cs
 socket.close();
 ```
 
@@ -117,7 +117,7 @@ socket.close();
 Set a socket option on a given socket. On failure `nil` is returned and `errno` is set accordingly,
 otherwise a string is returned.
 
-```js
+```cs
 if (!socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR)) {
     print(Socket.strerror());
     // ...

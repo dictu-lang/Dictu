@@ -19,7 +19,7 @@ nav_order: 13
 
 To make use of the Datetime module an import is required.
 
-```js
+```cs
 import Datetime;
 ```
 
@@ -27,7 +27,7 @@ import Datetime;
 
 Returns a human readable locale datetime string.
 
-```js
+```cs
 Datetime.now(); // Fri May 29 03:12:32 2020
 ```
 
@@ -35,7 +35,7 @@ Datetime.now(); // Fri May 29 03:12:32 2020
 
 Returns a human readable UTC datetime string.
 
-```js
+```cs
 Datetime.now(); // Fri May 29 02:12:32 2020
 ```
 
@@ -78,7 +78,7 @@ Returns a user-defined datetime formatted string, see [Datetime formats](#dateti
 which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
 the current point in time.
 
-```js
+```cs
 Datetime.strftime("Today is %A"); // Today is Friday
 
 var time = System.time();
@@ -93,7 +93,7 @@ the date string in the format of the first parameter.
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
 ```
 
