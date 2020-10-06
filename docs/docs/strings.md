@@ -15,6 +15,8 @@ nav_order: 4
 
 ---
 
+## Strings
+
 Strings in Dictu are an immutable data type. This means that once a string has been created, there is no way to modify a string directly. Instead, a new string is created. Strings are indicated with quotation marks. In Dictu, you can use `'single'` or `"double"` quotes. They are treated the same.
 
 ### Concatenation
@@ -191,7 +193,7 @@ To find the index of a given substring, use the `.find()` method. This method ta
 
 ```cs
 "Hello, how are you?".find("how"); // 7
-"hello something hello".find("hello", 2); // 16 (Skipped first occurence)
+"hello something hello".find("hello", 2); // 16 (Skipped first occurrence)
 "House".find("Lost Keys"); // -1 (Not found)
 ```
 

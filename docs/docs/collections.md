@@ -4,7 +4,7 @@ title: Collections
 nav_order: 5
 ---
 
-# Collectionss
+# Collections
 {: .no_toc }
 
 ## Table of contents
@@ -48,8 +48,6 @@ If you want to return only part of a list, you slice it! To slice a list, use sq
 [1, 2, 3, 4, 5][1:4]; // [2, 3, 4]
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
 ```
-
-[comment]: I'll continue here. -Jerome
 
 ### Adding to lists
 #### list.push(value)
