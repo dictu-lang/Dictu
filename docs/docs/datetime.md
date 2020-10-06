@@ -91,6 +91,8 @@ Returns a number which is the number of seconds from epoch. `strptime` expects t
 the first parameter being the date format, see [Datetime formats](#datetime-formats) and the second
 the date string in the format of the first parameter.
 
+**Note:** This is not available on windows systems.
+
 ```cs
 Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
 ```

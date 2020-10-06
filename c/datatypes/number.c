@@ -1,6 +1,8 @@
 #include "number.h"
 #include "../vm.h"
 
+#include <stdlib.h>
+
 static Value toStringNumber(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
@@ -9,9 +11,18 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
 
     double number = AS_NUMBER(args[0]);
     int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
-    char numberString[numberStringLength];
+    
+    char *numberString = malloc(numberStringLength);
+    if (numberString == NULL) {
+        runtimeError(vm, "Memory error on toString()!");
+        return EMPTY_VAL;
+    }
+    
     snprintf(numberString, numberStringLength, "%.15g", number);
-    return OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
+    Value value = OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
+
+    free(numberString);
+    return value;
 }
 
 void declareNumberMethods(VM *vm) {

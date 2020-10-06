@@ -109,6 +109,8 @@ System.remove(file);
 
 Returns the process ID (PID) of the calling process.
 
+**Note:** This is not available on windows systems.
+
 ```cs
 System.getpid();
 ```
@@ -116,6 +118,8 @@ System.getpid();
 ### System.getppid()
 
 Returns the process ID of the parent of the calling process
+
+**Note:** This is not available on windows systems.
 
 ```cs
 System.getppid();
@@ -125,6 +129,8 @@ System.getppid();
 
 Returns the real user ID of the calling process.
 
+**Note:** This is not available on windows systems.
+
 ```cs
 System.getuid();
 ```
@@ -132,6 +138,8 @@ System.getuid();
 ### System.geteuid()
 
 Returns the effective user ID of the calling process.
+
+**Note:** This is not available on windows systems.
 
 ```cs
 System.geteuid();
@@ -141,6 +149,8 @@ System.geteuid();
 
 Returns the real group ID of the calling process.
 
+**Note:** This is not available on windows systems.
+
 ```cs
 System.getgid();
 ```
@@ -148,6 +158,8 @@ System.getgid();
 ### System.getegid()
 
 Returns the effective group ID of the calling process.
+
+**Note:** This is not available on windows systems.
 
 ```cs
 System.getegid();

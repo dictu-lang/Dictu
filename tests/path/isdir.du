@@ -7,6 +7,10 @@
  */
 import Path;
 
-assert(Path.isdir("/usr/bin") == true);
-assert(Path.isdir("/home/") == true);
+if (System.platform != "windows") {
+  assert(Path.isdir("/usr/bin") == true);
+  assert(Path.isdir("/home/") == true);
+}
+
+assert(Path.isdir("tests") == true);
 assert(Path.isdir("tests/runTests.du") == false);
