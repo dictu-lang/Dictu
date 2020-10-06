@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Getting Started
+title: Getting started
 nav_order: 2
 ---
 
@@ -20,7 +20,7 @@ We've already learned how to enter the REPL and run code there. Now, let's creat
 
 We're going to call our file `hello-world.du`:
 
-```js
+```cs
 print("Hello, World!");
 ```
 
@@ -50,7 +50,7 @@ Dictu Version: {{ site.version }}
 
 It's always important to comment your code! Comments are used to explain what your code does. Dictu's syntax will be familiar to any programmer.
 
-```js
+```cs
 // This is a single line comment
 
 /*

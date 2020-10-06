@@ -21,7 +21,7 @@ Classes provide a means to gather functions and data together to provide a bluep
 
 ## Defining a class
 
-```js
+```cs
 class SomeClass {
     // Constructor
     init() {
@@ -36,7 +36,7 @@ SomeClass(); // Object created!
 
 `init()` is the method name for a constructor in Dictu. A constructor is a method that is called when an object is instantiated. Instantiating an object, is just like invoking a function, except you "invoke" the class. You can also pass arguments to the constructor to be used.
 
-```js
+```cs
 class SomeClass {
     // Constructor
     init(message) {
@@ -51,7 +51,7 @@ SomeClass("Object created!"); // Object created!
 
 Methods are functions defined within a class. When defining a method in Dictu, the `def` keyword is not used and instead its just the method name and parameter list.
 
-```js
+```cs
 class SomeClass {
     // Method
     printMessage() {
@@ -67,7 +67,7 @@ SomeClass().printMessage(); // Hello!
 Classes and instances can both be converted to a string using the toString method. If you want a different string
 representation for an object you can overload the toString method in your class.
 
-```js
+```cs
 class Test {}
 
 class TestOverload {
@@ -92,7 +92,7 @@ print(TestOverload().toString()); // 'Testing object'
 
 `this` is a variable which is passed to all methods which are not marked as static. `this` is a reference to the object you are currently accessing. `this` allows you to modify instance variables of a particular object.
 
-```js
+```cs
 class SomeClass {
     // Constructor
     init(message) {
@@ -113,7 +113,7 @@ myObject.printMessage(); // Some text!
 Attributes in Dictu are instance attributes, and these attributes get defined either inside the methods or on the method directly. There is no concept of attribute access modifiers in python and attributes
 are available directly from the object without the need for getters or setters.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -129,7 +129,7 @@ print(myObject.x); // 10
 Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing, you should check
 if the object has the given attribute. This is done via `hasAttribute`.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -148,7 +148,7 @@ print(myObject.z); // Undefined property 'z'.
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -166,7 +166,7 @@ print(myObject.getAttribute("y")); // nil
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -183,7 +183,7 @@ print(myObject.x); // 100
 A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
 to the class variable, and it is also shared across all instances.
 
-```js
+```cs
 class SomeClass {
     var classVariable = 10; // This will be shared among all "SomeClass" instances
 
@@ -210,7 +210,7 @@ print(y.classVariable); // 100
 
 Static methods are methods which do not reference an object, and instead belong to a class. If a method is marked as static, `this` is not passed to the object. This means static methods can be invoked without instantiating an object.
 
-```js
+```cs
 class SomeOtherClass {
     init(someArg) {
         this.someArg = someArg;
@@ -230,14 +230,14 @@ SomeOtherClass.printHello();
 SomeOtherClass.printMessage();
 ```
 Output
-```js
+```cs
 Hello
 [line 17] in script: 'printMessage' is not static. Only static methods can be invoked directly from a class.
 ```
 
 ## Inheritance
 
-```js
+```cs
 class BaseClass {
     init() {
         this.someVariable = "Hello!";
@@ -267,7 +267,7 @@ An abstract class is a base class that can not be instantiated, like a trait, ho
 within a class. An abstract class can have methods which implement the body, and would work like a normal class being inherited, however, if it includes methods which
 have been marked as abstract, it enforces the inheriting class to implement these methods.
 
-```js
+```cs
 abstract class AbstractClass {
     // We do not define the body of an abstract method
     abstract test()
@@ -296,7 +296,7 @@ Dictu only allows inheritance from a single parent class, which can cause compli
 This is where traits come into play. A trait is like a class, in the fact it has methods, and can deal with object attributes however, differ in the fact
 a trait can not be instantiated on its own.
 
-```js
+```cs
 trait MyTrait {
     hello() {
         print("Hello {}".format(this.name));
@@ -320,7 +320,7 @@ MyTrait(); // Runtime error: Can only call functions and classes.
 Sometimes we will have multiple traits, each with slightly different functionality, but we need
 functionality from all of these traits, in this instance, we can just use more than one trait.
 
-```js
+```cs
 trait MyTrait {
     hello() {
         print("Hello {}".format(this.name));
@@ -350,7 +350,7 @@ Traits also do not suffer from the diamond problem unlike multiple inheritance, 
 are used and they have the same method, the last most used trait has precedence. This means the order
 of trait inclusion into a class is important.
 
-```js
+```cs
 trait MyTrait {
     hello() {
         print("Hello {}".format(this.name));
@@ -380,7 +380,7 @@ myObject.hello(); // Hello Jason
 Class instances are a mutable type, this means if you were to take the reference of an object and use it in a new variable
 and you mutate the instance in the new variable, it would mutate the object at the old variable, since its a reference to the same object.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -400,7 +400,7 @@ To get around this, instances have two methods, obj.copy() and obj.deepCopy().
 This method will take a shallow copy of the object, and create a new copy of the instance. Mutable types are still references
 and will mutate on both new and old if changed. See obj.deepCopy() to avoid this.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
@@ -424,7 +424,7 @@ This method will take a deep copy of the object, and create a new copy of the in
 is if the object contains references to any mutable datatypes these will also be copied and returned as new values meaning,
 they will not be mutated on the old object.
 
-```js
+```cs
 class Test {
     init() {
         this.x = 10;
