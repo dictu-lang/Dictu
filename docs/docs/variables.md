@@ -20,7 +20,7 @@ nav_order: 3
 | --- | --- | --- |
 | String | ‘foo’, “bar” | You can use single or double quotes to represent strings in Dictu. |
 | Number | 100, 100.5 | This data type includes both integers (whole numbers) and floats (numbers with decimals). |
-| Boolean | true, false | |
+| Boolean | true, false | Fun fact: Boolean data types are named after Robert Boole. |
 | List | [1, 2, ‘hi’, true, nil] | Lists can contain any data type or combination of data types. |
 | Dictionary | {“key1”: 10, 2: “two”, true: “true”, nil: “nil”} | Dictionaries have key-value pairs, like a dictionary (Word: Definition). Values can be any of the data types above except lists. |
 | Set | `set("1", 1, "1")` will actually mean `{"1", 1}` | Sets are collections of unique values. You can create a set with the `set()` function, which returns a set. |
