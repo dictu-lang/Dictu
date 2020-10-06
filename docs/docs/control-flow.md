@@ -103,7 +103,7 @@ for (var i = 0; i < 10; ++i) {
 
 ## Functions
 
-```csthon
+```cs
 //Define the function 
 def someFunction() {
     print("Hello!");
@@ -129,7 +129,7 @@ print(someFunctionWithReturn()); // 10
 
 Variables defined in a function are local to the scope of the function.
 
-```csthon
+```cs
 def someFunction() {
     var myVariable = 10;
     print(myVariable);
@@ -147,7 +147,7 @@ Output
 
 Functions can also be stored in variables, or within data structures such as lists.
 
-```csthon
+```cs
 def someFunction() {
     print("Hello!");
 }
@@ -168,7 +168,7 @@ someList[0](someList[1]); // Hello!
 Functions can also have optional parameters. If a value is not passed, the parameter will take the default value
 given in the function header. Note: non-optional parameters **must** be defined before optional parameters.
 
-```csthon
+```cs
 def someFunction(a, b=10) {
     print(a, b);
 }

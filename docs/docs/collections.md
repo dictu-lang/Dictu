@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Data structures
+title: Collections
 nav_order: 5
 ---
 
-# Data structures
+# Collectionss
 {: .no_toc }
 
 ## Table of contents
@@ -16,7 +16,7 @@ nav_order: 5
 ---
 ## Lists
 
-Lists in Dictu allow you to store mutliple values of any type. Lists automatically resize for you as data is added and removed. Lists are similar to arrays in languages like PHP, JavaScript, and Ruby.
+Lists in Dictu allow you to store mutliple values of any type. Lists automatically resize for you as data is added and removed. Lists are similar to arrays in languages like Python, JavaScript, and Ruby.
 
 ```cs
 var list = [1, 2.3, "Mango", false, nil];
@@ -40,9 +40,6 @@ list[1] = 2; // [1, 2, 3]
 
 ### Slicing
 
-Slicing is technique used when we wish to return part of a list. It has a syntax of <list>[start:end] where start and end are optional
-as long as one is provided.
-
 If you want to return only part of a list, you slice it! To slice a list, use square brackets with the range you want to slice. The starting index is inclusive, but the ending index is exclusive. You can also use negative numbers to get characters from the end of a list. Only one index is required.
 
 ```cs
@@ -50,11 +47,9 @@ If you want to return only part of a list, you slice it! To slice a list, use sq
 [1, 2, 3, 4, 5][:4]; // [1, 2, 3, 4]
 [1, 2, 3, 4, 5][1:4]; // [2, 3, 4]
 [1, 2, 3, 4, 5][2:4]; // [3, 4]
-[1, 2, 3, 4, 5][0]; // 1
-[1, 2, 3, 4, 5][-1]; // 5
 ```
 
-[comment]: Start improving here! -Jerome
+[comment]: I'll continue here. -Jerome
 
 ### Adding to lists
 #### list.push(value)

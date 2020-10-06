@@ -61,7 +61,7 @@ the response
 
 Example response from [httpbin.org](https://httpbin.org)
 
-```cson
+```json
 // GET
 
 {"content": '{

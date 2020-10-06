@@ -23,7 +23,7 @@ nav_order: 3
 | Boolean | true, false | Fun fact: Boolean data types are named after Robert Boole. |
 | List | [1, 2, ‘hi’, true, nil] | Lists can contain any data type or combination of data types. |
 | Dictionary | {“key1”: 10, 2: “two”, true: “true”, nil: “nil”} | Dictionaries have key-value pairs, like a dictionary (Word: Definition). Values can be any of the data types above except lists. |
-| Set | `set("1", 1, "1")` will actually mean `{"1", 1}` | Sets are collections of unique values. You can create a set with the `set()` function, which returns a set. |
+| Set | `set("1", 1, "1")` will actually mean `{"1", 1}` | Sets are unordered collections of hashable, unique values. You can create a set with the `set()` function, which returns a set. |
 | Nil | nil | Don’t confuse `nil` with `null`! While they mean the same thing in the English language, and the latter is more common in programming, `null` has no significance in Dictu. |
 
 ## Declaring a variable

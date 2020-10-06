@@ -15,7 +15,7 @@ nav_order: 4
 
 ---
 
-Strings in Dictu are an immutable data type. This means taht once a string has been created, there is no way to modify a string directly. Instead, a new string is created. Strings are indicated with quotation marks. In Dictu, you can use `'single'` or `"double"` quotes. They are treated the same.
+Strings in Dictu are an immutable data type. This means that once a string has been created, there is no way to modify a string directly. Instead, a new string is created. Strings are indicated with quotation marks. In Dictu, you can use `'single'` or `"double"` quotes. They are treated the same.
 
 ### Concatenation
 
@@ -33,6 +33,8 @@ You can access a specific letter in a string with the same syntax you would use 
 var string = "Dictu";
 
 string[0]; // D
+string[-1]; // u
+string[100]; // String index out of bounds.
 
 for (var i = 0; i < x.len(); ++i) {
     print(string[i]);
@@ -56,9 +58,6 @@ If you want to get only part of a string, you slice it! To slice a string, use s
 "Dictu"[:4]; // Dict
 "Dictu"[1:4]; // ict
 "Dictu"[2:4]; // ct
-"Dictu"[-1]; // u
-
-"Dictu"[100]; // String index out of bounds.
 "Dictu"[100:101]; // '' (empty string)
 "Dictu"[0:100]; // Dictu
 ```
@@ -192,7 +191,7 @@ To find the index of a given substring, use the `.find()` method. This method ta
 
 ```cs
 "Hello, how are you?".find("how"); // 7
-"hello something hello".find("hello", 2); // 16 (Skipped first occurance)
+"hello something hello".find("hello", 2); // 16 (Skipped first occurence)
 "House".find("Lost Keys"); // -1 (Not found)
 ```
 
