@@ -12,23 +12,16 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
     double number = AS_NUMBER(args[0]);
     int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
     
-    #ifdef NO_VLA
     char *numberString = malloc(numberStringLength);
     if (numberString == NULL) {
         runtimeError(vm, "Memory error on toString()!");
         return EMPTY_VAL;
     }
-    #else
-    char numberString[numberStringLength];
-    #endif
     
     snprintf(numberString, numberStringLength, "%.15g", number);
     Value value = OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
 
-    #ifdef NO_VLA
     free(numberString);
-    #endif
-
     return value;
 }
 

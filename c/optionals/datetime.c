@@ -84,16 +84,12 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
 
     struct tm tictoc;
     int len = (format->length > 128 ? format->length * 4 : 128);
-    #ifdef NO_VLA
-    char *buffer = malloc(len);
-    if (buffer == NULL) {
-        runtimeError(vm, "Memory error on toString()!");
+
+    char *point = malloc(len);
+    if (point == NULL) {
+        runtimeError(vm, "Memory error on strftime()!");
         return EMPTY_VAL;
     }
-    #else
-    char buffer[len];
-    #endif
-    char *point = buffer;
 
     gmtime_r(&t, &tictoc);
 
@@ -120,22 +116,17 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
 
         len *= 2;
 
-        if (buffer == point)
-            point = malloc (len);
-        else
-            point = realloc (point, len);
-
+        point = realloc(point, len);
+        if (point == NULL) {
+            runtimeError(vm, "Memory error on strftime()!");
+            return EMPTY_VAL;
+        }
     }
 
     res = copyString(vm, point, strlen(point));
 
 theend:
-    if (buffer != point)
-        free(point);
-    
-    #ifdef NO_VLA
-    free(buffer);
-    #endif
+    free(point);
 
     return OBJ_VAL(res);
 }
