@@ -1,0 +1,18 @@
+/**
+ * dirname.du
+ *
+ * Testing Path.listdir()
+ *
+ */
+import Path;
+
+if (System.platform != 'windows') {
+    var dir_contents = Path.listdir("tests/path/test_dir");
+    var exp_dir_contents = ["test_file_1", "test_file_2", "test_file_3"];
+
+    for (var i = 0; i < exp_dir_contents.len(); ++i) {
+        var exp_inode = exp_dir_contents[i];
+        assert(dir_contents.contains(exp_inode));
+        exp_dir_contents.remove(exp_inode);
+    }
+}
