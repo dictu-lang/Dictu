@@ -3,7 +3,6 @@
 
 #include <limits.h>
 #include <stdlib.h>
-#include <dirent.h>
 #include <sys/stat.h>
 
 #ifndef PATH_MAX
@@ -19,6 +18,8 @@
 #define PATH_DELIMITER_AS_STRING ";"
 #define PATH_DELIMITER_STRLEN 1
 #else
+#include <dirent.h>
+
 #define HAS_REALPATH
 #define DIR_SEPARATOR '/'
 #define DIR_SEPARATOR_AS_STRING "/"

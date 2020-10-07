@@ -40,70 +40,6 @@ static Value isAbsoluteNative(VM *vm, int argCount, Value *args) {
     return (IS_DIR_SEPARATOR(path[0]) ? TRUE_VAL : FALSE_VAL);
 }
 
-static Value isdirNative(VM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "isdir() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-    
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isdir() argument must be a string");
-        return EMPTY_VAL;
-    }
-
-    char *path = AS_CSTRING(args[0]);
-    struct stat path_stat;
-    stat(path, &path_stat);
-
-    if (S_ISDIR(path_stat.st_mode))
-        return TRUE_VAL;
-   
-    return FALSE_VAL;
-
-}
-
-static Value listdirNative(VM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    char *path;
-    if (argCount == 0) {
-        path = ".";
-    } else {
-        if (!IS_STRING(args[0])) {
-            runtimeError(vm, "listdir() argument must be a string");
-            return EMPTY_VAL;
-        }
-        path = AS_CSTRING(args[0]);
-    }
-
-    ObjList *dir_contents = initList(vm);
-    push(vm, OBJ_VAL(dir_contents));
-    struct dirent *dir;
-    DIR *d;
-    d = opendir(path);
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            char *inode_name = dir->d_name;
-            if (strcmp(inode_name, ".") == 0 || strcmp(inode_name, "..") == 0) 
-                continue;
-            Value inode_value = OBJ_VAL(copyString(vm, inode_name, strlen(inode_name)));
-            push(vm, inode_value);
-            writeValueArray(vm, &dir_contents->values, inode_value);
-            pop(vm);
-        }
-    } else {
-        runtimeError(vm, "%s is not a path!", path);
-        return EMPTY_VAL;
-    }
-
-    pop(vm);
-
-    return OBJ_VAL(dir_contents);
-}
-
 static Value basenameNative(VM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "basename() takes 1 argument (%d given)", argCount);
@@ -232,6 +168,72 @@ static Value existsNative(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(stat(path, &buffer) == 0);
 }
 
+static Value isdirNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isdir() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "isdir() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *path = AS_CSTRING(args[0]);
+    struct stat path_stat;
+    stat(path, &path_stat);
+
+    if (S_ISDIR(path_stat.st_mode))
+        return TRUE_VAL;
+
+    return FALSE_VAL;
+
+}
+
+#ifndef _WIN32
+static Value listdirNative(VM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *path;
+    if (argCount == 0) {
+        path = ".";
+    } else {
+        if (!IS_STRING(args[0])) {
+            runtimeError(vm, "listdir() argument must be a string");
+            return EMPTY_VAL;
+        }
+        path = AS_CSTRING(args[0]);
+    }
+
+    ObjList *dir_contents = initList(vm);
+    push(vm, OBJ_VAL(dir_contents));
+    struct dirent *dir;
+    DIR *d;
+    d = opendir(path);
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            char *inode_name = dir->d_name;
+            if (strcmp(inode_name, ".") == 0 || strcmp(inode_name, "..") == 0)
+                continue;
+            Value inode_value = OBJ_VAL(copyString(vm, inode_name, strlen(inode_name)));
+            push(vm, inode_value);
+            writeValueArray(vm, &dir_contents->values, inode_value);
+            pop(vm);
+        }
+    } else {
+        runtimeError(vm, "%s is not a path!", path);
+        return EMPTY_VAL;
+    }
+
+    pop(vm);
+
+    return OBJ_VAL(dir_contents);
+}
+#endif
+
 ObjModule *createPathClass(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
@@ -252,7 +254,9 @@ ObjModule *createPathClass(VM *vm) {
     defineNative(vm, &module->values, "dirname", dirnameNative);
     defineNative(vm, &module->values, "exists", existsNative);
     defineNative(vm, &module->values, "isdir", isdirNative);
+#ifndef _WIN32
     defineNative(vm, &module->values, "listdir", listdirNative);
+#endif
 
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
