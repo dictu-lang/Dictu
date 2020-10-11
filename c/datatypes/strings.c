@@ -40,7 +40,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     }
 
     int length = 0;
-    char **replaceStrings = malloc(argCount * sizeof(char*));
+    char **replaceStrings = malloc(argCount * sizeof(char *));
 
     for (int j = 1; j < argCount + 1; j++) {
         Value value = args[j];
@@ -64,8 +64,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     memcpy(tmp, string->chars, stringLen);
 
     int count = 0;
-    while((tmp = strstr(tmp, "{}")))
-    {
+    while ((tmp = strstr(tmp, "{}"))) {
         count++;
         tmp++;
     }
@@ -135,34 +134,31 @@ static Value splitString(VM *vm, int argCount, Value *args) {
 
     ObjList *list = initList(vm);
     push(vm, OBJ_VAL(list));
-    if(!strlen(delimiter))
-    {
-     for(int tokencount=0;tokencount<string->length;tokencount++)
-	{
-	*(tmp)=string->chars[tokencount];
-        *(tmp+1)='\0';
-	Value str = OBJ_VAL(copyString(vm, tmp, strlen(tmp)));
-         // Push to stack to avoid GC
-        push(vm, str);
-        writeValueArray(vm, &list->values, str);
-        pop(vm);
-	}	
-    }
-else{
-    do {
-        token = strstr(tmp, delimiter);
-        if (token)
-            *token = '\0';
+    if (delimiterLength == 0) {
+        for (int tokenCount = 0; tokenCount < string->length; tokenCount++) {
+            *(tmp) = string->chars[tokenCount];
+            *(tmp + 1) = '\0';
+            Value str = OBJ_VAL(copyString(vm, tmp, 1));
+            // Push to stack to avoid GC
+            push(vm, str);
+            writeValueArray(vm, &list->values, str);
+            pop(vm);
+        }
+    } else {
+        do {
+            token = strstr(tmp, delimiter);
+            if (token)
+                *token = '\0';
 
-        Value str = OBJ_VAL(copyString(vm, tmp, strlen(tmp)));
+            Value str = OBJ_VAL(copyString(vm, tmp, strlen(tmp)));
 
-        // Push to stack to avoid GC
-        push(vm, str);
-        writeValueArray(vm, &list->values, str);
-        pop(vm);
+            // Push to stack to avoid GC
+            push(vm, str);
+            writeValueArray(vm, &list->values, str);
+            pop(vm);
 
-        tmp = token + delimiterLength;
-    } while (token != NULL);
+            tmp = token + delimiterLength;
+        } while (token != NULL);
     }
     pop(vm);
 
@@ -261,7 +257,7 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
 
     // Count the occurrences of the needle so we can determine the size
     // of the string we need to allocate
-    while((tmp = strstr(tmp, to_replace->chars)) != NULL) {
+    while ((tmp = strstr(tmp, to_replace->chars)) != NULL) {
         count++;
         tmp += len;
     }
@@ -309,7 +305,7 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
 
     char *temp = malloc(sizeof(char) * (string->length + 1));
 
-    for(int i = 0; string->chars[i]; i++){
+    for (int i = 0; string->chars[i]; i++) {
         temp[i] = tolower(string->chars[i]);
     }
     temp[string->length] = '\0';
@@ -322,14 +318,14 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
 static Value upperString(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "upper() takes no arguments (%d given)", argCount);
-        return EMPTY_VAL ;
+        return EMPTY_VAL;
     }
 
     ObjString *string = AS_STRING(args[0]);
 
     char *temp = malloc(sizeof(char) * (string->length + 1));
 
-    for(int i = 0; string->chars[i]; i++){
+    for (int i = 0; string->chars[i]; i++) {
         temp[i] = toupper(string->chars[i]);
     }
     temp[string->length] = '\0';
@@ -450,8 +446,7 @@ static Value countString(VM *vm, int argCount, Value *args) {
     char *needle = AS_CSTRING(args[1]);
 
     int count = 0;
-    while((haystack = strstr(haystack, needle)))
-    {
+    while ((haystack = strstr(haystack, needle))) {
         count++;
         haystack++;
     }
