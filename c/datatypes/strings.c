@@ -135,7 +135,7 @@ static Value splitString(VM *vm, int argCount, Value *args) {
 
     ObjList *list = initList(vm);
     push(vm, OBJ_VAL(list));
-    if(!strcmp(AS_CSTRING(args[1]),""))
+    if(!strlen(delimiter))
     {
      for(int tokencount=0;tokencount<string->length;tokencount++)
 	{
