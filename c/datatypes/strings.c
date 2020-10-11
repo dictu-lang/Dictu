@@ -135,7 +135,20 @@ static Value splitString(VM *vm, int argCount, Value *args) {
 
     ObjList *list = initList(vm);
     push(vm, OBJ_VAL(list));
-
+    if(!strcmp(AS_CSTRING(args[1]),""))
+    {
+     for(int tokencount=0;tokencount<string->length;tokencount++)
+	{
+	*(tmp)=string->chars[tokencount];
+        *(tmp+1)='\0';
+	Value str = OBJ_VAL(copyString(vm, tmp, strlen(tmp)));
+         // Push to stack to avoid GC
+        push(vm, str);
+        writeValueArray(vm, &list->values, str);
+        pop(vm);
+	}	
+    }
+else{
     do {
         token = strstr(tmp, delimiter);
         if (token)
@@ -150,6 +163,7 @@ static Value splitString(VM *vm, int argCount, Value *args) {
 
         tmp = token + delimiterLength;
     } while (token != NULL);
+    }
     pop(vm);
 
     free(tmpFree);
