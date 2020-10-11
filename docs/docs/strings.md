@@ -165,9 +165,10 @@ Returns true if a string ends with a given string.
 ### string.split(delimiter)
 
 Returns a list of strings, split based on a given delimiter.
-
+Returns a list of all characters in a string if an empty string is passed as delimiter.
 ```cs
 "Dictu is awesome!".split(" "); // ['Dictu', 'is', 'awesome!']
+"Dictu is awesome!".split(""); // ["D", "i", "c", "t", "u", " ", "i", "s", " ", "a", "w", "e", "s", "o", "m", "e", "!"]
 ```
 
 ### string.replace(string: old, string: new)
