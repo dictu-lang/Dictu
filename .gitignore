@@ -34,3 +34,6 @@ cmake-build-debug/CMakeFiles/clion-log.txt
 
 docs/.jekyll-cache/
 docs/_site/
+cmake-build-debug/
+
+cmake-build-release/

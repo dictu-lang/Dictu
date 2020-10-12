@@ -109,8 +109,6 @@ Returns a list of strings containing the contents of the input path.
 
 **Note:** This function does not guarantee any ordering of the returned list.
 
-**Note:** This is not available on windows systems.
-
 ```js
 Path.listdir("/"); // ["bin", "dev", "home", "lib", ...]
 ```

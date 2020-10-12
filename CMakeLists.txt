@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18.0)
+cmake_minimum_required(VERSION 3.16.5)
 project(Dictu C)
 
 set(CMAKE_C_STANDARD 11)

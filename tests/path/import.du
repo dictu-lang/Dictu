@@ -11,3 +11,4 @@ import "tests/path/isAbsolute.du";
 import "tests/path/realpath.du";
 import "tests/path/exists.du";
 import "tests/path/isdir.du";
+import "tests/path/listdir.du";

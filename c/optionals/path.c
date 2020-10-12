@@ -194,7 +194,6 @@ static Value isdirNative(VM *vm, int argCount, Value *args) {
 
 }
 
-#ifndef _WIN32
 static Value listdirNative(VM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
@@ -214,6 +213,38 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
 
     ObjList *dir_contents = initList(vm);
     push(vm, OBJ_VAL(dir_contents));
+
+    #ifdef _WIN32
+    char *searchPath = malloc(strlen(path) + 4);
+    if (searchPath == NULL) {
+        runtimeError(vm, "Memory error on listdir()!");
+        return EMPTY_VAL;
+    }
+    strcpy(searchPath, path);
+    strcat(searchPath, "\\*");
+
+    WIN32_FIND_DATAA file;
+    HANDLE dir = FindFirstFile(searchPath, &file);
+    if (dir == INVALID_HANDLE_VALUE) {
+        runtimeError(vm, "%s is not a path!", path);
+        free(searchPath);
+        return EMPTY_VAL;
+    }
+
+    do {
+        if (strcmp(file.cFileName, ".") == 0 || strcmp(file.cFileName, "..") == 0) {
+            continue;
+        }
+
+        Value fileName = OBJ_VAL(copyString(vm, file.cFileName, strlen(file.cFileName)));
+        push(vm, fileName);
+        writeValueArray(vm, &dir_contents->values, fileName);
+        pop(vm);
+    } while (FindNextFile(dir, &file) != 0);
+
+    FindClose(dir);
+    free(searchPath);
+    #else
     struct dirent *dir;
     DIR *d;
     d = opendir(path);
@@ -231,12 +262,12 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
         runtimeError(vm, "%s is not a path!", path);
         return EMPTY_VAL;
     }
+    #endif
 
     pop(vm);
 
     return OBJ_VAL(dir_contents);
 }
-#endif
 
 ObjModule *createPathClass(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
@@ -258,9 +289,7 @@ ObjModule *createPathClass(VM *vm) {
     defineNative(vm, &module->values, "dirname", dirnameNative);
     defineNative(vm, &module->values, "exists", existsNative);
     defineNative(vm, &module->values, "isdir", isdirNative);
-#ifndef _WIN32
     defineNative(vm, &module->values, "listdir", listdirNative);
-#endif
 
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
