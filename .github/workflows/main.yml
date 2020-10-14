@@ -49,3 +49,25 @@ jobs:
         run: |
           make debug
           ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+
+  test-windows:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Make dictu and run tests (No HTTP)
+        run: |
+          make debug DISABLE_HTTP=1
+          ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+      - name: Remove build directory
+        run: |
+          rm -rf build
+      - name: Make dictu and run tests
+        run: |
+          make debug
+          ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+
