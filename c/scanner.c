@@ -296,7 +296,7 @@ static Token exponent(){
 static Token number() {
     while (isDigit(peek()) || peek() == '_') advance();
 	if(peek()=='e')
-			return exponent();
+		return exponent();
     // Look for a fractional part.
     if (peek() == '.'){
         // Consume the "."
@@ -304,8 +304,9 @@ static Token number() {
 		while(peek() == '_') advance();
 		if(peek()=='e')
 			return exponent();
-		if(!isDigit(peek()) && peek() != '_') return errorToken("Invalid number literal");
        while (isDigit(peek()) || peek() == '_') advance();
+	if(peek()=='e')
+		return exponent();
     }
     return makeToken(TOKEN_NUMBER);
 }
