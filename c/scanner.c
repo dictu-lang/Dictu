@@ -29,7 +29,9 @@ static bool isAlpha(char c) {
 static bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
-
+static bool isHexDigit(char c) {
+  return ((c >= '0' && c <= '9')||(c >= 'A' && c <= 'F')||(c >= 'a' && c <= 'f'));
+}
 static bool isAtEnd() {
     return *scanner.current == '\0';
 }
@@ -278,19 +280,46 @@ static Token identifier() {
 
     return makeToken(identifierType());
 }
+static Token exponent(){
+	// Consume the "e"
+	advance();
+	while(peek() == '_') advance();
+	if(peek()=='+' || peek()=='-'){
+		// Consume the "+ or -"
+			advance();
+		}
+	if(!isDigit(peek()) && peek() != '_') return errorToken("Invalid exopnent literal");
+	 while (isDigit(peek()) || peek() == '_') advance();
+   return makeToken(TOKEN_NUMBER);
+}
 
 static Token number() {
     while (isDigit(peek()) || peek() == '_') advance();
-
+	if(peek()=='e'||peek()=='E')
+			return exponent();
     // Look for a fractional part.
-    if (peek() == '.' && isDigit(peekNext())) {
+    if (peek() == '.'&& (isDigit(peekNext()) || (peekNext()=='e'||peekNext()=='E')) ){
         // Consume the "."
         advance();
-
-        while (isDigit(peek()) || peek() == '_') advance();
+		while(peek() == '_') advance();
+		if(peek()=='e'||peek()=='E')
+			return exponent();
+       while (isDigit(peek()) || peek() == '_') advance();
+	   if(peek()=='e'||peek()=='E')
+			return exponent();
     }
-
     return makeToken(TOKEN_NUMBER);
+}
+
+static Token hexNumber() {
+if (peek()=='0')advance();
+if((peek()=='x') || (peek()=='X')){
+  advance();
+  if (!isHexDigit(peek())) return errorToken("Invalid hex literal");
+  while (isHexDigit(peek())) advance();
+  return makeToken(TOKEN_NUMBER);
+}
+else  return number();
 }
 
 
@@ -303,7 +332,6 @@ static Token string(char stringToken) {
         }
         advance();
     }
-
     if (isAtEnd()) return errorToken("Unterminated string.");
 
     // The closing " or '.
@@ -326,7 +354,7 @@ Token scanToken() {
     char c = advance();
 
     if (isAlpha(c)) return identifier();
-    if (isDigit(c)) return number();
+    if (isDigit(c)) return hexNumber();
 
     switch (c) {
         case '(':
