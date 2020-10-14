@@ -1,0 +1,34 @@
+body {
+    margin-top: 3px;
+    
+    &:before {
+        content: '';
+        width: 100%;
+        height: 3px;
+        background-image: linear-gradient(to right, #3b8ff6, #6eff53, #fd9122, #fd642f, #f192e7, #503873);
+        position: fixed;
+        top: 0;
+        z-index: 100000;
+    }
+}
+
+.site-footer { display: none; }
+
+.site-logo {
+    background-size: auto 20px;
+}
+
+.dark-mode {
+    .site-logo {
+        filter: invert(1);
+    }
+
+    a {
+        color: #ffffff;
+    }
+
+    .btn.btn-primary {
+        background-color: #767676;
+        background-image: linear-gradient(#858585, #767676);
+    }
+}

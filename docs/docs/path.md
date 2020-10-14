@@ -19,7 +19,7 @@ nav_order: 15
 
 To make use of the Path module an import is required.
 
-```js
+```cs
 import Path;
 ```
 
@@ -35,7 +35,7 @@ import Path;
 
 Returns the basename of string.
 
-```js
+```cs
 Path.basename("/usr/bin"); // 'bin'
 ```
 
@@ -43,7 +43,7 @@ Path.basename("/usr/bin"); // 'bin'
 
 Returns the directory name of string.
 
-```js
+```cs
 Path.dirname("/usr/bin"); // '/usr'
 ```
 
@@ -51,7 +51,7 @@ Path.dirname("/usr/bin"); // '/usr'
 
 Returns the extension portion of string, including the dot.
 
-```js
+```cs
 Path.extname("/tmp/t.ext"); // '.ext'
 Path.extname("/tmp/t");     // ''
 ```
@@ -60,7 +60,7 @@ Path.extname("/tmp/t");     // ''
 
 Returns true if string is an absolute path or false otherwise.
 
-```js
+```cs
 Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
@@ -71,7 +71,7 @@ An optional error status can be passed, otherwise the default is Path.errno.
 It returns a string that describes the error.
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 print(Path.strerror());
 ```
 
@@ -81,7 +81,7 @@ Returns the canonicalized absolute pathname or nil on error and sets Path.errno 
 
 **Note:** This is not available on windows systems.
 
-```js
+```cs
 Path.realpath("/dir/../dir/../dir"); // '/dir'
 ```
 
@@ -89,6 +89,26 @@ Path.realpath("/dir/../dir/../dir"); // '/dir'
 
 Returns a boolean whether a file exists at a given path.
 
-```js
+```cs
 Path.exists("some/path/to/a/file.du"); // true
+```
+
+### Path.isdir(string)
+
+Checks whether a given path points to a directory or not. 
+
+**Note:** This is not available on windows systems yet.
+
+```cs
+Path.isdir("/usr/bin/"); //true
+```
+
+### Path.listdir(string)
+
+Returns a list of strings containing the contents of the input path.
+
+**Note:** This function does not guarantee any ordering of the returned list.
+
+```js
+Path.listdir("/"); // ["bin", "dev", "home", "lib", ...]
 ```

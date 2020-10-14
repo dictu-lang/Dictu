@@ -200,6 +200,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_NEW_LIST", offset);
         case OP_ADD_LIST:
             return simpleInstruction("OP_ADD_LIST", offset);
+        case OP_UNPACK_LIST:
+            return byteInstruction("OP_UNPACK_LIST", chunk, offset);
         case OP_SUBSCRIPT:
             return simpleInstruction("OP_SUBSCRIPT", offset);
         case OP_SUBSCRIPT_ASSIGN:

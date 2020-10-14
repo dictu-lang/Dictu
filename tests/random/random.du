@@ -1,0 +1,14 @@
+/**
+ * random.du
+ *
+ * Testing the Random.random() method
+ *
+ */
+
+import Random;
+
+var num_randomizations = 100;
+for (var i = 0; i < num_randomizations; ++i) {
+    assert(Random.random() >= 0);
+    assert(Random.random() <= 1);
+}

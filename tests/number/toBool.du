@@ -9,3 +9,4 @@
 assert(1.toBool() == true);
 assert(0.toBool() == false);
 assert(11.1.toBool() == true);
+assert(11_1.1.toBool() == true);

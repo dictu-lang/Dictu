@@ -370,18 +370,18 @@ static void addLocal(Compiler *compiler, Token name) {
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler) {
+static void declareVariable(Compiler *compiler, Token *name) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
-    Token *name = &compiler->parser->previous;
+    // Token *name = &compiler->parser->previous;
     for (int i = compiler->localCount - 1; i >= 0; i--) {
         Local *local = &compiler->locals[i];
         if (local->depth != -1 && local->depth < compiler->scopeDepth) break;
         if (identifiersEqual(name, &local->name)) {
-            error(compiler->parser, "Variable with this name already declared in this scope.");
+            errorAt(compiler->parser, name, "Variable with this name already declared in this scope.");
         }
     }
 
@@ -398,7 +398,7 @@ static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool 
         return identifierConstant(compiler, &compiler->parser->previous);
     }
 
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
     return 0;
 }
 
@@ -670,8 +670,29 @@ static void grouping(Compiler *compiler, bool canAssign) {
 static void number(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    double value = strtod(compiler->parser->previous.start, NULL);
+    // We allocate the whole range for the worst case.
+    // Also account for the null-byte.
+    char* buffer = (char *)malloc((compiler->parser->previous.length + 1) * sizeof(char));
+    char* current = buffer;
+
+    // Strip it of any underscores.
+    for(int i = 0; i < compiler->parser->previous.length; i++) {
+        char c = compiler->parser->previous.start[i];
+
+        if (c != '_') {
+            *(current++) = c;
+        }
+    }
+
+    // Terminate the string with a null character.
+    *current = '\0';
+
+    // Parse the string.
+    double value = strtod(buffer, NULL);
     emitConstant(compiler, NUMBER_VAL(value));
+
+    // Free the malloc'd buffer.
+    free(buffer);
 }
 
 static void or_(Compiler *compiler, bool canAssign) {
@@ -1292,7 +1313,7 @@ static void parseClassBody(Compiler *compiler) {
 static void classDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, false);
@@ -1335,7 +1356,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, true);
@@ -1373,7 +1394,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
 static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_IDENTIFIER, "Expect trait name.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
-    declareVariable(compiler);
+    declareVariable(compiler, &compiler->parser->previous);
 
     ClassCompiler classCompiler;
     setupClassCompiler(compiler, &classCompiler, false);
@@ -1398,19 +1419,49 @@ static void funDeclaration(Compiler *compiler) {
 }
 
 static void varDeclaration(Compiler *compiler, bool constant) {
-    do {
-        uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
+    if (match(compiler, TOKEN_LEFT_BRACKET)) {
+        Token variables[255];
+        int varCount = 0;
 
-        if (match(compiler, TOKEN_EQUAL) || constant) {
-            // Compile the initializer.
-            expression(compiler);
+        do {
+            consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+            variables[varCount] = compiler->parser->previous;
+            varCount++;
+        } while (match(compiler, TOKEN_COMMA));
+
+        consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
+        consume(compiler, TOKEN_EQUAL, "Expect '=' after list destructure.");
+
+        expression(compiler);
+
+        emitBytes(compiler, OP_UNPACK_LIST, varCount);
+
+        if (compiler->scopeDepth == 0) {
+            for (int i = varCount - 1; i >= 0; --i) {
+                uint8_t identifier = identifierConstant(compiler, &variables[i]);
+                defineVariable(compiler, identifier, constant);
+            }
         } else {
-            // Default to nil.
-            emitByte(compiler, OP_NIL);
+            for (int i = 0; i < varCount; ++i) {
+                declareVariable(compiler, &variables[i]);
+                defineVariable(compiler, 0, constant);
+            }
         }
+    } else {
+        do {
+            uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
 
-        defineVariable(compiler, global, constant);
-    } while (match(compiler, TOKEN_COMMA));
+            if (match(compiler, TOKEN_EQUAL) || constant) {
+                // Compile the initializer.
+                expression(compiler);
+            } else {
+                // Default to nil.
+                emitByte(compiler, OP_NIL);
+            }
+
+            defineVariable(compiler, global, constant);
+        } while (match(compiler, TOKEN_COMMA));
+    }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 }

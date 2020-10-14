@@ -4,15 +4,24 @@
 
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 #include <sys/param.h>
+#elif defined(_WIN32)
+#include "windowsapi.h"
+
+void cleanupSockets(void) {
+    // Calls WSACleanup until an error occurs.
+    // Avoids issues if WSAStartup is called multiple times.
+    while (!WSACleanup());
+}
 #endif
 
 #include "common.h"
 #include "vm.h"
 #include "util.h"
 
-#include "linenoise.h"
-
 #define VERSION "Dictu Version: 0.10.0\n"
+
+#ifndef DISABLE_LINENOISE
+#include "linenoise.h"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
@@ -62,6 +71,7 @@ static bool replCountQuotes(char *line) {
 
     return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
 }
+#endif
 
 static void repl(VM *vm, int argc, const char *argv[]) {
     UNUSED(argc); UNUSED(argv);
@@ -69,6 +79,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
     printf(VERSION);
     char *line;
 
+    #ifndef DISABLE_LINENOISE
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
@@ -105,6 +116,44 @@ static void repl(VM *vm, int argc, const char *argv[]) {
         free(line);
         free(fullLine);
     }
+    #else
+    #define BUFFER_SIZE 8
+    line = calloc(BUFFER_SIZE, sizeof(char));
+    if (line == NULL) {
+        printf("Unable to allocate memory\n");
+        exit(71);
+    }
+    size_t lineLength = 0;
+    size_t lineMemory = BUFFER_SIZE;
+
+    while (true) {
+        printf(">>> ");
+
+        char buffer[BUFFER_SIZE];
+        while (fgets(buffer, BUFFER_SIZE, stdin) != NULL) {
+            while (lineLength + BUFFER_SIZE > lineMemory) {
+                lineMemory *= 2;
+                line = realloc(line, lineMemory);
+                if (line == NULL) {
+                    printf("Unable to allocate memory\n");
+                    exit(71);
+                }
+            }
+            strcat(line, buffer);
+            lineLength += BUFFER_SIZE;
+            if (strlen(buffer) != BUFFER_SIZE - 1 || buffer[BUFFER_SIZE-2] == '\n') {
+                break;
+            }
+        }
+
+        interpret(vm, line);
+        lineLength = 0;
+        line[0] = '\0';
+    }
+
+    #undef BUFFER_SIZE
+    free(line);
+    #endif
 }
 
 static void runFile(VM *vm, int argc, const char *argv[]) {
@@ -125,6 +174,13 @@ static void runFile(VM *vm, int argc, const char *argv[]) {
 }
 
 int main(int argc, const char *argv[]) {
+    #ifdef _WIN32
+    atexit(cleanupSockets);
+    WORD versionWanted = MAKEWORD(2, 2);
+    WSADATA wsaData;
+    WSAStartup(versionWanted, &wsaData);
+    #endif
+
     VM *vm = initVM(argc == 1, argc >= 2 ? argv[1] : "repl", argc, argv);
 
     if (argc == 1) {

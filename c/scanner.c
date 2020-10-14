@@ -282,14 +282,14 @@ static Token identifier() {
 }
 
 static Token number() {
-    while (isDigit(peek())) advance();
+    while (isDigit(peek()) || peek() == '_') advance();
 
     // Look for a fractional part.
     if (peek() == '.' && isDigit(peekNext())) {
         // Consume the "."
         advance();
 
-        while (isDigit(peek())) advance();
+        while (isDigit(peek()) || peek() == '_') advance();
     }
 
     return makeToken(TOKEN_NUMBER);

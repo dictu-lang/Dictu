@@ -19,7 +19,7 @@ nav_order: 18
 
 To make use of the HTTP module an import is required.
 
-```js
+```cs
 import HTTP;
 ```
 
@@ -34,7 +34,7 @@ import HTTP;
 Sends a HTTP GET request to a given URL. Timeout is given in seconds.
 Returns a dictionary upon success or nil otherwise and sets HTTP.errno accordingly.
 
-```js
+```cs
 HTTP.get("https://httpbin.org/get");
 HTTP.get("https://httpbin.org/get", 1);
 
@@ -46,7 +46,7 @@ HTTP.get("https://httpbin.org/get", 1);
 Sends a HTTP POST request to a given URL.Timeout is given in seconds.
 Returns a dictionary upon success or nil otherwise and sets HTTP.errno accordingly.
 
-```js
+```cs
 HTTP.post("https://httpbin.org/post");
 HTTP.post("https://httpbin.org/post", {"test": 10});
 HTTP.post("https://httpbin.org/post", {"test": 10}, 1);
@@ -105,6 +105,6 @@ Get the string representation of an error.
 An optional error status can be passed, otherwise the default is HTTP.errno.
 It returns a string that describes the error.
 
-```js
+```cs
 print(HTTP.strerror());
 ```

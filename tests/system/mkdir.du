@@ -32,6 +32,10 @@ with(sys_test_dir, "w") {
 }
 
 assert(System.rmdir(sys_test_dir) == -1);
-assert(System.errno == C.ENOTDIR);
-assert(System.strerror() == "Not a directory");
+assert(System.errno == C.ENOTDIR or System.errno == C.EINVAL);
+if (System.errno == C.ENOTDIR) {
+  assert(System.strerror() == "Not a directory");
+} else if (System.errno == C.EINVAL) {
+  assert(System.strerror() == "Invalid argument");
+}
 assert(System.remove(sys_test_dir) == 0);

@@ -11,7 +11,9 @@
 #define DEBUG_TRACE_GC
 #define DEBUG_TRACE_MEM
 
+#ifndef _MSC_VER
 #define COMPUTED_GOTO
+#endif
 
 #undef DEBUG_PRINT_CODE
 #undef DEBUG_TRACE_EXECUTION

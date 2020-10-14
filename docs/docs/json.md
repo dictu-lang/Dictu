@@ -19,7 +19,7 @@ nav_order: 17
 
 To make use of the JSON module an import is required.
 
-```js
+```cs
 import JSON;
 ```
 
@@ -27,7 +27,7 @@ import JSON;
 
 Parses a JSON string and turns it into a valid Dictu datatype.
 
-```js
+```cs
 JSON.parse('true'); // true
 JSON.parse('{"test": 10}'); // {"test": 10}
 JSON.parse('[1, 2, 3]'); // [1, 2, 3]
@@ -38,7 +38,7 @@ JSON.parse('null'); // nil
 
 Stringify converts a Dictu value into a valid JSON string.
 
-```js
+```cs
 JSON.stringify(true); // 'true'
 JSON.stringify({"test": 10}); // '{"test": 10}'
 JSON.stringify([1, 2, 3]); // '[1, 2, 3]'
@@ -47,7 +47,7 @@ JSON.stringify(nil); // 'null'
 
 Stringify also takes an optional `indent` parameter, which is a number of the amount of spaces to indent by, while
 also making the response multiline.
-```js
+```cs
 JSON.stringify([1, 2, 3], 4);
 
 // Output

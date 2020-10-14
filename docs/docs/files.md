@@ -31,7 +31,7 @@ when you leave the with scope automatically.
 | w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten |
 | a+        | Opens a file for updating (read + write), if a file does not exist one is created, else appends text to the end of a file. |
 
-```js
+```cs
 with("test.txt", "r") {
     // file var is passed in here
 }
@@ -43,7 +43,7 @@ with("test.txt", "r") {
 
 There are two methods available when writing to a file: `write()` and `writeLine()`. `write()` simply writes strings to a file, `writeLine()` is exactly the same, except it appends a newline to the passed in string. Both functions return the amount of characters wrote to the file.
 
-```js
+```cs
 with("test.txt", "w") {
     // file var is passed in here
     file.writeLine("Hello!"); // 6
@@ -57,14 +57,14 @@ with("test.txt", "w") {
 
 There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character.
 
-```js
+```cs
 // Read entire file
 with("test.txt", "r") {
     print(file.read());
 }
 ```
 
-```js
+```cs
 // Read a file line by line
 with("test.txt", "r") {
     var line;
@@ -87,7 +87,7 @@ The second argument (from) is for controlling where the cursor will be within th
 
 If the `from` parameter is not supplied, `seek()` will occur from the beginning of the file.
 
-```js
+```cs
 with("test.txt", "r") {
     print(file.read());
     file.seek(0); // Go back to the start of the file

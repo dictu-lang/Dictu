@@ -7,6 +7,7 @@ BuiltinModules modules[] = {
         {"Path", &createPathClass},
         {"Datetime", &createDatetimeClass},
         {"Socket", &createSocketClass},
+        {"Random", &createRandomClass},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPClass},
 #endif
@@ -15,6 +16,13 @@ BuiltinModules modules[] = {
 
 ObjModule *importBuiltinModule(VM *vm, int index) {
     return modules[index].module(vm);
+}
+
+Value getErrno(VM* vm, ObjModule* module) {
+    Value errno_value = 0;
+    ObjString *name = copyString(vm, "errno", 5);
+    tableGet(&module->values, name, &errno_value);
+    return errno_value;
 }
 
 int findBuiltinModule(char *name, int length) {

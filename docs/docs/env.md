@@ -19,7 +19,7 @@ nav_order: 16
 
 To make use of the Env module an import is required.
 
-```js
+```cs
 import Env;
 ```
 
@@ -34,7 +34,7 @@ Get the string representation of an error.
 An optional error status can be passed, otherwise the default is Env.errno.
 It returns a string that describes the error.
 
-```js
+```cs
 print(Env.strerror());
 ```
 
@@ -43,7 +43,7 @@ print(Env.strerror());
 Get an environment variable. If the ENV var does not exist nil is returned and sets errno accordingly,
 otherwise a string value is returned.
 
-```js
+```cs
 Env.get("bad key!"); // nil
 Env.get("valid key"); // "value"
 ```
@@ -54,7 +54,7 @@ Change or add an environment variable. You can clear an ENV var by passing a `ni
 When setting an ENV var the key must be a string and the value must be either a string or nil.
 Returns 0 upon success or -1 otherwise and sets Env.errno accordingly.
 
-```js
+```cs
 Env.set("key", "test");
 Env.set("key", nil); // Remove env var
 Env.set("key", 10); // set() arguments must be a string or nil.

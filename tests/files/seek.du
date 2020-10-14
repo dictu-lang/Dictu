@@ -6,13 +6,13 @@
 
 var contents;
 
-with("tests/files/read.txt", "r") {
+with("tests/files/read.txt", "rb") {
     contents = file.read();
 }
 
 assert(type(contents) == "string");
 
-with("tests/files/read.txt", "r") {
+with("tests/files/read.txt", "rb") {
     var fileContents = file.read();
     file.seek(0);
     assert(file.read() == fileContents);

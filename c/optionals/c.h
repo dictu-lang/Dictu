@@ -25,6 +25,8 @@
 
 #ifdef __APPLE__
 #define LAST_ERROR 106
+#elif defined(_WIN32)
+#define LAST_ERROR EWOULDBLOCK
 #else
 #define LAST_ERROR EHWPOISON
 #endif
