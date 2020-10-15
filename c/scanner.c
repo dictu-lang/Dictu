@@ -30,7 +30,7 @@ static bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 static bool isHexDigit(char c) {
-  return ((c >= '0' && c <= '9')||(c >= 'A' && c <= 'F')||(c >= 'a' && c <= 'f'));
+  return ((c >= '0' && c <= '9')||(c >= 'A' && c <= 'F')||(c >= 'a' && c <= 'f')||(c=='_'));
 }
 static bool isAtEnd() {
     return *scanner.current == '\0';
@@ -298,12 +298,9 @@ static Token number() {
 	if(peek()=='e'||peek()=='E')
 			return exponent();
     // Look for a fractional part.
-    if (peek() == '.'&& (isDigit(peekNext()) || (peekNext()=='e'||peekNext()=='E')) ){
+    if (peek() == '.'&& (isDigit(peekNext()))){
         // Consume the "."
         advance();
-		while(peek() == '_') advance();
-		if(peek()=='e'||peek()=='E')
-			return exponent();
        while (isDigit(peek()) || peek() == '_') advance();
 	   if(peek()=='e'||peek()=='E')
 			return exponent();
@@ -312,6 +309,7 @@ static Token number() {
 }
 
 static Token hexNumber() {
+while(peek() == '_') advance();
 if (peek()=='0')advance();
 if((peek()=='x') || (peek()=='X')){
   advance();
