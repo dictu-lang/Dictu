@@ -60,16 +60,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Make dictu and run tests (No HTTP)
-          run: |
-            $64BitCommand = "make debug DISABLE_HTTP=1
-                                         ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0' "
-            & (Join-Path ($PSHOME -replace 'syswow64', 'sysnative') powershell.exe) -Command "& {$64BitCommand}"
-
-
-      - name: Make dictu and run tests (No HTTP)
         run: |
           make debug DISABLE_HTTP=1
-          ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+          .\dictu tests\runTests.du | tee \dev\stderr | grep -q 'Total memory usage: 0'
       - name: Remove build directory
         run: |
           rm -rf build
@@ -78,5 +71,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev
           make debug
-          ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+          .\dictu tests\runTests.du | tee \dev\stderr | grep -q 'Total memory usage: 0'
 
