@@ -95,17 +95,17 @@ jobs:
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
              ./build/Dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
-  test-windows-cmake:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2019, windows-latest]
+     test-windows-cmake:
+       name: Test on ${{ matrix.os }}
+       runs-on: ${{ matrix.os }}
+       strategy:
+         matrix:
+           os: [windows-2019, windows-latest]
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Make dictu and run tests (No HTTP)
-        run: |
-          cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
-          cmake --build build
-          build\Debug\Dictu.exe tests/runTests.du
+       steps:
+         - uses: actions/checkout@v2
+         - name: Make dictu and run tests (No HTTP No Linenoise)
+           run: |
+             cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
+             cmake --build build
+             build\Debug\Dictu.exe tests/runTests.du
