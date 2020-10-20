@@ -18,3 +18,4 @@ import "tests/lists/len.du";
 import "tests/lists/toString.du";
 import "tests/lists/toBool.du";
 import "tests/lists/plusOperator.du";
+import "tests/lists/sort.du";

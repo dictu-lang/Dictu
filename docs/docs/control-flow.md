@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Control Flow
+title: Control flow
 nav_order: 7
 ---
 
@@ -16,7 +16,7 @@ nav_order: 7
 ---
 ## If statement
 
-```js
+```cs
 if (false or true) {
     var variable = "Hello";
     print(variable);  // Print is a native function so parenthesis are required
@@ -44,7 +44,7 @@ if (x == 6) {
 ## Loops
 ### While loop
 
-```js
+```cs
 // While loop
 var i = 0;
 while (i < 10) {
@@ -55,7 +55,7 @@ while (i < 10) {
 
 Dictu also implements syntactic sugar for a while true loop.
 
-```js
+```cs
 // While 'true' loop
 // If no expression is made, true is implicitly assumed
 while {
@@ -66,7 +66,7 @@ while {
 
 ### For loop
 
-```js
+```cs
 // For loop
 for (var i = 0; i < 10; ++i) {
     print(i);
@@ -77,7 +77,7 @@ for (var i = 0; i < 10; ++i) {
 
 Continue allows execution of a loop to restart prematurely.
 
-```js
+```cs
 // For loop
 for (var i = 0; i < 10; ++i) {
     if (i % 2 == 0)
@@ -91,7 +91,7 @@ for (var i = 0; i < 10; ++i) {
 
 Break allows execution of a loop to stop prematurely.
 
-```js
+```cs
 // For loop
 for (var i = 0; i < 10; ++i) {
     if (i > 5)
@@ -103,7 +103,7 @@ for (var i = 0; i < 10; ++i) {
 
 ## Functions
 
-```python
+```cs
 //Define the function 
 def someFunction() {
     print("Hello!");
@@ -129,7 +129,7 @@ print(someFunctionWithReturn()); // 10
 
 Variables defined in a function are local to the scope of the function.
 
-```python
+```cs
 def someFunction() {
     var myVariable = 10;
     print(myVariable);
@@ -147,7 +147,7 @@ Output
 
 Functions can also be stored in variables, or within data structures such as lists.
 
-```python
+```cs
 def someFunction() {
     print("Hello!");
 }
@@ -168,7 +168,7 @@ someList[0](someList[1]); // Hello!
 Functions can also have optional parameters. If a value is not passed, the parameter will take the default value
 given in the function header. Note: non-optional parameters **must** be defined before optional parameters.
 
-```python
+```cs
 def someFunction(a, b=10) {
     print(a, b);
 }

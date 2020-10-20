@@ -13,3 +13,4 @@ assert("Dictu<spacer>is<spacer>great!".split("<spacer>") == ["Dictu", "is", "gre
 assert("Dictu is great!".split(",") == ["Dictu is great!"]);
 assert("Dictu is great!".split("12345") == ["Dictu is great!"]);
 assert("Dictu is great!".split("!@£$%^") == ["Dictu is great!"]);
+assert("Dictu is great!".split("") == ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);

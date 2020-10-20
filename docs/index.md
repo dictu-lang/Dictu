@@ -1,59 +1,73 @@
 ---
 layout: default
-title: Home
+title: Welcome
 nav_order: 1
-description: "Just the Docs is a responsive Jekyll theme with built-in search that is easily customizable and hosted on GitHub Pages."
 permalink: /
 ---
 
-# Dictu - {{ site.version }}
+# Dictu v{{ site.version }}
+{: .fs-9 }
 
-### What is Dictu?
+Dictu is a simple, dynamically typed programming language.
+{: .fs-6 .fw-300 }
 
-Dictu is a very small, and simple dynamically typed programming language originally stemming from
-the [craftinginterpreters tutorial](http://www.craftinginterpreters.com/contents.html). Since then Dictu
-builds upon the concepts within the book, adding more features to the language.
+[Install in 30 Seconds](#installing-dictu){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View on GitHub](https://github.com/dictu-lang/Dictu){: .btn .fs-5 .mb-4 .mb-md-0 }
 
-_Dictu stands for simplistic in Latin. This is the aim of the language, to be as simplistic
-as humanely possible._
+```cs
+import HTTP;
+import JSON;
 
-### About the project
+var data = HTTP.get("https://api.coindesk.com/v1/bpi/currentprice.json");
+data = JSON.parse( data["content"] );
+print( "$" + data["bpi"]["USD"]["rate"] + " per BTC" ); // $10,577.70 per BTC
+```
 
-Dictu is a small language created to learn more about how programming languages are created
-and learn how features used everyday within other languages are implemented to gain a better
-understanding.
+Dictu is a very small, simple, and dynamically typed programming language inspired by a [book by Robert Nystrom](http://www.craftinginterpreters.com/contents.html). Dictu builds upon the concepts within the book and adds more features to the language.
+
+Dictu means simplistic in Latin. This is the aim of the language: to be as simplistic, organized, and logical as humanly possible.
 
 {: .fs-6 .fw-300 }
 
 ---
 
 ## Installing Dictu
+All it takes is a couple of lines! Fire up a terminal and copy the following, one by one (without the $).
+
+### CMake
 
 ```bash
-$ git clone https://github.com/Jason2605/Dictu.git
+$ git clone https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
+$ cmake --build ./build
+$ ./build/Dictu
+```
+
+### Makefile
+
+```bash
+$ git clone https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ make dictu
 ```
 
-Lets ensure everything went as planned by opening the Dictu REPL.
+Let's make sure that everything went as planned by entering the Dictu REPL.
 
 ```bash
 $ ./dictu
 ```
-You should then be able to run dictu code in here!
+
+You should be able to run Dictu code here! REPL stands for “read evaluate print loop” and it allows you to receive instantaneous feedback about your code.
+
 ```
 Dictu Version: {{ site.version }}
->>> print("Hello World!");
+>>> print("Hello, World!");
 ```
-When you're done playing around with the REPL, use CTRL + C to close it.
 
-### Contributing
+Use `Control + C` to exit the REPL when you're finished.
 
-I want to make the Dictu environment as friendly, and as welcoming as possible so [pull requests](https://github.com/Jason2605/Dictu/pulls)
-are massively encouraged, be that the tiniest typo error in some documentation, or a new feature
-within the language itself, both will be massively appreciated! However pull requests don't have to be
-the only contribution to the growth of Dictu, you could, [open issues](https://github.com/Jason2605/Dictu/issues), star the repo, or even tell people that Dictu is great!
+## Contributing
+We want to make the Dictu community as friendly and welcoming as possible, so [pull requests](https://github.com/dictu-lang/Dictu/pulls) are encoraged. Any contribution, from the smallest typo in the documentation to a new feature in the language itself, is greatly appreciated!
 
-### License
-
-Dictu is licensed under the [MIT license](https://github.com/Jason2605/Dictu/blob/master/LICENSE).
+## License
+Dictu is under the [MIT license](https://github.com/dictu-lang/Dictu/blob/master/LICENSE).

@@ -1,0 +1,33 @@
+/**
+ * sort.du
+ *
+ * Testing list sorting
+ */
+
+var x = [3, 6, 4, 1, 5];
+
+// Test basic sorting.
+x.sort();
+assert(x == [1, 3, 4, 5, 6]);
+
+// Test sorting on an already sorted list.
+x.sort();
+assert(x == [1, 3, 4, 5, 6]);
+
+// Test sorting on negative values.
+var y = [3, 2, -1, 100, -3, 23, 1, -98];
+
+y.sort();
+assert(y == [-98, -3, -1, 1, 2, 3, 23, 100]);
+
+y.sort();
+assert(y == [-98, -3, -1, 1, 2, 3, 23, 100]);
+
+// Test sorting on lists containing equal elements
+var z = [3, 3, -3, 10, -3];
+
+z.sort();
+assert(z == [-3, -3, 3, 3, 10]);
+
+z.sort();
+assert(z == [-3, -3, 3, 3, 10]);

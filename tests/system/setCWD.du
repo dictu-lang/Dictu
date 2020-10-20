@@ -11,7 +11,11 @@ assert(cwd != nil);
 assert(type(cwd) == "string");
 assert(cwd.len() > 0);
 assert(System.setCWD("/") == 0);
-assert(System.getCWD() == "/");
+if (System.platform == "windows") {
+    assert(System.getCWD() == "C:\\" or System.getCWD() == "D:\\");
+} else {
+    assert(System.getCWD() == "/");
+}
 assert(System.setCWD(cwd) == 0);
 assert(System.getCWD() == cwd);
 assert(System.setCWD("some/directory/that/doesnt/exist") == -1);

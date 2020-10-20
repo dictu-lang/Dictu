@@ -2,37 +2,43 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="theme-color" content="#2196F3">
-    <meta property="og:title" content="Dictu" />
-    <meta property="og:description" content="Dictu is a very small, and simple dynamically typed programming language">
-    <meta property="og:site_name" content="Dictu">
-    <meta property="og:url" content="https://dictu-lang.com">
+    <meta property="og:title" content="{{ site.title }}" />
+    <meta property="og:description" content="{{ site.description }}">
+    <meta property="og:site_name" content="{{ site.title }}">
+    <meta property="og:url" content="{{ site.url }}">
     <meta property="og:type" content="website">
     <meta property="og:image" content="{{ "/assets/images/du-logo/du-dark-with-clearspace-png-8x.png" | absolute_url }}">
     <link id="favicon" rel="shortcut icon" type="image/png" href="{{ "/assets/favicon.png" | absolute_url }}">
-
+  
     <title>{{ page.title }} - {{ site.title }}</title>
     <link rel="stylesheet" href="{{ "/assets/css/just-the-docs-default.css" | absolute_url }}">
 
     <script>
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        (()=>{
+  
+        if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             const cssFile = document.querySelector('[rel="stylesheet"]');
             const originalCssRef = cssFile.getAttribute('href');
             const darkModeCssRef = originalCssRef.replace('just-the-docs-default.css', 'just-the-docs-dark.css');
             cssFile.setAttribute('href', darkModeCssRef);
 
+            document.documentElement.classList.add('dark-mode');
+  
             let oldLink = document.getElementById('favicon');
             let link = document.createElement('link');
             link.id = 'favicon';
             link.rel = 'shortcut icon';
             link.href = '{{ "/assets/favicon-dark.png" | absolute_url }}';
-
+  
             if (oldLink) {
                 document.head.removeChild(oldLink);
             }
             document.head.appendChild(link);
         }
+  
+        })()
     </script>
-
+  
     {% if site.ga_tracking != nil %}
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga_tracking }}"></script>
@@ -40,15 +46,15 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
+  
         gtag('config', '{{ site.ga_tracking }}');
     </script>
     {% endif %}
-
+  
     {% if site.search_enabled != nil %}
     <script type="text/javascript" src="{{ "/assets/js/vendor/lunr.min.js" | absolute_url }}"></script>
     {% endif %}
     <script type="text/javascript" src="{{ "/assets/js/just-the-docs.js" | absolute_url }}"></script>
-
+  
     <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+  </head>

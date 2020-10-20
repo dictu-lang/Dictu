@@ -1,5 +1,9 @@
 #include "c.h"
 
+#ifdef _WIN32
+#define strerror_r(ERRNO, BUF, LEN) strerror_s(BUF, LEN, ERRNO)
+#endif
+
 Value strerrorGeneric(VM *vm, int error) {
     if (error <= 0) {
         runtimeError(vm, "strerror() argument should be > 0");
@@ -39,7 +43,7 @@ Value strerrorNative(VM *vm, int argCount, Value *args) {
     if (argCount == 1) {
       error = AS_NUMBER(args[0]);
     } else {
-        error = AS_NUMBER(GET_ERRNO(GET_SELF_CLASS));
+        error = AS_NUMBER(getErrno(vm, GET_SELF_CLASS));
     }
 
     return strerrorGeneric(vm, error);
@@ -174,7 +178,9 @@ void createCClass(VM *vm) {
     defineNativeProperty(vm, &module->values, "ECOMM", NUMBER_VAL(ECOMM));
 #endif
     defineNativeProperty(vm, &module->values, "EPROTO", NUMBER_VAL(EPROTO));
+#ifdef EMULTIHOP
     defineNativeProperty(vm, &module->values, "EMULTIHOP", NUMBER_VAL(EMULTIHOP));
+#endif
 #ifdef EDOTDOT
     defineNativeProperty(vm, &module->values, "EDOTDOT", NUMBER_VAL(EDOTDOT));
 #endif
@@ -252,7 +258,9 @@ void createCClass(VM *vm) {
     defineNativeProperty(vm, &module->values, "EHOSTUNREACH", NUMBER_VAL(EHOSTUNREACH));
     defineNativeProperty(vm, &module->values, "EALREADY", NUMBER_VAL(EALREADY));
     defineNativeProperty(vm, &module->values, "EINPROGRESS", NUMBER_VAL(EINPROGRESS));
+#ifdef ESTALE
     defineNativeProperty(vm, &module->values, "ESTALE", NUMBER_VAL(ESTALE));
+#endif
 #ifdef EUCLEAN
     defineNativeProperty(vm, &module->values, "EUCLEAN", NUMBER_VAL(EUCLEAN));
 #endif
@@ -268,7 +276,9 @@ void createCClass(VM *vm) {
 #ifdef EREMOTEIO
     defineNativeProperty(vm, &module->values, "EREMOTEIO", NUMBER_VAL(EREMOTEIO));
 #endif
+#ifdef EDQUOT
     defineNativeProperty(vm, &module->values, "EDQUOT", NUMBER_VAL(EDQUOT));
+#endif
 #ifdef ENOMEDIUM
     defineNativeProperty(vm, &module->values, "ENOMEDIUM", NUMBER_VAL(ENOMEDIUM));
 #endif

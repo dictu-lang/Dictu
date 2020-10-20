@@ -79,14 +79,14 @@ static Value readFullFile(VM *vm, int argCount, Value *args) {
     }
 
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, file->file);
-    if (bytesRead < fileSize) {
+    if (bytesRead < fileSize && !feof(file->file)) {
         free(buffer);
         runtimeError(vm, "Could not read file \"%s\".\n", file->path);
         return EMPTY_VAL;
     }
 
     buffer[bytesRead] = '\0';
-    Value ret = OBJ_VAL(copyString(vm, buffer, fileSize));
+    Value ret = OBJ_VAL(copyString(vm, buffer, bytesRead));
 
     free(buffer);
     return ret;
@@ -154,6 +154,12 @@ static Value seekFile(VM *vm, int argCount, Value *args) {
 
     int offset = AS_NUMBER(args[1]);
     ObjFile *file = AS_FILE(args[0]);
+
+    if (offset != 0 && !strstr(file->openType, "b")) {
+        runtimeError(vm, "seek() may not have non-zero offset if file is opened in text mode");
+        return EMPTY_VAL;
+    }
+
     fseek(file->file, offset, seekType);
 
     return NIL_VAL;
