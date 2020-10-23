@@ -115,3 +115,30 @@ Returns the square root of a given number
 Math.sqrt(25); // 5
 Math.sqrt(100); // 10
 ```
+
+### Math.sin(number)
+
+Returns the sin value of a given number in radian
+
+```cs
+Math.sin(1); // 0.8414
+Math.sin(50); // -0.2623
+```
+
+### Math.cos(number)
+
+Returns the cos value of a given number in radian
+
+```cs
+Math.cos(1); // 0.5403
+Math.cos(50); // 0.9649
+```
+
+### Math.tan(number)
+
+Returns the tan value of a given number in radian
+
+```cs
+Math.tan(1); // 1.5574
+Math.tan(50); // -0.2719
+```
