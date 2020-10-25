@@ -31,8 +31,19 @@ Dictu means simplistic in Latin. This is the aim of the language: to be as simpl
 ---
 
 ## Installing Dictu
+All it takes is a couple of lines! Fire up a terminal and copy the following, one by one (without the $).
 
-All it takes is three lines! Fire up a terminal and copy the following, one by one (without the $).
+### CMake
+
+```bash
+$ git clone https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
+$ cmake --build ./build
+$ ./build/Dictu
+```
+
+### Makefile
 
 ```bash
 $ git clone https://github.com/dictu-lang/Dictu.git
