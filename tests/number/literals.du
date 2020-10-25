@@ -1,0 +1,13 @@
+/**
+ * literals.du
+ *
+ * Testing some alternate numeric literals
+ *
+ */
+
+assert(0x2a == 42);
+assert(0x342f == 13359);
+assert(1e5 == 100000);
+assert(1e+5 == 100000);
+assert(1e-5 == 0.00001);
+assert(2.5e3 == 2500);

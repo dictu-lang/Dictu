@@ -6,3 +6,4 @@
 
 import "tests/number/toString.du";
 import "tests/number/toBool.du";
+import "tests/number/literals.du";
