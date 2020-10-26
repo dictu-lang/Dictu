@@ -24,12 +24,11 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = NULL;
+    response->res = malloc(1);
+    response->res[0] = '\0';
 }
 
-static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
-{
-    Response *response = (Response *) data;
+static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *response) {
     size_t new_len = response->len + size * nmemb;
     response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len + 1);
     if (response->res == NULL) {
@@ -43,8 +42,7 @@ static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data)
     return size * nmemb;
 }
 
-static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data)
-{
+static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data) {
     Response *response = (Response *) data;
     // if nitems equals 2 its an empty header
     if (nitems != 2) {
@@ -117,17 +115,13 @@ static char *dictToPostArgs(ObjDict *dict) {
     return ret;
 }
 
-static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
+static ObjDict *endRequest(VM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
     ObjString *content = takeString(vm, response.res, response.len);
 
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
-
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
 
     ObjDict *responseVal = initDict(vm);
     // Push to stack to avoid GC
@@ -152,6 +146,10 @@ static ObjDict* endRequest(VM *vm, CURL *curl, Response response) {
     pop(vm);
     pop(vm);
     pop(vm);
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
 
     return responseVal;
 }
@@ -201,6 +199,11 @@ static Value get(VM *vm, int argCount, Value *args) {
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
+            /* always cleanup */
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            pop(vm);
+
             errno = curlResponse;
             SET_ERRNO(GET_SELF_CLASS);
             return NIL_VAL;
@@ -208,6 +211,11 @@ static Value get(VM *vm, int argCount, Value *args) {
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    pop(vm);
 
     errno = CURLE_FAILED_INIT;
     SET_ERRNO(GET_SELF_CLASS);
@@ -234,7 +242,7 @@ static Value post(VM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        timeout = (long)AS_NUMBER(args[2]);
+        timeout = (long) AS_NUMBER(args[2]);
         dict = AS_DICT(args[1]);
     } else if (argCount == 2) {
         if (!IS_DICT(args[1])) {
@@ -282,6 +290,11 @@ static Value post(VM *vm, int argCount, Value *args) {
         }
 
         if (curlResponse != CURLE_OK) {
+            /* always cleanup */
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            pop(vm);
+
             errno = curlResponse;
             SET_ERRNO(GET_SELF_CLASS);
             return NIL_VAL;
@@ -289,6 +302,11 @@ static Value post(VM *vm, int argCount, Value *args) {
 
         return OBJ_VAL(endRequest(vm, curl, response));
     }
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    pop(vm);
 
     errno = CURLE_FAILED_INIT;
     SET_ERRNO(GET_SELF_CLASS);

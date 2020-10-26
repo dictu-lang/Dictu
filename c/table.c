@@ -113,6 +113,7 @@ bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
 }
 
 bool tableDelete(VM *vm, Table *table, ObjString *key) {
+    UNUSED(vm);
     if (table->count == 0) return false;
 
     int capacityMask = table->capacityMask;
@@ -157,13 +158,6 @@ bool tableDelete(VM *vm, Table *table, ObjString *key) {
         nextEntry->psl--;
         *entry = *nextEntry;
         entry = nextEntry;
-    }
-
-    // TODO: Add constant for table load factor
-    if (table->count - 1 < table->capacityMask * 0.35) {
-        // Figure out the new table size.
-        capacityMask = SHRINK_CAPACITY(table->capacityMask);
-        adjustCapacity(vm, table, capacityMask);
     }
 
     return true;
