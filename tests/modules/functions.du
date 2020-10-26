@@ -39,3 +39,26 @@ assert(ArrowFuncModule.func9() == 30);
 assert(ArrowFuncModule.func9(10, 20) == 30);
 assert(ArrowFuncModule.func9(1.5, 2.5) == 4);
 assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
+
+/**
+ * Nested scope
+ */
+{
+    {
+        import "tests/functions/arrow.du" as NestedArrowFuncModule;
+        assert(type(NestedArrowFuncModule.func) == "function");
+        assert(NestedArrowFuncModule.func() == 10);
+
+        assert(type(NestedArrowFuncModule.func9) == "function");
+        assert(NestedArrowFuncModule.func9() == 30);
+        assert(NestedArrowFuncModule.func9(10, 20) == 30);
+        assert(NestedArrowFuncModule.func9(1.5, 2.5) == 4);
+        assert(NestedArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
+        {
+            {
+                import JSON;
+                assert(JSON.parse("10") == 10);
+            }
+        }
+    }
+}

@@ -1676,6 +1676,7 @@ static void importStatement(Compiler *compiler) {
                 compiler->parser->previous.length - 2)));
 
         emitBytes(compiler, OP_IMPORT, importConstant);
+        emitByte(compiler, OP_POP);
 
         if (match(compiler, TOKEN_AS)) {
             uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
@@ -1683,7 +1684,9 @@ static void importStatement(Compiler *compiler) {
             defineVariable(compiler, importName, false);
         }
     } else {
-        uint8_t importName = parseVariable(compiler, "Expect import identifier.", false);
+        consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
+        uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
+        declareVariable(compiler, &compiler->parser->previous);
 
         int index = findBuiltinModule(
             (char *)compiler->parser->previous.start,

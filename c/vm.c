@@ -1104,6 +1104,7 @@ static InterpretResult run(VM *vm) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 ++vm->scriptNameCount;
                 vm->lastModule = AS_MODULE(moduleVal);
+                push(vm, NIL_VAL);
                 DISPATCH();
             }
 
@@ -1131,7 +1132,6 @@ static InterpretResult run(VM *vm) {
             push(vm, OBJ_VAL(function));
             ObjClosure *closure = newClosure(vm, function);
             pop(vm);
-
             push(vm, OBJ_VAL(closure));
 
             frame->ip = ip;
