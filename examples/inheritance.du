@@ -1,0 +1,36 @@
+/**
+* inheritance.du
+*/
+
+// Parent class - Animal
+class Animal {
+    eating() {
+        print("Eating");
+    }
+}
+
+// Child class - Dog
+class Dog < Animal {
+     bark() {
+        print("Barking");
+     }
+}
+
+// Child class - Cat
+class Cat < Animal {
+    meow() {
+        print("Meowing");
+    }
+}
+
+// Initialize child class
+var dog = Dog();
+var cat = Cat();
+
+// Inherited methods/behaviour from parent class - Animal
+dog.eating();
+cat.eating();
+
+// Methods/behaviour specific to child class
+dog.bark();
+cat.meow();

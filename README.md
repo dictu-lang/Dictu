@@ -20,14 +20,52 @@ Dictu means `simplistic` in Latin.
 Documentation for Dictu can be found [here](https://dictu-lang.com/)
 
 ## Running Dictu
+Dictu currently has two options when building, there is a CMakeLists file included so the build files can be generated with
+CMake or there is an included makefile for users that are more familiar with that.
+
+### CMake
 ```bash
-$ git clone https://github.com/Jason2605/Dictu.git
+$ git clone https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
+$ cmake --build ./build
+$ ./build/Dictu
+```
+
+#### Compiling without HTTP
+
+The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be installed when building the interpreter. If you wish to
+build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
+
+```bash
+$ git clone https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_HTTP=1 -B ./build 
+$ cmake --build ./build
+$ ./build/Dictu
+```
+
+#### Compiling without linenoise
+[Linenoise](https://github.com/antirez/linenoise) is used within Dictu to enhance the REPL, however it does not build on windows
+systems so a simpler REPL solution is used.
+
+```bash
+$ git clone https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_LINENOISE=1 -B ./build 
+$ cmake --build ./build
+$ ./build/Dictu
+```
+
+### Makefile
+```bash
+$ git clone https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ make dictu
 $ ./dictu examples/guessingGame.du
 ```
 
-### Compiling without HTTP
+#### Compiling without HTTP
 
 The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be installed when building the interpreter. If you wish to
 build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
