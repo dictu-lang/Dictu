@@ -318,7 +318,7 @@ bool setDelete(VM *vm, ObjSet *set, Value value) {
 
     if (set->count - 1 < set->capacityMask * TABLE_MIN_LOAD) {
         // Figure out the new table size.
-        int capacityMask = SHRINK_CAPACITY(set->capacityMask);
+        int capacityMask = SHRINK_CAPACITY(set->capacityMask + 1) - 1;
         adjustSetCapacity(vm, set, capacityMask);
     }
 
