@@ -1,0 +1,35 @@
+class Factory {
+    /**
+     * Factory Function that are used to create IceCream object
+     */
+    static createIceCream() {
+        return IceCream();
+    }
+
+    /**
+     * Factory Function that are used to create Chocolate object
+     */
+    static createChocolate() {
+        return Chocolate();
+    }
+}
+
+class IceCream {
+    order() {
+        print("IceCream ordered");
+    }
+}
+
+class Chocolate {
+    order() {
+        print("Chocolate ordered");
+    }
+}
+
+// Factory methods are used to create  objects without having to specify the exact class
+var factory = Factory();
+var icecream =  factory.createIceCream();
+var chocolate = factory.createChocolate();
+
+icecream.order();
+chocolate.order();
