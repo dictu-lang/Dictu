@@ -1,11 +1,9 @@
 /**
 * inheritance.du
-*
 */
 
 // Parent class - Animal
 class Animal {
-
     eating() {
         print("Eating");
     }
@@ -13,11 +11,6 @@ class Animal {
 
 // Child class - Dog
 class Dog < Animal {
-
-     init() {
-        this.eating = super.eating;
-     }
-
      bark() {
         print("Barking");
      }
@@ -25,11 +18,6 @@ class Dog < Animal {
 
 // Child class - Cat
 class Cat < Animal {
-
-    init() {
-        this.eating = super.eating;
-    }
-
     meow() {
         print("Meowing");
     }
