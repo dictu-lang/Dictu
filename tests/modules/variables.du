@@ -5,6 +5,13 @@
  */
 
 import "tests/variables/scope.du" as ScopeModule;
-
 assert(ScopeModule.x == 10);
 
+{
+    import "tests/variables/scope.du" as AnotherScopeModule;
+    assert(AnotherScopeModule.x == 10);
+    {
+        import "tests/variables/scope.du" as MoreScopeModule;
+        assert(MoreScopeModule.x == 10);
+    }
+}
