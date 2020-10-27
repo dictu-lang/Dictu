@@ -1171,6 +1171,7 @@ static InterpretResult run(VM *vm) {
             int index = READ_BYTE();
             ObjString *fileName = READ_STRING();
             int varCount = READ_BYTE();
+
             Value moduleVal;
             ObjModule *module;
 

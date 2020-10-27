@@ -1716,15 +1716,17 @@ static void fromImportStatement(Compiler *compiler) {
                 compiler->parser->previous.length - 2)));
 
         consume(compiler, TOKEN_IMPORT, "Expect 'import' after import path.");
-
         emitBytes(compiler, OP_IMPORT, importConstant);
-
+        emitByte(compiler, OP_POP);
 
         uint8_t variables[255];
+        Token tokens[255];
         int varCount = 0;
 
         do {
-            variables[varCount] = parseVariable(compiler, "Expect variable name.", false);
+            consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+            tokens[varCount] = compiler->parser->previous;
+            variables[varCount] = identifierConstant(compiler, &compiler->parser->previous);
             varCount++;
 
             if (varCount > 255) {
@@ -1740,30 +1742,41 @@ static void fromImportStatement(Compiler *compiler) {
 
         // This needs to be two separate loops as we need
         // all the variables popped before defining.
-        for (int i = varCount - 1; i >= 0; --i) {
-            defineVariable(compiler, variables[i], false);
+        if (compiler->scopeDepth == 0) {
+            for (int i = varCount - 1; i >= 0; --i) {
+                defineVariable(compiler, variables[i], false);
+            }
+        } else {
+            for (int i = 0; i < varCount; ++i) {
+                declareVariable(compiler, &tokens[i]);
+                defineVariable(compiler, 0, false);
+            }
         }
 
         emitByte(compiler, OP_IMPORT_END);
     } else {
-        uint8_t moduleName = parseVariable(compiler, "Expect import identifier.", false);
+        consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
+        uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
 
         int index = findBuiltinModule(
                 (char *)compiler->parser->previous.start,
                 compiler->parser->previous.length
         );
 
-        consume(compiler, TOKEN_IMPORT, "Expect 'import' after identifier.");
+        consume(compiler, TOKEN_IMPORT, "Expect 'import' after identifier");
 
         if (index == -1) {
-            error(compiler->parser, "Unknown module1");
+            error(compiler->parser, "Unknown module");
         }
 
         uint8_t variables[255];
+        Token tokens[255];
         int varCount = 0;
 
         do {
-            variables[varCount] = parseVariable(compiler, "Expect variable name.", false);
+            consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+            tokens[varCount] = compiler->parser->previous;
+            variables[varCount] = identifierConstant(compiler, &compiler->parser->previous);
             varCount++;
 
             if (varCount > 255) {
@@ -1772,16 +1785,21 @@ static void fromImportStatement(Compiler *compiler) {
         } while (match(compiler, TOKEN_COMMA));
 
         emitBytes(compiler, OP_IMPORT_BUILTIN_VARIABLE, index);
-        emitBytes(compiler, moduleName, varCount);
+        emitBytes(compiler, importName, varCount);
 
         for (int i = 0; i < varCount; ++i) {
             emitByte(compiler, variables[i]);
         }
 
-        // This needs to be two separate loops as we need
-        // all the variables popped before defining.
-        for (int i = varCount - 1; i >= 0; --i) {
-            defineVariable(compiler, variables[i], false);
+        if (compiler->scopeDepth == 0) {
+            for (int i = varCount - 1; i >= 0; --i) {
+                defineVariable(compiler, variables[i], false);
+            }
+        } else {
+            for (int i = 0; i < varCount; ++i) {
+                declareVariable(compiler, &tokens[i]);
+                defineVariable(compiler, 0, false);
+            }
         }
     }
 
