@@ -7,3 +7,4 @@
 import "tests/modules/variables.du";
 import "tests/modules/functions.du";
 import "tests/modules/classes.du";
+import "tests/modules/from.du";

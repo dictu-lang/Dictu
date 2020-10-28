@@ -1,0 +1,1 @@
+from "tests/imports/class.du" import Test, AnotherTest;

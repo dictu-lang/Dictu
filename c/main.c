@@ -160,6 +160,12 @@ static void runFile(VM *vm, int argc, const char *argv[]) {
     UNUSED(argc);
 
     char *source = readFile(argv[1]);
+
+    if (source == NULL) {
+        fprintf(stderr, "Could not open file \"%s\".\n", argv[1]);
+        exit(74);
+    }
+
     InterpretResult result = interpret(vm, source);
     free(source); // [owner]
 
