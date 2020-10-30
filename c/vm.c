@@ -145,10 +145,10 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
     /**
      * Native classes which are not required to be
-     * imported. For imported natives see optionals.c
+     * imported. For imported modules see optionals.c
      */
-    createSystemClass(vm, argc, argv);
-    createCClass(vm);
+    createSystemModule(vm, argc, argv);
+    createCModule(vm);
 
     return vm;
 }

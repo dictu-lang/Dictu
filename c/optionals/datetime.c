@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 
 #include "datetime.h"
@@ -157,7 +156,7 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-ObjModule *createDatetimeClass(VM *vm) {
+ObjModule *createDatetimeModule(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

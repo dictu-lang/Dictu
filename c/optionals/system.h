@@ -24,6 +24,6 @@
 #include "../vm.h"
 #include "../memory.h"
 
-void createSystemClass(VM *vm, int argc, const char *argv[]);
+void createSystemModule(VM *vm, int argc, const char *argv[]);
 
 #endif //dictu_system_h

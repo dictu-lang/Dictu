@@ -263,7 +263,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-ObjModule *createJSONClass(VM *vm) {
+ObjModule *createJSONModule(VM *vm) {
     ObjString *name = copyString(vm, "JSON", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

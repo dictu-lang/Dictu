@@ -269,7 +269,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(dir_contents);
 }
 
-ObjModule *createPathClass(VM *vm) {
+ObjModule *createPathModule(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

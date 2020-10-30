@@ -67,7 +67,7 @@ static Value randomSelect(VM *vm, int argCount, Value *args)
     return args[index];
 }
 
-ObjModule *createRandomClass(VM *vm)
+ObjModule *createRandomModule(VM *vm)
 {
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));

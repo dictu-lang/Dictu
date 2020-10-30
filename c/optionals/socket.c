@@ -223,7 +223,7 @@ static Value setSocketOpt(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-ObjModule *createSocketClass(VM *vm) {
+ObjModule *createSocketModule(VM *vm) {
     ObjString *name = copyString(vm, "Socket", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

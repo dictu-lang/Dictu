@@ -313,7 +313,7 @@ static Value post(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-ObjModule *createHTTPClass(VM *vm) {
+ObjModule *createHTTPModule(VM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
