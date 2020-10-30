@@ -223,7 +223,7 @@ static Value joinListItem(VM *vm, int argCount, Value *args) {
 
     char *output;
     char *fullString = NULL;
-    int index = 0;
+    int length = 0;
     int delimiterLength = strlen(delimiter);
 
     for (int j = 0; j < list->values.count - 1; ++j) {
@@ -233,15 +233,16 @@ static Value joinListItem(VM *vm, int argCount, Value *args) {
             output = valueToString(list->values.values[j]);
         }
         int elementLength = strlen(output);
-        fullString = realloc(fullString, index + elementLength + delimiterLength + 1);
 
-        memcpy(fullString + index, output, elementLength);
+        fullString = GROW_ARRAY(vm, fullString, char, length, length + elementLength + delimiterLength);
+
+        memcpy(fullString + length, output, elementLength);
         if (!IS_STRING(list->values.values[j])) {
             free(output);
         }
-        index += elementLength;
-        memcpy(fullString + index, delimiter, delimiterLength);
-        index += delimiterLength;
+        length += elementLength;
+        memcpy(fullString + length, delimiter, delimiterLength);
+        length += delimiterLength;
     }
 
     // Outside the loop as we do not want the append the delimiter on the last element
@@ -252,19 +253,17 @@ static Value joinListItem(VM *vm, int argCount, Value *args) {
     }
 
     int elementLength = strlen(output);
-    fullString = realloc(fullString, index + elementLength + 1);
-    memcpy(fullString + index, output, elementLength);
-    index += elementLength;
+    fullString = GROW_ARRAY(vm, fullString, char, length, length + elementLength + 1);
+    memcpy(fullString + length, output, elementLength);
+    length += elementLength;
 
-    fullString[index] = '\0';
+    fullString[length] = '\0';
 
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
         free(output);
     }
 
-    Value ret = OBJ_VAL(copyString(vm, fullString, index));
-    free(fullString);
-    return ret;
+    return OBJ_VAL(takeString(vm, fullString, length));
 }
 
 static Value copyListShallow(VM *vm, int argCount, Value *args) {
