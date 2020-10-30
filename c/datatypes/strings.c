@@ -39,7 +39,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     }
 
     int length = 0;
-    char **replaceStrings = ALLOCATE(vm, char *, argCount);
+    char **replaceStrings = ALLOCATE(vm, char*, argCount);
 
     for (int j = 1; j < argCount + 1; j++) {
         Value value = args[j];
@@ -58,7 +58,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     ObjString *string = AS_STRING(args[0]);
 
     int stringLen = string->length + 1;
-    char *tmp = ALLOCATE(vm, char, length);
+    char *tmp = ALLOCATE(vm, char, stringLen);
     char *tmpFree = tmp;
     memcpy(tmp, string->chars, stringLen);
 
@@ -77,8 +77,8 @@ static Value formatString(VM *vm, int argCount, Value *args) {
             free(replaceStrings[i]);
         }
 
-        FREE_ARRAY(vm, char, tmp, length);
-        FREE_ARRAY(vm, char *, replaceStrings, argCount);
+        FREE_ARRAY(vm, char, tmp , stringLen);
+        FREE_ARRAY(vm, char*, replaceStrings, argCount);
         return EMPTY_VAL;
     }
 
@@ -101,12 +101,11 @@ static Value formatString(VM *vm, int argCount, Value *args) {
         free(replaceStrings[i]);
     }
 
-    FREE_ARRAY(vm, char *, replaceStrings, argCount);
+    FREE_ARRAY(vm, char*, replaceStrings, argCount);
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    newStr[fullLength] = '\0';
     ObjString *newString = takeString(vm, newStr, fullLength - 1);
 
-    FREE_ARRAY(vm, char, tmpFree, length);
+    FREE_ARRAY(vm, char, tmpFree, stringLen);
     return OBJ_VAL(newString);
 }
 
