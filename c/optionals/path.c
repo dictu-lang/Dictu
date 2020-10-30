@@ -262,10 +262,11 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
         runtimeError(vm, "%s is not a path!", path);
         return EMPTY_VAL;
     }
+
+    closedir(d);
     #endif
 
     pop(vm);
-    closedir(d);
 
     return OBJ_VAL(dir_contents);
 }
