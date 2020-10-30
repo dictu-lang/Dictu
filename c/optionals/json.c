@@ -146,7 +146,7 @@ static Value parse(VM *vm, int argCount, Value *args) {
     return val;
 }
 
-json_value* stringifyJson(Value value) {
+json_value* stringifyJson(VM *vm, Value value) {
     if (IS_NIL(value)) {
         return json_null_new();
     } else if (IS_BOOL(value)) {
@@ -170,7 +170,7 @@ json_value* stringifyJson(Value value) {
                 json_value *json = json_array_new(list->values.count);
 
                 for (int i = 0; i < list->values.count; i++) {
-                    json_array_push(json, stringifyJson(list->values.values[i]));
+                    json_array_push(json, stringifyJson(vm, list->values.values[i]));
                 }
 
                 return json;
@@ -202,7 +202,7 @@ json_value* stringifyJson(Value value) {
                     json_object_push(
                             json,
                             key,
-                            stringifyJson(entry->value)
+                            stringifyJson(vm, entry->value)
                     );
 
                     if (!IS_STRING(entry->key)) {
@@ -240,7 +240,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
         indent = AS_NUMBER(args[1]);
     }
 
-    json_value *json = stringifyJson(args[0]);
+    json_value *json = stringifyJson(vm, args[0]);
 
     if (json == NULL) {
         errno = JSON_ENOSERIAL;
@@ -255,10 +255,17 @@ static Value stringify(VM *vm, int argCount, Value *args) {
         indent
     };
 
-    char *buf = malloc(json_measure_ex(json, default_opts));
+
+    int length = json_measure_ex(json, default_opts);
+    char *buf = ALLOCATE(vm, char, length);
     json_serialize_ex(buf, json, default_opts);
-    ObjString *string = copyString(vm, buf, strlen(buf));
-    free(buf);
+    int actualLength = strlen(buf);
+    ObjString *string = takeString(vm, buf, actualLength);
+
+    // json_measure_ex can produce a length larger than the actual string returned
+    // so we need to cater for this case
+    vm->bytesAllocated -= length - actualLength - 1;
+
     json_builder_free(json);
     return OBJ_VAL(string);
 }
