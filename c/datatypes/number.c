@@ -1,7 +1,5 @@
 #include "number.h"
-#include "../vm.h"
-
-#include <stdlib.h>
+#include "../memory.h"
 
 static Value toStringNumber(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -12,17 +10,15 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
     double number = AS_NUMBER(args[0]);
     int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
     
-    char *numberString = malloc(numberStringLength);
+    char *numberString = ALLOCATE(vm, char, numberStringLength);
+
     if (numberString == NULL) {
         runtimeError(vm, "Memory error on toString()!");
         return EMPTY_VAL;
     }
     
     snprintf(numberString, numberStringLength, "%.15g", number);
-    Value value = OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
-
-    free(numberString);
-    return value;
+    return OBJ_VAL(takeString(vm, numberString, numberStringLength - 1));
 }
 
 void declareNumberMethods(VM *vm) {
