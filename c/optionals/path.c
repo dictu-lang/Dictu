@@ -215,7 +215,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(dir_contents));
 
     #ifdef _WIN32
-    char *searchPath = malloc(strlen(path) + 4);
+    char *searchPath = ALLOCATE(vm, char, strlen(path) + 4);
     if (searchPath == NULL) {
         runtimeError(vm, "Memory error on listdir()!");
         return EMPTY_VAL;
@@ -243,7 +243,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     } while (FindNextFile(dir, &file) != 0);
 
     FindClose(dir);
-    free(searchPath);
+    FREE_ARRAY(vm, char, searchPath, strlen(path) + 4);
     #else
     struct dirent *dir;
     DIR *d;
@@ -265,6 +265,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     #endif
 
     pop(vm);
+    closedir(d);
 
     return OBJ_VAL(dir_contents);
 }
