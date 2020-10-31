@@ -1,0 +1,69 @@
+class treeNode {
+    init(key) {
+        this.key = key;
+        this.left = nil;
+        this.right = nil;
+    }
+    getKey() {
+        return this.key;
+    }
+}
+
+class binarySearchTree {
+    init(key) {
+        this.root = treeNode(key);
+    }
+    insert(key) {
+        if (this.root == nil) {
+            this.root = treeNode(key);
+        } else {
+            var cur = this.root;
+            var prev = cur;
+            while (cur != nil) {
+                prev = cur;
+                if (cur.key < key) {
+                    cur = cur.left;
+                } else if (cur.key > key){
+                    cur = cur.right;
+                }   
+            }
+            if (prev != nil) {
+                if (prev.getKey() < key) {
+                    prev.right = treeNode(key);
+                } else {
+                    prev.left = treeNode(key);
+                }
+            }
+        }
+    }
+    search(key) {
+        if (this.root == nil) {
+            return false;
+        }
+        if (this.root.key == key) {
+            return true;
+        }
+        var cur = this.root;
+        var prev = cur;
+        while (cur != nil and cur.key != key) {
+            prev = cur;
+            if (cur.getKey() < key) {
+                cur = cur.right;
+            } else {
+                cur = cur.left;
+            }
+        }
+        if ( cur != nil and cur.getKey() == key) {
+            return true;
+        }
+        return false;
+    }
+}
+
+var tree = binarySearchTree(10);
+tree.insert(6);
+tree.insert(9);
+tree.insert(13);
+tree.insert(15);
+assert(tree.search(9));
+assert(not tree.search(1));
