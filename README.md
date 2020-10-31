@@ -77,6 +77,11 @@ $ make dictu DISABLE_HTTP=1
 $ ./dictu examples/guessingGame.du
 ```
 
+### Docker Installation
+
+Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/README.md)
+
+
 ## Example program
 ```js
 var userInput;

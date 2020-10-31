@@ -1,0 +1,19 @@
+FROM ubuntu
+
+WORKDIR Dictu
+
+RUN apt update \
+	&& apt install -y --no-install-recommends build-essential \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends libcurl4-gnutls-dev\
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+RUN make dictu DISABLE_HTTP=1
+
+RUN cp dictu /usr/bin/ \
+	&& rm -rf *
+
+CMD ["dictu"]
+
