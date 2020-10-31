@@ -24,8 +24,7 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = malloc(1);
-    response->res[0] = '\0';
+    response->res = NULL;
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *response) {

@@ -97,7 +97,7 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
     }
 
     uint64_t currentSize = 128;
-    char *line = malloc(currentSize);
+    char *line = ALLOCATE(vm, char, currentSize);
 
     if (line == NULL) {
         runtimeError(vm, "Memory error on input()!");
@@ -105,13 +105,14 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
     }
 
     int c = EOF;
-    uint64_t i = 0;
+    uint64_t length = 0;
     while ((c = getchar()) != '\n' && c != EOF) {
-        line[i++] = (char) c;
+        line[length++] = (char) c;
 
-        if (i + 1 == currentSize) {
+        if (length + 1 == currentSize) {
+            int oldSize = currentSize;
             currentSize = GROW_CAPACITY(currentSize);
-            line = realloc(line, currentSize);
+            line = GROW_ARRAY(vm, line, char, oldSize, currentSize);
 
             if (line == NULL) {
                 printf("Unable to allocate memory\n");
@@ -120,10 +121,10 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
         }
     }
 
-    line[i] = '\0';
+    line[length] = '\0';
 
-    Value l = OBJ_VAL(copyString(vm, line, strlen(line)));
-    free(line);
+    Value l = OBJ_VAL(takeString(vm, line, length));
+    vm->bytesAllocated -= currentSize - length - 1;
     return l;
 }
 

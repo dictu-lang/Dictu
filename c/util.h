@@ -3,7 +3,7 @@
 
 #include "vm.h"
 
-char *readFile(const char *path);
+char *readFile(VM *vm, const char *path);
 
 void defineNative(VM *vm, Table *table, const char *name, NativeFn function);
 

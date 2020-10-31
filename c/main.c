@@ -15,7 +15,7 @@ void cleanupSockets(void) {
 #endif
 
 #include "common.h"
-#include "vm.h"
+#include "memory.h"
 #include "util.h"
 
 #define VERSION "Dictu Version: 0.11.0\n"
@@ -159,7 +159,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
 static void runFile(VM *vm, int argc, const char *argv[]) {
     UNUSED(argc);
 
-    char *source = readFile(argv[1]);
+    char *source = readFile(vm, argv[1]);
 
     if (source == NULL) {
         fprintf(stderr, "Could not open file \"%s\".\n", argv[1]);
@@ -167,7 +167,7 @@ static void runFile(VM *vm, int argc, const char *argv[]) {
     }
 
     InterpretResult result = interpret(vm, source);
-    free(source); // [owner]
+    FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);

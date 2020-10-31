@@ -1108,7 +1108,7 @@ static InterpretResult run(VM *vm) {
                 DISPATCH();
             }
 
-            char *source = readFile(fileName->chars);
+            char *source = readFile(vm, fileName->chars);
 
             if (source == NULL) {
                 frame->ip = ip;
@@ -1132,7 +1132,8 @@ static InterpretResult run(VM *vm) {
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
             pop(vm);
-            free(source);
+
+            FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));

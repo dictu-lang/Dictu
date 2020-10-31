@@ -672,7 +672,7 @@ static void number(Compiler *compiler, bool canAssign) {
 
     // We allocate the whole range for the worst case.
     // Also account for the null-byte.
-    char* buffer = (char *)malloc((compiler->parser->previous.length + 1) * sizeof(char));
+    char* buffer = ALLOCATE(compiler->parser->vm, char, compiler->parser->previous.length + 1);
     char* current = buffer;
 
     // Strip it of any underscores.
@@ -692,7 +692,7 @@ static void number(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, NUMBER_VAL(value));
 
     // Free the malloc'd buffer.
-    free(buffer);
+    FREE_ARRAY(compiler->parser->vm, char, buffer, compiler->parser->previous.length + 1);
 }
 
 static void or_(Compiler *compiler, bool canAssign) {
@@ -781,13 +781,14 @@ static void string(Compiler *compiler, bool canAssign) {
 
     Parser *parser = compiler->parser;
 
-    char *string = malloc(sizeof(char) * parser->previous.length - 1);
+    char *string = ALLOCATE(parser->vm, char, parser->previous.length - 1);
+
     memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
     int length = parseString(string, parser->previous.length - 2);
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
-    free(string);
+    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
+    parser->vm->bytesAllocated -= parser->previous.length - 2 - length;
 }
 
 static void list(Compiler *compiler, bool canAssign) {
