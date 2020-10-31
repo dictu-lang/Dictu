@@ -83,8 +83,9 @@ static void repl(VM *vm, int argc, const char *argv[]) {
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        char *fullLine = malloc(sizeof(char) * (strlen(line) + 1));
-        snprintf(fullLine, strlen(line) + 1, "%s", line);
+        int fullLineLength = strlen(line);
+        char *fullLine = ALLOCATE(vm, char, fullLineLength + 1);
+        snprintf(fullLine, fullLineLength + 1, "%s", line);
 
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
@@ -92,12 +93,14 @@ static void repl(VM *vm, int argc, const char *argv[]) {
         while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
             free(line);
             line = linenoise("... ");
+            int lineLength = strlen(line);
 
             if (line == NULL) {
                 return;
             }
 
-            char *temp = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
+
+            char *temp = GROW_ARRAY(vm, fullLine, char, fullLineLength, fullLineLength + lineLength);
 
             if (temp == NULL) {
                 printf("Unable to allocate memory\n");
@@ -105,7 +108,8 @@ static void repl(VM *vm, int argc, const char *argv[]) {
             }
 
             fullLine = temp;
-            memcpy(fullLine + strlen(fullLine), line, strlen(line) + 1);
+            memcpy(fullLine + fullLineLength, line, lineLength);
+            fullLineLength += lineLength;
 
             linenoiseHistoryAdd(line);
             linenoiseHistorySave("history.txt");
@@ -114,7 +118,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
         interpret(vm, fullLine);
 
         free(line);
-        free(fullLine);
+        FREE_ARRAY(vm, char, fullLine, fullLineLength + 1);
     }
     #else
     #define BUFFER_SIZE 8
