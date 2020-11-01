@@ -28,3 +28,15 @@ class ConcreteClass < AbstractBase {}
 
 assert(ConcreteClass().isInstance(AbstractBase));
 assert(ConcreteClass().isInstance(ConcreteClass));
+
+
+class FirstClass {}
+class SecondClass < FirstClass {}
+class ThirdClass < SecondClass {}
+
+assert(FirstClass().isInstance(FirstClass));
+assert(SecondClass().isInstance(FirstClass));
+assert(SecondClass().isInstance(SecondClass));
+assert(ThirdClass().isInstance(FirstClass));
+assert(ThirdClass().isInstance(SecondClass));
+assert(ThirdClass().isInstance(ThirdClass));
