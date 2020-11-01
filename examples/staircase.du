@@ -1,0 +1,22 @@
+
+    var no,spaces,rev;
+    spaces = input("Enter a number:").toNumber();
+    no = spaces;
+    rev = 0;
+
+    while(no>0){
+        spaces--;
+        rev++;
+        var spaces1=spaces;
+        while(spaces1>0){
+            print(" ");
+            spaces1--;
+        }
+        var rev1 = rev;
+        while(rev1>0){
+            print("#");
+            rev1--;
+        }
+        print("\n");
+        no--;
+    }
