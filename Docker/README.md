@@ -8,11 +8,19 @@ To build the Docker image of Dictu, clone the repository and change directory in
 
 Run the following command from the **root of the project** i.e, the `Dictu` folder by default. 
 
+To build the *Alpine* version of Dictu - 
+
+```bash 
+$ docker build -t dictu:alpine -f Docker/DictuAlpineDockerfile . 
+``` 
+
+To build the *Ubuntu* version of Dictu -
+
 ```bash 
 $ docker build -t dictu:ubuntu -f Docker/DictuUbuntuDockerfile . 
 ``` 
 
-To start a REPL from this image, run - 
+To start a REPL from this image, run - (Replace the tag with the appropriate version, i.e, alpine or ubuntu)
 
 ```bash 
 $ docker run -it dictu:ubuntu 
