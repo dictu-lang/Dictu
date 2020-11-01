@@ -10,10 +10,9 @@ RUN apt update \
 
 COPY . .
 
-RUN make dictu DISABLE_HTTP=1
-
-RUN cp dictu /usr/bin/ \
-	&& rm -rf *
+RUN make dictu DISABLE_HTTP=1 \
+	&& cp dictu /usr/bin/ \
+	&& dictu tests/runTests.du \
+	&& rm -rf * 
 
 CMD ["dictu"]
-
