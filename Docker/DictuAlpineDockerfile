@@ -1,0 +1,14 @@
+FROM alpine
+
+WORKDIR Dictu
+
+RUN apk add make curl-dev gcc libc-dev --no-cache 
+
+COPY . .
+
+RUN make dictu \
+	&& cp dictu /usr/bin/ \
+	&& dictu tests/runTests.du \
+	&& rm -rf * 
+
+CMD ["dictu"]
