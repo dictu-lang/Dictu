@@ -1,0 +1,30 @@
+/**
+ * isInstance.du
+ *
+ * Testing instance.isInstance() method
+ *
+ * .isInstance() returns a boolean based on whether the object is created from a given class / parent superclass
+ */
+
+class Test {}
+
+assert(Test().isInstance(Test));
+
+class AnotherTest < Test {}
+
+assert(AnotherTest().isInstance(Test));
+assert(AnotherTest().isInstance(AnotherTest));
+assert(!Test().isInstance(AnotherTest));
+
+class Unrelated {}
+
+assert(!Test().isInstance(Unrelated));
+assert(!AnotherTest().isInstance(Unrelated));
+
+
+abstract class AbstractBase {}
+
+class ConcreteClass < AbstractBase {}
+
+assert(ConcreteClass().isInstance(AbstractBase));
+assert(ConcreteClass().isInstance(ConcreteClass));
