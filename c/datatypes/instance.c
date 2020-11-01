@@ -88,6 +88,33 @@ static Value setAttribute(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value isInstance(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isInstance() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_CLASS(args[1])) {
+        runtimeError(vm, "Argument passed to isInstance() must be a class");
+        return EMPTY_VAL;
+    }
+
+    ObjInstance *object = AS_INSTANCE(args[0]);
+
+    ObjClass *klass = AS_CLASS(args[1]);
+    ObjClass *klassToFind = object->klass;
+
+    while (klassToFind != NULL) {
+        if (klass == klassToFind) {
+            return BOOL_VAL(true);
+        }
+
+        klassToFind = klassToFind->superclass;
+    }
+
+    return BOOL_VAL(false);
+}
+
 static Value copyShallow(VM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
@@ -117,6 +144,7 @@ void declareInstanceMethods(VM *vm) {
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);
+    defineNative(vm, &vm->instanceMethods, "isInstance", isInstance);
     defineNative(vm, &vm->instanceMethods, "copy", copyShallow);
     defineNative(vm, &vm->instanceMethods, "deepCopy", copyDeep);
 }

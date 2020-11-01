@@ -14,3 +14,4 @@ import "tests/classes/toString.du";
 import "tests/classes/abstract.du";
 import "tests/classes/classVariables.du";
 import "tests/classes/parameters.du";
+import "tests/classes/isInstance.du";

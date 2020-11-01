@@ -441,3 +441,32 @@ myNewObject = myObject.deepCopy();
 myNewObject.obj.x = 100;
 print(myObject.obj.x); // 10
 ```
+
+## Checking instance types
+
+### instance.isInstance(class)
+
+Checking if an instance is of a given class is made very simple with the `isInstance` method. This method takes in a class as an 
+argument and returns a boolean based on whether or not the object was instantiated from the given class. Since classes can inherit other
+classes, and we know subclasses have the type of their parent class, the same holds true for `isInstance()`. If the instance being checked
+is passed it's parent class as an argument `isInstance()` will evaluate to true.
+
+```cs
+class Test {}
+
+var obj = Test();
+
+print(obj.isInstance(Test)); // true
+
+// Inheritance
+
+class Test {}
+class AnotherTest < Test {}
+
+var testObj = Test();
+var anotherTestObj = AnotherTest();
+
+testObj.isInstance(AnotherTest); // false
+anotherTestObj.isInstance(AnotherTest); // true
+anotherTestObj.isInstance(Test); // true
+```
