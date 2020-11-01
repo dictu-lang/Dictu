@@ -28,7 +28,8 @@ static void createResponse(VM *vm, Response *response) {
     response->res[0] = '\0';
 }
 
-static size_t writeResponse(char *ptr, size_t size, size_t nmemb, Response *response) {
+static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data) {
+    Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
     response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len + 1);
     if (response->res == NULL) {
