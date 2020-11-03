@@ -1,0 +1,51 @@
+/**
+ * constructor.du
+ *
+ * Testing class constructors. Specifically optional args and implicit instance variables
+ */
+
+class Test {
+    init(a, b) {
+        assert(a == 10);
+        assert(b == 20);
+    }
+}
+
+Test(10, 20);
+
+class AnotherTest {
+    init(a, b="test") {
+        assert(a == "dictu");
+        assert(b == "test");
+    }
+}
+
+AnotherTest("dictu");
+
+class PropertyTest {
+    init(var a, var b) {}
+}
+
+var obj = PropertyTest("test", [1, 2]);
+
+assert(obj.a == "test");
+assert(obj.b == [1, 2]);
+
+class DefaultPropertyTest {
+    init(var a = "test", var b = 10.5) {}
+}
+
+var newObj = DefaultPropertyTest();
+
+assert(newObj.a == "test");
+assert(newObj.b == 10.5);
+
+newObj = DefaultPropertyTest(1000);
+
+assert(newObj.a == 1000);
+assert(newObj.b == 10.5);
+
+newObj = DefaultPropertyTest({"test": 5}, obj);
+
+assert(newObj.a == {"test": 5});
+assert(newObj.b == obj);

@@ -1,8 +1,8 @@
 /**
-* inherit.du
-*
-* Testing class inheritance
-*/
+ * inherit.du
+ *
+ * Testing class inheritance
+ */
 
 class Base {
     init() {

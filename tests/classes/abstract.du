@@ -1,3 +1,9 @@
+/**
+ * abstract.du
+ *
+ * Testing creating and inheriting abstract classes
+ */
+
 abstract class AbstractClass {
     init() {
         this.x = 10;

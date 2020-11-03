@@ -82,11 +82,13 @@ ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     function->arityOptional = 0;
     function->upvalueCount = 0;
     function->propertyCount = 0;
+    function->propertyIndexes = NULL;
+    function->propertyNames = NULL;
     function->name = NULL;
     function->type = type;
     function->module = module;
-
     initChunk(vm, &function->chunk);
+
     return function;
 }
 
