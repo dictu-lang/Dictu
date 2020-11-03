@@ -245,7 +245,7 @@ ObjModule *createSocketModule(VM *vm) {
     defineNativeProperty(vm, &module->values, "SO_REUSEADDR", NUMBER_VAL(SO_REUSEADDR));
 
     /**
-     * Setup socket object methods
+     * Setup Socket object methods
      */
     defineNative(vm, &vm->socketMethods, "bind", bindSocket);
     defineNative(vm, &vm->socketMethods, "listen", listenSocket);

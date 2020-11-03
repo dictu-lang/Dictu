@@ -283,9 +283,8 @@ ObjModule *createPathModule(VM *vm) {
      */
 #ifdef HAS_REALPATH
     defineNative(vm, &module->values, "realpath", realpathNative);
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
 #endif
+    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
     defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);
@@ -294,6 +293,10 @@ ObjModule *createPathModule(VM *vm) {
     defineNative(vm, &module->values, "isdir", isdirNative);
     defineNative(vm, &module->values, "listdir", listdirNative);
 
+    /**
+     * Define Path properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
     defineNativeProperty(vm, &module->values, "dirSeparator", OBJ_VAL(

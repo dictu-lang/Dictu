@@ -21,8 +21,8 @@ nav_order: 12
 
 | Constant        | Description                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------|
-| System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.errno    | Number of the last error.                                                                         |
+| System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
 | System.S_IRWXU  | Read, write, and execute by owner.                                                                |
 | System.S_IRUSR  | Read by owner.                                                                                    |

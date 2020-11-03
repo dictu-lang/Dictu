@@ -228,8 +228,9 @@ ObjModule *createMathsModule(VM *vm) {
     push(vm, OBJ_VAL(module));
 
     /**
-     * Define Math values
+     * Define Math methods
      */
+    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "average", averageNative);
     defineNative(vm, &module->values, "floor", floorNative);
     defineNative(vm, &module->values, "round", roundNative);
@@ -246,6 +247,7 @@ ObjModule *createMathsModule(VM *vm) {
     /**
      * Define Math properties
      */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
     pop(vm);
