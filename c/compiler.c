@@ -609,9 +609,22 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
     if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
+        bool initProperties = false;
+        int index = 0;
         do {
-            uint8_t paramConstant = parseVariable(fnCompiler, "Expect parameter name.", false);
+            bool varKeyword = match(compiler, TOKEN_VAR);
+            consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
+            uint8_t paramConstant = identifierConstant(fnCompiler, &fnCompiler->parser->previous);
+            declareVariable(fnCompiler, &fnCompiler->parser->previous);
             defineVariable(fnCompiler, paramConstant, false);
+
+            if (type == TYPE_INITIALIZER && varKeyword) {
+                initProperties = true;
+                fnCompiler->function->propertyNames[fnCompiler->function->propertyCount] = paramConstant;
+                fnCompiler->function->propertyIndexes[fnCompiler->function->propertyCount++] = index;
+            } else if (varKeyword) {
+                error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
+            }
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
                 fnCompiler->function->arityOptional++;
@@ -628,11 +641,16 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             if (fnCompiler->function->arity + fnCompiler->function->arityOptional > 255) {
                 error(fnCompiler->parser, "Cannot have more than 255 parameters.");
             }
+            index++;
         } while (match(fnCompiler, TOKEN_COMMA));
 
         if (fnCompiler->function->arityOptional > 0) {
             emitByte(fnCompiler, OP_DEFINE_OPTIONAL);
             emitBytes(fnCompiler, fnCompiler->function->arity, fnCompiler->function->arityOptional);
+        }
+
+        if (initProperties) {
+            emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
     }
 
@@ -672,7 +690,7 @@ static void number(Compiler *compiler, bool canAssign) {
 
     // We allocate the whole range for the worst case.
     // Also account for the null-byte.
-    char* buffer = (char *)malloc((compiler->parser->previous.length + 1) * sizeof(char));
+    char* buffer = ALLOCATE(compiler->parser->vm, char, compiler->parser->previous.length + 1);
     char* current = buffer;
 
     // Strip it of any underscores.
@@ -692,7 +710,7 @@ static void number(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, NUMBER_VAL(value));
 
     // Free the malloc'd buffer.
-    free(buffer);
+    FREE_ARRAY(compiler->parser->vm, char, buffer, compiler->parser->previous.length + 1);
 }
 
 static void or_(Compiler *compiler, bool canAssign) {

@@ -197,6 +197,10 @@ void freeObject(VM *vm, Obj *object) {
             ObjFunction *function = (ObjFunction *) object;
             freeChunk(vm, &function->chunk);
             FREE(vm, ObjFunction, object);
+            if (function->type == TYPE_INITIALIZER) {
+                FREE_ARRAY(vm, int, function->propertyNames, 255);
+                FREE_ARRAY(vm, int, function->propertyIndexes, 255);
+            }
             break;
         }
 
