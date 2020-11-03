@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <stdlib.h>
 
 #include "datetime.h"
@@ -85,7 +84,7 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
     struct tm tictoc;
     int len = (format->length > 128 ? format->length * 4 : 128);
 
-    char *point = malloc(len);
+    char *point = ALLOCATE(vm, char, len);
     if (point == NULL) {
         runtimeError(vm, "Memory error on strftime()!");
         return EMPTY_VAL;
@@ -99,36 +98,33 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
      * there is a big enough buffer.
      */
 
-    /** however is not guaranteed that 0 indicates a failure (`man strftime' says so).
+     /** however is not guaranteed that 0 indicates a failure (`man strftime' says so).
      * So we might want to catch up the eternal loop, by using a maximum iterator.
      */
-
-    ObjString *res;
-
     int max_iterations = 8;  // maximum 65536 bytes with the default 128 len,
                              // more if the given string is > 128
     int iterator = 0;
     while (strftime(point, sizeof(char) * len, fmt, &tictoc) == 0) {
         if (++iterator > max_iterations) {
-            res = copyString(vm, "", 0);
-            goto theend;
+            FREE_ARRAY(vm, char, point, len);
+            return OBJ_VAL(copyString(vm, "", 0));
         }
 
         len *= 2;
 
-        point = realloc(point, len);
+        point = GROW_ARRAY(vm, point, char, len / 2, len);
         if (point == NULL) {
             runtimeError(vm, "Memory error on strftime()!");
             return EMPTY_VAL;
         }
     }
 
-    res = copyString(vm, point, strlen(point));
+    int length = strlen(point);
 
-theend:
-    free(point);
+    // Account for the buffer created at the start
+    vm->bytesAllocated -= len - length - 1;
 
-    return OBJ_VAL(res);
+    return OBJ_VAL(takeString(vm, point, length));
 }
 
 #ifdef HAS_STRPTIME
@@ -157,7 +153,7 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-ObjModule *createDatetimeClass(VM *vm) {
+ObjModule *createDatetimeModule(VM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

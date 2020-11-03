@@ -49,7 +49,7 @@ Value strerrorNative(VM *vm, int argCount, Value *args) {
     return strerrorGeneric(vm, error);
 }
 
-void createCClass(VM *vm) {
+void createCModule(VM *vm) {
     ObjString *name = copyString(vm, "C", 1);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

@@ -221,7 +221,7 @@ static Value tanNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(tan(AS_NUMBER(args[0])));
 }
 
-ObjModule *createMathsClass(VM *vm) {
+ObjModule *createMathsModule(VM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

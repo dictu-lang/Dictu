@@ -24,8 +24,7 @@ static void createResponse(VM *vm, Response *response) {
     push(vm, OBJ_VAL(response->headers));
 
     response->len = 0;
-    response->res = malloc(1);
-    response->res[0] = '\0';
+    response->res = NULL;
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data) {
@@ -314,7 +313,7 @@ static Value post(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-ObjModule *createHTTPClass(VM *vm) {
+ObjModule *createHTTPModule(VM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

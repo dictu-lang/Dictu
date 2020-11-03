@@ -1,5 +1,4 @@
 #include "files.h"
-#include "../vm.h"
 #include "../memory.h"
 
 static Value writeFile(VM *vm, int argCount, Value *args) {
@@ -72,7 +71,7 @@ static Value readFullFile(VM *vm, int argCount, Value *args) {
         fseek(file->file, currentPosition, SEEK_SET);
     }
 
-    char *buffer = (char *) malloc(fileSize + 1);
+    char *buffer = ALLOCATE(vm, char, fileSize + 1);
     if (buffer == NULL) {
         runtimeError(vm, "Not enough memory to read \"%s\".\n", file->path);
         return EMPTY_VAL;
@@ -80,16 +79,13 @@ static Value readFullFile(VM *vm, int argCount, Value *args) {
 
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, file->file);
     if (bytesRead < fileSize && !feof(file->file)) {
-        free(buffer);
+        FREE_ARRAY(vm, char, buffer, fileSize + 1);
         runtimeError(vm, "Could not read file \"%s\".\n", file->path);
         return EMPTY_VAL;
     }
 
     buffer[bytesRead] = '\0';
-    Value ret = OBJ_VAL(copyString(vm, buffer, bytesRead));
-
-    free(buffer);
-    return ret;
+    return OBJ_VAL(takeString(vm, buffer, bytesRead));
 }
 
 static Value readLineFile(VM *vm, int argCount, Value *args) {

@@ -1,5 +1,4 @@
 #include "strings.h"
-#include "../vm.h"
 #include "../memory.h"
 
 
@@ -40,7 +39,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     }
 
     int length = 0;
-    char **replaceStrings = malloc(argCount * sizeof(char *));
+    char **replaceStrings = ALLOCATE(vm, char*, argCount);
 
     for (int j = 1; j < argCount + 1; j++) {
         Value value = args[j];
@@ -59,7 +58,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     ObjString *string = AS_STRING(args[0]);
 
     int stringLen = string->length + 1;
-    char *tmp = malloc(stringLen);
+    char *tmp = ALLOCATE(vm, char, stringLen);
     char *tmpFree = tmp;
     memcpy(tmp, string->chars, stringLen);
 
@@ -78,14 +77,14 @@ static Value formatString(VM *vm, int argCount, Value *args) {
             free(replaceStrings[i]);
         }
 
-        free(tmp);
-        free(replaceStrings);
+        FREE_ARRAY(vm, char, tmp , stringLen);
+        FREE_ARRAY(vm, char*, replaceStrings, argCount);
         return EMPTY_VAL;
     }
 
     int fullLength = string->length - count * 2 + length + 1;
     char *pos;
-    char *newStr = malloc(sizeof(char) * fullLength);
+    char *newStr = ALLOCATE(vm, char, fullLength);
     int stringLength = 0;
 
     for (int i = 0; i < argCount; ++i) {
@@ -102,12 +101,11 @@ static Value formatString(VM *vm, int argCount, Value *args) {
         free(replaceStrings[i]);
     }
 
-    free(replaceStrings);
+    FREE_ARRAY(vm, char*, replaceStrings, argCount);
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = copyString(vm, newStr, fullLength - 1);
+    ObjString *newString = takeString(vm, newStr, fullLength - 1);
 
-    free(newStr);
-    free(tmpFree);
+    FREE_ARRAY(vm, char, tmpFree, stringLen);
     return OBJ_VAL(newString);
 }
 
@@ -125,9 +123,9 @@ static Value splitString(VM *vm, int argCount, Value *args) {
     ObjString *string = AS_STRING(args[0]);
     char *delimiter = AS_CSTRING(args[1]);
 
-    char *tmp = malloc(string->length + 1);
+    char *tmp = ALLOCATE(vm, char, string->length + 1);
     char *tmpFree = tmp;
-    memcpy(tmp, string->chars, string->length + 1);
+    memcpy(tmp, string->chars, string->length);
     tmp[string->length] = '\0';
     int delimiterLength = strlen(delimiter);
     char *token;
@@ -162,7 +160,7 @@ static Value splitString(VM *vm, int argCount, Value *args) {
     }
     pop(vm);
 
-    free(tmpFree);
+    FREE_ARRAY(vm, char, tmpFree, string->length + 1);
     return OBJ_VAL(list);
 }
 
@@ -251,9 +249,10 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
     int stringLen = strlen(string) + 1;
 
     // Make a copy of the string so we do not modify the original
-    char *tmp = malloc(stringLen);
+    char *tmp = ALLOCATE(vm, char, stringLen + 1);
     char *tmpFree = tmp;
     memcpy(tmp, string, stringLen);
+    tmp[stringLen] = '\0';
 
     // Count the occurrences of the needle so we can determine the size
     // of the string we need to allocate
@@ -266,13 +265,13 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
     tmp = tmpFree;
 
     if (count == 0) {
-        free(tmpFree);
+        FREE_ARRAY(vm, char, tmpFree, stringLen + 1);
         return stringValue;
     }
 
     int length = strlen(tmp) - count * (len - replaceLen) + 1;
     char *pos;
-    char *newStr = malloc(sizeof(char) * length);
+    char *newStr = ALLOCATE(vm, char, length);
     int stringLength = 0;
 
     for (int i = 0; i < count; ++i) {
@@ -288,10 +287,9 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
     }
 
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = copyString(vm, newStr, length - 1);
+    ObjString *newString = takeString(vm, newStr, length - 1);
 
-    free(newStr);
-    free(tmpFree);
+    FREE_ARRAY(vm, char, tmpFree, stringLen + 1);
     return OBJ_VAL(newString);
 }
 
@@ -302,17 +300,14 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
-
-    char *temp = malloc(sizeof(char) * (string->length + 1));
+    char *temp = ALLOCATE(vm, char, string->length + 1);
 
     for (int i = 0; string->chars[i]; i++) {
         temp[i] = tolower(string->chars[i]);
     }
     temp[string->length] = '\0';
 
-    Value ret = OBJ_VAL(copyString(vm, temp, string->length));
-    free(temp);
-    return ret;
+    return OBJ_VAL(takeString(vm, temp, string->length));
 }
 
 static Value upperString(VM *vm, int argCount, Value *args) {
@@ -322,17 +317,14 @@ static Value upperString(VM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
-
-    char *temp = malloc(sizeof(char) * (string->length + 1));
+    char *temp = ALLOCATE(vm, char, string->length + 1);
 
     for (int i = 0; string->chars[i]; i++) {
         temp[i] = toupper(string->chars[i]);
     }
     temp[string->length] = '\0';
 
-    Value ret = OBJ_VAL(copyString(vm, temp, string->length));
-    free(temp);
-    return ret;
+    return OBJ_VAL(takeString(vm, temp, string->length));
 }
 
 static Value startsWithString(VM *vm, int argCount, Value *args) {
@@ -381,7 +373,7 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
     int i, count = 0;
-    char *temp = malloc(sizeof(char) * (string->length + 1));
+    char *temp = ALLOCATE(vm, char, string->length + 1);
 
     for (i = 0; i < string->length; ++i) {
         if (!isspace(string->chars[i])) {
@@ -390,10 +382,11 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
         count++;
     }
 
+    // We need to remove the stripped chars from the count
+    // Will be free'd at the call of takeString
+    vm->bytesAllocated -= count;
     memcpy(temp, string->chars + count, string->length - count);
-    Value ret = OBJ_VAL(copyString(vm, temp, string->length - count));
-    free(temp);
-    return ret;
+    return OBJ_VAL(takeString(vm, temp, string->length - count));
 }
 
 static Value rightStripString(VM *vm, int argCount, Value *args) {
@@ -404,7 +397,7 @@ static Value rightStripString(VM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
     int length;
-    char *temp = malloc(sizeof(char) * (string->length + 1));
+    char *temp = ALLOCATE(vm, char, string->length + 1);
 
     for (length = string->length - 1; length > 0; --length) {
         if (!isspace(string->chars[length])) {
@@ -412,10 +405,12 @@ static Value rightStripString(VM *vm, int argCount, Value *args) {
         }
     }
 
+    // We need to remove the stripped chars from the count
+    // Will be free'd at the call of takeString
+    vm->bytesAllocated -= string->length - length - 1;
     memcpy(temp, string->chars, length + 1);
-    Value ret = OBJ_VAL(copyString(vm, temp, length + 1));
-    free(temp);
-    return ret;
+    temp[length + 1] = '\0';
+    return OBJ_VAL(takeString(vm, temp, length + 1));
 }
 
 static Value stripString(VM *vm, int argCount, Value *args) {

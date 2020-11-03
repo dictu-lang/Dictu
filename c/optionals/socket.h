@@ -10,6 +10,6 @@
 #include <netinet/in.h>
 #endif
 
-ObjModule *createSocketClass(VM *vm);
+ObjModule *createSocketModule(VM *vm);
 
 #endif //dictu_socket_h
