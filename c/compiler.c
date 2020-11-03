@@ -609,8 +609,9 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
     if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
-        bool initProperties = false;
         int index = 0;
+        uint8_t identifiers[255];
+        int indexes[255];
         do {
             bool varKeyword = match(compiler, TOKEN_VAR);
             consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
@@ -619,9 +620,8 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             defineVariable(fnCompiler, paramConstant, false);
 
             if (type == TYPE_INITIALIZER && varKeyword) {
-                initProperties = true;
-                fnCompiler->function->propertyNames[fnCompiler->function->propertyCount] = paramConstant;
-                fnCompiler->function->propertyIndexes[fnCompiler->function->propertyCount++] = index;
+                identifiers[fnCompiler->function->propertyCount] = paramConstant;
+                indexes[fnCompiler->function->propertyCount++] = index;
             } else if (varKeyword) {
                 error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
             }
@@ -649,7 +649,18 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             emitBytes(fnCompiler, fnCompiler->function->arity, fnCompiler->function->arityOptional);
         }
 
-        if (initProperties) {
+        if (fnCompiler->function->propertyCount > 0) {
+            VM *vm = fnCompiler->parser->vm;
+            push(vm, OBJ_VAL(fnCompiler->function));
+            fnCompiler->function->propertyIndexes = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
+            fnCompiler->function->propertyNames = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
+            pop(vm);
+
+            for (int i = 0; i < fnCompiler->function->propertyCount; ++i) {
+                fnCompiler->function->propertyNames[i] = identifiers[i];
+                fnCompiler->function->propertyIndexes[i] = indexes[i];
+            }
+
             emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
     }

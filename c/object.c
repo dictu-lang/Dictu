@@ -86,13 +86,6 @@ ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     function->type = type;
     function->module = module;
 
-    if (type == TYPE_INITIALIZER) {
-        push(vm, OBJ_VAL(function));
-        function->propertyIndexes = ALLOCATE(vm, int, 255);
-        function->propertyNames = ALLOCATE(vm, int, 255);
-        pop(vm);
-    }
-
     initChunk(vm, &function->chunk);
     return function;
 }
