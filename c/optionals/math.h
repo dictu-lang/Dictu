@@ -2,6 +2,7 @@
 #define dictu_math_h
 
 #include <string.h>
+#include <math.h>
 
 #include "optionals.h"
 #include "../vm.h"

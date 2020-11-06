@@ -1,16 +1,17 @@
 #include "optionals.h"
 
 BuiltinModules modules[] = {
-        {"Math", &createMathsModule},
-        {"Env", &createEnvModule},
         {"JSON", &createJSONModule},
         {"Path", &createPathModule},
-        {"Datetime", &createDatetimeModule},
-        {"Socket", &createSocketModule},
-        {"Random", &createRandomModule},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPModule},
 #endif
+        {"Datetime", &createDatetimeModule},
+        {"Random", &createRandomModule},
+        {"Env", &createEnvModule},
+        {"Socket", &createSocketModule},
+        {"Process", &createProcessModule},
+        {"Math", &createMathsModule},
         {NULL, NULL}
 };
 

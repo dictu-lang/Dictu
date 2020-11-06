@@ -1,6 +1,4 @@
 #include "math.h"
-#include "../vm.h"
-#include <math.h>
 
 static Value averageNative(VM *vm, int argCount, Value *args) {
     double average = 0;
