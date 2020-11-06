@@ -80,6 +80,12 @@ ObjModule *createEnvModule(VM *vm) {
     defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "set", set);
+
+    /**
+     * Define Env properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+
     pop(vm);
     pop(vm);
 

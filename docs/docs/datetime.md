@@ -23,6 +23,12 @@ To make use of the Datetime module an import is required.
 import Datetime;
 ```
 
+### Constants
+
+| Constant             | Description                     |
+|----------------------|---------------------------------|
+| Datetime.errno       | Number of the last error        |
+
 ### Datetime.now()
 
 Returns a human readable locale datetime string.

@@ -162,12 +162,19 @@ ObjModule *createDatetimeModule(VM *vm) {
     /**
      * Define Datetime methods
      */
+    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "now", nowNative);
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
     defineNative(vm, &module->values, "strftime", strftimeNative);
     #ifdef HAS_STRPTIME
     defineNative(vm, &module->values, "strptime", strptimeNative);
     #endif
+
+    /**
+     * Define Datetime properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+
     pop(vm);
     pop(vm);
 
