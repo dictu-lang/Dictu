@@ -48,7 +48,7 @@ static void advance(Parser *parser) {
     parser->previous = parser->current;
 
     for (;;) {
-        parser->current = scanToken();
+        parser->current = scanToken(&parser->scanner);
         if (parser->current.type != TOKEN_ERROR) break;
 
         errorAtCurrent(parser, parser->current.start);
@@ -1913,8 +1913,8 @@ static void statement(Compiler *compiler) {
 
         if (check(compiler, TOKEN_RIGHT_BRACE)) {
             if (check(compiler, TOKEN_SEMICOLON)) {
-                backTrack();
-                backTrack();
+                backTrack(&parser->scanner);
+                backTrack(&parser->scanner);
                 parser->current = previous;
                 expressionStatement(compiler);
                 return;
@@ -1923,7 +1923,7 @@ static void statement(Compiler *compiler) {
 
         if (check(compiler, TOKEN_COLON)) {
             for (int i = 0; i < parser->current.length + parser->previous.length; ++i) {
-                backTrack();
+                backTrack(&parser->scanner);
             }
 
             parser->current = previous;
@@ -1933,7 +1933,7 @@ static void statement(Compiler *compiler) {
 
         // Reset the scanner to the previous position
         for (int i = 0; i < parser->current.length; ++i) {
-            backTrack();
+            backTrack(&parser->scanner);
         }
 
         // Reset the parser
@@ -1957,7 +1957,10 @@ ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
     parser.panicMode = false;
     parser.module = module;
 
-    initScanner(source);
+    Scanner scanner;
+    initScanner(&scanner, source);
+    parser.scanner = scanner;
+
     Compiler compiler;
     initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL);
 

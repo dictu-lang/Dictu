@@ -49,10 +49,17 @@ typedef struct {
     int line;
 } Token;
 
-void initScanner(const char *source);
+typedef struct {
+    const char *start;
+    const char *current;
+    int line;
+    bool rawString;
+} Scanner;
 
-void backTrack();
+void initScanner(Scanner *scanner, const char *source);
 
-Token scanToken();
+void backTrack(Scanner *scanner);
+
+Token scanToken(Scanner *scanner);
 
 #endif
