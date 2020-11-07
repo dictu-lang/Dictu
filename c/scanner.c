@@ -431,6 +431,8 @@ Token scanToken() {
             } else {
                 return makeToken(TOKEN_EQUAL);
             }
+        case '?':
+            return makeToken(TOKEN_QUESTION);
         case '<':
             return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
         case '>':

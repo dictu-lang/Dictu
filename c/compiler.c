@@ -516,6 +516,28 @@ static void binary(Compiler *compiler, bool canAssign) {
     }
 }
 
+static void ternary(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+    // Jump to the else branch if the condition is false.
+    int elseJump = emitJump(compiler, OP_JUMP_IF_FALSE);
+
+    // Compile the then branch.
+    emitByte(compiler, OP_POP); // Condition.
+    expression(compiler);
+
+    // Jump over the else branch when the if branch is taken.
+    int endJump = emitJump(compiler, OP_JUMP);
+
+    // Compile the else branch.
+    patchJump(compiler, elseJump);
+    emitByte(compiler, OP_POP); // Condition.
+
+    consume(compiler, TOKEN_COLON, "Expected colon after ternary expression");
+    expression(compiler);
+
+    patchJump(compiler, endJump);
+}
+
 static void call(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
@@ -1133,6 +1155,7 @@ ParseRule rules[] = {
         {NULL,     dot,       PREC_CALL},               // TOKEN_DOT
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
+        {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
         {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
