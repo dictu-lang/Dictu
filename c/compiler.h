@@ -68,6 +68,7 @@ typedef struct Loop {
 
 typedef struct {
     VM *vm;
+    Scanner scanner;
     Token current;
     Token previous;
     bool hadError;
