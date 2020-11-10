@@ -1278,6 +1278,11 @@ static void method(Compiler *compiler) {
         // Setup function and parse parameters
         beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
         endCompiler(&fnCompiler);
+
+        if (check(compiler, TOKEN_LEFT_BRACE)) {
+            error(compiler->parser, "Abstract methods can not have an implementation.");
+            return;
+        }
     }
 
     emitBytes(compiler, OP_METHOD, constant);
