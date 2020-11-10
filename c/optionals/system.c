@@ -307,7 +307,7 @@ void initPlatform(VM *vm, Table *table) {
 #endif
 }
 
-void createSystemClass(VM *vm, int argc, const char *argv[]) {
+void createSystemModule(VM *vm, int argc, const char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

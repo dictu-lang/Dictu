@@ -33,6 +33,18 @@ import Math;
 Math.PI; // 3.14... 
 ```
 
+If however you wish to import something specific from the module into the current scope you can use a `from` import, this 
+accepts a single identifier or multiple separated by a comma. 
+
+```cs
+from Math import PI;
+
+PI; // 3.14...
+
+// Import multiple things
+from JSON import parse, stringify;
+```
+
 #### User created scripts
 
 When you wish to import another Dictu script, you use the import keyword. This takes an optional identifier which will be the
@@ -47,7 +59,7 @@ import "some/file.du";
 import "some/file.du" as SomeModule;
 ```
 
-When importing a module with an identifer, you can access the top level module variables using the `.` operator, much
+When importing a module with an identifier, you can access the top level module variables using the `.` operator, much
 like you would for a class.
 
 **some/file.du**
@@ -70,3 +82,12 @@ print(SomeModule.test()); // "test"
 Once an module has been imported, it is stored within the VM, and is not executed again even if it is imported elsewhere.
 What happens is the module is "loaded" again, which means if it was to change in the time from import, it will not be changed
 within your program even if re-importing the module.
+
+Same as importing specific items from a builtin module, `from` imports also work on user created files.
+
+```cs
+from "some/file.du" import x, test;
+
+print(x); // 10
+print(test()); // "test"
+```

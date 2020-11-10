@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define UNUSED(__x__) (void) __x__
+
 #define NAN_TAGGING
 #define DEBUG_PRINT_CODE
 #define DEBUG_TRACE_EXECUTION

@@ -27,9 +27,9 @@ import Path;
 
 | Constant           | Description                          |
 |--------------------|--------------------------------------|
+| Path.errno         | Number of the last error             |
 | Path.delimiter     | System dependent path delimiter      |
 | Path.dirSeparator  | System dependent directory separator |
-| Path.errno         | Number of the last error (UNIX only) |
 
 ### Path.basename(string)
 

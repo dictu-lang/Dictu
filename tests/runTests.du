@@ -25,6 +25,7 @@ if (isDefined("HTTP")) {
 }
 
 import "tests/modules/import.du";
+import "tests/imports/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

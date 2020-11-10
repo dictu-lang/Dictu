@@ -67,7 +67,7 @@ static Value randomSelect(VM *vm, int argCount, Value *args)
     return args[index];
 }
 
-ObjModule *createRandomClass(VM *vm)
+ObjModule *createRandomModule(VM *vm)
 {
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));
@@ -79,9 +79,15 @@ ObjModule *createRandomClass(VM *vm)
     /**
      * Define Random methods
      */
+    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "random", randomRandom);
     defineNative(vm, &module->values, "range", randomRange);
     defineNative(vm, &module->values, "select", randomSelect);
+
+    /**
+     * Define Random properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
 
     pop(vm);
     pop(vm);

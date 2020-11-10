@@ -26,10 +26,11 @@ import Math;
 
 ### Constants
 
-| Constant  | Description                                            |
-|-----------|--------------------------------------------------------|
-| Math.PI   | The mathematical constant: 3.14159265358979            |
-| Math.e    | The mathematical constant: 2.71828182845905            |
+| Constant     | Description                                            |
+|--------------|--------------------------------------------------------|
+| Math.errno   | Number of the last error                               |
+| Math.PI      | The mathematical constant: 3.14159265358979            |
+| Math.e       | The mathematical constant: 2.71828182845905            |
 
 ### Math.min(iterable)
 
@@ -114,4 +115,31 @@ Returns the square root of a given number
 ```cs
 Math.sqrt(25); // 5
 Math.sqrt(100); // 10
+```
+
+### Math.sin(number)
+
+Returns the sin value of a given number in radian
+
+```cs
+Math.sin(1); // 0.8414
+Math.sin(50); // -0.2623
+```
+
+### Math.cos(number)
+
+Returns the cos value of a given number in radian
+
+```cs
+Math.cos(1); // 0.5403
+Math.cos(50); // 0.9649
+```
+
+### Math.tan(number)
+
+Returns the tan value of a given number in radian
+
+```cs
+Math.tan(1); // 1.5574
+Math.tan(50); // -0.2719
 ```

@@ -37,7 +37,7 @@ typedef enum {
     TOKEN_VAR, TOKEN_CONST, TOKEN_TRUE, TOKEN_FALSE, TOKEN_NIL,
     TOKEN_FOR, TOKEN_WHILE, TOKEN_BREAK,
     TOKEN_RETURN, TOKEN_CONTINUE,
-    TOKEN_WITH, TOKEN_EOF, TOKEN_IMPORT,
+    TOKEN_WITH, TOKEN_EOF, TOKEN_IMPORT, TOKEN_FROM,
     TOKEN_ERROR
 
 } TokenType;
@@ -49,10 +49,17 @@ typedef struct {
     int line;
 } Token;
 
-void initScanner(const char *source);
+typedef struct {
+    const char *start;
+    const char *current;
+    int line;
+    bool rawString;
+} Scanner;
 
-void backTrack();
+void initScanner(Scanner *scanner, const char *source);
 
-Token scanToken();
+void backTrack(Scanner *scanner);
+
+Token scanToken(Scanner *scanner);
 
 #endif

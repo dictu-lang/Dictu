@@ -15,10 +15,10 @@ void cleanupSockets(void) {
 #endif
 
 #include "common.h"
-#include "vm.h"
+#include "memory.h"
 #include "util.h"
 
-#define VERSION "Dictu Version: 0.11.0\n"
+#define VERSION "Dictu Version: 0.12.0\n"
 
 #ifndef DISABLE_LINENOISE
 #include "linenoise.h"
@@ -83,8 +83,9 @@ static void repl(VM *vm, int argc, const char *argv[]) {
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        char *fullLine = malloc(sizeof(char) * (strlen(line) + 1));
-        snprintf(fullLine, strlen(line) + 1, "%s", line);
+        int fullLineLength = strlen(line);
+        char *fullLine = ALLOCATE(vm, char, fullLineLength + 1);
+        snprintf(fullLine, fullLineLength + 1, "%s", line);
 
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
@@ -92,12 +93,14 @@ static void repl(VM *vm, int argc, const char *argv[]) {
         while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
             free(line);
             line = linenoise("... ");
+            int lineLength = strlen(line);
 
             if (line == NULL) {
                 return;
             }
 
-            char *temp = realloc(fullLine, strlen(fullLine) + strlen(line) + 1);
+
+            char *temp = GROW_ARRAY(vm, fullLine, char, fullLineLength, fullLineLength + lineLength);
 
             if (temp == NULL) {
                 printf("Unable to allocate memory\n");
@@ -105,7 +108,8 @@ static void repl(VM *vm, int argc, const char *argv[]) {
             }
 
             fullLine = temp;
-            memcpy(fullLine + strlen(fullLine), line, strlen(line) + 1);
+            memcpy(fullLine + fullLineLength, line, lineLength);
+            fullLineLength += lineLength;
 
             linenoiseHistoryAdd(line);
             linenoiseHistorySave("history.txt");
@@ -114,7 +118,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
         interpret(vm, fullLine);
 
         free(line);
-        free(fullLine);
+        FREE_ARRAY(vm, char, fullLine, fullLineLength + 1);
     }
     #else
     #define BUFFER_SIZE 8
@@ -159,9 +163,15 @@ static void repl(VM *vm, int argc, const char *argv[]) {
 static void runFile(VM *vm, int argc, const char *argv[]) {
     UNUSED(argc);
 
-    char *source = readFile(argv[1]);
+    char *source = readFile(vm, argv[1]);
+
+    if (source == NULL) {
+        fprintf(stderr, "Could not open file \"%s\".\n", argv[1]);
+        exit(74);
+    }
+
     InterpretResult result = interpret(vm, source);
-    free(source); // [owner]
+    FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);

@@ -179,15 +179,58 @@ static Value sqrtNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(sqrt(AS_NUMBER(args[0])));
 }
 
-ObjModule *createMathsClass(VM *vm) {
+static Value sinNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "sin() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to sin()");
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(sin(AS_NUMBER(args[0])));
+}
+
+static Value cosNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "cos() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to cos()");
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(cos(AS_NUMBER(args[0])));
+}
+
+static Value tanNative(VM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "tan() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to tan()");
+        return EMPTY_VAL;
+    }
+
+    return NUMBER_VAL(tan(AS_NUMBER(args[0])));
+}
+
+ObjModule *createMathsModule(VM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
 
     /**
-     * Define Math values
+     * Define Math methods
      */
+    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "average", averageNative);
     defineNative(vm, &module->values, "floor", floorNative);
     defineNative(vm, &module->values, "round", roundNative);
@@ -197,10 +240,14 @@ ObjModule *createMathsClass(VM *vm) {
     defineNative(vm, &module->values, "min", minNative);
     defineNative(vm, &module->values, "sum", sumNative);
     defineNative(vm, &module->values, "sqrt", sqrtNative);
+    defineNative(vm, &module->values, "sin", sinNative);
+    defineNative(vm, &module->values, "cos", cosNative);
+    defineNative(vm, &module->values, "tan", tanNative);
 
     /**
      * Define Math properties
      */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
     pop(vm);

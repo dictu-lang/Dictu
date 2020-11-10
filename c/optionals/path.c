@@ -215,7 +215,8 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(dir_contents));
 
     #ifdef _WIN32
-    char *searchPath = malloc(strlen(path) + 4);
+    int length = strlen(path) + 4;
+    char *searchPath = ALLOCATE(vm, char, length);
     if (searchPath == NULL) {
         runtimeError(vm, "Memory error on listdir()!");
         return EMPTY_VAL;
@@ -243,7 +244,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     } while (FindNextFile(dir, &file) != 0);
 
     FindClose(dir);
-    free(searchPath);
+    FREE_ARRAY(vm, char, searchPath, length);
     #else
     struct dirent *dir;
     DIR *d;
@@ -262,6 +263,8 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
         runtimeError(vm, "%s is not a path!", path);
         return EMPTY_VAL;
     }
+
+    closedir(d);
     #endif
 
     pop(vm);
@@ -269,7 +272,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(dir_contents);
 }
 
-ObjModule *createPathClass(VM *vm) {
+ObjModule *createPathModule(VM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -280,9 +283,8 @@ ObjModule *createPathClass(VM *vm) {
      */
 #ifdef HAS_REALPATH
     defineNative(vm, &module->values, "realpath", realpathNative);
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
 #endif
+    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
     defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);
@@ -291,6 +293,10 @@ ObjModule *createPathClass(VM *vm) {
     defineNative(vm, &module->values, "isdir", isdirNative);
     defineNative(vm, &module->values, "listdir", listdirNative);
 
+    /**
+     * Define Path properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
     defineNativeProperty(vm, &module->values, "dirSeparator", OBJ_VAL(

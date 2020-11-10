@@ -14,7 +14,7 @@
     ((capacity) < 8 ? 8 : (capacity) * 2)
 
 #define SHRINK_CAPACITY(capacity) \
-    ((capacity) < 16 ? 7 : (capacity) / 2)
+    ((capacity) < 16 ? 8 : (capacity) / 2)
 
 #define GROW_ARRAY(vm, previous, type, oldCount, count) \
     (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \

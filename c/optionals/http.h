@@ -10,13 +10,12 @@
 
 typedef struct response {
     VM *vm;
-    char *res;
     ObjList *headers;
+    char *res;
     size_t len;
-    size_t headerLen;
     long statusCode;
 } Response;
 
-ObjModule *createHTTPClass(VM *vm);
+ObjModule *createHTTPModule(VM *vm);
 
 #endif //dictu_http_h

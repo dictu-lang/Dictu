@@ -68,7 +68,7 @@ static Value set(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
-ObjModule *createEnvClass(VM *vm) {
+ObjModule *createEnvModule(VM *vm) {
     ObjString *name = copyString(vm, "Env", 3);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -80,6 +80,12 @@ ObjModule *createEnvClass(VM *vm) {
     defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "set", set);
+
+    /**
+     * Define Env properties
+     */
+    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
+
     pop(vm);
     pop(vm);
 

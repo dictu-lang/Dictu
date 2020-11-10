@@ -1,0 +1,7 @@
+/**
+ * import.du
+ *
+ * General import file for all the import tests
+ */
+
+import "tests/imports/from.du";

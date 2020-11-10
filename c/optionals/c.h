@@ -35,7 +35,7 @@
 #include "../vm.h"
 #include "../memory.h"
 
-void createCClass(VM *vm);
+void createCModule(VM *vm);
 
 #define MAX_ERROR_LEN 256
 Value strerrorGeneric(VM *, int);

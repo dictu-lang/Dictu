@@ -223,7 +223,7 @@ static Value setSocketOpt(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-ObjModule *createSocketClass(VM *vm) {
+ObjModule *createSocketModule(VM *vm) {
     ObjString *name = copyString(vm, "Socket", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -245,7 +245,7 @@ ObjModule *createSocketClass(VM *vm) {
     defineNativeProperty(vm, &module->values, "SO_REUSEADDR", NUMBER_VAL(SO_REUSEADDR));
 
     /**
-     * Setup socket object methods
+     * Setup Socket object methods
      */
     defineNative(vm, &vm->socketMethods, "bind", bindSocket);
     defineNative(vm, &vm->socketMethods, "listen", listenSocket);

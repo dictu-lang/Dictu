@@ -1,0 +1,13 @@
+def isPalindrome(arg) {
+  var len = arg.len();
+  for (var i = 0; i < len/2; ++i) {
+    if (arg[i] != arg[len - 1 - i]) { 
+        return false; 
+    }
+    
+  }
+  return true;
+}
+
+print(isPalindrome("aba")); // true
+print(isPalindrome("abc")); // false

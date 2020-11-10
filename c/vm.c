@@ -145,10 +145,10 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
 
     /**
      * Native classes which are not required to be
-     * imported. For imported natives see optionals.c
+     * imported. For imported modules see optionals.c
      */
-    createSystemClass(vm, argc, argv);
-    createCClass(vm);
+    createSystemModule(vm, argc, argv);
+    createCModule(vm);
 
     return vm;
 }
@@ -1104,10 +1104,17 @@ static InterpretResult run(VM *vm) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 ++vm->scriptNameCount;
                 vm->lastModule = AS_MODULE(moduleVal);
+                push(vm, NIL_VAL);
                 DISPATCH();
             }
 
-            char *s = readFile(fileName->chars);
+            char *source = readFile(vm, fileName->chars);
+
+            if (source == NULL) {
+                frame->ip = ip;
+                runtimeError(vm, "Could not open file \"%s\".", fileName->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
 
             if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
                 int oldCapacity = vm->scriptNameCapacity;
@@ -1123,15 +1130,15 @@ static InterpretResult run(VM *vm) {
             vm->lastModule = module;
 
             push(vm, OBJ_VAL(module));
-            ObjFunction *function = compile(vm, module, s);
+            ObjFunction *function = compile(vm, module, source);
             pop(vm);
-            free(s);
+
+            FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
             if (function == NULL) return INTERPRET_COMPILE_ERROR;
             push(vm, OBJ_VAL(function));
             ObjClosure *closure = newClosure(vm, function);
             pop(vm);
-
             push(vm, OBJ_VAL(closure));
 
             frame->ip = ip;
@@ -1161,8 +1168,58 @@ static InterpretResult run(VM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(IMPORT_BUILTIN_VARIABLE): {
+            int index = READ_BYTE();
+            ObjString *fileName = READ_STRING();
+            int varCount = READ_BYTE();
+
+            Value moduleVal;
+            ObjModule *module;
+
+            if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                module = AS_MODULE(moduleVal);
+            } else {
+                module = importBuiltinModule(vm, index);
+            }
+
+            for (int i = 0; i < varCount; i++) {
+                Value moduleVariable;
+                ObjString *variable = READ_STRING();
+
+                if (!tableGet(&module->values, variable, &moduleVariable)) {
+                    frame->ip = ip;
+                    runtimeError(vm, "%s can't be found in module %s", variable->chars, module->name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                push(vm, moduleVariable);
+            }
+
+            DISPATCH();
+        }
+
         CASE_CODE(IMPORT_VARIABLE): {
             push(vm, OBJ_VAL(vm->lastModule));
+            DISPATCH();
+        }
+
+        CASE_CODE(IMPORT_FROM): {
+            int varCount = READ_BYTE();
+
+            for (int i = 0; i < varCount; i++) {
+                Value moduleVariable;
+                ObjString *variable = READ_STRING();
+
+                if (!tableGet(&vm->lastModule->values, variable, &moduleVariable)) {
+                    vm->scriptNameCount--;
+                    frame->ip = ip;
+                    runtimeError(vm, "%s can't be found in module %s", variable->chars, vm->lastModule->name->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                push(vm, moduleVariable);
+            }
+
             DISPATCH();
         }
 
