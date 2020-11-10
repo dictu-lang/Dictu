@@ -1172,6 +1172,8 @@ static bool foldUnary(Compiler *compiler, TokenType operatorType) {
                 chunk->constants.values[constant] = NUMBER_VAL(-AS_NUMBER(chunk->constants.values[constant]));
                 return true;
             }
+
+            return false;
         }
 
         default: {
