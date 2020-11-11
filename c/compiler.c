@@ -787,8 +787,8 @@ static void string(Compiler *compiler, bool canAssign) {
     int length = parseString(string, parser->previous.length - 2);
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
-    parser->vm->bytesAllocated -= parser->previous.length - 2 - length;
+    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
+    FREE_ARRAY(parser->vm, char, string, parser->previous.length - 1);
 }
 
 static void list(Compiler *compiler, bool canAssign) {

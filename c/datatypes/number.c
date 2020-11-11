@@ -18,7 +18,10 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
     }
     
     snprintf(numberString, numberStringLength, "%.15g", number);
-    return OBJ_VAL(takeString(vm, numberString, numberStringLength - 1));
+    Value newString = OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
+    FREE_ARRAY(vm, char, numberString, numberStringLength);
+
+    return newString;
 }
 
 void declareNumberMethods(VM *vm) {
