@@ -22,7 +22,7 @@ static void errorAt(Parser *parser, Token *token, const char *message) {
     if (parser->panicMode) return;
     parser->panicMode = true;
 
-    fprintf(stderr, "[%s line %d] Error", parser->vm->scriptNames[parser->vm->scriptNameCount], token->line);
+    fprintf(stderr, "[%s line %d] Error", parser->module->name->chars, token->line);
 
     if (token->type == TOKEN_EOF) {
         fprintf(stderr, " at end");

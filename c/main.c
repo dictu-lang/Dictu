@@ -73,7 +73,7 @@ static bool replCountQuotes(char *line) {
 }
 #endif
 
-static void repl(VM *vm, int argc, const char *argv[]) {
+static void repl(VM *vm, int argc, char *argv[]) {
     UNUSED(argc); UNUSED(argv);
 
     printf(VERSION);
@@ -115,7 +115,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
             linenoiseHistorySave("history.txt");
         }
 
-        interpret(vm, fullLine);
+        interpret(vm, "repl", fullLine);
 
         free(line);
         FREE_ARRAY(vm, char, fullLine, fullLineLength + 1);
@@ -150,7 +150,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
             }
         }
 
-        interpret(vm, line);
+        interpret(vm, "repl", line);
         lineLength = 0;
         line[0] = '\0';
     }
@@ -160,7 +160,7 @@ static void repl(VM *vm, int argc, const char *argv[]) {
     #endif
 }
 
-static void runFile(VM *vm, int argc, const char *argv[]) {
+static void runFile(VM *vm, int argc, char *argv[]) {
     UNUSED(argc);
 
     char *source = readFile(vm, argv[1]);
@@ -170,14 +170,14 @@ static void runFile(VM *vm, int argc, const char *argv[]) {
         exit(74);
     }
 
-    InterpretResult result = interpret(vm, source);
+    InterpretResult result = interpret(vm, argv[1], source);
     FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
     #ifdef _WIN32
     atexit(cleanupSockets);
     WORD versionWanted = MAKEWORD(2, 2);
@@ -185,7 +185,7 @@ int main(int argc, const char *argv[]) {
     WSAStartup(versionWanted, &wsaData);
     #endif
 
-    VM *vm = initVM(argc == 1, argc >= 2 ? argv[1] : "repl", argc, argv);
+    VM *vm = initVM(argc == 1, argc, argv);
 
     if (argc == 1) {
         repl(vm, argc, argv);

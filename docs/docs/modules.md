@@ -91,3 +91,12 @@ from "some/file.du" import x, test;
 print(x); // 10
 print(test()); // "test"
 ```
+
+#### \__file__
+
+Similar to the built-in variable, `__file__` is also available on built-in modules.
+
+```
+import HTTP;
+print(HTTP.__file__); // 'HTTP'
+```  

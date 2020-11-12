@@ -37,7 +37,13 @@ ObjModule *newModule(VM *vm, ObjString *name) {
     module->name = name;
 
     push(vm, OBJ_VAL(module));
+    ObjString *__file__ = copyString(vm, "__file__", 8);
+    push(vm, OBJ_VAL(__file__));
+
+    tableSet(vm, &module->values, __file__, OBJ_VAL(name));
     tableSet(vm, &vm->modules, name, OBJ_VAL(module));
+
+    pop(vm);
     pop(vm);
 
     return module;
