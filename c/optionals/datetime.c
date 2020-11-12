@@ -120,11 +120,10 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
     }
 
     int length = strlen(point);
+    Value newString = OBJ_VAL(copyString(vm, point, length));
+    FREE_ARRAY(vm, char, point, len);
 
-    // Account for the buffer created at the start
-    vm->bytesAllocated -= len - length - 1;
-
-    return OBJ_VAL(takeString(vm, point, length));
+    return newString;
 }
 
 #ifdef HAS_STRPTIME

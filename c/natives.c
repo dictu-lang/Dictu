@@ -123,9 +123,10 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
 
     line[length] = '\0';
 
-    Value l = OBJ_VAL(takeString(vm, line, length));
-    vm->bytesAllocated -= currentSize - length - 1;
-    return l;
+    Value newString = OBJ_VAL(copyString(vm, line, length));
+    FREE_ARRAY(vm, char, line, currentSize);
+
+    return newString;
 }
 
 static Value printNative(VM *vm, int argCount, Value *args) {
