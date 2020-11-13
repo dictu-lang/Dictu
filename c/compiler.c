@@ -604,7 +604,8 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
-static void ternary(Compiler *compiler, bool canAssign) {
+static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     UNUSED(canAssign);
     // Jump to the else branch if the condition is false.
     int elseJump = emitJump(compiler, OP_JUMP_IF_FALSE);
