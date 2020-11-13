@@ -18,7 +18,7 @@ void cleanupSockets(void) {
 #include "memory.h"
 #include "util.h"
 
-#define VERSION "Dictu Version: 0.11.0\n"
+#define VERSION "Dictu Version: 0.12.0\n"
 
 #ifndef DISABLE_LINENOISE
 #include "linenoise.h"

@@ -49,7 +49,7 @@ static void advance(Parser *parser) {
     parser->previous = parser->current;
 
     for (;;) {
-        parser->current = scanToken();
+        parser->current = scanToken(&parser->scanner);
         if (parser->current.type != TOKEN_ERROR) break;
 
         errorAtCurrent(parser, parser->current.start);
@@ -604,6 +604,28 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
+static void ternary(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+    // Jump to the else branch if the condition is false.
+    int elseJump = emitJump(compiler, OP_JUMP_IF_FALSE);
+
+    // Compile the then branch.
+    emitByte(compiler, OP_POP); // Condition.
+    expression(compiler);
+
+    // Jump over the else branch when the if branch is taken.
+    int endJump = emitJump(compiler, OP_JUMP);
+
+    // Compile the else branch.
+    patchJump(compiler, elseJump);
+    emitByte(compiler, OP_POP); // Condition.
+
+    consume(compiler, TOKEN_COLON, "Expected colon after ternary expression");
+    expression(compiler);
+
+    patchJump(compiler, endJump);
+}
+
 static void call(Compiler *compiler, Token previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
@@ -700,9 +722,22 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
     if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
+        int index = 0;
+        uint8_t identifiers[255];
+        int indexes[255];
         do {
-            uint8_t paramConstant = parseVariable(fnCompiler, "Expect parameter name.", false);
+            bool varKeyword = match(compiler, TOKEN_VAR);
+            consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
+            uint8_t paramConstant = identifierConstant(fnCompiler, &fnCompiler->parser->previous);
+            declareVariable(fnCompiler, &fnCompiler->parser->previous);
             defineVariable(fnCompiler, paramConstant, false);
+
+            if (type == TYPE_INITIALIZER && varKeyword) {
+                identifiers[fnCompiler->function->propertyCount] = paramConstant;
+                indexes[fnCompiler->function->propertyCount++] = index;
+            } else if (varKeyword) {
+                error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
+            }
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
                 fnCompiler->function->arityOptional++;
@@ -719,11 +754,27 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             if (fnCompiler->function->arity + fnCompiler->function->arityOptional > 255) {
                 error(fnCompiler->parser, "Cannot have more than 255 parameters.");
             }
+            index++;
         } while (match(fnCompiler, TOKEN_COMMA));
 
         if (fnCompiler->function->arityOptional > 0) {
             emitByte(fnCompiler, OP_DEFINE_OPTIONAL);
             emitBytes(fnCompiler, fnCompiler->function->arity, fnCompiler->function->arityOptional);
+        }
+
+        if (fnCompiler->function->propertyCount > 0) {
+            VM *vm = fnCompiler->parser->vm;
+            push(vm, OBJ_VAL(fnCompiler->function));
+            fnCompiler->function->propertyIndexes = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
+            fnCompiler->function->propertyNames = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
+            pop(vm);
+
+            for (int i = 0; i < fnCompiler->function->propertyCount; ++i) {
+                fnCompiler->function->propertyNames[i] = identifiers[i];
+                fnCompiler->function->propertyIndexes[i] = indexes[i];
+            }
+
+            emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
     }
 
@@ -879,8 +930,8 @@ static void string(Compiler *compiler, bool canAssign) {
     int length = parseString(string, parser->previous.length - 2);
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
-    parser->vm->bytesAllocated -= parser->previous.length - 2 - length;
+    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
+    FREE_ARRAY(parser->vm, char, string, parser->previous.length - 1);
 }
 
 static void list(Compiler *compiler, bool canAssign) {
@@ -1265,6 +1316,7 @@ ParseRule rules[] = {
         {NULL,     dot,       PREC_CALL},               // TOKEN_DOT
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
+        {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
         {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
@@ -1411,6 +1463,11 @@ static void method(Compiler *compiler) {
         // Setup function and parse parameters
         beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
         endCompiler(&fnCompiler);
+
+        if (check(compiler, TOKEN_LEFT_BRACE)) {
+            error(compiler->parser, "Abstract methods can not have an implementation.");
+            return;
+        }
     }
 
     emitBytes(compiler, OP_METHOD, constant);
@@ -2046,8 +2103,8 @@ static void statement(Compiler *compiler) {
 
         if (check(compiler, TOKEN_RIGHT_BRACE)) {
             if (check(compiler, TOKEN_SEMICOLON)) {
-                backTrack();
-                backTrack();
+                backTrack(&parser->scanner);
+                backTrack(&parser->scanner);
                 parser->current = previous;
                 expressionStatement(compiler);
                 return;
@@ -2056,7 +2113,7 @@ static void statement(Compiler *compiler) {
 
         if (check(compiler, TOKEN_COLON)) {
             for (int i = 0; i < parser->current.length + parser->previous.length; ++i) {
-                backTrack();
+                backTrack(&parser->scanner);
             }
 
             parser->current = previous;
@@ -2066,7 +2123,7 @@ static void statement(Compiler *compiler) {
 
         // Reset the scanner to the previous position
         for (int i = 0; i < parser->current.length; ++i) {
-            backTrack();
+            backTrack(&parser->scanner);
         }
 
         // Reset the parser
@@ -2090,7 +2147,10 @@ ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
     parser.panicMode = false;
     parser.module = module;
 
-    initScanner(source);
+    Scanner scanner;
+    initScanner(&scanner, source);
+    parser.scanner = scanner;
+
     Compiler compiler;
     initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL);
 

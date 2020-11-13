@@ -7,8 +7,9 @@ typedef enum {
     TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
     TOKEN_LEFT_BRACKET, TOKEN_RIGHT_BRACKET,
     TOKEN_COMMA, TOKEN_DOT, TOKEN_MINUS, TOKEN_PLUS,
-    TOKEN_PLUS_PLUS, TOKEN_MINUS_MINUS,
+    TOKEN_QUESTION,
 
+    TOKEN_PLUS_PLUS, TOKEN_MINUS_MINUS,
     TOKEN_PLUS_EQUALS, TOKEN_MINUS_EQUALS,
     TOKEN_MULTIPLY_EQUALS, TOKEN_DIVIDE_EQUALS,
 
@@ -49,10 +50,17 @@ typedef struct {
     int line;
 } Token;
 
-void initScanner(const char *source);
+typedef struct {
+    const char *start;
+    const char *current;
+    int line;
+    bool rawString;
+} Scanner;
 
-void backTrack();
+void initScanner(Scanner *scanner, const char *source);
 
-Token scanToken();
+void backTrack(Scanner *scanner);
+
+Token scanToken(Scanner *scanner);
 
 #endif

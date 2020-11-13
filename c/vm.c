@@ -927,6 +927,19 @@ static InterpretResult run(VM *vm) {
             return INTERPRET_RUNTIME_ERROR;
         }
 
+        CASE_CODE(SET_INIT_PROPERTIES): {
+            ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            int argCount = function->arity + function->arityOptional;
+            ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
+
+            for (int i = 0; i < function->propertyCount; ++i) {
+                ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->propertyNames[i]]);
+                tableSet(vm, &instance->fields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+            }
+
+            DISPATCH();
+        }
+
         CASE_CODE(GET_SUPER): {
             ObjString *name = READ_STRING();
             ObjClass *superclass = AS_CLASS(pop(vm));

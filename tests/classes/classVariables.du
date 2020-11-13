@@ -1,3 +1,8 @@
+/**
+ * classVariables.du
+ *
+ * Testing setting class variables
+ */
 class Test {
     var x = 10;
 

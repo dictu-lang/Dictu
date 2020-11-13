@@ -103,9 +103,10 @@ static Value formatString(VM *vm, int argCount, Value *args) {
 
     FREE_ARRAY(vm, char*, replaceStrings, argCount);
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = takeString(vm, newStr, fullLength - 1);
-
+    ObjString *newString = copyString(vm, newStr, fullLength - 1);
+    FREE_ARRAY(vm, char, newStr, fullLength);
     FREE_ARRAY(vm, char, tmpFree, stringLen);
+
     return OBJ_VAL(newString);
 }
 
@@ -287,9 +288,10 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
     }
 
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = takeString(vm, newStr, length - 1);
-
+    ObjString *newString = copyString(vm, newStr, length - 1);
+    FREE_ARRAY(vm, char, newStr, length);
     FREE_ARRAY(vm, char, tmpFree, stringLen + 1);
+
     return OBJ_VAL(newString);
 }
 
@@ -307,7 +309,9 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
-    return OBJ_VAL(takeString(vm, temp, string->length));
+    Value newString = OBJ_VAL(copyString(vm, temp, string->length));
+    FREE_ARRAY(vm, char, temp, string->length + 1);
+    return newString;
 }
 
 static Value upperString(VM *vm, int argCount, Value *args) {
@@ -324,7 +328,9 @@ static Value upperString(VM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
-    return OBJ_VAL(takeString(vm, temp, string->length));
+    Value newString = OBJ_VAL(copyString(vm, temp, string->length));
+    FREE_ARRAY(vm, char, temp, string->length + 1);
+    return newString;
 }
 
 static Value startsWithString(VM *vm, int argCount, Value *args) {
@@ -382,11 +388,11 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
         count++;
     }
 
-    // We need to remove the stripped chars from the count
-    // Will be free'd at the call of takeString
-    vm->bytesAllocated -= count;
     memcpy(temp, string->chars + count, string->length - count);
-    return OBJ_VAL(takeString(vm, temp, string->length - count));
+    Value newString = OBJ_VAL(copyString(vm, temp, string->length - count));
+    FREE_ARRAY(vm, char, temp, string->length + 1);
+
+    return newString;
 }
 
 static Value rightStripString(VM *vm, int argCount, Value *args) {
@@ -405,12 +411,11 @@ static Value rightStripString(VM *vm, int argCount, Value *args) {
         }
     }
 
-    // We need to remove the stripped chars from the count
-    // Will be free'd at the call of takeString
-    vm->bytesAllocated -= string->length - length - 1;
     memcpy(temp, string->chars, length + 1);
-    temp[length + 1] = '\0';
-    return OBJ_VAL(takeString(vm, temp, length + 1));
+    Value newString = OBJ_VAL(copyString(vm, temp, length + 1));
+    FREE_ARRAY(vm, char, temp, string->length + 1);
+
+    return newString;
 }
 
 static Value stripString(VM *vm, int argCount, Value *args) {

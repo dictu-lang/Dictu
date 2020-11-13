@@ -18,3 +18,4 @@ import "tests/operators/prefix.du";
 import "tests/operators/assignment.du";
 import "tests/operators/bitwise.du";
 import "tests/operators/precedence.du";
+import "tests/operators/ternary.du";
