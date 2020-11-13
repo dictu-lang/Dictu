@@ -70,7 +70,7 @@ static Value bindSocket(VM *vm, int argCount, Value *args) {
 
     struct sockaddr_in server;
 
-    server.sin_family = AF_INET;
+    server.sin_family = sock->socketFamily;
     server.sin_addr.s_addr = inet_addr(host);
     server.sin_port = htons(port);
 
@@ -124,8 +124,27 @@ static Value acceptSocket(VM *vm, int argCount, Value *args) {
     int c = sizeof(struct sockaddr_in);
     int newSockId = accept(sock->socket, (struct sockaddr *)&client, (socklen_t*)&c);
 
+    ObjList *list = initList(vm);
+    push(vm, OBJ_VAL(list));
+
     ObjSocket *newSock = newSocket(vm, newSockId, sock->socketFamily, sock->socketProtocol, 0);
-    return OBJ_VAL(newSock);
+
+    push(vm, OBJ_VAL(newSock));
+    writeValueArray(vm, &list->values, OBJ_VAL(newSock));
+    pop(vm);
+
+    // IPv6 is 39 chars
+    char ip[40];
+    inet_ntop(sock->socketFamily, &client.sin_addr, ip, 40);
+    ObjString *string = copyString(vm, ip, strlen(ip));
+
+    push(vm, OBJ_VAL(string));
+    writeValueArray(vm, &list->values, OBJ_VAL(string));
+    pop(vm);
+
+    pop(vm);
+
+    return OBJ_VAL(list);
 }
 
 static Value writeSocket(VM *vm, int argCount, Value *args) {
@@ -168,10 +187,15 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
     ObjSocket *sock = AS_SOCKET(args[0]);
     int bufferSize = AS_NUMBER(args[1]);
 
-    char *buffer = ALLOCATE(vm, char, bufferSize);
-    int read_size = recv(sock->socket, buffer, bufferSize, 0);
+    if (bufferSize < 1) {
+        runtimeError(vm, "recv() argument must be greater than 1");
+        return EMPTY_VAL;
+    }
 
-    if (read_size == -1) {
+    char *buffer = ALLOCATE(vm, char, bufferSize);
+    int readSize = recv(sock->socket, buffer, bufferSize, 0);
+
+    if (readSize == -1) {
         Value module = 0;
         tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
         SET_ERRNO(AS_MODULE(module));
@@ -179,7 +203,7 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    ObjString *rString = copyString(vm, buffer, read_size);
+    ObjString *rString = copyString(vm, buffer, readSize);
     FREE_ARRAY(vm, char, buffer, bufferSize);
 
     return OBJ_VAL(rString);
