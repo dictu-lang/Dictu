@@ -13,7 +13,7 @@ static Value encode(VM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
 
-    int size = b64e_size(string->length + 1);
+    int size = b64e_size(string->length) + 1;
     char *buffer = ALLOCATE(vm, char, size);
 
     int actualSize = b64_encode((unsigned char*)string->chars, string->length, (unsigned char*)buffer);
@@ -37,7 +37,7 @@ static Value decode(VM *vm, int argCount, Value *args) {
 
     ObjString *encodedString = AS_STRING(args[0]);
 
-    int size = b64d_size(encodedString->length + 1);
+    int size = b64d_size(encodedString->length) + 1;
     char *buffer = ALLOCATE(vm, char, size);
 
     int actualSize = b64_decode((unsigned char*)encodedString->chars, encodedString->length, (unsigned char*)buffer);
