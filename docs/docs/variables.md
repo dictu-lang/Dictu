@@ -49,7 +49,7 @@ var someNumber = 10;
 someNumber = someNumber + 13;
 ```
 
-Variables can also change their data type without being redclared with `var`:
+Variables can also change their data type without being redeclared with `var`:
 ```cs
 var someVariable = 10;
 someVariable = "A string"; // Perfectly valid!

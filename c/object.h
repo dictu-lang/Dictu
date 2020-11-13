@@ -96,6 +96,9 @@ typedef struct {
     ObjString *name;
     FunctionType type;
     ObjModule* module;
+    int propertyCount;
+    int *propertyNames;
+    int *propertyIndexes;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);

@@ -1,8 +1,8 @@
 /**
-* methodCall.du
-*
-* Testing class method calls
-*/
+ * methodCall.du
+ *
+ * Testing class method calls
+ */
 
 class Test {
     func() {

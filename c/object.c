@@ -37,7 +37,13 @@ ObjModule *newModule(VM *vm, ObjString *name) {
     module->name = name;
 
     push(vm, OBJ_VAL(module));
+    ObjString *__file__ = copyString(vm, "__file__", 8);
+    push(vm, OBJ_VAL(__file__));
+
+    tableSet(vm, &module->values, __file__, OBJ_VAL(name));
     tableSet(vm, &vm->modules, name, OBJ_VAL(module));
+
+    pop(vm);
     pop(vm);
 
     return module;
@@ -81,10 +87,14 @@ ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     function->arity = 0;
     function->arityOptional = 0;
     function->upvalueCount = 0;
+    function->propertyCount = 0;
+    function->propertyIndexes = NULL;
+    function->propertyNames = NULL;
     function->name = NULL;
     function->type = type;
     function->module = module;
     initChunk(vm, &function->chunk);
+
     return function;
 }
 
