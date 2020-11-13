@@ -275,7 +275,7 @@ static Value exitNative(VM *vm, int argCount, Value *args) {
     return EMPTY_VAL; /* satisfy the tcc compiler */
 }
 
-void initArgv(VM *vm, Table *table, int argc, const char *argv[]) {
+void initArgv(VM *vm, Table *table, int argc, char *argv[]) {
     ObjList *list = initList(vm);
     push(vm, OBJ_VAL(list));
 
@@ -307,7 +307,7 @@ void initPlatform(VM *vm, Table *table) {
 #endif
 }
 
-void createSystemModule(VM *vm, int argc, const char *argv[]) {
+void createSystemModule(VM *vm, int argc, char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

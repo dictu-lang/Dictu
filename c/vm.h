@@ -20,9 +20,6 @@ struct _vm {
     Value stack[STACK_MAX];
     Value *stackTop;
     bool repl;
-    const char **scriptNames;
-    int scriptNameCount;
-    int scriptNameCapacity;
     CallFrame *frames;
     int frameCount;
     int frameCapacity;
@@ -64,11 +61,11 @@ typedef enum {
 #define OK     0
 #define NOTOK -1
 
-VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]);
+VM *initVM(bool repl, int argc, char *argv[]);
 
 void freeVM(VM *vm);
 
-InterpretResult interpret(VM *vm, const char *source);
+InterpretResult interpret(VM *vm, char *moduleName, char *source);
 
 void push(VM *vm, Value value);
 

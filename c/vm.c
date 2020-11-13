@@ -44,10 +44,10 @@ void runtimeError(VM *vm, const char *format, ...) {
                 function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "%s: ", vm->scriptNames[vm->scriptNameCount]);
+            fprintf(stderr, "%s: ", function->module->name->chars);
             i = -1;
         } else {
-            fprintf(stderr, "%s(): ", function->name->chars);
+            fprintf(stderr, "%s() [%s]: ", function->name->chars, function->module->name->chars);
         }
 
         va_list args;
@@ -60,24 +60,7 @@ void runtimeError(VM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-void setupFilenameStack(VM *vm, const char *scriptName) {
-    vm->scriptNameCapacity = 8;
-    vm->scriptNames = ALLOCATE(vm, const char*, vm->scriptNameCapacity);
-    vm->scriptNameCount = 0;
-    vm->scriptNames[vm->scriptNameCount] = scriptName;
-}
-
-void setcurrentFile(VM *vm, const char *scriptname, int len) {
-    ObjString *name = copyString(vm, scriptname, len);
-    push(vm, OBJ_VAL(name));
-    ObjString *__file__ = copyString(vm, "__file__", 8);
-    push(vm, OBJ_VAL(__file__));
-    tableSet(vm, &vm->globals, __file__, OBJ_VAL(name));
-    pop(vm);
-    pop(vm);
-}
-
-VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
+VM *initVM(bool repl, int argc, char *argv[]) {
     VM *vm = malloc(sizeof(*vm));
 
     if (vm == NULL) {
@@ -116,13 +99,6 @@ VM *initVM(bool repl, const char *scriptName, int argc, const char *argv[]) {
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
     initTable(&vm->socketMethods);
-
-    setupFilenameStack(vm, scriptName);
-    if (scriptName == NULL) {
-        setcurrentFile(vm, "", 0);
-    } else {
-        setcurrentFile(vm, scriptName, (int) strlen(scriptName));
-    }
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
@@ -170,7 +146,6 @@ void freeVM(VM *vm) {
     freeTable(vm, &vm->instanceMethods);
     freeTable(vm, &vm->socketMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
-    FREE_ARRAY(vm, const char*, (char**)vm->scriptNames, vm->scriptNameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
@@ -1115,7 +1090,6 @@ static InterpretResult run(VM *vm) {
 
             // If we have imported this file already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
-                ++vm->scriptNameCount;
                 vm->lastModule = AS_MODULE(moduleVal);
                 push(vm, NIL_VAL);
                 DISPATCH();
@@ -1128,16 +1102,6 @@ static InterpretResult run(VM *vm) {
                 runtimeError(vm, "Could not open file \"%s\".", fileName->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
-
-            if (vm->scriptNameCapacity < vm->scriptNameCount + 2) {
-                int oldCapacity = vm->scriptNameCapacity;
-                vm->scriptNameCapacity = GROW_CAPACITY(oldCapacity);
-                vm->scriptNames = GROW_ARRAY(vm, (char**)vm->scriptNames, const char*,
-                                           oldCapacity, vm->scriptNameCapacity);
-            }
-
-            vm->scriptNames[++vm->scriptNameCount] = fileName->chars;
-            setcurrentFile(vm, fileName->chars, fileName->length);
 
             ObjModule *module = newModule(vm, fileName);
             vm->lastModule = module;
@@ -1169,14 +1133,12 @@ static InterpretResult run(VM *vm) {
 
             // If we have imported this module already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
-                ++vm->scriptNameCount;
                 push(vm, moduleVal);
                 DISPATCH();
             }
 
             ObjModule *module = importBuiltinModule(vm, index);
 
-            ++vm->scriptNameCount;
             push(vm, OBJ_VAL(module));
             DISPATCH();
         }
@@ -1224,7 +1186,6 @@ static InterpretResult run(VM *vm) {
                 ObjString *variable = READ_STRING();
 
                 if (!tableGet(&vm->lastModule->values, variable, &moduleVariable)) {
-                    vm->scriptNameCount--;
                     frame->ip = ip;
                     runtimeError(vm, "%s can't be found in module %s", variable->chars, vm->lastModule->name->chars);
                     return INTERPRET_RUNTIME_ERROR;
@@ -1237,16 +1198,7 @@ static InterpretResult run(VM *vm) {
         }
 
         CASE_CODE(IMPORT_END): {
-            vm->scriptNameCount--;
-            if (vm->scriptNameCount >= 0) {
-                setcurrentFile(vm, vm->scriptNames[vm->scriptNameCount],
-                     (int) strlen(vm->scriptNames[vm->scriptNameCount]));
-            } else {
-                setcurrentFile(vm, "", 0);
-            }
-
             vm->lastModule = frame->closure->function->module;
-
             DISPATCH();
         }
 
@@ -1841,8 +1793,8 @@ static InterpretResult run(VM *vm) {
 
 }
 
-InterpretResult interpret(VM *vm, const char *source) {
-    ObjString *name = copyString(vm, "main", 4);
+InterpretResult interpret(VM *vm, char *moduleName, char *source) {
+    ObjString *name = copyString(vm, moduleName, strlen(moduleName));
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     pop(vm);
