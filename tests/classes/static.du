@@ -1,8 +1,8 @@
 /**
-* static.du
-*
-* Testing class static methods
-*/
+ * static.du
+ *
+ * Testing class static methods
+ */
 
 class Test {
     static func() {
