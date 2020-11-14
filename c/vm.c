@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -1809,4 +1810,34 @@ InterpretResult interpret(VM *vm, char *moduleName, char *source) {
     InterpretResult result = run(vm);
 
     return result;
+}
+
+uint32_t bindRef(VM *vm, Value value) {
+    if (IS_OBJ(value)) {
+        Obj *obj = AS_OBJ(value);
+        Obj *objPrev = obj->prev;
+
+        // Remove object from object list.
+        if (objPrev) {
+            objPrev->next = obj->next;
+        } else {
+            vm->objects = obj->next;
+        }
+    }
+
+    return registryInsert(vm, &vm->nativeRegistry, value);
+}
+
+void pushRef(VM *vm, uint32_t ref) {
+    push(vm, registryLookup(&vm->nativeRegistry, ref));
+}
+
+void unbindRef(VM *vm, uint32_t ref) {
+    Value value = registryRemove(&vm->nativeRegistry, ref);
+
+    if (IS_OBJ(value)) {
+        Obj *obj = AS_OBJ(value);
+        obj->next = vm->objects;
+        vm->objects = obj;
+    }
 }

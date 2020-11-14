@@ -4,6 +4,7 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "registry.h"
 #include "compiler.h"
 
 // TODO: Work out the maximum stack size at compilation time
@@ -39,6 +40,7 @@ struct _vm {
     Table classMethods;
     Table instanceMethods;
     Table socketMethods;
+    Registry nativeRegistry;
     ObjString *initString;
     ObjString *replVar;
     ObjUpvalue *openUpvalues;
@@ -76,5 +78,26 @@ void runtimeError(VM *vm, const char *format, ...);
 Value pop(VM *vm);
 
 bool isFalsey(Value value);
+
+/**
+ * Binds the `value` in `vm` to a native reference handle, preventing it from being collected by the
+ * garbage collector until it is later released with `unbindRef`.
+ *
+ * Users of the reference API should be very careful that they do not leak memory, as it circumvents
+ * the garbage collector entirely by moving the value data out of its purview.
+ */
+uint32_t bindRef(VM *vm, Value value);
+
+/**
+ * Pushes the value stored at `ref` onto the stack of `vm`, pushing `NIL_VAL` if `ref` is not a
+ * valid registry handle.
+ */
+void pushRef(VM *vm, uint32_t ref);
+
+/**
+ * Unbinds the value reference `ref`, returning control of the data lifetime back to the garbage
+ * collector.
+ */
+void unbindRef(VM *vm, uint32_t ref);
 
 #endif
