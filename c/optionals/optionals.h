@@ -12,6 +12,7 @@
 #include "datetime.h"
 #include "socket.h"
 #include "random.h"
+#include "hashlib.h"
 
 #define GET_SELF_CLASS \
   AS_MODULE(args[-1])
