@@ -64,7 +64,10 @@ static Value parseJson(VM *vm, json_value *json) {
             for (unsigned int i = 0; i < json->u.object.length; i++) {
                 Value val = parseJson(vm, json->u.object.values[i].value);
                 push(vm, val);
-                dictSet(vm, dict, OBJ_VAL(copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length)), val);
+                Value key = OBJ_VAL(copyString(vm, json->u.object.values[i].name, json->u.object.values[i].name_length));
+                push(vm, key);
+                dictSet(vm, dict, key, val);
+                pop(vm);
                 pop(vm);
             }
 
