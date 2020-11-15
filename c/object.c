@@ -294,8 +294,8 @@ char *dictToString(Value value) {
            keySize = strlen(key);
        }
 
-       if (keySize > (size - dictStringLength - 1)) {
-           if (keySize > size * 2) {
+       if (keySize > (size - dictStringLength - keySize - 4)) {
+           if (keySize > size) {
                size += keySize * 2 + 4;
            } else {
                size *= 2 + 4;
@@ -335,11 +335,11 @@ char *dictToString(Value value) {
            elementSize = strlen(element);
        }
 
-       if (elementSize > (size - dictStringLength - 3)) {
-           if (elementSize > size * 2) {
-               size += elementSize * 2 + 3;
+       if (elementSize > (size - dictStringLength - elementSize - 6)) {
+           if (elementSize > size) {
+               size += elementSize * 2 + 6;
            } else {
-               size = size * 2 + 3;
+               size = size * 2 + 6;
            }
 
            char *newB = realloc(dictString, sizeof(char) * size);
