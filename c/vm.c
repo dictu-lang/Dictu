@@ -1816,12 +1816,25 @@ uint32_t bindRef(VM *vm, Value value) {
     if (IS_OBJ(value)) {
         Obj *obj = AS_OBJ(value);
         Obj *objPrev = obj->prev;
+        Obj *objNext = obj->next;
 
-        // Remove object from object list.
+        // Remove object from the object list.
         if (objPrev) {
-            objPrev->next = obj->next;
+            vm->objects = objPrev;
+            objPrev->next = objNext;
+            obj->next = NULL;
+            obj->prev = NULL;
+
+            if (objNext) {
+                objNext->prev = objPrev;
+            }
         } else {
-            vm->objects = obj->next;
+            vm->objects = objNext;
+            obj->next = NULL;
+
+            if (objNext) {
+                objNext->prev = NULL;
+            }
         }
     }
 
