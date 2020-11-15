@@ -24,7 +24,7 @@ uint32_t registryInsert(VM *vm, Registry *registry, Value value) {
         // Conditionally grow if the existing registry buffer is full.
         if (registry->count == registry->capacity) {
             uint32_t const oldCapacity = registry->capacity;
-            registry->capacity *= 2;
+            registry->capacity = ((registry->capacity == 0) ? 2 : (registry->capacity * 2));
 
             registry->entries = GROW_ARRAY(
                 vm,
