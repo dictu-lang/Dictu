@@ -8,6 +8,6 @@
 
 #include "../util.h"
 
-void declareClassMethods(VM *vm);
+void declareClassMethods(DictuVM *vm);
 
 #endif //dictu_class_h

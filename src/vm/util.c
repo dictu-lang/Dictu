@@ -5,7 +5,7 @@
 #include "vm.h"
 #include "memory.h"
 
-char *readFile(VM *vm, const char *path) {
+char *readFile(DictuVM *vm, const char *path) {
     FILE *file = fopen(path, "rb");
     if (file == NULL) {
         return NULL;
@@ -33,7 +33,7 @@ char *readFile(VM *vm, const char *path) {
     return buffer;
 }
 
-void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
+void defineNative(DictuVM *vm, Table *table, const char *name, NativeFn function) {
     ObjNative *native = newNative(vm, function);
     push(vm, OBJ_VAL(native));
     ObjString *methodName = copyString(vm, name, strlen(name));
@@ -43,7 +43,7 @@ void defineNative(VM *vm, Table *table, const char *name, NativeFn function) {
     pop(vm);
 }
 
-void defineNativeProperty(VM *vm, Table *table, const char *name, Value value) {
+void defineNativeProperty(DictuVM *vm, Table *table, const char *name, Value value) {
     push(vm, value);
     ObjString *propertyName = copyString(vm, name, strlen(name));
     push(vm, OBJ_VAL(propertyName));
@@ -61,7 +61,7 @@ bool isValidKey(Value value) {
     return false;
 }
 
-Value boolNative(VM *vm, int argCount, Value *args) {
+Value boolNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "bool() takes no arguments (%d given).", argCount);
         return EMPTY_VAL;

@@ -2,7 +2,7 @@
 #include "../vm.h"
 #include "../memory.h"
 
-static Value toString(VM *vm, int argCount, Value *args) {
+static Value toString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -17,7 +17,7 @@ static Value toString(VM *vm, int argCount, Value *args) {
 }
 
 
-static Value hasAttribute(VM *vm, int argCount, Value *args) {
+static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "hasAttribute() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -39,7 +39,7 @@ static Value hasAttribute(VM *vm, int argCount, Value *args) {
     return FALSE_VAL;
 }
 
-static Value getAttribute(VM *vm, int argCount, Value *args) {
+static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "getAttribute() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -68,7 +68,7 @@ static Value getAttribute(VM *vm, int argCount, Value *args) {
     return defaultValue;
 }
 
-static Value setAttribute(VM *vm, int argCount, Value *args) {
+static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "setAttribute() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -88,7 +88,7 @@ static Value setAttribute(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value isInstance(VM *vm, int argCount, Value *args) {
+static Value isInstance(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "isInstance() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -115,7 +115,7 @@ static Value isInstance(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(false);
 }
 
-static Value copyShallow(VM *vm, int argCount, Value *args) {
+static Value copyShallow(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -127,7 +127,7 @@ static Value copyShallow(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(instance);
 }
 
-static Value copyDeep(VM *vm, int argCount, Value *args) {
+static Value copyDeep(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -139,7 +139,7 @@ static Value copyDeep(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(instance);
 }
 
-void declareInstanceMethods(VM *vm) {
+void declareInstanceMethods(DictuVM *vm) {
     defineNative(vm, &vm->instanceMethods, "toString", toString);
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);

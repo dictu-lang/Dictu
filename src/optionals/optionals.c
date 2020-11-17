@@ -14,11 +14,11 @@ BuiltinModules modules[] = {
         {NULL, NULL}
 };
 
-ObjModule *importBuiltinModule(VM *vm, int index) {
+ObjModule *importBuiltinModule(DictuVM *vm, int index) {
     return modules[index].module(vm);
 }
 
-Value getErrno(VM* vm, ObjModule* module) {
+Value getErrno(DictuVM* vm, ObjModule* module) {
     Value errno_value = 0;
     ObjString *name = copyString(vm, "errno", 5);
     tableGet(&module->values, name, &errno_value);

@@ -11,7 +11,7 @@
 #define HAS_STRPTIME
 #endif
 
-static Value nowNative(VM *vm, int argCount, Value *args) {
+static Value nowNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -30,7 +30,7 @@ static Value nowNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, time, strlen(time) - 1));
 }
 
-static Value nowUTCNative(VM *vm, int argCount, Value *args) {
+static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -49,7 +49,7 @@ static Value nowUTCNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, time, strlen(time) - 1));
 }
 
-static Value strftimeNative(VM *vm, int argCount, Value *args) {
+static Value strftimeNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "strftime() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -127,7 +127,7 @@ static Value strftimeNative(VM *vm, int argCount, Value *args) {
 }
 
 #ifdef HAS_STRPTIME
-static Value strptimeNative(VM *vm, int argCount, Value *args) {
+static Value strptimeNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "strptime() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -152,7 +152,7 @@ static Value strptimeNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-ObjModule *createDatetimeModule(VM *vm) {
+ObjModule *createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

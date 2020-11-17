@@ -9,6 +9,6 @@
 #include "../common.h"
 #include "../util.h"
 
-void declareFileMethods(VM *vm);
+void declareFileMethods(DictuVM *vm);
 
 #endif //dictu_files_h

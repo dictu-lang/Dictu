@@ -22,16 +22,16 @@
 #define RESET_ERRNO(module_)                                       \
   defineNativeProperty(vm, &module_->values, "errno", 0)
 
-typedef ObjModule *(*BuiltinModule)(VM *vm);
+typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
 
 typedef struct {
     char *name;
     BuiltinModule module;
 } BuiltinModules;
 
-ObjModule *importBuiltinModule(VM *vm, int index);
+ObjModule *importBuiltinModule(DictuVM *vm, int index);
 
-Value getErrno(VM* vm, ObjModule* module);
+Value getErrno(DictuVM* vm, ObjModule* module);
 
 int findBuiltinModule(char *name, int length);
 

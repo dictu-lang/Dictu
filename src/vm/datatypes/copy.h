@@ -8,10 +8,10 @@
 #include "../vm.h"
 #include "../memory.h"
 
-ObjList *copyList(VM *vm, ObjList *oldList, bool shallow);
+ObjList *copyList(DictuVM *vm, ObjList *oldList, bool shallow);
 
-ObjDict *copyDict(VM *vm, ObjDict *oldDict, bool shallow);
+ObjDict *copyDict(DictuVM *vm, ObjDict *oldDict, bool shallow);
 
-ObjInstance *copyInstance(VM *vm, ObjInstance *oldInstance, bool shallow);
+ObjInstance *copyInstance(DictuVM *vm, ObjInstance *oldInstance, bool shallow);
 
 #endif //dictu_copy_h

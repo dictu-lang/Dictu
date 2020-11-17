@@ -50,30 +50,22 @@ struct _vm {
     Obj **grayStack;
 };
 
-typedef enum {
-    INTERPRET_OK,
-    INTERPRET_COMPILE_ERROR,
-    INTERPRET_RUNTIME_ERROR
-} InterpretResult;
-
-// extern VM vm;
-
 #define OK     0
 #define NOTOK -1
 
-VM *initVM(bool repl, int argc, char *argv[]);
+// DictuVM *initVM(bool repl, int argc, char *argv[]);
 
-void freeVM(VM *vm);
+// void dictuFreeVM(DictuVM *vm);
 
-InterpretResult interpret(VM *vm, char *moduleName, char *source);
+// InterpretResult interpret(DictuVM *vm, char *moduleName, char *source);
 
-void push(VM *vm, Value value);
+void push(DictuVM *vm, Value value);
 
-Value peek(VM *vm, int distance);
+Value peek(DictuVM *vm, int distance);
 
-void runtimeError(VM *vm, const char *format, ...);
+void runtimeError(DictuVM *vm, const char *format, ...);
 
-Value pop(VM *vm);
+Value pop(DictuVM *vm);
 
 bool isFalsey(Value value);
 

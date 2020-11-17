@@ -5,7 +5,7 @@
 #endif
 
 #ifdef HAS_REALPATH
-static Value realpathNative(VM *vm, int argCount, Value *args) {
+static Value realpathNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "realpath() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -28,7 +28,7 @@ static Value realpathNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-static Value isAbsoluteNative(VM *vm, int argCount, Value *args) {
+static Value isAbsoluteNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "isAbsolute() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -44,7 +44,7 @@ static Value isAbsoluteNative(VM *vm, int argCount, Value *args) {
     return (IS_DIR_SEPARATOR(path[0]) ? TRUE_VAL : FALSE_VAL);
 }
 
-static Value basenameNative(VM *vm, int argCount, Value *args) {
+static Value basenameNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "basename() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -70,7 +70,7 @@ static Value basenameNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, p, (len - (p - path))));
 }
 
-static Value extnameNative(VM *vm, int argCount, Value *args) {
+static Value extnameNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "extname() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -102,7 +102,7 @@ static Value extnameNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, p, len - (p - path)));
 }
 
-static Value dirnameNative(VM *vm, int argCount, Value *args) {
+static Value dirnameNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "dirname() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -154,7 +154,7 @@ static Value dirnameNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, path, len));
 }
 
-static Value existsNative(VM *vm, int argCount, Value *args) {
+static Value existsNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "exists() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -172,7 +172,7 @@ static Value existsNative(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(stat(path, &buffer) == 0);
 }
 
-static Value isdirNative(VM *vm, int argCount, Value *args) {
+static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "isdir() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -194,7 +194,7 @@ static Value isdirNative(VM *vm, int argCount, Value *args) {
 
 }
 
-static Value listdirNative(VM *vm, int argCount, Value *args) {
+static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -272,7 +272,7 @@ static Value listdirNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(dir_contents);
 }
 
-ObjModule *createPathModule(VM *vm) {
+ObjModule *createPathModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

@@ -8,6 +8,6 @@
 #include "copy.h"
 #include "../util.h"
 
-void declareListMethods(VM *vm);
+void declareListMethods(DictuVM *vm);
 
 #endif //dictu_lists_h

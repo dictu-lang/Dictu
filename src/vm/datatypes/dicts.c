@@ -1,6 +1,6 @@
 #include "dicts.h"
 
-static Value toStringDict(VM *vm, int argCount, Value *args) {
+static Value toStringDict(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -14,7 +14,7 @@ static Value toStringDict(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-static Value lenDict(VM *vm, int argCount, Value *args) {
+static Value lenDict(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -24,7 +24,7 @@ static Value lenDict(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(dict->count);
 }
 
-static Value keysDict(VM *vm, int argCount, Value *args) {
+static Value keysDict(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "keys() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -47,7 +47,7 @@ static Value keysDict(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(list);
 }
 
-static Value getDictItem(VM *vm, int argCount, Value *args) {
+static Value getDictItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -73,7 +73,7 @@ static Value getDictItem(VM *vm, int argCount, Value *args) {
     return defaultValue;
 }
 
-static Value removeDictItem(VM *vm, int argCount, Value *args) {
+static Value removeDictItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -97,7 +97,7 @@ static Value removeDictItem(VM *vm, int argCount, Value *args) {
     return EMPTY_VAL;
 }
 
-static Value dictItemExists(VM *vm, int argCount, Value *args) {
+static Value dictItemExists(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "exists() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -122,7 +122,7 @@ static Value dictItemExists(VM *vm, int argCount, Value *args) {
     return FALSE_VAL;
 }
 
-static Value copyDictShallow(VM *vm, int argCount, Value *args) {
+static Value copyDictShallow(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -134,7 +134,7 @@ static Value copyDictShallow(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newDict);
 }
 
-static Value copyDictDeep(VM *vm, int argCount, Value *args) {
+static Value copyDictDeep(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -146,7 +146,7 @@ static Value copyDictDeep(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newDict);
 }
 
-void declareDictMethods(VM *vm) {
+void declareDictMethods(DictuVM *vm) {
     defineNative(vm, &vm->dictMethods, "toString", toStringDict);
     defineNative(vm, &vm->dictMethods, "len", lenDict);
     defineNative(vm, &vm->dictMethods, "keys", keysDict);

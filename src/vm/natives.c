@@ -7,7 +7,7 @@
 #include "vm.h"
 
 // Native functions
-static Value typeNative(VM *vm, int argCount, Value *args) {
+static Value typeNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "type() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -68,7 +68,7 @@ static Value typeNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, "Unknown Type", 12));
 }
 
-static Value setNative(VM *vm, int argCount, Value *args) {
+static Value setNative(DictuVM *vm, int argCount, Value *args) {
     ObjSet *set = initSet(vm);
     push(vm, OBJ_VAL(set));
 
@@ -80,7 +80,7 @@ static Value setNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(set);
 }
 
-static Value inputNative(VM *vm, int argCount, Value *args) {
+static Value inputNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -129,7 +129,7 @@ static Value inputNative(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value printNative(VM *vm, int argCount, Value *args) {
+static Value printNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(vm);
 
     if (argCount == 0) {
@@ -145,7 +145,7 @@ static Value printNative(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value assertNative(VM *vm, int argCount, Value *args) {
+static Value assertNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "assert() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -159,7 +159,7 @@ static Value assertNative(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value isDefinedNative(VM *vm, int argCount, Value *args) {
+static Value isDefinedNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "isDefined() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -181,7 +181,7 @@ static Value isDefinedNative(VM *vm, int argCount, Value *args) {
 
 // End of natives
 
-void defineAllNatives(VM *vm) {
+void defineAllNatives(DictuVM *vm) {
     char *nativeNames[] = {
             "input",
             "type",

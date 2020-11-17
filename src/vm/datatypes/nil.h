@@ -4,6 +4,6 @@
 #include "../common.h"
 #include "../util.h"
 
-void declareNilMethods(VM *vm);
+void declareNilMethods(DictuVM *vm);
 
 #endif //dictu_nil_h

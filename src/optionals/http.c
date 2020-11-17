@@ -1,6 +1,6 @@
 #include "http.h"
 
-static Value strerrorHttpNative(VM *vm, int argCount, Value *args) {
+static Value strerrorHttpNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -17,7 +17,7 @@ static Value strerrorHttpNative(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, error_string, strlen(error_string)));
 }
 
-static void createResponse(VM *vm, Response *response) {
+static void createResponse(DictuVM *vm, Response *response) {
     response->vm = vm;
     response->headers = initList(vm);
     // Push to stack to avoid GC
@@ -115,7 +115,7 @@ static char *dictToPostArgs(ObjDict *dict) {
     return ret;
 }
 
-static ObjDict *endRequest(VM *vm, CURL *curl, Response response) {
+static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
     ObjString *content = copyString(vm, response.res, response.len);
@@ -155,7 +155,7 @@ static ObjDict *endRequest(VM *vm, CURL *curl, Response response) {
     return responseVal;
 }
 
-static Value get(VM *vm, int argCount, Value *args) {
+static Value get(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "get() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -223,7 +223,7 @@ static Value get(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value post(VM *vm, int argCount, Value *args) {
+static Value post(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 && argCount != 3) {
         runtimeError(vm, "post() takes between 1 and 3 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -314,7 +314,7 @@ static Value post(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-ObjModule *createHTTPModule(VM *vm) {
+ObjModule *createHTTPModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

@@ -4,6 +4,6 @@
 #include "../common.h"
 #include "../util.h"
 
-void declareBoolMethods(VM *vm);
+void declareBoolMethods(DictuVM *vm);
 
 #endif //dictu_bool_h

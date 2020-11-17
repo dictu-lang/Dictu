@@ -672,7 +672,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
         }
 
         if (fnCompiler->function->propertyCount > 0) {
-            VM *vm = fnCompiler->parser->vm;
+            DictuVM *vm = fnCompiler->parser->vm;
             push(vm, OBJ_VAL(fnCompiler->function));
             fnCompiler->function->propertyIndexes = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
             fnCompiler->function->propertyNames = ALLOCATE(vm, int, fnCompiler->function->propertyCount);
@@ -2007,7 +2007,7 @@ static void statement(Compiler *compiler) {
     }
 }
 
-ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
+ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
     Parser parser;
     parser.vm = vm;
     parser.hadError = false;
@@ -2036,7 +2036,7 @@ ObjFunction *compile(VM *vm, ObjModule *module, const char *source) {
     return parser.hadError ? NULL : function;
 }
 
-void grayCompilerRoots(VM *vm) {
+void grayCompilerRoots(DictuVM *vm) {
     Compiler *compiler = vm->compiler;
 
     while (compiler != NULL) {

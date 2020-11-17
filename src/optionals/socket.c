@@ -24,7 +24,7 @@ unsigned long inet_addr_new(const char* cp) {
 #include <arpa/inet.h>
 #endif
 
-static Value createSocket(VM *vm, int argCount, Value *args) {
+static Value createSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "create() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -48,7 +48,7 @@ static Value createSocket(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(s);
 }
 
-static Value bindSocket(VM *vm, int argCount, Value *args) {
+static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "bind() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -84,7 +84,7 @@ static Value bindSocket(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-static Value listenSocket(VM *vm, int argCount, Value *args) {
+static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "listen() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -112,7 +112,7 @@ static Value listenSocket(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-static Value acceptSocket(VM *vm, int argCount, Value *args) {
+static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "accept() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -147,7 +147,7 @@ static Value acceptSocket(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(list);
 }
 
-static Value writeSocket(VM *vm, int argCount, Value *args) {
+static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "write() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -173,7 +173,7 @@ static Value writeSocket(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(writeRet);
 }
 
-static Value recvSocket(VM *vm, int argCount, Value *args) {
+static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "recv() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -209,7 +209,7 @@ static Value recvSocket(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(rString);
 }
 
-static Value closeSocket(VM *vm, int argCount, Value *args) {
+static Value closeSocket(DictuVM *vm, int argCount, Value *args) {
     UNUSED(vm);
     if (argCount != 0) {
         runtimeError(vm, "close() takes no arguments (%d given)", argCount);
@@ -222,7 +222,7 @@ static Value closeSocket(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value setSocketOpt(VM *vm, int argCount, Value *args) {
+static Value setSocketOpt(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "setsocketopt() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -247,7 +247,7 @@ static Value setSocketOpt(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-ObjModule *createSocketModule(VM *vm) {
+ObjModule *createSocketModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Socket", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

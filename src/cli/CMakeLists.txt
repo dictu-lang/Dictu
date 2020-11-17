@@ -6,4 +6,5 @@ if(DISABLE_LINENOISE)
 endif()
 
 add_executable(Dictu ${DICTU_CLI_SRC})
+target_include_directories(Dictu PUBLIC ${INCLUDE_DIR})
 target_link_libraries(Dictu dictu_api_s)

@@ -1,6 +1,7 @@
 #ifndef dictu_value_h
 #define dictu_value_h
 
+#include "../include/dictu_include.h"
 #include "common.h"
 
 typedef struct sObj Obj;
@@ -114,25 +115,25 @@ bool valuesEqual(Value a, Value b);
 
 void initValueArray(ValueArray *array);
 
-void writeValueArray(VM *vm, ValueArray *array, Value value);
+void writeValueArray(DictuVM *vm, ValueArray *array, Value value);
 
-void freeValueArray(VM *vm, ValueArray *array);
+void freeValueArray(DictuVM *vm, ValueArray *array);
 
-void grayDict(VM *vm, ObjDict *dict);
+void grayDict(DictuVM *vm, ObjDict *dict);
 
-bool dictSet(VM *vm, ObjDict *dict, Value key, Value value);
+bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value);
 
 bool dictGet(ObjDict *dict, Value key, Value *value);
 
-bool dictDelete(VM *vm, ObjDict *dict, Value key);
+bool dictDelete(DictuVM *vm, ObjDict *dict, Value key);
 
 bool setGet(ObjSet *set, Value value);
 
-bool setInsert(VM *vm, ObjSet *set, Value value);
+bool setInsert(DictuVM *vm, ObjSet *set, Value value);
 
-bool setDelete(VM *vm, ObjSet *set, Value value);
+bool setDelete(DictuVM *vm, ObjSet *set, Value value);
 
-void graySet(VM *vm, ObjSet *set);
+void graySet(DictuVM *vm, ObjSet *set);
 
 char *valueToString(Value value);
 

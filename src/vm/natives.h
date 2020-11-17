@@ -4,6 +4,6 @@
 #include "common.h"
 #include "util.h"
 
-void defineAllNatives(VM *vm);
+void defineAllNatives(DictuVM *vm);
 
 #endif //dictu_natives_h

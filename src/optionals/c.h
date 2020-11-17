@@ -32,13 +32,14 @@
 #endif
 
 #include "optionals.h"
+#include "../include/dictu_include.h"
 #include "../vm/vm.h"
 #include "../vm/memory.h"
 
-void createCModule(VM *vm);
+void createCModule(DictuVM *vm);
 
 #define MAX_ERROR_LEN 256
-Value strerrorGeneric(VM *, int);
-Value strerrorNative(VM *, int, Value *);
+Value strerrorGeneric(DictuVM *, int);
+Value strerrorNative(DictuVM *, int, Value *);
 
 #endif //dictu_c_h

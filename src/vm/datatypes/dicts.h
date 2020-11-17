@@ -8,6 +8,6 @@
 #include "copy.h"
 #include "../util.h"
 
-void declareDictMethods(VM *vm);
+void declareDictMethods(DictuVM *vm);
 
 #endif //dictu_dicts_h

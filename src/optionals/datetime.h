@@ -12,6 +12,6 @@
 
 #include "optionals.h"
 
-ObjModule *createDatetimeModule(VM *vm);
+ObjModule *createDatetimeModule(DictuVM *vm);
 
 #endif //dictu_datetime_h

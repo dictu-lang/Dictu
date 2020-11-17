@@ -1,7 +1,7 @@
 #include "number.h"
 #include "../memory.h"
 
-static Value toStringNumber(VM *vm, int argCount, Value *args) {
+static Value toStringNumber(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -24,7 +24,7 @@ static Value toStringNumber(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-void declareNumberMethods(VM *vm) {
+void declareNumberMethods(DictuVM *vm) {
     defineNative(vm, &vm->numberMethods, "toString", toStringNumber);
     defineNative(vm, &vm->numberMethods, "toBool", boolNative); // Defined in util
 }

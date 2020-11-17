@@ -2,7 +2,7 @@
 #include "../vm.h"
 #include "../memory.h"
 
-static Value toString(VM *vm, int argCount, Value *args) {
+static Value toString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -16,6 +16,6 @@ static Value toString(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-void declareClassMethods(VM *vm) {
+void declareClassMethods(DictuVM *vm) {
     defineNative(vm, &vm->classMethods, "toString", toString);
 }

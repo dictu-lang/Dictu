@@ -67,7 +67,7 @@ typedef struct Loop {
 } Loop;
 
 typedef struct {
-    VM *vm;
+    DictuVM *vm;
     Scanner scanner;
     Token current;
     Token previous;
@@ -103,8 +103,8 @@ typedef struct {
     Precedence precedence;
 } ParseRule;
 
-ObjFunction *compile(VM *vm, ObjModule *module, const char *source);
+ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source);
 
-void grayCompilerRoots(VM *vm);
+void grayCompilerRoots(DictuVM *vm);
 
 #endif

@@ -14,7 +14,7 @@ struct json_error_table_t {
   { JSON_ENOSERIAL, "Object is not serializable"},
   { -1, NULL}};
 
-static Value strerrorJsonNative(VM *vm, int argCount, Value *args) {
+static Value strerrorJsonNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -47,7 +47,7 @@ static Value strerrorJsonNative(VM *vm, int argCount, Value *args) {
     return EMPTY_VAL;
 }
 
-static Value parseJson(VM *vm, json_value *json) {
+static Value parseJson(DictuVM *vm, json_value *json) {
     switch (json->type) {
         case json_none:
         case json_null: {
@@ -114,7 +114,7 @@ static Value parseJson(VM *vm, json_value *json) {
     }
 }
 
-static Value parse(VM *vm, int argCount, Value *args) {
+static Value parse(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "parse() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -146,7 +146,7 @@ static Value parse(VM *vm, int argCount, Value *args) {
     return val;
 }
 
-json_value* stringifyJson(VM *vm, Value value) {
+json_value* stringifyJson(DictuVM *vm, Value value) {
     if (IS_NIL(value)) {
         return json_null_new();
     } else if (IS_BOOL(value)) {
@@ -221,7 +221,7 @@ json_value* stringifyJson(VM *vm, Value value) {
     return NULL;
 }
 
-static Value stringify(VM *vm, int argCount, Value *args) {
+static Value stringify(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -266,7 +266,7 @@ static Value stringify(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-ObjModule *createJSONModule(VM *vm) {
+ObjModule *createJSONModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "JSON", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

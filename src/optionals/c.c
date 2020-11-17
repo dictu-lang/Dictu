@@ -4,7 +4,7 @@
 #define strerror_r(ERRNO, BUF, LEN) strerror_s(BUF, LEN, ERRNO)
 #endif
 
-Value strerrorGeneric(VM *vm, int error) {
+Value strerrorGeneric(DictuVM *vm, int error) {
     if (error <= 0) {
         runtimeError(vm, "strerror() argument should be > 0");
         return EMPTY_VAL;
@@ -33,7 +33,7 @@ Value strerrorGeneric(VM *vm, int error) {
 #endif
 }
 
-Value strerrorNative(VM *vm, int argCount, Value *args) {
+Value strerrorNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -49,7 +49,7 @@ Value strerrorNative(VM *vm, int argCount, Value *args) {
     return strerrorGeneric(vm, error);
 }
 
-void createCModule(VM *vm) {
+void createCModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "C", 1);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "../include/dictu_include.h"
 #include "common.h"
 #include "chunk.h"
 #include "table.h"
@@ -101,7 +102,7 @@ typedef struct {
     int *propertyIndexes;
 } ObjFunction;
 
-typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);
+typedef Value (*NativeFn)(DictuVM *vm, int argCount, Value *args);
 
 typedef struct {
     Obj obj;
@@ -206,35 +207,35 @@ typedef struct {
     int socketProtocol;  /* Protocol type, usually 0 */
 } ObjSocket;
 
-ObjModule *newModule(VM *vm, ObjString *name);
+ObjModule *newModule(DictuVM *vm, ObjString *name);
 
-ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
+ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method);
 
-ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type);
+ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType type);
 
-ObjClosure *newClosure(VM *vm, ObjFunction *function);
+ObjClosure *newClosure(DictuVM *vm, ObjFunction *function);
 
-ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type);
+ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type);
 
-ObjInstance *newInstance(VM *vm, ObjClass *klass);
+ObjInstance *newInstance(DictuVM *vm, ObjClass *klass);
 
-ObjNative *newNative(VM *vm, NativeFn function);
+ObjNative *newNative(DictuVM *vm, NativeFn function);
 
-ObjString *takeString(VM *vm, char *chars, int length);
+ObjString *takeString(DictuVM *vm, char *chars, int length);
 
-ObjString *copyString(VM *vm, const char *chars, int length);
+ObjString *copyString(DictuVM *vm, const char *chars, int length);
 
-ObjList *initList(VM *vm);
+ObjList *initList(DictuVM *vm);
 
-ObjDict *initDict(VM *vm);
+ObjDict *initDict(DictuVM *vm);
 
-ObjSet *initSet(VM *vm);
+ObjSet *initSet(DictuVM *vm);
 
-ObjFile *initFile(VM *vm);
+ObjFile *initFile(DictuVM *vm);
 
-ObjSocket *newSocket(VM *vm, int sock, int socketFamily, int socketType, int socketProtocol);
+ObjSocket *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol);
 
-ObjUpvalue *newUpvalue(VM *vm, Value *slot);
+ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 
 char *setToString(Value value);
 char *dictToString(Value value);

@@ -10,6 +10,6 @@
 #include "../common.h"
 #include "../util.h"
 
-void declareStringMethods(VM *vm);
+void declareStringMethods(DictuVM *vm);
 
 #endif //dictu_strings_h

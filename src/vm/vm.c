@@ -24,14 +24,14 @@
 #include "natives.h"
 #include "../optionals/optionals.h"
 
-static void resetStack(VM *vm) {
+static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
     vm->frameCount = 0;
     vm->openUpvalues = NULL;
     vm->compiler = NULL;
 }
 
-void runtimeError(VM *vm, const char *format, ...) {
+void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
 
@@ -60,15 +60,15 @@ void runtimeError(VM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-VM *initVM(bool repl, int argc, char *argv[]) {
-    VM *vm = malloc(sizeof(*vm));
+DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
+    DictuVM *vm = malloc(sizeof(*vm));
 
     if (vm == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
     }
 
-    memset(vm, '\0', sizeof(VM));
+    memset(vm, '\0', sizeof(DictuVM));
 
     resetStack(vm);
     vm->objects = NULL;
@@ -129,7 +129,7 @@ VM *initVM(bool repl, int argc, char *argv[]) {
     return vm;
 }
 
-void freeVM(VM *vm) {
+void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->modules);
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
@@ -161,21 +161,21 @@ void freeVM(VM *vm) {
     free(vm);
 }
 
-void push(VM *vm, Value value) {
+void push(DictuVM *vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
 }
 
-Value pop(VM *vm) {
+Value pop(DictuVM *vm) {
     vm->stackTop--;
     return *vm->stackTop;
 }
 
-Value peek(VM *vm, int distance) {
+Value peek(DictuVM *vm, int distance) {
     return vm->stackTop[-1 - distance];
 }
 
-static bool call(VM *vm, ObjClosure *closure, int argCount) {
+static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
         runtimeError(vm, "Function '%s' expected %d arguments but got %d.",
                      closure->function->name->chars,
@@ -201,7 +201,7 @@ static bool call(VM *vm, ObjClosure *closure, int argCount) {
     return true;
 }
 
-static bool callValue(VM *vm, Value callee, int argCount) {
+static bool callValue(DictuVM *vm, Value callee, int argCount) {
     if (IS_OBJ(callee)) {
         switch (OBJ_TYPE(callee)) {
             case OBJ_BOUND_METHOD: {
@@ -263,7 +263,7 @@ static bool callValue(VM *vm, Value callee, int argCount) {
     return false;
 }
 
-static bool callNativeMethod(VM *vm, Value method, int argCount) {
+static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
     NativeFn native = AS_NATIVE(method);
 
     Value result = native(vm, argCount, vm->stackTop - argCount - 1);
@@ -276,7 +276,7 @@ static bool callNativeMethod(VM *vm, Value method, int argCount) {
     return true;
 }
 
-static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
+static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount) {
     // Look for the method.
     Value method;
@@ -288,7 +288,7 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, ObjString *name,
     return call(vm, AS_CLOSURE(method), argCount);
 }
 
-static bool invoke(VM *vm, ObjString *name, int argCount) {
+static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
     Value receiver = peek(vm, argCount);
 
     if (!IS_OBJ(receiver)) {
@@ -449,7 +449,7 @@ static bool invoke(VM *vm, ObjString *name, int argCount) {
     return false;
 }
 
-static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
+static bool bindMethod(DictuVM *vm, ObjClass *klass, ObjString *name) {
     Value method;
     if (!tableGet(&klass->methods, name, &method)) {
         return false;
@@ -465,8 +465,8 @@ static bool bindMethod(VM *vm, ObjClass *klass, ObjString *name) {
 // is already in an upvalue, the existing one is used. (This is
 // important to ensure that multiple closures closing over the same
 // variable actually see the same variable.) Otherwise, it creates a
-// new open upvalue and adds it to the VM's list of upvalues.
-static ObjUpvalue *captureUpvalue(VM *vm, Value *local) {
+// new open upvalue and adds it to the DictuVM's list of upvalues.
+static ObjUpvalue *captureUpvalue(DictuVM *vm, Value *local) {
     // If there are no open upvalues at all, we must need a new one.
     if (vm->openUpvalues == NULL) {
         vm->openUpvalues = newUpvalue(vm, local);
@@ -502,7 +502,7 @@ static ObjUpvalue *captureUpvalue(VM *vm, Value *local) {
     return createdUpvalue;
 }
 
-static void closeUpvalues(VM *vm, Value *last) {
+static void closeUpvalues(DictuVM *vm, Value *last) {
     while (vm->openUpvalues != NULL &&
            vm->openUpvalues->value >= last) {
         ObjUpvalue *upvalue = vm->openUpvalues;
@@ -517,7 +517,7 @@ static void closeUpvalues(VM *vm, Value *last) {
     }
 }
 
-static void defineMethod(VM *vm, ObjString *name) {
+static void defineMethod(DictuVM *vm, ObjString *name) {
     Value method = peek(vm, 0);
     ObjClass *klass = AS_CLASS(peek(vm, 1));
 
@@ -529,7 +529,7 @@ static void defineMethod(VM *vm, ObjString *name) {
     pop(vm);
 }
 
-static void createClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
+static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
     ObjClass *klass = newClass(vm, name, superclass, type);
     push(vm, OBJ_VAL(klass));
 
@@ -550,7 +550,7 @@ bool isFalsey(Value value) {
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
-static void concatenate(VM *vm) {
+static void concatenate(DictuVM *vm) {
     ObjString *b = AS_STRING(peek(vm, 0));
     ObjString *a = AS_STRING(peek(vm, 1));
 
@@ -568,11 +568,11 @@ static void concatenate(VM *vm) {
     push(vm, OBJ_VAL(result));
 }
 
-static void setReplVar(VM *vm, Value value) {
+static void setReplVar(DictuVM *vm, Value value) {
     tableSet(vm, &vm->globals, vm->replVar, value);
 }
 
-static InterpretResult run(VM *vm) {
+static DictuInterpretResult run(DictuVM *vm) {
 
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
@@ -1793,7 +1793,7 @@ static InterpretResult run(VM *vm) {
 
 }
 
-InterpretResult interpret(VM *vm, char *moduleName, char *source) {
+DictuInterpretResult interpret(DictuVM *vm, char *moduleName, char *source) {
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -1806,7 +1806,7 @@ InterpretResult interpret(VM *vm, char *moduleName, char *source) {
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);
-    InterpretResult result = run(vm);
+    DictuInterpretResult result = run(vm);
 
     return result;
 }

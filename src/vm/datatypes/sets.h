@@ -8,6 +8,6 @@
 #include "copy.h"
 #include "../util.h"
 
-void declareSetMethods(VM *vm);
+void declareSetMethods(DictuVM *vm);
 
 #endif //dictu_sets_h

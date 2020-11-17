@@ -12,7 +12,7 @@ void initTable(Table *table) {
     table->entries = NULL;
 }
 
-void freeTable(VM *vm, Table *table) {
+void freeTable(DictuVM *vm, Table *table) {
     FREE_ARRAY(vm, Entry, table->entries, table->capacityMask + 1);
     initTable(table);
 }
@@ -43,7 +43,7 @@ bool tableGet(Table *table, ObjString *key, Value *value) {
     return true;
 }
 
-static void adjustCapacity(VM *vm, Table *table, int capacityMask) {
+static void adjustCapacity(DictuVM *vm, Table *table, int capacityMask) {
     Entry *entries = ALLOCATE(vm, Entry, capacityMask + 1);
     for (int i = 0; i <= capacityMask; i++) {
         entries[i].key = NULL;
@@ -68,7 +68,7 @@ static void adjustCapacity(VM *vm, Table *table, int capacityMask) {
     FREE_ARRAY(vm, Entry, oldEntries, oldMask + 1);
 }
 
-bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
+bool tableSet(DictuVM *vm, Table *table, ObjString *key, Value value) {
     if (table->count + 1 > (table->capacityMask + 1) * TABLE_MAX_LOAD) {
         // Figure out the new table size.
         int capacityMask = GROW_CAPACITY(table->capacityMask + 1) - 1;
@@ -112,7 +112,7 @@ bool tableSet(VM *vm, Table *table, ObjString *key, Value value) {
     return isNewKey;
 }
 
-bool tableDelete(VM *vm, Table *table, ObjString *key) {
+bool tableDelete(DictuVM *vm, Table *table, ObjString *key) {
     UNUSED(vm);
     if (table->count == 0) return false;
 
@@ -163,7 +163,7 @@ bool tableDelete(VM *vm, Table *table, ObjString *key) {
     return true;
 }
 
-void tableAddAll(VM *vm, Table *from, Table *to) {
+void tableAddAll(DictuVM *vm, Table *from, Table *to) {
     for (int i = 0; i <= from->capacityMask; i++) {
         Entry *entry = &from->entries[i];
         if (entry->key != NULL) {
@@ -203,7 +203,7 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
     }
 }
 
-void tableRemoveWhite(VM *vm, Table *table) {
+void tableRemoveWhite(DictuVM *vm, Table *table) {
     for (int i = 0; i <= table->capacityMask; i++) {
         Entry *entry = &table->entries[i];
         if (entry->key != NULL && !entry->key->obj.isDark) {
@@ -212,7 +212,7 @@ void tableRemoveWhite(VM *vm, Table *table) {
     }
 }
 
-void grayTable(VM *vm, Table *table) {
+void grayTable(DictuVM *vm, Table *table) {
     for (int i = 0; i <= table->capacityMask; i++) {
         Entry *entry = &table->entries[i];
         grayObject(vm, (Obj *) entry->key);

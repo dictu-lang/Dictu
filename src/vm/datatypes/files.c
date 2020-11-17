@@ -1,7 +1,7 @@
 #include "files.h"
 #include "../memory.h"
 
-static Value writeFile(VM *vm, int argCount, Value *args) {
+static Value writeFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "write() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -26,7 +26,7 @@ static Value writeFile(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(charsWrote);
 }
 
-static Value writeLineFile(VM *vm, int argCount, Value *args) {
+static Value writeLineFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "writeLine() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -51,7 +51,7 @@ static Value writeLineFile(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(charsWrote);
 }
 
-static Value readFullFile(VM *vm, int argCount, Value *args) {
+static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "read() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -91,7 +91,7 @@ static Value readFullFile(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value readLineFile(VM *vm, int argCount, Value *args) {
+static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -114,7 +114,7 @@ static Value readLineFile(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value seekFile(VM *vm, int argCount, Value *args) {
+static Value seekFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "seek() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -164,7 +164,7 @@ static Value seekFile(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-void declareFileMethods(VM *vm) {
+void declareFileMethods(DictuVM *vm) {
     defineNative(vm, &vm->fileMethods, "write", writeFile);
     defineNative(vm, &vm->fileMethods, "writeLine", writeLineFile);
     defineNative(vm, &vm->fileMethods, "read", readFullFile);

@@ -1,6 +1,6 @@
 #include "random.h"
 
-static Value randomRandom(VM *vm, int argCount, Value *args)
+static Value randomRandom(DictuVM *vm, int argCount, Value *args)
 {
     UNUSED(args);
     if (argCount > 0)
@@ -15,7 +15,7 @@ static Value randomRandom(VM *vm, int argCount, Value *args)
     return NUMBER_VAL(random_double);
 }
 
-static Value randomRange(VM *vm, int argCount, Value *args)
+static Value randomRange(DictuVM *vm, int argCount, Value *args)
 {
     if (argCount != 2)
     {
@@ -35,7 +35,7 @@ static Value randomRange(VM *vm, int argCount, Value *args)
     return NUMBER_VAL(random_val);
 }
 
-static Value randomSelect(VM *vm, int argCount, Value *args)
+static Value randomSelect(DictuVM *vm, int argCount, Value *args)
 {
     if (argCount == 0)
     {
@@ -67,7 +67,7 @@ static Value randomSelect(VM *vm, int argCount, Value *args)
     return args[index];
 }
 
-ObjModule *createRandomModule(VM *vm)
+ObjModule *createRandomModule(DictuVM *vm)
 {
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));

@@ -9,13 +9,13 @@
 #include "../vm/vm.h"
 
 typedef struct response {
-    VM *vm;
+    DictuVM *vm;
     ObjList *headers;
     char *res;
     size_t len;
     long statusCode;
 } Response;
 
-ObjModule *createHTTPModule(VM *vm);
+ObjModule *createHTTPModule(DictuVM *vm);
 
 #endif //dictu_http_h

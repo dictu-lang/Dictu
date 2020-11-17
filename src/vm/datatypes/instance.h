@@ -9,6 +9,6 @@
 #include "copy.h"
 #include "../util.h"
 
-void declareInstanceMethods(VM *vm);
+void declareInstanceMethods(DictuVM *vm);
 
 #endif //dictu_instance_h

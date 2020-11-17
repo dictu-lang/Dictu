@@ -15,7 +15,7 @@ int setenv(const char *name, const char *value, int overwrite) {
 }
 #endif
 
-static Value get(VM *vm, int argCount, Value *args) {
+static Value get(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "get() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -40,7 +40,7 @@ static Value get(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value set(VM *vm, int argCount, Value *args) {
+static Value set(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "set() takes 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -68,7 +68,7 @@ static Value set(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
-ObjModule *createEnvModule(VM *vm) {
+ObjModule *createEnvModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Env", 3);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

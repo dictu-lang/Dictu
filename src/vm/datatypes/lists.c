@@ -2,7 +2,7 @@
 
 #include "lists.h"
 
-static Value toStringList(VM *vm, int argCount, Value *args) {
+static Value toStringList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -16,7 +16,7 @@ static Value toStringList(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-static Value lenList(VM *vm, int argCount, Value *args) {
+static Value lenList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -26,7 +26,7 @@ static Value lenList(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(list->values.count);
 }
 
-static Value extendList(VM *vm, int argCount, Value *args) {
+static Value extendList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "extend() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -47,7 +47,7 @@ static Value extendList(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value pushListItem(VM *vm, int argCount, Value *args) {
+static Value pushListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "push() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -59,7 +59,7 @@ static Value pushListItem(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value insertListItem(VM *vm, int argCount, Value *args) {
+static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "insert() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -97,7 +97,7 @@ static Value insertListItem(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value popListItem(VM *vm, int argCount, Value *args) {
+static Value popListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
         runtimeError(vm, "pop() takes either 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -139,7 +139,7 @@ static Value popListItem(VM *vm, int argCount, Value *args) {
     return element;
 }
 
-static Value removeListItem(VM *vm, int argCount, Value *args) {
+static Value removeListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -185,7 +185,7 @@ static Value removeListItem(VM *vm, int argCount, Value *args) {
     return EMPTY_VAL;
 }
 
-static Value containsListItem(VM *vm, int argCount, Value *args) {
+static Value containsListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -203,7 +203,7 @@ static Value containsListItem(VM *vm, int argCount, Value *args) {
     return FALSE_VAL;
 }
 
-static Value joinListItem(VM *vm, int argCount, Value *args) {
+static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
         runtimeError(vm, "join() takes 1 optional argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -269,7 +269,7 @@ static Value joinListItem(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value copyListShallow(VM *vm, int argCount, Value *args) {
+static Value copyListShallow(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "copy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -280,7 +280,7 @@ static Value copyListShallow(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newList);
 }
 
-static Value copyListDeep(VM *vm, int argCount, Value *args) {
+static Value copyListDeep(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "deepCopy() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -343,7 +343,7 @@ static void quickSort(ObjList* arr, int start, int end) {
     }
 }
 
-static Value sortList(VM *vm, int argCount, Value *args) {
+static Value sortList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "sort() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -364,7 +364,7 @@ static Value sortList(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-void declareListMethods(VM *vm) {
+void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "toString", toStringList);
     defineNative(vm, &vm->listMethods, "len", lenList);
     defineNative(vm, &vm->listMethods, "extend", extendList);

@@ -2,7 +2,7 @@
 #include "../vm/vm.h"
 #include <math.h>
 
-static Value averageNative(VM *vm, int argCount, Value *args) {
+static Value averageNative(DictuVM *vm, int argCount, Value *args) {
     double average = 0;
 
     if (argCount == 0) {
@@ -25,7 +25,7 @@ static Value averageNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(average / argCount);
 }
 
-static Value floorNative(VM *vm, int argCount, Value *args) {
+static Value floorNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "floor() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -39,7 +39,7 @@ static Value floorNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(floor(AS_NUMBER(args[0])));
 }
 
-static Value roundNative(VM *vm, int argCount, Value *args) {
+static Value roundNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "round() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -53,7 +53,7 @@ static Value roundNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(round(AS_NUMBER(args[0])));
 }
 
-static Value ceilNative(VM *vm, int argCount, Value *args) {
+static Value ceilNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "ceil() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -67,7 +67,7 @@ static Value ceilNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(ceil(AS_NUMBER(args[0])));
 }
 
-static Value absNative(VM *vm, int argCount, Value *args) {
+static Value absNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "abs() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -86,7 +86,7 @@ static Value absNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(absValue);
 }
 
-static Value maxNative(VM *vm, int argCount, Value *args) {
+static Value maxNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -114,7 +114,7 @@ static Value maxNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(maximum);
 }
 
-static Value minNative(VM *vm, int argCount, Value *args) {
+static Value minNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         return NUMBER_VAL(0);
     } else if (argCount == 1 && IS_LIST(args[0])) {
@@ -142,7 +142,7 @@ static Value minNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(minimum);
 }
 
-static Value sumNative(VM *vm, int argCount, Value *args) {
+static Value sumNative(DictuVM *vm, int argCount, Value *args) {
     double sum = 0;
 
     if (argCount == 0) {
@@ -165,7 +165,7 @@ static Value sumNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(sum);
 }
 
-static Value sqrtNative(VM *vm, int argCount, Value *args) {
+static Value sqrtNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "sqrt() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -179,7 +179,7 @@ static Value sqrtNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(sqrt(AS_NUMBER(args[0])));
 }
 
-static Value sinNative(VM *vm, int argCount, Value *args) {
+static Value sinNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "sin() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -193,7 +193,7 @@ static Value sinNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(sin(AS_NUMBER(args[0])));
 }
 
-static Value cosNative(VM *vm, int argCount, Value *args) {
+static Value cosNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "cos() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -207,7 +207,7 @@ static Value cosNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(cos(AS_NUMBER(args[0])));
 }
 
-static Value tanNative(VM *vm, int argCount, Value *args) {
+static Value tanNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "tan() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -221,7 +221,7 @@ static Value tanNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(tan(AS_NUMBER(args[0])));
 }
 
-ObjModule *createMathsModule(VM *vm) {
+ObjModule *createMathsModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

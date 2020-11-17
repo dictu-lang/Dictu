@@ -23,16 +23,16 @@
 #define FREE_ARRAY(vm, type, pointer, oldCount) \
     reallocate(vm, pointer, sizeof(type) * (oldCount), 0)
 
-void *reallocate(VM *vm, void *previous, size_t oldSize, size_t newSize);
+void *reallocate(DictuVM *vm, void *previous, size_t oldSize, size_t newSize);
 
-void grayObject(VM *vm, Obj *object);
+void grayObject(DictuVM *vm, Obj *object);
 
-void grayValue(VM *vm, Value value);
+void grayValue(DictuVM *vm, Value value);
 
-void collectGarbage(VM *vm);
+void collectGarbage(DictuVM *vm);
 
-void freeObjects(VM *vm);
+void freeObjects(DictuVM *vm);
 
-void freeObject(VM *vm, Obj *object);
+void freeObject(DictuVM *vm, Obj *object);
 
 #endif

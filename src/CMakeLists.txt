@@ -1,6 +1,9 @@
+# Swap out for explicit files
 file(GLOB_RECURSE sources "*.c")
 file(GLOB_RECURSE headers "*.h")
 set(libraries)
+
+SET(INCLUDE_DIR include/)
 
 if(DISABLE_HTTP)
     list(FILTER sources EXCLUDE REGEX "http.c")

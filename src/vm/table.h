@@ -20,21 +20,21 @@ typedef struct {
 
 void initTable(Table *table);
 
-void freeTable(VM *vm, Table *table);
+void freeTable(DictuVM *vm, Table *table);
 
 bool tableGet(Table *table, ObjString *key, Value *value);
 
-bool tableSet(VM *vm, Table *table, ObjString *key, Value value);
+bool tableSet(DictuVM *vm, Table *table, ObjString *key, Value value);
 
-bool tableDelete(VM *vm, Table *table, ObjString *key);
+bool tableDelete(DictuVM *vm, Table *table, ObjString *key);
 
-void tableAddAll(VM *vm, Table *from, Table *to);
+void tableAddAll(DictuVM *vm, Table *from, Table *to);
 
 ObjString *tableFindString(Table *table, const char *chars, int length,
                            uint32_t hash);
 
-void tableRemoveWhite(VM *vm, Table *table);
+void tableRemoveWhite(DictuVM *vm, Table *table);
 
-void grayTable(VM *vm, Table *table);
+void grayTable(DictuVM *vm, Table *table);
 
 #endif

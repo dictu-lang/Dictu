@@ -18,12 +18,12 @@ typedef enum {
     #undef OPCODE
 } OpCode;
 
-void initChunk(VM *vm, Chunk *chunk);
+void initChunk(DictuVM *vm, Chunk *chunk);
 
-void freeChunk(VM *vm, Chunk *chunk);
+void freeChunk(DictuVM *vm, Chunk *chunk);
 
-void writeChunk(VM *vm, Chunk *chunk, uint8_t byte, int line);
+void writeChunk(DictuVM *vm, Chunk *chunk, uint8_t byte, int line);
 
-int addConstant(VM *vm, Chunk *chunk, Value value);
+int addConstant(DictuVM *vm, Chunk *chunk, Value value);
 
 #endif

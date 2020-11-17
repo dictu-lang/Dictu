@@ -7,7 +7,7 @@
 #endif
 
 #ifndef _WIN32
-static Value getgidNative(VM *vm, int argCount, Value *args) {
+static Value getgidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -18,7 +18,7 @@ static Value getgidNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(getgid());
 }
 
-static Value getegidNative(VM *vm, int argCount, Value *args) {
+static Value getegidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -29,7 +29,7 @@ static Value getegidNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(getegid());
 }
 
-static Value getuidNative(VM *vm, int argCount, Value *args) {
+static Value getuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -40,7 +40,7 @@ static Value getuidNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(getuid());
 }
 
-static Value geteuidNative(VM *vm, int argCount, Value *args) {
+static Value geteuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -51,7 +51,7 @@ static Value geteuidNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(geteuid());
 }
 
-static Value getppidNative(VM *vm, int argCount, Value *args) {
+static Value getppidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -62,7 +62,7 @@ static Value getppidNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(getppid());
 }
 
-static Value getpidNative(VM *vm, int argCount, Value *args) {
+static Value getpidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
@@ -74,7 +74,7 @@ static Value getpidNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-static Value rmdirNative(VM *vm, int argCount, Value *args) {
+static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "rmdir() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -96,7 +96,7 @@ static Value rmdirNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
-static Value mkdirNative(VM *vm, int argCount, Value *args) {
+static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount == 0 || argCount > 2) {
         runtimeError(vm, "mkdir() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -130,7 +130,7 @@ static Value mkdirNative(VM *vm, int argCount, Value *args) {
 }
 
 #ifdef HAS_ACCESS
-static Value accessNative(VM *vm, int argCount, Value *args) {
+static Value accessNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "access() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -162,7 +162,7 @@ static Value accessNative(VM *vm, int argCount, Value *args) {
 }
 #endif
 
-static Value removeNative(VM *vm, int argCount, Value *args) {
+static Value removeNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "remove() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -184,7 +184,7 @@ static Value removeNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
-static Value setCWDNative(VM *vm, int argCount, Value *args) {
+static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "setcwd() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -206,7 +206,7 @@ static Value setCWDNative(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
 }
 
-static Value getCWDNative(VM *vm, int argCount, Value *args) {
+static Value getCWDNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(argCount); UNUSED(args);
 
     char cwd[PATH_MAX];
@@ -220,26 +220,26 @@ static Value getCWDNative(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value timeNative(VM *vm, int argCount, Value *args) {
+static Value timeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(vm); UNUSED(argCount); UNUSED(args);
 
     return NUMBER_VAL((double) time(NULL));
 }
 
-static Value clockNative(VM *vm, int argCount, Value *args) {
+static Value clockNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(vm); UNUSED(argCount); UNUSED(args);
 
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
 
-static Value collectNative(VM *vm, int argCount, Value *args) {
+static Value collectNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(argCount); UNUSED(args);
 
     collectGarbage(vm);
     return NIL_VAL;
 }
 
-static Value sleepNative(VM *vm, int argCount, Value *args) {
+static Value sleepNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "sleep() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -260,7 +260,7 @@ static Value sleepNative(VM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-static Value exitNative(VM *vm, int argCount, Value *args) {
+static Value exitNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "exit() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -275,7 +275,7 @@ static Value exitNative(VM *vm, int argCount, Value *args) {
     return EMPTY_VAL; /* satisfy the tcc compiler */
 }
 
-void initArgv(VM *vm, Table *table, int argc, char *argv[]) {
+void initArgv(DictuVM *vm, Table *table, int argc, char *argv[]) {
     ObjList *list = initList(vm);
     push(vm, OBJ_VAL(list));
 
@@ -290,7 +290,7 @@ void initArgv(VM *vm, Table *table, int argc, char *argv[]) {
     pop(vm);
 }
 
-void initPlatform(VM *vm, Table *table) {
+void initPlatform(DictuVM *vm, Table *table) {
 #ifdef _WIN32
     defineNativeProperty(vm, table, "platform", OBJ_VAL(copyString(vm, "windows", 7)));
 #else
@@ -307,7 +307,7 @@ void initPlatform(VM *vm, Table *table) {
 #endif
 }
 
-void createSystemModule(VM *vm, int argc, char *argv[]) {
+void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

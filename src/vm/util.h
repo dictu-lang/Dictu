@@ -3,14 +3,14 @@
 
 #include "vm.h"
 
-char *readFile(VM *vm, const char *path);
+char *readFile(DictuVM *vm, const char *path);
 
-void defineNative(VM *vm, Table *table, const char *name, NativeFn function);
+void defineNative(DictuVM *vm, Table *table, const char *name, NativeFn function);
 
-void defineNativeProperty(VM *vm, Table *table, const char *name, Value value);
+void defineNativeProperty(DictuVM *vm, Table *table, const char *name, Value value);
 
 bool isValidKey(Value value);
 
-Value boolNative(VM *vm, int argCount, Value *args);
+Value boolNative(DictuVM *vm, int argCount, Value *args);
 
 #endif //dictu_util_h

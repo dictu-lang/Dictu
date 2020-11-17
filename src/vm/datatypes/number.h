@@ -4,6 +4,6 @@
 #include "../common.h"
 #include "../util.h"
 
-void declareNumberMethods(VM *vm);
+void declareNumberMethods(DictuVM *vm);
 
 #endif //dictu_number_h

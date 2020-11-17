@@ -11,7 +11,7 @@
 #define ALLOCATE_OBJ(vm, type, objectType) \
     (type*)allocateObject(vm, sizeof(type), objectType)
 
-static Obj *allocateObject(VM *vm, size_t size, ObjType type) {
+static Obj *allocateObject(DictuVM *vm, size_t size, ObjType type) {
     Obj *object;
     object = (Obj *) reallocate(vm, NULL, 0, size);
     object->type = type;
@@ -26,7 +26,7 @@ static Obj *allocateObject(VM *vm, size_t size, ObjType type) {
     return object;
 }
 
-ObjModule *newModule(VM *vm, ObjString *name) {
+ObjModule *newModule(DictuVM *vm, ObjString *name) {
     Value moduleVal;
     if (tableGet(&vm->modules, name, &moduleVal)) {
         return AS_MODULE(moduleVal);
@@ -49,7 +49,7 @@ ObjModule *newModule(VM *vm, ObjString *name) {
     return module;
 }
 
-ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method) {
+ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method) {
     ObjBoundMethod *bound = ALLOCATE_OBJ(vm, ObjBoundMethod,
                                          OBJ_BOUND_METHOD);
 
@@ -58,7 +58,7 @@ ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method) {
     return bound;
 }
 
-ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
+ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType type) {
     ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
     klass->name = name;
     klass->superclass = superclass;
@@ -69,7 +69,7 @@ ObjClass *newClass(VM *vm, ObjString *name, ObjClass *superclass, ClassType type
     return klass;
 }
 
-ObjClosure *newClosure(VM *vm, ObjFunction *function) {
+ObjClosure *newClosure(DictuVM *vm, ObjFunction *function) {
     ObjUpvalue **upvalues = ALLOCATE(vm, ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
         upvalues[i] = NULL;
@@ -82,7 +82,7 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function) {
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
+ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
@@ -98,20 +98,20 @@ ObjFunction *newFunction(VM *vm, ObjModule *module, FunctionType type) {
     return function;
 }
 
-ObjInstance *newInstance(VM *vm, ObjClass *klass) {
+ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
     initTable(&instance->fields);
     return instance;
 }
 
-ObjNative *newNative(VM *vm, NativeFn function) {
+ObjNative *newNative(DictuVM *vm, NativeFn function) {
     ObjNative *native = ALLOCATE_OBJ(vm, ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
 
-static ObjString *allocateString(VM *vm, char *chars, int length,
+static ObjString *allocateString(DictuVM *vm, char *chars, int length,
                                  uint32_t hash) {
     ObjString *string = ALLOCATE_OBJ(vm, ObjString, OBJ_STRING);
     string->length = length;
@@ -123,13 +123,13 @@ static ObjString *allocateString(VM *vm, char *chars, int length,
     return string;
 }
 
-ObjList *initList(VM *vm) {
+ObjList *initList(DictuVM *vm) {
     ObjList *list = ALLOCATE_OBJ(vm, ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
-ObjDict *initDict(VM *vm) {
+ObjDict *initDict(DictuVM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
     dict->count = 0;
     dict->capacityMask = -1;
@@ -137,7 +137,7 @@ ObjDict *initDict(VM *vm) {
     return dict;
 }
 
-ObjSet *initSet(VM *vm) {
+ObjSet *initSet(DictuVM *vm) {
     ObjSet *set = ALLOCATE_OBJ(vm, ObjSet, OBJ_SET);
     set->count = 0;
     set->capacityMask = -1;
@@ -145,7 +145,7 @@ ObjSet *initSet(VM *vm) {
     return set;
 }
 
-ObjFile *initFile(VM *vm) {
+ObjFile *initFile(DictuVM *vm) {
     ObjFile *file = ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
     return file;
 }
@@ -161,7 +161,7 @@ static uint32_t hashString(const char *key, int length) {
     return hash;
 }
 
-ObjString *takeString(VM *vm, char *chars, int length) {
+ObjString *takeString(DictuVM *vm, char *chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString *interned = tableFindString(&vm->strings, chars, length,
                                           hash);
@@ -173,7 +173,7 @@ ObjString *takeString(VM *vm, char *chars, int length) {
     return allocateString(vm, chars, length, hash);
 }
 
-ObjString *copyString(VM *vm, const char *chars, int length) {
+ObjString *copyString(DictuVM *vm, const char *chars, int length) {
     uint32_t hash = hashString(chars, length);
     ObjString *interned = tableFindString(&vm->strings, chars, length,
                                           hash);
@@ -185,7 +185,7 @@ ObjString *copyString(VM *vm, const char *chars, int length) {
     return allocateString(vm, heapChars, length, hash);
 }
 
-ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
+ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot) {
     ObjUpvalue *upvalue = ALLOCATE_OBJ(vm, ObjUpvalue, OBJ_UPVALUE);
     upvalue->closed = NIL_VAL;
     upvalue->value = slot;
@@ -194,7 +194,7 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot) {
     return upvalue;
 }
 
-ObjSocket *newSocket(VM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
+ObjSocket *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
     ObjSocket *socket = ALLOCATE_OBJ(vm, ObjSocket, OBJ_SOCKET);
     socket->socket = sock;
     socket->socketFamily = socketFamily;

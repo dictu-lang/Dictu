@@ -2,7 +2,7 @@
 #include "../memory.h"
 
 
-static Value lenString(VM *vm, int argCount, Value *args) {
+static Value lenString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -12,7 +12,7 @@ static Value lenString(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(string->length);
 }
 
-static Value toNumberString(VM *vm, int argCount, Value *args) {
+static Value toNumberString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toNumber() takes no arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -32,7 +32,7 @@ static Value toNumberString(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(number);
 }
 
-static Value formatString(VM *vm, int argCount, Value *args) {
+static Value formatString(DictuVM *vm, int argCount, Value *args) {
     if (argCount == 0) {
         runtimeError(vm, "format() takes at least 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -110,7 +110,7 @@ static Value formatString(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newString);
 }
 
-static Value splitString(VM *vm, int argCount, Value *args) {
+static Value splitString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "split() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -165,7 +165,7 @@ static Value splitString(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(list);
 }
 
-static Value containsString(VM *vm, int argCount, Value *args) {
+static Value containsString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -186,7 +186,7 @@ static Value containsString(VM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
-static Value findString(VM *vm, int argCount, Value *args) {
+static Value findString(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
         runtimeError(vm, "find() takes either 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -227,7 +227,7 @@ static Value findString(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(position);
 }
 
-static Value replaceString(VM *vm, int argCount, Value *args) {
+static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "replace() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -295,7 +295,7 @@ static Value replaceString(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(newString);
 }
 
-static Value lowerString(VM *vm, int argCount, Value *args) {
+static Value lowerString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "lower() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -314,7 +314,7 @@ static Value lowerString(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value upperString(VM *vm, int argCount, Value *args) {
+static Value upperString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "upper() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -333,7 +333,7 @@ static Value upperString(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value startsWithString(VM *vm, int argCount, Value *args) {
+static Value startsWithString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "startsWith() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -350,7 +350,7 @@ static Value startsWithString(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(strncmp(string, start->chars, start->length) == 0);
 }
 
-static Value endsWithString(VM *vm, int argCount, Value *args) {
+static Value endsWithString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "endsWith() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -371,7 +371,7 @@ static Value endsWithString(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(strcmp(string->chars + (string->length - suffix->length), suffix->chars) == 0);
 }
 
-static Value leftStripString(VM *vm, int argCount, Value *args) {
+static Value leftStripString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "leftStrip() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -395,7 +395,7 @@ static Value leftStripString(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value rightStripString(VM *vm, int argCount, Value *args) {
+static Value rightStripString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "rightStrip() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -418,7 +418,7 @@ static Value rightStripString(VM *vm, int argCount, Value *args) {
     return newString;
 }
 
-static Value stripString(VM *vm, int argCount, Value *args) {
+static Value stripString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "strip() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -431,7 +431,7 @@ static Value stripString(VM *vm, int argCount, Value *args) {
     return string;
 }
 
-static Value countString(VM *vm, int argCount, Value *args) {
+static Value countString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "count() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -454,7 +454,7 @@ static Value countString(VM *vm, int argCount, Value *args) {
     return NUMBER_VAL(count);
 }
 
-void declareStringMethods(VM *vm) {
+void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
     defineNative(vm, &vm->stringMethods, "format", formatString);

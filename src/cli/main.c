@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define UNUSED(__x__) (void) __x__
+
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 #include <sys/param.h>
 #elif defined(_WIN32)
@@ -14,8 +16,7 @@ void cleanupSockets(void) {
 }
 #endif
 
-#include "../vm/common.h"
-#include "../vm/vm.h"
+#include "../include/dictu_include.h"
 
 #define VERSION "Dictu Version: 0.12.0\n"
 
@@ -72,7 +73,7 @@ static bool replCountQuotes(char *line) {
 }
 #endif
 
-static void repl(VM *vm, int argc, char *argv[]) {
+static void repl(DictuVM *vm, int argc, char *argv[]) {
     UNUSED(argc); UNUSED(argv);
 
     printf(VERSION);
@@ -186,7 +187,7 @@ static char *readFile(const char *path) {
     return buffer;
 }
 
-static void runFile(VM *vm, int argc, char *argv[]) {
+static void runFile(DictuVM *vm, int argc, char *argv[]) {
     UNUSED(argc);
 
     char *source = readFile(argv[1]);
@@ -196,7 +197,7 @@ static void runFile(VM *vm, int argc, char *argv[]) {
         exit(74);
     }
 
-    InterpretResult result = interpret(vm, argv[1], source);
+    DictuInterpretResult result = interpret(vm, argv[1], source);
     free(source);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
@@ -211,7 +212,7 @@ int main(int argc, char *argv[]) {
     WSAStartup(versionWanted, &wsaData);
     #endif
 
-    VM *vm = initVM(argc == 1, argc, argv);
+    DictuVM *vm = dictuInitVM(argc == 1, argc, argv);
 
     if (argc == 1) {
         repl(vm, argc, argv);
@@ -222,6 +223,6 @@ int main(int argc, char *argv[]) {
         exit(64);
     }
 
-    freeVM(vm);
+    dictuFreeVM(vm);
     return 0;
 }
