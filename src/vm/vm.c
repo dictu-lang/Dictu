@@ -1701,9 +1701,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef STORE_FRAME
+#undef RUNTIME_ERROR
 
     return INTERPRET_RUNTIME_ERROR;
-
 }
 
 DictuInterpretResult interpret(DictuVM *vm, char *moduleName, char *source) {
