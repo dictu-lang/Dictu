@@ -21,6 +21,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]);
 
 void dictuFreeVM(DictuVM *vm);
 
-DictuInterpretResult interpret(DictuVM *vm, char *moduleName, char *source);
+DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source);
 
 #endif //dictu_include_h

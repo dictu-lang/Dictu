@@ -1707,7 +1707,7 @@ static DictuInterpretResult run(DictuVM *vm) {
     return INTERPRET_RUNTIME_ERROR;
 }
 
-DictuInterpretResult interpret(DictuVM *vm, char *moduleName, char *source) {
+DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source) {
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

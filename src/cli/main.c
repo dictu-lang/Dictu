@@ -112,7 +112,7 @@ static void repl(DictuVM *vm, int argc, char *argv[]) {
             linenoiseHistorySave("history.txt");
         }
 
-        interpret(vm, "repl", fullLine);
+        dictuInterpret(vm, "repl", fullLine);
 
         free(line);
         free(fullLine);
@@ -147,7 +147,7 @@ static void repl(DictuVM *vm, int argc, char *argv[]) {
             }
         }
 
-        interpret(vm, "repl", line);
+        dictuInterpret(vm, "repl", line);
         lineLength = 0;
         line[0] = '\0';
     }
@@ -195,7 +195,7 @@ static void runFile(DictuVM *vm, int argc, char *argv[]) {
         exit(74);
     }
 
-    DictuInterpretResult result = interpret(vm, argv[1], source);
+    DictuInterpretResult result = dictuInterpret(vm, argv[1], source);
     free(source);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
