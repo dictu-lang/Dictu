@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #ifdef _WIN32
-#include "../windowsapi.h"
+#include "windowsapi.h"
 #include <io.h>
 #define setsockopt(S, LEVEL, OPTNAME, OPTVAL, OPTLEN) setsockopt(S, LEVEL, OPTNAME, (char*)(OPTVAL), OPTLEN)
 
@@ -247,7 +247,24 @@ static Value setSocketOpt(DictuVM *vm, int argCount, Value *args) {
     return TRUE_VAL;
 }
 
+#ifdef _WIN32
+void cleanupSockets(void) {
+    // Calls WSACleanup until an error occurs.
+    // Avoids issues if WSAStartup is called multiple times.
+    while (!WSACleanup());
+}
+#endif
+
 ObjModule *createSocketModule(DictuVM *vm) {
+    #ifdef _WIN32
+    #include "windowsapi.h"
+
+    atexit(cleanupSockets);
+    WORD versionWanted = MAKEWORD(2, 2);
+    WSADATA wsaData;
+    WSAStartup(versionWanted, &wsaData);
+    #endif
+
     ObjString *name = copyString(vm, "Socket", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

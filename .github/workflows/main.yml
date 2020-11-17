@@ -7,28 +7,28 @@ on:
       - master
 
 jobs:
-     test-ubuntu:
-       name: Test on ${{ matrix.os }}
-       runs-on: ${{ matrix.os }}
-       strategy:
-         matrix:
-           os: [ubuntu-latest, ubuntu-16.04, ubuntu-20.04]
-
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run tests (No HTTP)
-           run: |
-             make debug DISABLE_HTTP=1
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
-         - name: Remove build directory
-           run: |
-             rm -rf build
-         - name: Make dictu and run tests (HTTP)
-           run: |
-             sudo apt-get update
-             sudo apt-get install -y libcurl4-openssl-dev
-             make debug
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+#     test-ubuntu:
+#       name: Test on ${{ matrix.os }}
+#       runs-on: ${{ matrix.os }}
+#       strategy:
+#         matrix:
+#           os: [ubuntu-latest, ubuntu-16.04, ubuntu-20.04]
+#
+#       steps:
+#         - uses: actions/checkout@v2
+#         - name: Make dictu and run tests (No HTTP)
+#           run: |
+#             make debug DISABLE_HTTP=1
+#             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+#         - name: Remove build directory
+#           run: |
+#             rm -rf build
+#         - name: Make dictu and run tests (HTTP)
+#           run: |
+#             sudo apt-get update
+#             sudo apt-get install -y libcurl4-openssl-dev
+#             make debug
+#             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
      test-ubuntu-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -42,7 +42,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
-             ./build/Dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
          - name: Remove build directory
            run: |
              rm -rf build
@@ -52,27 +52,27 @@ jobs:
              sudo apt-get install -y libcurl4-openssl-dev
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
-             ./build/Dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
-     test-mac:
-       name: Test on ${{ matrix.os }}
-       runs-on: ${{ matrix.os }}
-       strategy:
-         matrix:
-           os: [macOS-latest]
-
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run tests (No HTTP)
-           run: |
-             make debug DISABLE_HTTP=1
              ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
-         - name: Remove build directory
-           run: |
-             rm -rf build
-         - name: Make dictu and run tests
-           run: |
-             make debug
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+#     test-mac:
+#       name: Test on ${{ matrix.os }}
+#       runs-on: ${{ matrix.os }}
+#       strategy:
+#         matrix:
+#           os: [macOS-latest]
+#
+#       steps:
+#         - uses: actions/checkout@v2
+#         - name: Make dictu and run tests (No HTTP)
+#           run: |
+#             make debug DISABLE_HTTP=1
+#             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+#         - name: Remove build directory
+#           run: |
+#             rm -rf build
+#         - name: Make dictu and run tests
+#           run: |
+#             make debug
+#             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
      test-mac-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -86,7 +86,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
-             ./build/Dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
          - name: Remove build directory
            run: |
              rm -rf build
@@ -94,7 +94,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
-             ./build/Dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
+             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total memory usage: 0'
      test-windows-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -108,4 +108,4 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
              cmake --build build
-             build\Debug\Dictu.exe tests/runTests.du
+             Debug\dictu.exe tests/runTests.du

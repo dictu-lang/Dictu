@@ -10,7 +10,7 @@
 #endif
 
 #ifdef _WIN32
-#include "../windowsapi.h"
+#include "windowsapi.h"
 
 #define DIR_SEPARATOR '\\'
 #define DIR_ALT_SEPARATOR '/'

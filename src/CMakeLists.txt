@@ -5,6 +5,10 @@ set(libraries)
 
 SET(INCLUDE_DIR include/)
 
+# Remove CLI files
+list(FILTER sources EXCLUDE REGEX "(main|linenoise).c")
+list(FILTER headers EXCLUDE REGEX "linenoise.h")
+
 if(DISABLE_HTTP)
     list(FILTER sources EXCLUDE REGEX "http.c")
     list(FILTER headers EXCLUDE REGEX "http.h")
@@ -35,8 +39,14 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DEBUG DEBUG_STRESS_GC DEBUG_FINAL_MEM)
 endif()
 
-add_library(${PROJECT_NAME}_s STATIC ${sources} ${headers})
-add_library(${PROJECT_NAME} SHARED ${sources} ${headers})
+add_library(objlib OBJECT ${sources} ${headers})
 
-target_link_libraries(${PROJECT_NAME}_s ${libraries})
+# shared libraries need PIC
+set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+# shared and static libraries built from the same object files
+add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:objlib>)
+add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:objlib>)
+
+target_link_libraries(${PROJECT_NAME}_static ${libraries})
 target_link_libraries(${PROJECT_NAME} ${libraries})

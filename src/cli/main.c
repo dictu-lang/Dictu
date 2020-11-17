@@ -6,14 +6,6 @@
 
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 #include <sys/param.h>
-#elif defined(_WIN32)
-#include "windowsapi.h"
-
-void cleanupSockets(void) {
-    // Calls WSACleanup until an error occurs.
-    // Avoids issues if WSAStartup is called multiple times.
-    while (!WSACleanup());
-}
 #endif
 
 #include "../include/dictu_include.h"
@@ -203,13 +195,6 @@ static void runFile(DictuVM *vm, int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    #ifdef _WIN32
-    atexit(cleanupSockets);
-    WORD versionWanted = MAKEWORD(2, 2);
-    WSADATA wsaData;
-    WSAStartup(versionWanted, &wsaData);
-    #endif
-
     DictuVM *vm = dictuInitVM(argc == 1, argc, argv);
 
     if (argc == 1) {

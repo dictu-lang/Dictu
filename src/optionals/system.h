@@ -8,7 +8,7 @@
 #include <ctype.h>
 
 #ifdef _WIN32
-#include "../windowsapi.h"
+#include "windowsapi.h"
 #include <direct.h>
 #define REMOVE remove
 #define MKDIR(d, m) ((void)m, _mkdir(d))

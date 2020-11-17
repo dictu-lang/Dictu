@@ -29,7 +29,7 @@ $ git clone https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
 $ cmake --build ./build
-$ ./build/Dictu
+$ ./dictu
 ```
 
 #### Compiling without HTTP
@@ -42,7 +42,7 @@ $ git clone https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_HTTP=1 -B ./build 
 $ cmake --build ./build
-$ ./build/Dictu
+$ ./dictu
 ```
 
 #### Compiling without linenoise

@@ -8,4 +8,4 @@ endif()
 
 add_executable(dictu ${DICTU_CLI_SRC})
 target_include_directories(dictu PUBLIC ${INCLUDE_DIR})
-target_link_libraries(dictu dictu_api_s)
+target_link_libraries(dictu dictu_api_static)
