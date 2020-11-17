@@ -15,8 +15,7 @@ void cleanupSockets(void) {
 #endif
 
 #include "../vm/common.h"
-#include "../vm/memory.h"
-#include "../vm/util.h"
+#include "../vm/vm.h"
 
 #define VERSION "Dictu Version: 0.12.0\n"
 
@@ -84,7 +83,7 @@ static void repl(VM *vm, int argc, char *argv[]) {
 
     while((line = linenoise(">>> ")) != NULL) {
         int fullLineLength = strlen(line);
-        char *fullLine = ALLOCATE(vm, char, fullLineLength + 1);
+        char *fullLine = malloc(sizeof(char) * (fullLineLength + 1));
         snprintf(fullLine, fullLineLength + 1, "%s", line);
 
         linenoiseHistoryAdd(line);
@@ -99,8 +98,7 @@ static void repl(VM *vm, int argc, char *argv[]) {
                 return;
             }
 
-
-            char *temp = GROW_ARRAY(vm, fullLine, char, fullLineLength, fullLineLength + lineLength);
+            char *temp = realloc(fullLine, sizeof(char) * fullLineLength + lineLength);
 
             if (temp == NULL) {
                 printf("Unable to allocate memory\n");
@@ -118,7 +116,7 @@ static void repl(VM *vm, int argc, char *argv[]) {
         interpret(vm, "repl", fullLine);
 
         free(line);
-        FREE_ARRAY(vm, char, fullLine, fullLineLength + 1);
+        free(fullLine);
     }
     #else
     #define BUFFER_SIZE 8
@@ -160,10 +158,38 @@ static void repl(VM *vm, int argc, char *argv[]) {
     #endif
 }
 
+static char *readFile(const char *path) {
+    FILE *file = fopen(path, "rb");
+    if (file == NULL) {
+        return NULL;
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+    char *buffer = malloc(sizeof(char) * (fileSize + 1));
+    if (buffer == NULL) {
+        fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
+        exit(74);
+    }
+
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+    if (bytesRead < fileSize) {
+        fprintf(stderr, "Could not read file \"%s\".\n", path);
+        exit(74);
+    }
+
+    buffer[bytesRead] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
 static void runFile(VM *vm, int argc, char *argv[]) {
     UNUSED(argc);
 
-    char *source = readFile(vm, argv[1]);
+    char *source = readFile(argv[1]);
 
     if (source == NULL) {
         fprintf(stderr, "Could not open file \"%s\".\n", argv[1]);
@@ -171,7 +197,7 @@ static void runFile(VM *vm, int argc, char *argv[]) {
     }
 
     InterpretResult result = interpret(vm, argv[1], source);
-    FREE_ARRAY(vm, char, source, strlen(source) + 1);
+    free(source);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);
