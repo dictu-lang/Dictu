@@ -6,9 +6,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 set(DISABLE_HTTP OFF CACHE BOOL "Determines if HTTPS based features are compiled. HTTPS based features require cURL.")
-set(DISABLE_LINENOISE OFF CACHE BOOL "Determines if the REPL uses linenoise. Linenoise requires termios.")
 
-option(BUILD_CLI "Build the CLI" OFF)
+option(BUILD_CLI "Build the CLI" ON)
 
 add_subdirectory(src)
 
