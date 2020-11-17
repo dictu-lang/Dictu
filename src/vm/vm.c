@@ -599,6 +599,15 @@ static DictuInterpretResult run(DictuVM *vm) {
           push(vm, valueType(a op b)); \
         } while (false)
 
+    #define STORE_FRAME frame->ip = ip
+
+    #define RUNTIME_ERROR(...)                                              \
+        do {                                                                \
+            STORE_FRAME;                                                    \
+            runtimeError(vm, __VA_ARGS__);                                  \
+            return INTERPRET_RUNTIME_ERROR;                                 \
+        } while (0)
+
     #ifdef COMPUTED_GOTO
 
     static void* dispatchTable[] = {
@@ -703,9 +712,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *name = READ_STRING();
             Value value;
             if (!tableGet(&vm->globals, name, &value)) {
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Undefined variable '%s'.", name->chars);
             }
             push(vm, value);
             DISPATCH();
@@ -715,9 +722,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *name = READ_STRING();
             Value value;
             if (!tableGet(&frame->closure->function->module->values, name, &value)) {
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Undefined variable '%s'.", name->chars);
             }
             push(vm, value);
             DISPATCH();
@@ -734,9 +739,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *name = READ_STRING();
             if (tableSet(vm, &frame->closure->function->module->values, name, peek(vm, 0))) {
                 tableDelete(vm, &frame->closure->function->module->values, name);
-                frame->ip = ip;
-                runtimeError(vm, "Undefined variable '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Undefined variable '%s'.", name->chars);
             }
             DISPATCH();
         }
@@ -813,9 +816,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                frame->ip = ip;
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -841,16 +842,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
             }
 
-            frame->ip = ip;
-            runtimeError(vm, "Only instances have properties.");
-            return INTERPRET_RUNTIME_ERROR;
+            RUNTIME_ERROR("Only instances have properties.");
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
-                frame->ip = ip;
-                runtimeError(vm, "Only instances have properties.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Only instances have properties.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
@@ -877,9 +874,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            frame->ip = ip;
-            runtimeError(vm, "Undefined property '%s'.", name->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            RUNTIME_ERROR("Undefined property '%s'.", name->chars);
         }
 
         CASE_CODE(SET_PROPERTY): {
@@ -897,9 +892,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 DISPATCH();
             }
 
-            frame->ip = ip;
-            runtimeError(vm, "Only instances have fields.");
-            return INTERPRET_RUNTIME_ERROR;
+            RUNTIME_ERROR("Only instances have properties.");
         }
 
         CASE_CODE(SET_INIT_PROPERTIES): {
@@ -920,9 +913,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *superclass = AS_CLASS(pop(vm));
 
             if (!bindMethod(vm, superclass, name)) {
-                frame->ip = ip;
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
             }
             DISPATCH();
         }
@@ -971,18 +962,14 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 push(vm, OBJ_VAL(finalList));
             } else {
-                frame->ip = ip;
-                runtimeError(vm, "Unsupported operand types.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Unsupported operand types.");
             }
             DISPATCH();
         }
 
         CASE_CODE(INCREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
-                frame->ip = ip;
-                runtimeError(vm, "Operand must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Operand must be a number.");
             }
 
             push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) + 1));
@@ -991,9 +978,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(DECREMENT): {
             if (!IS_NUMBER(peek(vm, 0))) {
-                frame->ip = ip;
-                runtimeError(vm, "Operand must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Operand must be a number.");
+
             }
 
             push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) - 1));
@@ -1010,9 +996,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(POW): {
             if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                frame->ip = ip;
-                runtimeError(vm, "Operands must be numbers.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Operands must be a numbers.");
             }
 
             double b = AS_NUMBER(pop(vm));
@@ -1024,9 +1008,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(MOD): {
             if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                frame->ip = ip;
-                runtimeError(vm, "Operands must be numbers.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Operands must be a numbers.");
             }
 
             double b = AS_NUMBER(pop(vm));
@@ -1054,9 +1036,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(vm, 0))) {
-                frame->ip = ip;
-                runtimeError(vm, "Operand must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Operand must be a number.");
             }
 
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
@@ -1098,9 +1078,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             char *source = readFile(vm, fileName->chars);
 
             if (source == NULL) {
-                frame->ip = ip;
-                runtimeError(vm, "Could not open file \"%s\".", fileName->chars);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
             ObjModule *module = newModule(vm, fileName);
@@ -1162,9 +1140,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjString *variable = READ_STRING();
 
                 if (!tableGet(&module->values, variable, &moduleVariable)) {
-                    frame->ip = ip;
-                    runtimeError(vm, "%s can't be found in module %s", variable->chars, module->name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("%s can't be found in module %s", variable->chars, module->name->chars);
                 }
 
                 push(vm, moduleVariable);
@@ -1186,9 +1162,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjString *variable = READ_STRING();
 
                 if (!tableGet(&vm->lastModule->values, variable, &moduleVariable)) {
-                    frame->ip = ip;
-                    runtimeError(vm, "%s can't be found in module %s", variable->chars, vm->lastModule->name->chars);
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("%s can't be found in module %s", variable->chars, vm->lastModule->name->chars);
                 }
 
                 push(vm, moduleVariable);
@@ -1226,23 +1200,17 @@ static DictuInterpretResult run(DictuVM *vm) {
             int varCount = READ_BYTE();
 
             if (!IS_LIST(peek(vm, 0))) {
-                frame->ip = ip;
-                runtimeError(vm, "Attempting to unpack a value which is not a list.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Attempting to unpack a value which is not a list.");
             }
 
             ObjList *list = AS_LIST(pop(vm));
 
             if (varCount != list->values.count) {
-                frame->ip = ip;
-
                 if (varCount < list->values.count) {
-                    runtimeError(vm, "Too many values to unpack");
+                    RUNTIME_ERROR("Too many values to unpack");
                 } else {
-                    runtimeError(vm, "Not enough values to unpack");
+                    RUNTIME_ERROR("Not enough values to unpack");
                 }
-
-                return INTERPRET_RUNTIME_ERROR;
             }
 
             for (int i = 0; i < list->values.count; ++i) {
@@ -1263,9 +1231,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value key = peek(vm, 1);
 
             if (!isValidKey(key)) {
-                frame->ip = ip;
-                runtimeError(vm, "Dictionary key must be an immutable type.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Dictionary key must be an immutable type.");
             }
 
             ObjDict *dict = AS_DICT(peek(vm, 2));
@@ -1284,17 +1250,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
-                frame->ip = ip;
-                runtimeError(vm, "Can only subscript on lists, strings or dictionaries.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "List index must be a number.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("List index must be a number.");
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -1311,9 +1273,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    frame->ip = ip;
-                    runtimeError(vm, "List index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("List index out of bounds.");
                 }
 
                 case OBJ_STRING: {
@@ -1331,17 +1291,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    frame->ip = ip;
-                    runtimeError(vm, "String index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("String index out of bounds.");
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be an immutable type.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
                     }
 
                     Value v;
@@ -1357,9 +1313,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    frame->ip = ip;
-                    runtimeError(vm, "Can only subscript on lists, strings or dictionaries.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
                 }
             }
         }
@@ -1370,17 +1324,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                frame->ip = ip;
-                runtimeError(vm, "Can only subscript on lists, strings or dictionaries.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "List index must be a number.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("List index must be a number.");
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -1398,17 +1348,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    frame->ip = ip;
-                    runtimeError(vm, "List index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("List index out of bounds.");
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be an immutable type.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
                     }
 
                     dictSet(vm, dict, indexValue, assignValue);
@@ -1420,9 +1366,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    frame->ip = ip;
-                    runtimeError(vm, "Only lists and dictionaries support subscript assignment.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
                 }
             }
         }
@@ -1433,15 +1377,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value objectValue = peek(vm, 2);
 
             if (!IS_OBJ(objectValue)) {
-                frame->ip = ip;
-                runtimeError(vm, "Can only slice on lists and strings.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Can only slice on lists and strings.");
             }
 
             if ((!IS_NUMBER(sliceStartIndex) && !IS_EMPTY(sliceStartIndex)) || (!IS_NUMBER(sliceEndIndex) && !IS_EMPTY(sliceEndIndex))) {
-                frame->ip = ip;
-                runtimeError(vm, "Slice index must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Slice index must be a number.");
             }
 
             int indexStart;
@@ -1507,9 +1447,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    frame->ip = ip;
-                    runtimeError(vm, "Can only slice on lists and strings.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("Can only slice on lists and strings.");
                 }
             }
 
@@ -1527,17 +1465,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                frame->ip = ip;
-                runtimeError(vm, "Can only subscript on lists, strings or dictionaries.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "List index must be a number.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("List index must be a number.");
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -1553,17 +1487,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    frame->ip = ip;
-                    runtimeError(vm, "List index out of bounds.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("List index out of bounds.");
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        frame->ip = ip;
-                        runtimeError(vm, "Dictionary key must be an immutable type.");
-                        return INTERPRET_RUNTIME_ERROR;
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
                     }
 
                     Value dictValue;
@@ -1578,9 +1508,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    frame->ip = ip;
-                    runtimeError(vm, "Only lists and dictionaries support subscript assignment.");
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
                 }
             }
             DISPATCH();
@@ -1676,7 +1604,6 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(CLASS): {
             ClassType type = READ_BYTE();
-
             createClass(vm, READ_STRING(), NULL, type);
             DISPATCH();
         }
@@ -1686,15 +1613,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             Value superclass = peek(vm, 0);
             if (!IS_CLASS(superclass)) {
-                frame->ip = ip;
-                runtimeError(vm, "Superclass must be a class.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Superclass must be a class.");
             }
 
             if (IS_TRAIT(superclass)) {
-                frame->ip = ip;
-                runtimeError(vm, "Superclass can not be a trait.");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Superclass can not be a trait.");
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
@@ -1712,9 +1635,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 Value _;
                 if (!tableGet(&klass->methods, klass->abstractMethods.entries[i].key, &_)) {
-                    frame->ip = ip;
-                    runtimeError(vm, "Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
-                    return INTERPRET_RUNTIME_ERROR;
+                    RUNTIME_ERROR("Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
                 }
             }
             DISPATCH();
@@ -1727,9 +1648,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
             if (!IS_TRAIT(trait)) {
-                frame->ip = ip;
-                runtimeError(vm, "Can only 'use' with a trait");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Can only 'use' with a trait");
             }
 
             ObjClass *klass = AS_CLASS(peek(vm, 1));
@@ -1745,15 +1664,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value fileName = peek(vm, 1);
 
             if (!IS_STRING(openType)) {
-                frame->ip = ip;
-                runtimeError(vm, "File open type must be a string");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("File open type must be a string");
             }
 
             if (!IS_STRING(fileName)) {
-                frame->ip = ip;
-                runtimeError(vm, "Filename must be a string");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Filename must be a string");
             }
 
             ObjString *openTypeString = AS_STRING(openType);
@@ -1765,9 +1680,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             file->openType = openTypeString->chars;
 
             if (file->file == NULL) {
-                frame->ip = ip;
-                runtimeError(vm, "Unable to open file");
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR("Unable to open file");
             }
 
             pop(vm);

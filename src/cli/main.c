@@ -18,8 +18,6 @@ void cleanupSockets(void) {
 
 #include "../include/dictu_include.h"
 
-#define VERSION "Dictu Version: 0.12.0\n"
-
 #ifndef DISABLE_LINENOISE
 #include "linenoise.h"
 
@@ -76,7 +74,7 @@ static bool replCountQuotes(char *line) {
 static void repl(DictuVM *vm, int argc, char *argv[]) {
     UNUSED(argc); UNUSED(argv);
 
-    printf(VERSION);
+    printf(DICTU_STRING_VERSION);
     char *line;
 
     #ifndef DISABLE_LINENOISE
