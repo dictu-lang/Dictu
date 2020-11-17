@@ -4,7 +4,7 @@
 #include "jsonParseLib.h"
 #include "jsonBuilderLib.h"
 #include "optionals.h"
-#include "../vm.h"
+#include "../vm/vm.h"
 
 ObjModule *createJSONModule(VM *vm);
 

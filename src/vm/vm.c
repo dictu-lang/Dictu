@@ -22,7 +22,7 @@
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
 #include "natives.h"
-#include "optionals/optionals.h"
+#include "../optionals/optionals.h"
 
 static void resetStack(VM *vm) {
     vm->stackTop = vm->stack;

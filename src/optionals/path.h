@@ -38,8 +38,8 @@
 #endif
 
 #include "optionals.h"
-#include "../vm.h"
-#include "../memory.h"
+#include "../vm/vm.h"
+#include "../vm/memory.h"
 
 ObjModule *createPathModule(VM *vm);
 

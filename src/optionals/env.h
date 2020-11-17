@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "optionals.h"
-#include "../vm.h"
+#include "../vm/vm.h"
 
 ObjModule *createEnvModule(VM *vm);
 

@@ -6,7 +6,7 @@
 #endif
 
 #include "optionals.h"
-#include "../vm.h"
+#include "../vm/vm.h"
 
 typedef struct response {
     VM *vm;

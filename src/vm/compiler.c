@@ -6,7 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
-#include "optionals/optionals.h"
+#include "../optionals/optionals.h"
 
 #ifdef DEBUG_PRINT_CODE
 

@@ -8,8 +8,8 @@ set(CMAKE_C_EXTENSIONS ON)
 set(DISABLE_HTTP OFF CACHE BOOL "Determines if HTTPS based features are compiled. HTTPS based features require cURL.")
 set(DISABLE_LINENOISE OFF CACHE BOOL "Determines if the REPL uses linenoise. Linenoise requires termios.")
 
-file(GLOB_RECURSE sources "c/*.c")
-file(GLOB_RECURSE headers "c/*.h")
+file(GLOB_RECURSE sources "src/*.c")
+file(GLOB_RECURSE headers "src/*.h")
 set(libraries)
 
 if(DISABLE_HTTP)

@@ -5,7 +5,7 @@
 #include <time.h>
 
 #include "optionals.h"
-#include "../vm.h"
+#include "../vm/vm.h"
 
 ObjModule *createRandomModule(VM *vm);
 

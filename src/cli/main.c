@@ -14,9 +14,9 @@ void cleanupSockets(void) {
 }
 #endif
 
-#include "common.h"
-#include "memory.h"
-#include "util.h"
+#include "../vm/common.h"
+#include "../vm/memory.h"
+#include "../vm/util.h"
 
 #define VERSION "Dictu Version: 0.12.0\n"
 
