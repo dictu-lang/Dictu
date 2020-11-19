@@ -72,6 +72,11 @@ static int classInstruction(const char* name, Chunk* chunk,
             typeString = "trait";
             break;
         }
+
+        default: {
+            typeString = "default";
+            break;
+        }
     }
 
 

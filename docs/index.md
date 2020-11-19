@@ -42,14 +42,6 @@ $ cmake -DCMAKE_BUILD_TYPE=Release -B ./build
 $ cmake --build ./build
 ```
 
-### Makefile
-
-```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
-$ cd Dictu
-$ make dictu
-```
-
 Let's make sure that everything went as planned by entering the Dictu REPL.
 
 ```bash

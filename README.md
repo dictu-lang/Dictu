@@ -57,26 +57,6 @@ $ cmake --build ./build
 $ ./build/Dictu
 ```
 
-### Makefile
-```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
-$ cd Dictu
-$ make dictu
-$ ./dictu examples/guessingGame.du
-```
-
-#### Compiling without HTTP
-
-The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be installed when building the interpreter. If you wish to
-build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
-
-```bash
-$ git clone https://github.com/Jason2605/Dictu.git
-$ cd Dictu
-$ make dictu DISABLE_HTTP=1
-$ ./dictu examples/guessingGame.du
-```
-
 ### Docker Installation
 
 Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/README.md)
