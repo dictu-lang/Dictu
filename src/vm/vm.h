@@ -53,12 +53,6 @@ struct _vm {
 #define OK     0
 #define NOTOK -1
 
-// DictuVM *initVM(bool repl, int argc, char *argv[]);
-
-// void dictuFreeVM(DictuVM *vm);
-
-// InterpretResult interpret(DictuVM *vm, char *moduleName, char *source);
-
 void push(DictuVM *vm, Value value);
 
 Value peek(DictuVM *vm, int distance);
