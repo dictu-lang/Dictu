@@ -208,7 +208,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
 
         disassembleChunk(currentChunk(compiler),
                          function->name != NULL ? function->name->chars
-                                                : compiler->parser->vm->scriptNames[compiler->parser->vm->scriptNameCount]);
+                                                : function->module->name->chars);
     }
 #endif
     if (compiler->enclosing != NULL) {
