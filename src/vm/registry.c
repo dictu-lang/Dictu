@@ -13,11 +13,11 @@ void initRegistry(Registry *registry) {
     registry->nextFree = 0;
 }
 
-void freeRegistry(VM *vm, Registry *registry) {
+void freeRegistry(DictuVM *vm, Registry *registry) {
     FREE_ARRAY(vm, RegistryEntry, registry->entries, registry->capacity + 1);
 }
 
-uint32_t registryInsert(VM *vm, Registry *registry, Value value) {
+uint32_t registryInsert(DictuVM *vm, Registry *registry, Value value) {
     uint32_t handle;
 
     if (registry->nextFree == registry->capacity) {

@@ -1726,7 +1726,7 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     return result;
 }
 
-uint32_t bindRef(VM *vm, Value value) {
+uint32_t bindRef(DictuVM *vm, Value value) {
     if (IS_OBJ(value)) {
         Obj *obj = AS_OBJ(value);
         Obj *objPrev = obj->prev;
@@ -1755,11 +1755,11 @@ uint32_t bindRef(VM *vm, Value value) {
     return registryInsert(vm, &vm->nativeRegistry, value);
 }
 
-void pushRef(VM *vm, uint32_t ref) {
+void pushRef(DictuVM *vm, uint32_t ref) {
     push(vm, registryLookup(&vm->nativeRegistry, ref));
 }
 
-void unbindRef(VM *vm, uint32_t ref) {
+void unbindRef(DictuVM *vm, uint32_t ref) {
     Value value = registryRemove(&vm->nativeRegistry, ref);
 
     if (IS_OBJ(value)) {

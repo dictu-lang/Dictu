@@ -33,13 +33,13 @@ void initRegistry(Registry *registry);
  * Frees all resources associated with `registry` using `vm` as the memory allocator and owning
  * virtual machine.
  */
-void freeRegistry(VM *vm, Registry *registry);
+void freeRegistry(DictuVM *vm, Registry *registry);
 
 /**
  * Inserts `value` into `registry` as a new key using `vm` as the memory allocator and owning
  * virtual machine.
  */
-uint32_t registryInsert(VM *vm, Registry *registry, Value value);
+uint32_t registryInsert(DictuVM *vm, Registry *registry, Value value);
 
 /**
  * Attempts to return at value at `handle` from `registry`, returning `NIL_VAL` if the handle does
