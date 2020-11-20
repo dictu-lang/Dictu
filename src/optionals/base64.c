@@ -1,6 +1,6 @@
 #include "base64.h"
 
-static Value encode(VM *vm, int argCount, Value *args) {
+static Value encode(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "encode() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -24,7 +24,7 @@ static Value encode(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(encodedString);
 }
 
-static Value decode(VM *vm, int argCount, Value *args) {
+static Value decode(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "encode() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -48,7 +48,7 @@ static Value decode(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
-ObjModule *createBase64Module(VM *vm) {
+ObjModule *createBase64Module(DictuVM *vm) {
     ObjString *name = copyString(vm, "Base64", 8);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
