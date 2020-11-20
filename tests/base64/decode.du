@@ -1,0 +1,11 @@
+/**
+ * decode.du
+ *
+ * Testing the Base64.decode() method
+ */
+
+import Base64;
+
+assert(Base64.decode("dGVzdA==") == "test");
+assert(Base64.decode("RGljdHU=") == "Dictu");
+assert(Base64.decode("MTIzNDU2Nzg5RGljdHUxMjM0NTY3ODk=") == "123456789Dictu123456789");
