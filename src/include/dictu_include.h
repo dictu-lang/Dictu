@@ -2,6 +2,7 @@
 #define dictu_include_h
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define DICTU_MAJOR_VERSION "0"
 #define DICTU_MINOR_VERSION "12"
