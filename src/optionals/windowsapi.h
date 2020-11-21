@@ -4,6 +4,11 @@
 // Window's TokenType is documented here: https://docs.microsoft.com/en-us/windows/win32/api/winnt/ne-winnt-token_information_class
 #ifdef _WIN32
 #define TokenType WinntTokenType
+// Work around to ensure inet_ntop is included (comes from Vista+)
+#if (_WIN32_WINNT < 0x0600)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #undef TokenType
