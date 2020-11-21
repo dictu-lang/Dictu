@@ -1,37 +1,32 @@
-var x = System.clock();
+import "tests/bool/import.du";
+import "tests/nil/import.du";
+import "tests/number/import.du";
+import "tests/strings/import.du";
+import "tests/variables/import.du";
+import "tests/lists/import.du";
+import "tests/dicts/import.du";
+import "tests/sets/import.du";
+import "tests/operators/import.du";
+import "tests/loops/import.du";
+import "tests/functions/import.du";
+import "tests/classes/import.du";
+import "tests/builtins/import.du";
+import "tests/files/import.du";
+import "tests/maths/import.du";
+import "tests/datetime/import.du";
+import "tests/env/import.du";
+import "tests/system/import.du";
+import "tests/json/import.du";
+import "tests/path/import.du";
+import "tests/sockets/import.du";
+import "tests/base64/import.du";
 
-for (var i = 0; i < 1; i = i + 1) {
-  // print(i);
-  import "tests/bool/import.du";
-  import "tests/nil/import.du";
-  import "tests/number/import.du";
-  import "tests/strings/import.du";
-  import "tests/variables/import.du";
-  import "tests/lists/import.du";
-  import "tests/dicts/import.du";
-  import "tests/sets/import.du";
-  import "tests/operators/import.du";
-  import "tests/loops/import.du";
-  import "tests/functions/import.du";
-  import "tests/classes/import.du";
-  import "tests/builtins/import.du";
-  import "tests/files/import.du";
-  import "tests/maths/import.du";
-  import "tests/datetime/import.du";
-  import "tests/env/import.du";
-  import "tests/system/import.du";
-  import "tests/json/import.du";
-  import "tests/path/import.du";
-  import "tests/sockets/import.du";
-  import "tests/base64/import.du";
-
-  // if (isDefined("HTTP")) {
-    // import "tests/http/import.du";
-  // }
-
-  import "tests/modules/import.du";
-  import "tests/imports/import.du";
+if (isDefined("HTTP")) {
+  import "tests/http/import.du";
 }
 
+import "tests/modules/import.du";
+import "tests/imports/import.du";
+
 // If we got here no runtime errors were thrown, therefore all tests passed.
-print("All tests passed successfully! Time: {}".format(System.clock() - x));
+print("All tests passed successfully!");
