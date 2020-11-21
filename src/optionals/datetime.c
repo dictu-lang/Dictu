@@ -120,10 +120,12 @@ static Value strftimeNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     int length = strlen(point);
-    Value newString = OBJ_VAL(copyString(vm, point, length));
-    FREE_ARRAY(vm, char, point, len);
 
-    return newString;
+    if (length != len) {
+        point = SHRINK_ARRAY(vm, point, char, len, length + 1);
+    }
+
+    return OBJ_VAL(takeString(vm, point, length));
 }
 
 #ifdef HAS_STRPTIME
