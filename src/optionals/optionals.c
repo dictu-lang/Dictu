@@ -8,6 +8,7 @@ BuiltinModules modules[] = {
         {"Datetime", &createDatetimeModule},
         {"Socket", &createSocketModule},
         {"Random", &createRandomModule},
+        {"Base64", &createBase64Module},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPModule},
 #endif
