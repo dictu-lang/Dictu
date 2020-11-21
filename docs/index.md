@@ -36,7 +36,7 @@ All it takes is a couple of lines! Fire up a terminal and copy the following, on
 ### CMake
 
 ```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
 $ cmake --build ./build
