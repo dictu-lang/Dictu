@@ -37,3 +37,9 @@ docs/_site/
 cmake-build-debug/
 
 cmake-build-release/
+
+.vs/
+
+dictu.exe
+
+dictu.exe.manifest

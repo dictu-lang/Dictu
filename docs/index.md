@@ -36,19 +36,10 @@ All it takes is a couple of lines! Fire up a terminal and copy the following, on
 ### CMake
 
 ```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
 $ cmake --build ./build
-$ ./build/Dictu
-```
-
-### Makefile
-
-```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
-$ cd Dictu
-$ make dictu
 ```
 
 Let's make sure that everything went as planned by entering the Dictu REPL.
@@ -56,6 +47,8 @@ Let's make sure that everything went as planned by entering the Dictu REPL.
 ```bash
 $ ./dictu
 ```
+
+**Note:** On windows systems the exe may be within a Debug or Release directory. 
 
 You should be able to run Dictu code here! REPL stands for “read evaluate print loop” and it allows you to receive instantaneous feedback about your code.
 

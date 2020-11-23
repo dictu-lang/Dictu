@@ -34,7 +34,7 @@ import Random;
 
 Return a random float between 0 and 1.
 
-```js
+```cs
 Random.random(); // 0.314
 Random.random(); // 0.271
 ```
@@ -43,7 +43,7 @@ Random.random(); // 0.271
 
 Returns a random integer between the lowest and highest inputs.
 
-```js
+```cs
 Random.range(1, 5) // 2
 Random.range(1, 5) // 4
 Random.range(0, 2) // 1

@@ -1,18 +1,23 @@
-FROM ubuntu
+FROM ubuntu:latest
 
 WORKDIR Dictu
 
-RUN apt update \
-	&& apt install -y --no-install-recommends build-essential \
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends build-essential \
 	&& apt-get update \
-	&& apt-get install -y --no-install-recommends libcurl4-gnutls-dev\
+	&& apt-get install -y --no-install-recommends cmake libcurl4-gnutls-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+COPY CMakeLists.txt .
+COPY src ./src/
+COPY tests ./tests/
 
-RUN make dictu \
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B build \
+    && cmake --build ./build \
+    && ./dictu tests/runTests.du \
 	&& cp dictu /usr/bin/ \
-	&& dictu tests/runTests.du \
 	&& rm -rf * 
 
 CMD ["dictu"]

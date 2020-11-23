@@ -25,11 +25,11 @@ CMake or there is an included makefile for users that are more familiar with tha
 
 ### CMake
 ```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
 $ cmake --build ./build
-$ ./build/Dictu
+$ ./dictu
 ```
 
 #### Compiling without HTTP
@@ -38,11 +38,11 @@ The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be install
 build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
 
 ```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_HTTP=1 -B ./build 
 $ cmake --build ./build
-$ ./build/Dictu
+$ ./dictu
 ```
 
 #### Compiling without linenoise
@@ -50,31 +50,11 @@ $ ./build/Dictu
 systems so a simpler REPL solution is used.
 
 ```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_LINENOISE=1 -B ./build 
 $ cmake --build ./build
 $ ./build/Dictu
-```
-
-### Makefile
-```bash
-$ git clone https://github.com/dictu-lang/Dictu.git
-$ cd Dictu
-$ make dictu
-$ ./dictu examples/guessingGame.du
-```
-
-#### Compiling without HTTP
-
-The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be installed when building the interpreter. If you wish to
-build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
-
-```bash
-$ git clone https://github.com/Jason2605/Dictu.git
-$ cd Dictu
-$ make dictu DISABLE_HTTP=1
-$ ./dictu examples/guessingGame.du
 ```
 
 ### Docker Installation
