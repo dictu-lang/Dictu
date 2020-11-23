@@ -1,6 +1,6 @@
 #include "hashlib.h"
 
-static Value sha256(VM *vm, int argCount, Value *args) {
+static Value sha256(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "sha256() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -37,7 +37,7 @@ static Value sha256(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, buffer, 64));
 }
 
-static Value hmac(VM *vm, int argCount, Value *args) {
+static Value hmac(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2 && argCount != 3) {
         runtimeError(vm, "hmac() takes 2 or 3 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -82,7 +82,7 @@ static Value hmac(VM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, (const char *)digest, 32));
 }
 
-static Value verify(VM *vm, int argCount, Value *args) {
+static Value verify(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "verify() takes 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
@@ -103,7 +103,7 @@ static Value verify(VM *vm, int argCount, Value *args) {
     return BOOL_VAL(_compare((const uint8_t *) stringA->chars, (const uint8_t *) stringB->chars, stringA->length) == 0);
 }
 
-ObjModule *createHashlibModule(VM *vm) {
+ObjModule *createHashlibModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Hashlib", 7);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

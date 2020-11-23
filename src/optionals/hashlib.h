@@ -6,6 +6,6 @@
 #include "hashlib/sha256.h"
 #include "hashlib/hmac.h"
 
-ObjModule *createHashlibModule(VM *vm);
+ObjModule *createHashlibModule(DictuVM *vm);
 
 #endif //dictu_hashlib_h
