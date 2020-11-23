@@ -429,10 +429,11 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
-            // TODO: Think of a way to handle this for imported classes
-            case OBJ_SOCKET: {
+            case OBJ_ABSTRACT: {
+                ObjAbstract *abstract = AS_ABSTRACT(receiver);
+
                 Value value;
-                if (tableGet(&vm->socketMethods, name, &value)) {
+                if (tableGet(&abstract->values, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
                 }
 

@@ -10,6 +10,7 @@ typedef struct sObjList ObjList;
 typedef struct sObjDict ObjDict;
 typedef struct sObjSet  ObjSet;
 typedef struct sObjFile ObjFile;
+typedef struct sObjAbstract ObjAbstract;
 
 #ifdef NAN_TAGGING
 
