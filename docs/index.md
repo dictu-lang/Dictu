@@ -60,7 +60,7 @@ Dictu Version: {{ site.version }}
 Use `Control + C` to exit the REPL when you're finished.
 
 ## Contributing
-We want to make the Dictu community as friendly and welcoming as possible, so [pull requests](https://github.com/dictu-lang/Dictu/pulls) are encoraged. Any contribution, from the smallest typo in the documentation to a new feature in the language itself, is greatly appreciated!
+We want to make the Dictu community as friendly and welcoming as possible, so [pull requests](https://github.com/dictu-lang/Dictu/pulls) are encouraged. Any contribution, from the smallest typo in the documentation to a new feature in the language itself, is greatly appreciated!
 
 ## License
 Dictu is under the [MIT license](https://github.com/dictu-lang/Dictu/blob/master/LICENSE).
