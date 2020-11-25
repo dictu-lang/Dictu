@@ -130,8 +130,20 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
     for (;;) {
         err = sqlite3_step(result.stmt);
         if (err != SQLITE_ROW) {
-            break;
+            if (err == SQLITE_DONE) {
+                if (sql[0] == 'S' || sql[0] == 's') {
+                    // If a select statement returns no results SQLITE_ROW is not used.
+                    returnValue = true;
+                }
+
+                break;
+            }
+
+            handleSqliteError(vm, db->db);
+            sqlite3_finalize(result.stmt);
+            return NIL_VAL;
         }
+
         returnValue = true;
 
         ObjList *rowList = initList(vm);
@@ -165,12 +177,6 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
         pop(vm);
     }
 
-    if (err != SQLITE_DONE) {
-        handleSqliteError(vm, db->db);
-        sqlite3_finalize(result.stmt);
-        return NIL_VAL;
-    }
-
     sqlite3_finalize(result.stmt);
     pop(vm);
 
@@ -178,7 +184,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
         return OBJ_VAL(finalList);
     }
 
-    return NIL_VAL;
+    return TRUE_VAL;
 }
 
 static Value closeConnection(DictuVM *vm, int argCount, Value *args) {
