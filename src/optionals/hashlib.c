@@ -82,6 +82,51 @@ static Value hmac(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, (const char *)digest, 32));
 }
 
+static Value bcrypt(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "bcrypt() takes 1 or 2 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "Argument passed to bcrypt() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    int rounds = 8;
+
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "Optional argument passed to bcrypt() must be a number.");
+            return EMPTY_VAL;
+        }
+
+        rounds = AS_NUMBER(args[1]);
+    }
+
+    char *salt = bcrypt_gensalt(rounds);
+    char *hash = bcrypt_pass(AS_CSTRING(args[0]), salt);
+
+    return OBJ_VAL(copyString(vm, hash, strlen(hash)));
+}
+
+static Value bcryptVerify(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "bcryptVerify() takes 2 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "Arguments passed to bcryptVerify() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    ObjString *stringA = AS_STRING(args[0]);
+    ObjString *stringB = AS_STRING(args[1]);
+
+    return BOOL_VAL(bcrypt_checkpass(stringA->chars, stringB->chars) == 0);
+}
+
 static Value verify(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "verify() takes 2 arguments (%d given).", argCount);
@@ -115,7 +160,9 @@ ObjModule *createHashlibModule(DictuVM *vm) {
     defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "sha256", sha256);
     defineNative(vm, &module->values, "hmac", hmac);
+    defineNative(vm, &module->values, "bcrypt", bcrypt);
     defineNative(vm, &module->values, "verify", verify);
+    defineNative(vm, &module->values, "bcryptVerify", bcryptVerify);
 
     /**
      * Define Http properties
