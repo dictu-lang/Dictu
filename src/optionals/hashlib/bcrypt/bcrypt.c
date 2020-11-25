@@ -34,11 +34,15 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <errno.h>
-#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <bcrypt.h>
+#endif
 
 #include "blf.h"
 
@@ -73,7 +77,15 @@ bcrypt_initsalt(int log_rounds, uint8_t *salt, size_t saltbuflen)
         return -1;
     }
 
+#ifdef _WIN32
+    NTSTATUS Status = BCryptGenRandom(NULL, csalt, sizeof(csalt), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+
+    if (Status < 0) {
+        return -1;
+    }
+#else
     arc4random_buf(csalt, sizeof(csalt));
+#endif // _WIN32
 
     if (log_rounds < 4)
         log_rounds = 4;
