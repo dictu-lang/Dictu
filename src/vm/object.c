@@ -170,6 +170,8 @@ ObjString *takeString(DictuVM *vm, char *chars, int length) {
         return interned;
     }
 
+    // Ensure terminating char is present
+    chars[length] = '\0';
     return allocateString(vm, chars, length, hash);
 }
 

@@ -263,10 +263,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
         free(output);
     }
 
-    Value newString = OBJ_VAL(copyString(vm, fullString, length));
-    FREE_ARRAY(vm, char, fullString, length + 1);
-
-    return newString;
+    return OBJ_VAL(takeString(vm, fullString, length));
 }
 
 static Value copyListShallow(DictuVM *vm, int argCount, Value *args) {

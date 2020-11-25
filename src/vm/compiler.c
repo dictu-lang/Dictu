@@ -928,10 +928,14 @@ static void string(Compiler *compiler, bool canAssign) {
 
     memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
     int length = parseString(string, parser->previous.length - 2);
+
+    // If there were escape chars and the string shrank, resize the buffer
+    if (length != parser->previous.length - 1) {
+        string = SHRINK_ARRAY(parser->vm, string, char, parser->previous.length - 1, length + 1);
+    }
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
-    FREE_ARRAY(parser->vm, char, string, parser->previous.length - 1);
+    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
 }
 
 static void list(Compiler *compiler, bool canAssign) {
