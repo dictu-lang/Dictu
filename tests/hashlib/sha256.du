@@ -1,0 +1,19 @@
+/**
+ * sha256.du
+ *
+ * Testing the Hashlib.sha256() and Hashlib.verify() methods
+ */
+
+import Hashlib;
+
+var hash = Hashlib.sha256("Dictu");
+
+assert(type(hash) == "string");
+assert(hash.len() == 64);
+assert(hash == "889bb2f43047c331bed74b1a9b309cc66adff6c6d4c3517547813ad67ba8d105");
+
+assert(Hashlib.verify(hash, Hashlib.sha256("Dictu")));
+assert(Hashlib.verify(Hashlib.sha256("Dictu"), hash));
+assert(Hashlib.verify(hash, "WRONG!") == false);
+assert(Hashlib.verify(Hashlib.sha256("Dictu"), "WRONG!") == false);
+assert(Hashlib.verify("WRONG", Hashlib.sha256("Dictu")) == false);

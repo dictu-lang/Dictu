@@ -44,9 +44,9 @@ Random.random(); // 0.271
 Returns a random integer between the lowest and highest inputs.
 
 ```cs
-Random.range(1, 5) // 2
-Random.range(1, 5) // 4
-Random.range(0, 2) // 1
+Random.range(1, 5); // 2
+Random.range(1, 5); // 4
+Random.range(0, 2); // 1
 ```
 
 ### Random.select(iterable)
@@ -54,7 +54,7 @@ Random.range(0, 2) // 1
 Returns a value randomly selected from the list.
 
 ```js
-Random.select([2, 4, 6])  // 6
-Random.select([2, 4, 6])  // 2
-Random.select(["a", "b", "c"]) // "c"
+Random.select([2, 4, 6]);  // 6
+Random.select([2, 4, 6]);  // 2
+Random.select(["a", "b", "c"]); // "c"
 ```
