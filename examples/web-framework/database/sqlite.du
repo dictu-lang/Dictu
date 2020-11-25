@@ -1,0 +1,23 @@
+import Sqlite;
+
+class SqliteConnection {
+    init(path) {
+        this.connection = Sqlite.connect(path);
+    }
+
+    execute(query, values) {
+        var result = this.connection.execute(query, values);
+
+        // nil return means we got an error, oh no!
+        if (result == nil) {
+            print(Sqlite.strerror());
+            System.exit(1);
+        }
+
+        return result;
+    }
+
+    close() {
+        this.connection.close();
+    }
+}

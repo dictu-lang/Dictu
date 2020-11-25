@@ -1,0 +1,87 @@
+import JSON;
+import Datetime;
+
+abstract class BaseResponse {
+    var statusCodes = {
+        // 2xx
+        200: "200 OK",
+        201: "201 Created",
+        // 3xx
+        301: "301 Moved Permanently",
+        // 4xx
+        400: "400 Bad Request",
+        401: "401 Unauthorized",
+        403: "403 Forbidden",
+        404: "404 Not Found",
+        // 5xx
+        500: "500 Internal Server Error"
+    };
+
+    init() {
+        this.headers = {
+            "Server": "Dictu-Server",
+            "Connection": "close",
+            "Content-Type": "text/html"
+        };
+    }
+
+    addHeader(key, value) {
+        this.headers[key] = value;
+    }
+
+    setCookie(value, httpOnly=true, secure=false) {
+        this.headers["Set-Cookie"] = "{}{}{}".format(
+            value,
+            httpOnly ? "; HttpOnly" : "",
+            secure ? "; Secure" : ""
+        );
+    }
+
+    send(client) {
+        var headers = "HTTP/1.1 {}\r\nDate: {}\r\n".format(this.status, Datetime.strftime("%a, %d %b %Y %H:%M:%S"));
+        var headerKeys = this.headers.keys();
+
+        for (var i = 0; i < headerKeys.len(); ++i) {
+            headers += "{}: {}\r\n".format(headerKeys[i], this.headers[headerKeys[i]]);
+        }
+
+        client.write(
+            headers +
+            "\r\n" +
+            this.content
+        );
+    }
+}
+
+class Response < BaseResponse {
+    init(content, status=200) {
+        super.init();
+
+        this.content = content;
+        this.status = this.statusCodes[status];
+
+        this.headers["Content-Length"] = content.len();
+    }
+}
+
+class JsonResponse < BaseResponse {
+    init(content, status=200) {
+        super.init();
+
+        this.content = JSON.stringify(content);
+        this.status = this.statusCodes[status];
+
+        this.headers["Content-Length"] = this.content.len();
+        this.headers["Content-Type"] = "application/json";
+    }
+}
+
+class ErrorResponse < BaseResponse {
+    init(status) {
+        super.init();
+
+        this.content = '';
+        this.status = this.statusCodes[status];
+        this.headers["Content-Length"] = '0';
+    }
+}

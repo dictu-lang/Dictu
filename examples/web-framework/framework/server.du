@@ -1,0 +1,74 @@
+import Socket;
+
+class Server {
+    var HTTP_DELIMITER = "\r\n\r\n"; 
+
+    init(callback, host="127.0.0.1", port=6000) {
+        this.socket = nil;
+        this.host = host;
+        this.port = port;
+        this.callback = callback;
+    }
+
+    start() {
+        this.socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+        this.socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR);
+        print("Starting server on {}:{}".format(this.host, this.port));
+        if (!this.socket.bind(this.host, this.port)) {
+            print(Socket.strerror());
+            System.exit(1);
+        }
+
+        this.listen();
+    }
+
+    listen() {
+        if (!this.socket.listen()) {
+            print(Socket.strerror());
+            System.exit(1);
+        }
+        
+        while {
+            var [client, address] = this.socket.accept();
+            this.handleClient(client, address);
+        }
+    }
+
+    handleClient(client, address) {
+        var data = this.getData(client);
+        if (data != '') {
+            this.callback(client, address, data);
+        }
+        client.close();
+    }
+
+    getData(client, size=2048) {
+        var buffer = client.recv(size);
+
+        if (buffer == nil) {
+            print(Socket.strerror());
+            System.exit(1);
+        }
+
+        if (buffer.len() != size) {
+            return buffer;
+        }
+
+        while {
+            var data = client.recv(size);
+
+            if (data == nil) {
+                print(Socket.strerror());
+                System.exit(1);
+            }
+
+            buffer += data;
+
+            if (buffer.contains(this.HTTP_DELIMITER)) {
+                break;
+            }
+        }
+
+        return buffer;
+    }
+}

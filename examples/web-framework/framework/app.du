@@ -1,0 +1,111 @@
+import Datetime;
+
+import "framework/server.du" as ServerModule;
+import "framework/request.du" as RequestModule;
+import "framework/response.du" as ResponseModule;
+
+class App {
+    init(host="127.0.0.1", port=6000, debug=false) {
+        this.server = ServerModule.Server(this.response, host, port);
+        this.debug = debug;
+
+        this.routes = {
+            "GET": {},
+            "POST": {},
+            "PUT": {},
+            "DELETE": {}
+        };
+
+        this.middleware = [];
+        this.sessionHandler = nil;
+    }
+
+    start() {
+        this.server.start();
+    }
+
+    response(client, address, data) {
+        var request = RequestModule.Request(data);
+        if (this.debug) {
+            print("{} [{}] {} {}".format(
+                address,
+                Datetime.strftime("%a, %d %b %Y %H:%M:%S"),
+                request.verb,
+                request.route
+            ));
+        }
+
+        var response = this.handleMiddleware(request);
+        if (response != nil) {
+            response.send(client);
+            return;
+        }
+
+        response = this.dispatch(request);
+
+        if (this.sessionHandler != nil) {
+            this.sessionHandler.save(request.session, request.sessionCopy, response);
+        }
+
+        response.send(client);
+    }
+
+    dispatch(request) {
+        if (this.routes.exists(request.verb)) {
+            if (this.routes[request.verb].exists(request.route)) {
+                var response = this.routes[request.verb][request.route](request);
+
+                if (type(response) == "string") {
+                    response = ResponseModule.Response(response);
+                } else if (["list", "number", "nil", "bool", "dict"].contains(type(response))) {
+                    response = ResponseModule.JsonResponse(response);
+                }
+
+                return response;
+            }
+        }
+
+        return this.notFoundHandler(request);
+    }
+
+    notFoundHandler(request) {
+        return ResponseModule.ErrorResponse(404);
+    }
+
+    handleMiddleware(request) {
+        for (var i = 0; i < this.middleware.len(); i += 1) {
+            var response = this.middleware[i](request);
+            if (response != nil) {
+                return response;
+            }
+        }
+    }
+
+    addSessionHandler(handler) {
+        this.sessionHandler = handler;
+    }
+
+    define(callback) {
+        this.middleware.push(callback);
+    }
+
+    defineRoute(verb, route, callback) {
+        this.routes[verb][route] = callback;
+    }
+
+    get(route, callback) {
+        this.defineRoute("GET", route, callback);
+    }
+
+    post(route, callback) {
+        this.defineRoute("POST", route, callback);
+    }
+
+    put(route, callback) {
+        this.defineRoute("PUT", route, callback);
+    }
+
+    delete(route, callback) {
+        this.defineRoute("DELETE", route, callback);
+    }
+}

@@ -1,0 +1,47 @@
+import Base64;
+import Hashlib;
+import JSON;
+
+abstract class BaseSessionHandler {
+    abstract save(request)
+
+    abstract load(request)
+}
+
+class SessionHandler < BaseSessionHandler {
+    init(app) {
+        this.key = app.key;
+
+        app.middleware.insert(this.load, 0);
+    }
+
+    load(request) {
+        var cookie = request.headers.get("Cookie", false);
+        request.session = {};
+        request.sessionCopy = request.session.copy();
+
+        if (cookie and cookie.startsWith("session=")) {
+            var payload = cookie[8:];
+            var [session, base64Hmac] = payload.split(".");
+
+            var decodedSession = Base64.decode(session);
+            var sessionHmac = Hashlib.hmac(this.key, decodedSession, true);
+            
+            // Ensure the cookies signature is correct
+            if (Hashlib.verify(Base64.encode(sessionHmac), base64Hmac)) {
+                request.session = JSON.parse(decodedSession);
+            }
+        }
+    }
+
+    save(session, sessionCopy, response) {
+        // Session updated. Update cookie
+        if (session != sessionCopy) {
+            var stringSession = JSON.stringify(session);
+            var base64Session = Base64.encode(stringSession);
+            var base64Hmac = Base64.encode(Hashlib.hmac(this.key, stringSession, true));
+
+            response.setCookie("session={}.{}".format(base64Session, base64Hmac));
+        }
+    }
+}

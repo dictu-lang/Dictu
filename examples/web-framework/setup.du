@@ -1,0 +1,22 @@
+import Hashlib;
+import Sqlite;
+
+/**
+ * This file setups up the SQLite database with the given credentials
+ * It makes the assumption the database has not been created before.
+ */
+
+ var path = input("Where is the SQLite database file located? ");
+
+ var connection = Sqlite.connect(path);
+
+ var table = "CREATE TABLE users (username TEXT, password TEXT)";
+ connection.execute(table);
+
+ var username = input("What is your username? ");
+ var password = input("What is your password? ");
+
+ connection.execute("INSERT INTO users VALUES (?, ?)", [
+     username,
+     Hashlib.bcrypt(password)
+ ]);

@@ -1,0 +1,61 @@
+class Request {
+    init(data) {
+        var rawData = data.split("\r\n\r\n");
+        var headers = rawData[0].split("\r\n");
+        var body = rawData[1];
+        
+        var routeData = headers[0].split(" ");
+
+        this.verb = routeData[0];
+        
+        this.headers = {};
+        this.body = {};
+
+        this.parseUrl(routeData[1]);
+        this.parseHeaders(headers);
+
+        if (this.headers.get("Content-Type", "") == "application/x-www-form-urlencoded") {
+            this.parseBody(body);
+        }
+    }
+
+    parseUrl(route) {
+        this.query = {};
+
+        var url = route.split("?");
+        this.route = url[0];
+
+        // No query parameters
+        if (url.len() == 1) {
+            return;
+        }
+
+        var parameters = url[1].split("&");
+
+        for (var i = 0; i < parameters.len(); ++i) {
+            var variable = parameters[i].split("=");
+
+            if (variable.len() == 2) {
+                this.query[variable[0]] = variable[1];
+            } else {
+                this.query[variable[0]] = nil;
+            }
+        }
+    }
+
+    parseHeaders(headers) {
+        for (var i = 1; i < headers.len(); ++i) {
+            var headerData = headers[i].split(":");
+            this.headers[headerData[0]] = headerData[1].strip();
+        }
+    }
+
+    parseBody(body) {
+        var elements = body.split("&");
+
+        for (var i = 0; i < elements.len(); ++i) {
+            var variable = elements[i].split("=");
+            this.body[variable[0]] = variable[1];
+        }
+    }
+}
