@@ -437,7 +437,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "Socket has no method %s().", name->chars);
+                runtimeError(vm, "Object has no method %s().", name->chars);
                 return false;
             }
 

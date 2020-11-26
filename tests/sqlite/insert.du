@@ -1,0 +1,26 @@
+/**
+ * insert.du
+ *
+ * Testing Sqlite.connect() and Sqlite.execute()
+ *
+ * Tests inserting into a table in SQLite
+ */
+
+import Sqlite;
+
+var connection = Sqlite.connect(":memory:");
+var resp = connection.execute("CREATE TABLE test (x int)");
+
+assert(resp == true);
+
+resp = connection.execute("INSERT INTO test VALUES (10)");
+
+assert(resp == true);
+
+resp = connection.execute("INSERT INTO test VALUES (?)", [
+    10
+]);
+
+assert(resp == true);
+
+connection.close();

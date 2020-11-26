@@ -1,0 +1,21 @@
+/**
+ * create.du
+ *
+ * Testing Sqlite.connect() and Sqlite.execute()
+ *
+ * Tests creating a table in SQLite
+ */
+
+import Sqlite;
+
+var connection = Sqlite.connect(":memory:");
+var resp = connection.execute("CREATE TABLE test (x int)");
+
+assert(resp == true);
+
+resp = connection.execute("CREATE TABLE test (x int)");
+
+assert(resp == nil);
+assert(Sqlite.strerror() == "table test already exists");
+
+connection.close();

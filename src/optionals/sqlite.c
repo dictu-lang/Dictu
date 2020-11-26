@@ -226,6 +226,8 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
 }
 
 void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
+    Database *db = (Database*)abstract->data;
+    sqlite3_close(db->db);
     FREE(vm, Database, abstract->data);
 }
 
