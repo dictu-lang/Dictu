@@ -13,6 +13,7 @@
 #include "socket.h"
 #include "random.h"
 #include "base64.h"
+#include "hashlib.h"
 #include "sqlite.h"
 
 #define GET_SELF_CLASS \
