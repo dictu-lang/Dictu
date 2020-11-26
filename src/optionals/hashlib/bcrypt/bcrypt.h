@@ -17,7 +17,7 @@ typedef unsigned long long uint64_t;
 typedef uint64_t u_int64_t;
 #define snprintf _snprintf
 #define __attribute__(unused)
-#elif defined(__sun)
+#elif defined(__sun) || !defined(__GLIBC__)
 typedef uint8_t u_int8_t;
 typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;

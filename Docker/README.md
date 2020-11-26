@@ -10,7 +10,7 @@ Run the following command from the **root of the project** i.e, the `Dictu` fold
 
 To build the *Alpine* version of Dictu - 
 
-```bash 
+```bash
 $ docker build -t dictu:alpine -f Docker/DictuAlpineDockerfile . 
 ``` 
 
