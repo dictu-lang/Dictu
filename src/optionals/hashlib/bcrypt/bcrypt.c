@@ -31,14 +31,15 @@
  *
  */
 
-#include <sys/types.h>
 #include <ctype.h>
 #include <errno.h>
-#include <pwd.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <bcrypt.h>
+#endif
 
 #include "blf.h"
 
@@ -59,7 +60,6 @@ char   *bcrypt_gensalt(u_int8_t);
 
 static int encode_base64(char *, const u_int8_t *, size_t);
 static int decode_base64(u_int8_t *, size_t, const char *);
-
 /*
  * Generates a salt for this version of crypt.
  */
@@ -73,7 +73,43 @@ bcrypt_initsalt(int log_rounds, uint8_t *salt, size_t saltbuflen)
         return -1;
     }
 
+#ifdef _WIN32
+    NTSTATUS Status = BCryptGenRandom(NULL, csalt, sizeof(csalt), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+
+    if (Status < 0) {
+        return -1;
+    }
+#elif defined __linux__
+    #if __GLIBC__ > 2 || __GLIBC_MINOR__ > 24
+        #include <sys/random.h>
+        if (getentropy(csalt, sizeof(csalt)) != 0) {
+            return -1;
+        }
+    #elif defined(__GLIBC__)
+        #include <unistd.h>
+        #include <sys/syscall.h>
+        #include <errno.h>
+
+        if (syscall(SYS_getrandom, csalt, sizeof(csalt), 0)) {
+            return -1;
+        }
+    #else
+        #include <unistd.h>
+        #include <sys/types.h>
+        #include <sys/stat.h>
+        #include <fcntl.h>
+
+        int randomData = open("/dev/urandom", O_RDONLY);
+        if (randomData > 0) {
+            ssize_t result = read(randomData, csalt, sizeof(csalt));
+            if (result < 0) return -1;
+        } else {
+            return -1;
+        }
+    #endif
+#else
     arc4random_buf(csalt, sizeof(csalt));
+#endif // _WIN32
 
     if (log_rounds < 4)
         log_rounds = 4;
