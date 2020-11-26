@@ -15,7 +15,7 @@ nav_order: 21
 
 ---
 
-## Random
+## Hashlib
 To make use of the Hashlib module an import is required.
 
 ```js
