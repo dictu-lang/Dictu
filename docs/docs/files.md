@@ -20,7 +20,7 @@ nav_order: 10
 
 Opening files is very easy in Dictu. Syntax is `with(<file name>, <open mode>) {}`. Inside the `with` block, `file` is declared
 as a constant for you, and is the file object which has just been opened. Dictu will handle closing the file for you and happens
-when you leave the with scope automatically.
+when you leave the with scope automatically. Note, the path when opening files is relative to the process **not** the current script running.
 
 | Open Mode | Description                                            |
 |-----------|--------------------------------------------------------|
