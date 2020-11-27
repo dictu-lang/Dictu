@@ -1,1 +1,1 @@
-from "tests/imports/class.du" import Test, AnotherTest;
+from "class.du" import Test, AnotherTest;

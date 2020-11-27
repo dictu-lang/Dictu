@@ -119,12 +119,14 @@ static Value inputNative(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
+    // If length has changed, shrink
+    if (length != currentSize) {
+        line = SHRINK_ARRAY(vm, line, char, currentSize, length + 1);
+    }
+
     line[length] = '\0';
 
-    Value newString = OBJ_VAL(copyString(vm, line, length));
-    FREE_ARRAY(vm, char, line, currentSize);
-
-    return newString;
+    return OBJ_VAL(takeString(vm, line, length));
 }
 
 static Value printNative(DictuVM *vm, int argCount, Value *args) {

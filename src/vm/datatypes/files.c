@@ -85,10 +85,7 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     buffer[bytesRead] = '\0';
-    Value newString = OBJ_VAL(copyString(vm, buffer, bytesRead));
-    FREE_ARRAY(vm, char, buffer, fileSize + 1);
-
-    return newString;
+    return OBJ_VAL(takeString(vm, buffer, bytesRead));
 }
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
