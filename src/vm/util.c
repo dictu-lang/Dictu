@@ -74,7 +74,11 @@ void resolvePath(char *directory, char *path, char *ret) {
     char buf[PATH_MAX];
 
     snprintf(buf, PATH_MAX, "%s%c%s", directory, DIR_SEPARATOR, path);
+#ifdef _WIN32
+    _fullpath(ret, buf, PATH_MAX);
+#else
     realpath(buf, ret);
+#endif
 }
 
 ObjString *getDirectory(DictuVM *vm, char *source) {
