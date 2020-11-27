@@ -35,6 +35,7 @@ ObjModule *newModule(DictuVM *vm, ObjString *name) {
     ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
     initTable(&module->values);
     module->name = name;
+    module->path = NULL;
 
     push(vm, OBJ_VAL(module));
     ObjString *__file__ = copyString(vm, "__file__", 8);

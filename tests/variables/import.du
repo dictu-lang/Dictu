@@ -4,7 +4,7 @@
 * General import file for all the variable tests
 */
 
-import "tests/variables/scope.du";
-import "tests/variables/assignment.du";
-import "tests/variables/const.du";
-import "tests/variables/list-unpacking.du";
+import "scope.du";
+import "assignment.du";
+import "const.du";
+import "list-unpacking.du";

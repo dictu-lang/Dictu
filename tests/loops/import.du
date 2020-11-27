@@ -4,6 +4,6 @@
 * General import file for all the loop tests
 */
 
-import "tests/loops/loop.du";
-import "tests/loops/continue.du";
-import "tests/loops/break.du";
+import "loop.du";
+import "continue.du";
+import "break.du";

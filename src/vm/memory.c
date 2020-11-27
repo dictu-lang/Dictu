@@ -85,6 +85,7 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_MODULE: {
             ObjModule *module = (ObjModule *) object;
             grayObject(vm, (Obj *) module->name);
+            grayObject(vm, (Obj *) module->path);
             grayTable(vm, &module->values);
             break;
         }

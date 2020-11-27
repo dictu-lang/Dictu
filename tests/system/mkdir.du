@@ -16,7 +16,7 @@ var
 
 var PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
 
-var sys_test_dir = "tests/system/test_dir";
+var sys_test_dir = "test_dir";
 
 assert(System.mkdir(sys_test_dir, PERM[0755]) == 0);
 assert(System.mkdir(sys_test_dir, PERM[0755]) == -1);

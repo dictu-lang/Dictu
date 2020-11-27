@@ -4,22 +4,22 @@
  * General import file for all the string tests
  */
 
-import "tests/strings/replace.du";
-import "tests/strings/split.du";
-import "tests/strings/upper.du";
-import "tests/strings/lower.du";
-import "tests/strings/concat.du";
-import "tests/strings/startsWith.du";
-import "tests/strings/endsWith.du";
-import "tests/strings/find.du";
-import "tests/strings/contains.du";
-import "tests/strings/strip.du";
-import "tests/strings/format.du";
-import "tests/strings/subscript.du";
-import "tests/strings/count.du";
-import "tests/strings/slicing.du";
-import "tests/strings/len.du";
-import "tests/strings/rawStrings.du";
-import "tests/strings/toNumber.du";
-import "tests/strings/toBool.du";
-import "tests/strings/escapeCodes.du";
+import "replace.du";
+import "split.du";
+import "upper.du";
+import "lower.du";
+import "concat.du";
+import "startsWith.du";
+import "endsWith.du";
+import "find.du";
+import "contains.du";
+import "strip.du";
+import "format.du";
+import "subscript.du";
+import "count.du";
+import "slicing.du";
+import "len.du";
+import "rawStrings.du";
+import "toNumber.du";
+import "toBool.du";
+import "escapeCodes.du";

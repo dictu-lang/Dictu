@@ -85,6 +85,7 @@ struct sObj {
 typedef struct {
     Obj obj;
     ObjString* name;
+    ObjString* path;
     Table values;
 } ObjModule;
 
