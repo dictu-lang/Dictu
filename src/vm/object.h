@@ -25,7 +25,7 @@
 #define AS_DICT(value)          ((ObjDict*)AS_OBJ(value))
 #define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
-#define AS_SOCKET(value)        ((ObjSocket*)AS_OBJ(value))
+#define AS_ABSTRACT(value)      ((ObjAbstract*)AS_OBJ(value))
 
 #define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
@@ -41,7 +41,7 @@
 #define IS_DICT(value)            isObjType(value, OBJ_DICT)
 #define IS_SET(value)             isObjType(value, OBJ_SET)
 #define IS_FILE(value)            isObjType(value, OBJ_FILE)
-#define IS_SOCKET(value)        isObjType(value, OBJ_SOCKET)
+#define IS_ABSTRACT(value)        isObjType(value, OBJ_ABSTRACT)
 
 typedef enum {
     OBJ_MODULE,
@@ -56,7 +56,7 @@ typedef enum {
     OBJ_DICT,
     OBJ_SET,
     OBJ_FILE,
-    OBJ_SOCKET,
+    OBJ_ABSTRACT,
     OBJ_UPVALUE
 } ObjType;
 
@@ -153,6 +153,15 @@ struct sObjFile {
     char *openType;
 };
 
+typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
+
+struct sObjAbstract {
+    Obj obj;
+    Table values;
+    void *data;
+    AbstractFreeFn func;
+};
+
 typedef struct sUpvalue {
     Obj obj;
 
@@ -199,14 +208,6 @@ typedef struct {
     ObjClosure *method;
 } ObjBoundMethod;
 
-typedef struct {
-    Obj obj;
-    int socket;
-    int socketFamily;    /* Address family, e.g., AF_INET */
-    int socketType;      /* Socket type, e.g., SOCK_STREAM */
-    int socketProtocol;  /* Protocol type, usually 0 */
-} ObjSocket;
-
 ObjModule *newModule(DictuVM *vm, ObjString *name);
 
 ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method);
@@ -233,7 +234,7 @@ ObjSet *initSet(DictuVM *vm);
 
 ObjFile *initFile(DictuVM *vm);
 
-ObjSocket *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol);
+ObjAbstract *initAbstract(DictuVM *vm, AbstractFreeFn func);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 
