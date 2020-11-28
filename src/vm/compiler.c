@@ -545,7 +545,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     TokenType currentToken = compiler->parser->previous.type;
 
     // Attempt constant fold.
-    if ((previousToken.type == TOKEN_NUMBER || previousToken.type == TOKEN_RIGHT_PAREN) &&
+    if ((previousToken.type == TOKEN_NUMBER) &&
         (currentToken == TOKEN_NUMBER || currentToken == TOKEN_LEFT_PAREN) &&
         foldBinary(compiler, operatorType)
             ) {
