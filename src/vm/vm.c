@@ -1055,6 +1055,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(JUMP_IF_NIL): {
+            uint16_t offset = READ_SHORT();
+            if (IS_NIL(peek(vm, 0))) ip += offset;
+            DISPATCH();
+        }
+
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
