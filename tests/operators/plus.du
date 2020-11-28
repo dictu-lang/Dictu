@@ -10,3 +10,31 @@ assert(x + 1 == 11);
 assert(x + x == 20);
 assert(1 + x == 11);
 assert(10 + x + 10 == 30);
+
+// Test function call (useful for constant folding)
+def test() {
+    return 1 + 2 + 3;
+}
+
+assert(test() + 2 + test() == 14);
+
+def calculate(a, b, c) {
+    return a + b + c;
+}
+
+assert(calculate(1, 2, 3) + calculate(2, 3, 4) == 15);
+
+// Test super
+class Test {
+    test() {
+        return 10;
+    }
+}
+
+class AnotherClass < Test {
+    test() {
+        return super.test() + 10;
+    }
+}
+
+assert(AnotherClass().test() == 20);
