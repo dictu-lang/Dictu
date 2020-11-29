@@ -1,0 +1,41 @@
+/**
+ * optionalChaining.du
+ *
+ * Testing optional chaining operator
+ */
+
+class Test {
+    init(var x = 10, var y = nil) {}
+}
+
+// Test access works correctly
+assert(Test().x == 10);
+assert(Test()?.x == 10);
+assert(Test().y == nil);
+assert(Test()?.y == nil);
+
+class SomeClass {
+    getNumber() {
+        return 10;
+    }
+
+    exit() {
+        print("Shouldn't get here!");
+        System.exit(1);
+    }
+}
+
+class Object {
+    init(var obj = SomeClass()) {}
+}
+
+var someObject = Object();
+
+assert(someObject.obj.getNumber() == 10);
+assert(someObject.obj?.getNumber() == 10);
+
+someObject.obj = nil;
+assert(someObject.obj?.getNumber() == nil);
+
+someObject.obj = nil;
+assert(someObject.obj?.exit() == nil);

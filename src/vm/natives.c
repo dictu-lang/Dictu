@@ -58,8 +58,6 @@ static Value typeNative(DictuVM *vm, int argCount, Value *args) {
                 return OBJ_VAL(copyString(vm, "native", 6));
             case OBJ_FILE:
                 return OBJ_VAL(copyString(vm, "file", 4));
-            case OBJ_SOCKET:
-                return OBJ_VAL(copyString(vm, "socket", 6));
             default:
                 break;
         }
@@ -121,12 +119,14 @@ static Value inputNative(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
+    // If length has changed, shrink
+    if (length != currentSize) {
+        line = SHRINK_ARRAY(vm, line, char, currentSize, length + 1);
+    }
+
     line[length] = '\0';
 
-    Value newString = OBJ_VAL(copyString(vm, line, length));
-    FREE_ARRAY(vm, char, line, currentSize);
-
-    return newString;
+    return OBJ_VAL(takeString(vm, line, length));
 }
 
 static Value printNative(DictuVM *vm, int argCount, Value *args) {

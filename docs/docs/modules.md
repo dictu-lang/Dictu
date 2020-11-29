@@ -49,7 +49,7 @@ from JSON import parse, stringify;
 
 When you wish to import another Dictu script, you use the import keyword. This takes an optional identifier which will be the
 identifier of the module being imported. This is different to importing from the standard library as a string path is passed rather
-than an identifier.
+than an identifier. The path to the module is relative to the importing scripts location, not where the process is executed.
 
 ```cs
 // Module not imported into current namespace, however the code in "some/file.du" is still ran.

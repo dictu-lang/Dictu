@@ -7,8 +7,8 @@
  */
 
 if (System.platform == 'darwin') {
-  var sys_test_remove_file = "tests/system/sys_test_remove.";
-  var sys_test_remove_directory = "tests/system/sys_test_remove";
+  var sys_test_remove_file = "sys_test_remove.";
+  var sys_test_remove_directory = "sys_test_remove";
 
   with (sys_test_remove_file, "w") {
     file.write("test");
@@ -23,7 +23,7 @@ if (System.platform == 'darwin') {
 
 } else {
 
-  var sys_test_remove = "tests/system/sys_test_remove";
+  var sys_test_remove = "sys_test_remove";
 
   with (sys_test_remove, "w") {
     file.write("test");

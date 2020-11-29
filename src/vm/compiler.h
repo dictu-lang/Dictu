@@ -1,6 +1,8 @@
 #ifndef dictu_compiler_h
 #define dictu_compiler_h
 
+#include <math.h>
+
 #include "object.h"
 #include "scanner.h"
 
@@ -19,6 +21,7 @@ typedef enum {
     PREC_INDICES,     // **
     PREC_UNARY,       // ! -
     PREC_PREFIX,      // ++ --
+    PREC_CHAIN,       // ?.
     PREC_CALL,        // . () []
     PREC_PRIMARY
 } Precedence;
@@ -95,11 +98,12 @@ typedef struct Compiler {
     int scopeDepth;
 } Compiler;
 
-typedef void (*ParseFn)(Compiler *compiler, bool canAssign);
+typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);
+typedef void (*ParseInfixFn)(Compiler *compiler, Token previousToken, bool canAssign);
 
 typedef struct {
-    ParseFn prefix;
-    ParseFn infix;
+    ParsePrefixFn prefix;
+    ParseInfixFn infix;
     Precedence precedence;
 } ParseRule;
 

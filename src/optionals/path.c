@@ -57,7 +57,6 @@ static Value basenameNative(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *PathString = AS_STRING(args[0]);
     char *path = PathString->chars;
-
     int len = PathString->length;
 
     if (!len || (len == 1 && !IS_DIR_SEPARATOR(*path))) {
@@ -114,44 +113,7 @@ static Value dirnameNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *PathString = AS_STRING(args[0]);
-    char *path = PathString->chars;
-
-    int len = PathString->length;
-
-    if (!len) {
-        return OBJ_VAL(copyString(vm, ".", 1));
-    }
-
-    char *sep = path + len;
-
-    /* trailing slashes */
-    while (sep != path) {
-        if (0 == IS_DIR_SEPARATOR (*sep))
-            break;
-        sep--;
-    }
-
-    /* first found */
-    while (sep != path) {
-        if (IS_DIR_SEPARATOR (*sep))
-            break;
-        sep--;
-    }
-
-    /* trim again */
-    while (sep != path) {
-        if (0 == IS_DIR_SEPARATOR (*sep))
-            break;
-        sep--;
-    }
-
-    if (sep == path && !IS_DIR_SEPARATOR(*sep)) {
-        return OBJ_VAL(copyString(vm, ".", 1));
-    }
-
-    len = sep - path + 1;
-
-    return OBJ_VAL(copyString(vm, path, len));
+    return OBJ_VAL(dirname(vm, PathString->chars, PathString->length));
 }
 
 static Value existsNative(DictuVM *vm, int argCount, Value *args) {

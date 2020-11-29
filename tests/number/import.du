@@ -4,6 +4,6 @@
 * General import file for all the function tests
 */
 
-import "tests/number/toString.du";
-import "tests/number/toBool.du";
-import "tests/number/literals.du";
+import "toString.du";
+import "toBool.du";
+import "literals.du";

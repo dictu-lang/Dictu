@@ -103,11 +103,10 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
 
     FREE_ARRAY(vm, char*, replaceStrings, argCount);
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = copyString(vm, newStr, fullLength - 1);
-    FREE_ARRAY(vm, char, newStr, fullLength);
+    newStr[fullLength - 1] = '\0';
     FREE_ARRAY(vm, char, tmpFree, stringLen);
 
-    return OBJ_VAL(newString);
+    return OBJ_VAL(takeString(vm, newStr, fullLength - 1));
 }
 
 static Value splitString(DictuVM *vm, int argCount, Value *args) {
@@ -288,11 +287,10 @@ static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     }
 
     memcpy(newStr + stringLength, tmp, strlen(tmp));
-    ObjString *newString = copyString(vm, newStr, length - 1);
-    FREE_ARRAY(vm, char, newStr, length);
     FREE_ARRAY(vm, char, tmpFree, stringLen + 1);
+    newStr[length - 1] = '\0';
 
-    return OBJ_VAL(newString);
+    return OBJ_VAL(takeString(vm, newStr, length - 1));
 }
 
 static Value lowerString(DictuVM *vm, int argCount, Value *args) {
@@ -309,9 +307,7 @@ static Value lowerString(DictuVM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
-    Value newString = OBJ_VAL(copyString(vm, temp, string->length));
-    FREE_ARRAY(vm, char, temp, string->length + 1);
-    return newString;
+    return OBJ_VAL(takeString(vm, temp, string->length));
 }
 
 static Value upperString(DictuVM *vm, int argCount, Value *args) {
@@ -328,9 +324,7 @@ static Value upperString(DictuVM *vm, int argCount, Value *args) {
     }
     temp[string->length] = '\0';
 
-    Value newString = OBJ_VAL(copyString(vm, temp, string->length));
-    FREE_ARRAY(vm, char, temp, string->length + 1);
-    return newString;
+    return OBJ_VAL(takeString(vm, temp, string->length));
 }
 
 static Value startsWithString(DictuVM *vm, int argCount, Value *args) {
@@ -388,11 +382,13 @@ static Value leftStripString(DictuVM *vm, int argCount, Value *args) {
         count++;
     }
 
-    memcpy(temp, string->chars + count, string->length - count);
-    Value newString = OBJ_VAL(copyString(vm, temp, string->length - count));
-    FREE_ARRAY(vm, char, temp, string->length + 1);
+    if (count != 0) {
+        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, (string->length - count) + 1);
+    }
 
-    return newString;
+    memcpy(temp, string->chars + count, string->length - count);
+    temp[string->length - count] = '\0';
+    return OBJ_VAL(takeString(vm, temp, string->length - count));
 }
 
 static Value rightStripString(DictuVM *vm, int argCount, Value *args) {
@@ -411,11 +407,14 @@ static Value rightStripString(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
-    memcpy(temp, string->chars, length + 1);
-    Value newString = OBJ_VAL(copyString(vm, temp, length + 1));
-    FREE_ARRAY(vm, char, temp, string->length + 1);
+    // If characters were stripped resize the buffer
+    if (length + 1 != string->length) {
+        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, length + 2);
+    }
 
-    return newString;
+    memcpy(temp, string->chars, length + 1);
+    temp[length + 1] = '\0';
+    return OBJ_VAL(takeString(vm, temp, length + 1));
 }
 
 static Value stripString(DictuVM *vm, int argCount, Value *args) {

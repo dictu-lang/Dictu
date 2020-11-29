@@ -35,6 +35,7 @@ ObjModule *newModule(DictuVM *vm, ObjString *name) {
     ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
     initTable(&module->values);
     module->name = name;
+    module->path = NULL;
 
     push(vm, OBJ_VAL(module));
     ObjString *__file__ = copyString(vm, "__file__", 8);
@@ -146,8 +147,16 @@ ObjSet *initSet(DictuVM *vm) {
 }
 
 ObjFile *initFile(DictuVM *vm) {
-    ObjFile *file = ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
-    return file;
+    return ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
+}
+
+ObjAbstract *initAbstract(DictuVM *vm, AbstractFreeFn func) {
+    ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
+    abstract->data = NULL;
+    abstract->func = func;
+    initTable(&abstract->values);
+
+    return abstract;
 }
 
 static uint32_t hashString(const char *key, int length) {
@@ -170,6 +179,8 @@ ObjString *takeString(DictuVM *vm, char *chars, int length) {
         return interned;
     }
 
+    // Ensure terminating char is present
+    chars[length] = '\0';
     return allocateString(vm, chars, length, hash);
 }
 
@@ -192,16 +203,6 @@ ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot) {
     upvalue->next = NULL;
 
     return upvalue;
-}
-
-ObjSocket *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
-    ObjSocket *socket = ALLOCATE_OBJ(vm, ObjSocket, OBJ_SOCKET);
-    socket->socket = sock;
-    socket->socketFamily = socketFamily;
-    socket->socketType = socketType;
-    socket->socketProtocol = socketProtocol;
-
-    return socket;
 }
 
 char *listToString(Value value) {
@@ -598,11 +599,9 @@ char *objectToString(Value value) {
             return upvalueString;
         }
 
-        case OBJ_SOCKET: {
-            char *socketString = malloc(sizeof(char) * 7);
-            memcpy(socketString, "socket", 6);
-            socketString[6] = '\0';
-            return socketString;
+        // TODO: Think about string conversion for abstract types
+        case OBJ_ABSTRACT: {
+            break;
         }
     }
 

@@ -429,10 +429,11 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
-            // TODO: Think of a way to handle this for imported classes
-            case OBJ_SOCKET: {
+            case OBJ_ABSTRACT: {
+                ObjAbstract *abstract = AS_ABSTRACT(receiver);
+
                 Value value;
-                if (tableGet(&vm->socketMethods, name, &value)) {
+                if (tableGet(&abstract->values, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
@@ -1054,6 +1055,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(JUMP_IF_NIL): {
+            uint16_t offset = READ_SHORT();
+            if (IS_NIL(peek(vm, 0))) ip += offset;
+            DISPATCH();
+        }
+
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
@@ -1075,14 +1082,21 @@ static DictuInterpretResult run(DictuVM *vm) {
                 DISPATCH();
             }
 
-            char *source = readFile(vm, fileName->chars);
+            char path[PATH_MAX];
+            resolvePath(frame->closure->function->module->path->chars, fileName->chars, path);
+
+            char *source = readFile(vm, path);
 
             if (source == NULL) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
-            ObjModule *module = newModule(vm, fileName);
+            ObjString *pathObj = copyString(vm, path, strlen(path));
+            push(vm, OBJ_VAL(pathObj));
+            ObjModule *module = newModule(vm, pathObj);
+            module->path = dirname(vm, path, strlen(path));
             vm->lastModule = module;
+            pop(vm);
 
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
@@ -1680,7 +1694,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             file->openType = openTypeString->chars;
 
             if (file->file == NULL) {
-                RUNTIME_ERROR("Unable to open file");
+                RUNTIME_ERROR("Unable to open file '%s'", file->path);
             }
 
             pop(vm);
@@ -1711,6 +1725,10 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
+    pop(vm);
+
+    push(vm, OBJ_VAL(module));
+    module->path = getDirectory(vm, moduleName);
     pop(vm);
 
     ObjFunction *function = compile(vm, module, source);
