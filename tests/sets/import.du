@@ -7,9 +7,9 @@
  * explicit test for this method.
  */
 
-import "tests/sets/equality.du";
-import "tests/sets/add.du";
-import "tests/sets/remove.du";
-import "tests/sets/len.du";
-import "tests/sets/toString.du";
-import "tests/sets/toBool.du";
+import "equality.du";
+import "add.du";
+import "remove.du";
+import "len.du";
+import "toString.du";
+import "toBool.du";

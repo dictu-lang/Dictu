@@ -41,6 +41,21 @@
 #include <bcrypt.h>
 #endif
 
+#ifdef __linux__
+    #if __GLIBC__ > 2 || __GLIBC_MINOR__ > 24
+        #include <sys/random.h>
+    #elif defined(__GLIBC__)
+        #include <unistd.h>
+        #include <sys/syscall.h>
+        #include <errno.h>
+    #else
+        #include <unistd.h>
+        #include <sys/types.h>
+        #include <sys/stat.h>
+        #include <fcntl.h>
+    #endif
+#endif
+
 #include "blf.h"
 
 /* This implementation is adaptable to current computing power.
@@ -81,24 +96,14 @@ bcrypt_initsalt(int log_rounds, uint8_t *salt, size_t saltbuflen)
     }
 #elif defined __linux__
     #if __GLIBC__ > 2 || __GLIBC_MINOR__ > 24
-        #include <sys/random.h>
         if (getentropy(csalt, sizeof(csalt)) != 0) {
             return -1;
         }
     #elif defined(__GLIBC__)
-        #include <unistd.h>
-        #include <sys/syscall.h>
-        #include <errno.h>
-
-        if (syscall(SYS_getrandom, csalt, sizeof(csalt), 0)) {
+        if (syscall(SYS_getrandom, csalt, sizeof(csalt), 0) == -1) {
             return -1;
         }
     #else
-        #include <unistd.h>
-        #include <sys/types.h>
-        #include <sys/stat.h>
-        #include <fcntl.h>
-
         int randomData = open("/dev/urandom", O_RDONLY);
         if (randomData > 0) {
             ssize_t result = read(randomData, csalt, sizeof(csalt));

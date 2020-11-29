@@ -20,6 +20,10 @@
     (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \
         sizeof(type) * (count))
 
+#define SHRINK_ARRAY(vm, previous, type, oldCount, count) \
+    (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \
+        sizeof(type) * (count))
+
 #define FREE_ARRAY(vm, type, pointer, oldCount) \
     reallocate(vm, pointer, sizeof(type) * (oldCount), 0)
 

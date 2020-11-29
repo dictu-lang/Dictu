@@ -4,5 +4,5 @@
  * General import file for all the base64 tests
  */
 
-import "tests/base64/encode.du";
-import "tests/base64/decode.du";
+import "encode.du";
+import "decode.du";

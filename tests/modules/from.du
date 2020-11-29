@@ -4,14 +4,14 @@
  * Testing from imports
  */
 
-from "tests/variables/scope.du" import x;
+from "../variables/scope.du" import x;
 assert(x == 10);
 
 {
-    from "tests/variables/scope.du" import x;
+    from "../variables/scope.du" import x;
     assert(x == 10);
     {
-        from "tests/variables/scope.du" import x;
+        from "../variables/scope.du" import x;
         assert(x == 10);
     }
 }

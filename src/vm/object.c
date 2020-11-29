@@ -35,6 +35,7 @@ ObjModule *newModule(DictuVM *vm, ObjString *name) {
     ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
     initTable(&module->values);
     module->name = name;
+    module->path = NULL;
 
     push(vm, OBJ_VAL(module));
     ObjString *__file__ = copyString(vm, "__file__", 8);
@@ -178,6 +179,8 @@ ObjString *takeString(DictuVM *vm, char *chars, int length) {
         return interned;
     }
 
+    // Ensure terminating char is present
+    chars[length] = '\0';
     return allocateString(vm, chars, length, hash);
 }
 

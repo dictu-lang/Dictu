@@ -263,8 +263,14 @@ static Value stringify(DictuVM *vm, int argCount, Value *args) {
     char *buf = ALLOCATE(vm, char, length);
     json_serialize_ex(buf, json, default_opts);
     int actualLength = strlen(buf);
-    ObjString *string = copyString(vm, buf, actualLength);
-    FREE_ARRAY(vm, char, buf, length);
+
+    // json_measure_ex can produce a length larger than the actual string returned
+    // so we need to cater for this case
+    if (actualLength != length) {
+        buf = SHRINK_ARRAY(vm, buf, char, length, actualLength + 1);
+    }
+
+    ObjString *string = takeString(vm, buf, actualLength);
     json_builder_free(json);
     return OBJ_VAL(string);
 }

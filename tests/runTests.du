@@ -1,33 +1,35 @@
-import "tests/bool/import.du";
-import "tests/nil/import.du";
-import "tests/number/import.du";
-import "tests/strings/import.du";
-import "tests/variables/import.du";
-import "tests/lists/import.du";
-import "tests/dicts/import.du";
-import "tests/sets/import.du";
-import "tests/operators/import.du";
-import "tests/loops/import.du";
-import "tests/functions/import.du";
-import "tests/classes/import.du";
-import "tests/builtins/import.du";
-import "tests/files/import.du";
-import "tests/maths/import.du";
-import "tests/datetime/import.du";
-import "tests/env/import.du";
-import "tests/system/import.du";
-import "tests/json/import.du";
-import "tests/path/import.du";
-import "tests/sockets/import.du";
-import "tests/base64/import.du";
-import "tests/sqlite/import.du";
+import "bool/import.du";
+import "nil/import.du";
+import "number/import.du";
+import "strings/import.du";
+import "variables/import.du";
+import "lists/import.du";
+import "dicts/import.du";
+import "sets/import.du";
+import "operators/import.du";
+import "loops/import.du";
+import "functions/import.du";
+import "classes/import.du";
+import "builtins/import.du";
+import "files/import.du";
+import "maths/import.du";
+import "datetime/import.du";
+import "env/import.du";
+import "system/import.du";
+import "json/import.du";
+import "path/import.du";
+import "sockets/import.du";
+import "base64/import.du";
+import "sqlite/import.du";
 
 if (isDefined("HTTP")) {
-  import "tests/http/import.du";
+  import "http/import.du";
 }
 
-import "tests/modules/import.du";
-import "tests/imports/import.du";
+import "modules/import.du";
+import "imports/import.du";
+import "random/import.du";
+import "hashlib/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

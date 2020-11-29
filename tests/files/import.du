@@ -4,8 +4,8 @@
  * General import file for all the file tests
  */
 
-import "tests/files/read.du";
-import "tests/files/readLine.du";
-import "tests/files/write.du";
-import "tests/files/writeLine.du";
-import "tests/files/seek.du";
+import "read.du";
+import "readLine.du";
+import "write.du";
+import "writeLine.du";
+import "seek.du";
