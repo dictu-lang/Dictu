@@ -17,8 +17,6 @@ else()
     list(APPEND libraries curl)
 endif()
 
-list(APPEND libraries sqlite3)
-
 if(WIN32)
     # ws2_32 is required for winsock2.h to work correctly
     list(APPEND libraries ws2_32 bcrypt)
