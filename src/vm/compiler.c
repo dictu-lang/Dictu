@@ -687,6 +687,15 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
+static void chain(Compiler *compiler, Token previousToken, bool canAssign) {
+    // If the operand is not nil we want to stop, otherwise continue
+    int endJump = emitJump(compiler, OP_JUMP_IF_NIL);
+
+    dot(compiler, previousToken, canAssign);
+
+    patchJump(compiler, endJump);
+}
+
 static void literal(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
@@ -1321,6 +1330,7 @@ ParseRule rules[] = {
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
+        {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
         {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
         {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS

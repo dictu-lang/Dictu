@@ -21,6 +21,7 @@ typedef enum {
     PREC_INDICES,     // **
     PREC_UNARY,       // ! -
     PREC_PREFIX,      // ++ --
+    PREC_CHAIN,       // ?.
     PREC_CALL,        // . () []
     PREC_PRIMARY
 } Precedence;
