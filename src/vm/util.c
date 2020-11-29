@@ -70,20 +70,27 @@ ObjString *dirname(DictuVM *vm, char *path, int len) {
     return copyString(vm, path, len);
 }
 
-void resolvePath(char *directory, char *path, char *ret) {
+bool resolvePath(char *directory, char *path, char *ret) {
     char buf[PATH_MAX];
 
     snprintf(buf, PATH_MAX, "%s%c%s", directory, DIR_SEPARATOR, path);
 #ifdef _WIN32
     _fullpath(ret, buf, PATH_MAX);
 #else
-    realpath(buf, ret);
+    if (realpath(buf, ret) == NULL) {
+        return false;
+    }
 #endif
+
+    return true;
 }
 
 ObjString *getDirectory(DictuVM *vm, char *source) {
     char res[PATH_MAX];
-    resolvePath(".", source, res);
+    if (!resolvePath(".", source, res)) {
+        runtimeError(vm, "Unable to resolve path '%s'", source);
+        exit(1);
+    }
     return dirname(vm, res, strlen(res));
 }
 

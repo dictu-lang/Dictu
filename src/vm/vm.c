@@ -1083,7 +1083,9 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
 
             char path[PATH_MAX];
-            resolvePath(frame->closure->function->module->path->chars, fileName->chars, path);
+            if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
+                RUNTIME_ERROR("Unable to resolve path.");
+            }
 
             char *source = readFile(vm, path);
 

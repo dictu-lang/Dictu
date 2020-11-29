@@ -17,6 +17,6 @@ Value boolNative(DictuVM *vm, int argCount, Value *args);
 
 ObjString *dirname(DictuVM *vm, char *path, int len);
 
-void resolvePath(char *directory, char *path, char *ret);
+bool resolvePath(char *directory, char *path, char *ret);
 
 #endif //dictu_util_h
