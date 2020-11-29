@@ -101,7 +101,6 @@ bcrypt_initsalt(int log_rounds, uint8_t *salt, size_t saltbuflen)
             return -1;
         }
     #elif defined(__GLIBC__)
-        #include <unistd.h>
         if (syscall(SYS_getrandom, csalt, sizeof(csalt), 0) == -1) {
             return -1;
         }
