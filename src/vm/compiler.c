@@ -545,7 +545,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     TokenType currentToken = compiler->parser->previous.type;
 
     // Attempt constant fold.
-    if ((previousToken.type == TOKEN_NUMBER || previousToken.type == TOKEN_RIGHT_PAREN) &&
+    if ((previousToken.type == TOKEN_NUMBER) &&
         (currentToken == TOKEN_NUMBER || currentToken == TOKEN_LEFT_PAREN) &&
         foldBinary(compiler, operatorType)
             ) {
@@ -685,6 +685,15 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     } else {
         emitBytes(compiler, OP_GET_PROPERTY, name);
     }
+}
+
+static void chain(Compiler *compiler, Token previousToken, bool canAssign) {
+    // If the operand is not nil we want to stop, otherwise continue
+    int endJump = emitJump(compiler, OP_JUMP_IF_NIL);
+
+    dot(compiler, previousToken, canAssign);
+
+    patchJump(compiler, endJump);
 }
 
 static void literal(Compiler *compiler, bool canAssign) {
@@ -1321,6 +1330,7 @@ ParseRule rules[] = {
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
+        {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
         {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
         {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS

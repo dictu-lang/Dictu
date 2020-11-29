@@ -152,7 +152,12 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             break;
         }
 
-        case OBJ_SOCKET:
+        case OBJ_ABSTRACT: {
+            ObjAbstract *abstract = (ObjAbstract *) object;
+            grayTable(vm, &abstract->values);
+            break;
+        }
+
         case OBJ_NATIVE:
         case OBJ_STRING:
         case OBJ_FILE:
@@ -255,8 +260,11 @@ void freeObject(DictuVM *vm, Obj *object) {
             break;
         }
 
-        case OBJ_SOCKET: {
-            FREE(vm, ObjSocket, object);
+        case OBJ_ABSTRACT: {
+            ObjAbstract *abstract = (ObjAbstract*) object;
+            abstract->func(vm, abstract);
+            freeTable(vm, &abstract->values);
+            FREE(vm, ObjAbstract, object);
             break;
         }
     }

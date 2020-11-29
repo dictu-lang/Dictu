@@ -429,10 +429,11 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
-            // TODO: Think of a way to handle this for imported classes
-            case OBJ_SOCKET: {
+            case OBJ_ABSTRACT: {
+                ObjAbstract *abstract = AS_ABSTRACT(receiver);
+
                 Value value;
-                if (tableGet(&vm->socketMethods, name, &value)) {
+                if (tableGet(&abstract->values, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
@@ -1051,6 +1052,12 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(JUMP_IF_FALSE): {
             uint16_t offset = READ_SHORT();
             if (isFalsey(peek(vm, 0))) ip += offset;
+            DISPATCH();
+        }
+
+        CASE_CODE(JUMP_IF_NIL): {
+            uint16_t offset = READ_SHORT();
+            if (IS_NIL(peek(vm, 0))) ip += offset;
             DISPATCH();
         }
 

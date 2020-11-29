@@ -210,6 +210,33 @@ myObject.setAttribute("x", 100);
 print(myObject.x); // 100
 ```
 
+### Optional Chaining
+
+Optional chaining allows you to read a property or method of an instance without explicitly having to check for `nil` before
+attempting to access.
+
+**Note:** If the left hand value is not nil the property / method **must** still exist when attempting to access otherwise a runtime error will occur.
+
+```js
+class Test {
+    // Lets say you have a method that 
+    // could return an object or nil
+    someMethod() {
+        return nil;
+    }
+    
+    someOtherMethod() {
+        print("method!");
+    }
+}
+
+// Here there is no explicit nil check.
+print(Test().someMethod()?.someOtherMethod()); // nil
+
+// If the operand is not nil the method / property must exist  
+print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
+``` 
+
 ## Class variables
 
 A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
