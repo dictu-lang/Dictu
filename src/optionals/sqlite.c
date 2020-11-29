@@ -90,7 +90,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
     char *sql = AS_CSTRING(args[1]);
-    ObjList *list;
+    ObjList *list = NULL;
     int parameterCount = countParameters(sql);;
     int argumentCount = 0;
 
@@ -117,7 +117,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    if (parameterCount != 0) {
+    if (parameterCount != 0 && list != NULL) {
         for (int i = 0; i < parameterCount; ++i) {
             bindValue(result.stmt, i + 1, list->values.values[i]);
         }
