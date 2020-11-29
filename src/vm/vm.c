@@ -1055,6 +1055,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(JUMP_IF_NIL): {
+            uint16_t offset = READ_SHORT();
+            if (IS_NIL(peek(vm, 0))) ip += offset;
+            DISPATCH();
+        }
+
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
@@ -1077,7 +1083,9 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
 
             char path[PATH_MAX];
-            resolvePath(frame->closure->function->module->path->chars, fileName->chars, path);
+            if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
+                RUNTIME_ERROR("Unable to resolve path.");
+            }
 
             char *source = readFile(vm, path);
 

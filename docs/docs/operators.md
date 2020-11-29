@@ -30,6 +30,7 @@ nav_order: 6
 | ^=           | Same as ^, however its shorthand to assign too                 | x ^= 10 Same as x = x ^ 10 |
 | \|=           | Same as \|, however its shorthand to assign too                 | x \|= 10 Same as x = x |
 | ?            | Ternary operator - See below                                   | true ? 'value' : 'other' |
+| ?.           | Optional chaining - See [classes](/docs/classes/#optional-chaining) | object?.someMethod()     |
 
 ## Ternary Operator
 
