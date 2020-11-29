@@ -4,13 +4,13 @@
  * Testing importing classes from another script works
  */
 
-import "tests/classes/inherit.du" as ClassesModule;
-import "tests/classes/traits.du" as TraitModule;
+import "../classes/inherit.du" as ClassesModule;
+import "../classes/traits.du" as TraitModule;
 
 /**
  * ClassesModule
  *
- * Mirrors the tests in tests/classes/inherit.du
+ * Mirrors the tests in inherit.du
  */
 assert(ClassesModule.Test().func() == 10);
 assert(ClassesModule.Testing().value == 10);
@@ -19,7 +19,7 @@ assert(ClassesModule.Testing().newFunc() == 10);
 /**
  * TraitModule
  *
- * Mirrors the tests in tests/classes/traits.du
+ * Mirrors the tests in traits.du
  */
 var myDuplicateOverrideObject = TraitModule.MyDuplicateClassOverride("Jason");
 assert(myDuplicateOverrideObject.name == "Jason");

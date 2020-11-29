@@ -4,18 +4,18 @@
  * General import file for all the list tests
  */
 
-import "tests/lists/subscript.du";
-import "tests/lists/contains.du";
-import "tests/lists/push.du";
-import "tests/lists/extend.du";
-import "tests/lists/insert.du";
-import "tests/lists/pop.du";
-import "tests/lists/remove.du";
-import "tests/lists/copy.du";
-import "tests/lists/slicing.du";
-import "tests/lists/join.du";
-import "tests/lists/len.du";
-import "tests/lists/toString.du";
-import "tests/lists/toBool.du";
-import "tests/lists/plusOperator.du";
-import "tests/lists/sort.du";
+import "subscript.du";
+import "contains.du";
+import "push.du";
+import "extend.du";
+import "insert.du";
+import "pop.du";
+import "remove.du";
+import "copy.du";
+import "slicing.du";
+import "join.du";
+import "len.du";
+import "toString.du";
+import "toBool.du";
+import "plusOperator.du";
+import "sort.du";

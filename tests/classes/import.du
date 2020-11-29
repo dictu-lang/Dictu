@@ -4,16 +4,16 @@
  * General import file for all the class tests
  */
 
-import "tests/classes/methodCall.du";
-import "tests/classes/static.du";
-import "tests/classes/properties.du";
-import "tests/classes/inherit.du";
-import "tests/classes/traits.du";
-import "tests/classes/copy.du";
-import "tests/classes/toString.du";
-import "tests/classes/abstract.du";
-import "tests/classes/classVariables.du";
-import "tests/classes/parameters.du";
-import "tests/classes/isInstance.du";
-import "tests/classes/constructor.du";
-import "tests/classes/optionalChaining.du";
+import "methodCall.du";
+import "static.du";
+import "properties.du";
+import "inherit.du";
+import "traits.du";
+import "copy.du";
+import "toString.du";
+import "abstract.du";
+import "classVariables.du";
+import "parameters.du";
+import "isInstance.du";
+import "constructor.du";
+import "optionalChaining.du";

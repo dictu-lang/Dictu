@@ -4,18 +4,18 @@
  * General import file for all the operator tests
  */
 
-import "tests/operators/and.du";
-import "tests/operators/or.du";
-import "tests/operators/not.du";
-import "tests/operators/equality.du";
-import "tests/operators/plus.du";
-import "tests/operators/subtract.du";
-import "tests/operators/multiply.du";
-import "tests/operators/divide.du";
-import "tests/operators/pow.du";
-import "tests/operators/modulo.du";
-import "tests/operators/prefix.du";
-import "tests/operators/assignment.du";
-import "tests/operators/bitwise.du";
-import "tests/operators/precedence.du";
-import "tests/operators/ternary.du";
+import "and.du";
+import "or.du";
+import "not.du";
+import "equality.du";
+import "plus.du";
+import "subtract.du";
+import "multiply.du";
+import "divide.du";
+import "pow.du";
+import "modulo.du";
+import "prefix.du";
+import "assignment.du";
+import "bitwise.du";
+import "precedence.du";
+import "ternary.du";
