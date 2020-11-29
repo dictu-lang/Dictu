@@ -86,6 +86,10 @@ bool resolvePath(char *directory, char *path, char *ret) {
 }
 
 ObjString *getDirectory(DictuVM *vm, char *source) {
+    if (vm->repl) {
+        source = "";
+    }
+
     char res[PATH_MAX];
     if (!resolvePath(".", source, res)) {
         runtimeError(vm, "Unable to resolve path '%s'", source);
