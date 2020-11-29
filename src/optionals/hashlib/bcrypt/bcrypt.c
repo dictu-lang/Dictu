@@ -41,7 +41,6 @@
 #include <bcrypt.h>
 #endif
 
-#define _GNU_SOURCE 1
 #ifdef __linux__
     #if __GLIBC__ > 2 || __GLIBC_MINOR__ > 24
         #include <sys/random.h>
