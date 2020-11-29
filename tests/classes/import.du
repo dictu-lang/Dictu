@@ -16,4 +16,4 @@ import "classVariables.du";
 import "parameters.du";
 import "isInstance.du";
 import "constructor.du";
-import "tests/classes/optionalChaining.du";
+import "optionalChaining.du";
