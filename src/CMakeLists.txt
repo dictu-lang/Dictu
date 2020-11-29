@@ -19,7 +19,7 @@ endif()
 
 if(WIN32)
     # ws2_32 is required for winsock2.h to work correctly
-    list(APPEND libraries ws2_32)
+    list(APPEND libraries ws2_32 bcrypt)
 else()
     list(APPEND libraries m)
 endif()

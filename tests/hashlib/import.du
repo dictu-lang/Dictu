@@ -1,0 +1,8 @@
+/**
+ * import.du
+ *
+ * General import file for all the hashlib tests
+ */
+
+import "sha256.du";
+import "bcrypt.du";

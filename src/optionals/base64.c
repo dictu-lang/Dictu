@@ -49,7 +49,7 @@ static Value decode(DictuVM *vm, int argCount, Value *args) {
 }
 
 ObjModule *createBase64Module(DictuVM *vm) {
-    ObjString *name = copyString(vm, "Base64", 8);
+    ObjString *name = copyString(vm, "Base64", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));

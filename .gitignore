@@ -44,4 +44,10 @@ dictu.exe
 
 dictu.exe.manifest
 
+CMakeSettings.json
+
+dictu.ilk
+
+dictu.pdb
+
 test1.du
