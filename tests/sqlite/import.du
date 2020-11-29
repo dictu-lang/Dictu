@@ -4,8 +4,8 @@
  * General import file for all the SQLite tests
  */
 
-import "tests/sqlite/create.du";
-import "tests/sqlite/insert.du";
-import "tests/sqlite/select.du";
-import "tests/sqlite/update.du";
-import "tests/sqlite/delete.du";
+import "create.du";
+import "insert.du";
+import "select.du";
+import "update.du";
+import "delete.du";
