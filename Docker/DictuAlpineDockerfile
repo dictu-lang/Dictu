@@ -2,13 +2,16 @@ FROM alpine
 
 WORKDIR Dictu
 
-RUN apk add make curl-dev gcc libc-dev --no-cache 
+RUN apk add make curl-dev gcc libc-dev cmake --no-cache
 
-COPY . .
+COPY CMakeLists.txt .
+COPY src ./src/
+COPY tests ./tests/
 
-RUN make dictu \
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B build \
+    && cmake --build ./build \
+    && ./dictu tests/runTests.du \
 	&& cp dictu /usr/bin/ \
-	&& dictu tests/runTests.du \
 	&& rm -rf * 
 
 CMD ["dictu"]

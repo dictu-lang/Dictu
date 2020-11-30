@@ -4,12 +4,12 @@
 * General import file for all the dictionary tests
 */
 
-import "tests/dicts/subscript.du";
-import "tests/dicts/keys.du";
-import "tests/dicts/get.du";
-import "tests/dicts/exists.du";
-import "tests/dicts/remove.du";
-import "tests/dicts/copy.du";
-import "tests/dicts/len.du";
-import "tests/dicts/toString.du";
-import "tests/dicts/toBool.du";
+import "subscript.du";
+import "keys.du";
+import "get.du";
+import "exists.du";
+import "remove.du";
+import "copy.du";
+import "len.du";
+import "toString.du";
+import "toBool.du";

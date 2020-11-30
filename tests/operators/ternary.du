@@ -1,0 +1,33 @@
+/**
+ * ternary.du
+ *
+ * Testing ternary operator
+ */
+
+// Explicit checking
+assert(true ? true : false == true);
+assert(false ? true : false == false);
+
+assert(true ? 1 + 2 + 3 : 4 + 5 + 6 == 6);
+assert(false ? 1 + 2 + 3 : 4 + 5 + 6 == 15);
+
+var condition = true;
+
+assert(condition ? [1, 2] : [3, 4] == [1, 2]);
+assert(!condition ? [1, 2] : [3, 4] == [3, 4]);
+
+// Nested
+def nestedTernary(num) {
+    return num == 1 ? 1
+        : num == 2 ? 2
+        : num == 3 ? 3
+        : num == 4 ? 4
+        : 5;
+}
+
+assert(nestedTernary(1) == 1);
+assert(nestedTernary(2) == 2);
+assert(nestedTernary(3) == 3);
+assert(nestedTernary(4) == 4);
+assert(nestedTernary(5) == 5);
+assert(nestedTernary(10) == 5);

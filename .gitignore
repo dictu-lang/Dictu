@@ -37,3 +37,17 @@ docs/_site/
 cmake-build-debug/
 
 cmake-build-release/
+
+.vs/
+
+dictu.exe
+
+dictu.exe.manifest
+
+CMakeSettings.json
+
+dictu.ilk
+
+dictu.pdb
+
+test1.du

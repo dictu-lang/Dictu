@@ -4,5 +4,5 @@
  * General import file for all the HTTP methods
  */
 
-import "tests/http/get.du";
-import "tests/http/post.du";
+import "get.du";
+import "post.du";

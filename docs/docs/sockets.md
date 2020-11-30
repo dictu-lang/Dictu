@@ -70,11 +70,13 @@ if (!socket.listen()) {
 
 ### socket.accept()
 
-This will accept incoming connections. This will create a **new** socket object
-on which you should operate.
+This will accept incoming connections. The socket must be bound to an address an listening for incoming connections before
+`.accept()` can be used. `.accept()` returns a list of two values where the first value is a **new** socket object and the second 
+is the address connecting to the socket as a string.
 
 ```cs
-var client = socket.accept();
+var [client, address] = socket.accept();
+print(address); // 127.0.0.1
 ```
 
 ### socket.write(string)

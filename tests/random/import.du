@@ -4,6 +4,6 @@
  * General import file for all the methods for Random
  */
  
-import "tests/random/random.du";
-import "tests/random/select.du";
-import "tests/random/range.du";
+import "random.du";
+import "select.du";
+import "range.du";

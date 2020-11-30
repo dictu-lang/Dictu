@@ -1,0 +1,83 @@
+---
+layout: default
+title: Sqlite
+nav_order: 23
+---
+
+# Sqlite
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Sqlite
+To make use of the Sqlite module an import is required.
+
+```js
+import Sqlite;
+```
+
+### Constants
+
+| Constant             | Description                     |
+|----------------------|---------------------------------|
+| Sqlite.errno         | Number of the last error        |
+
+### Sqlite.connect(string: database)
+
+This opens a connection to a SQLite database and returns an abstract SQLite type.
+
+Note: You can pass ":memory:" to open the SQLite database in memory rather than a file.
+
+```cs
+Sqlite.connect(":memory:");
+Sqlite.connect("my/database/file.db");
+```
+
+### sqlite.execute(string: query, list: arguments -> optional)
+
+The `execute` method is ran on the abstract that is returned from `.connect` rather than the `Sqlite` module, hence the
+lower case `sqlite`. The `execute` method executes an SQL query and can return one of 3 values.
+
+If the query is a type that does not return data (such as UPDATE / DELETE), then `true` is returned on successful queries.
+If the query is a SELECT statement then a list is returned on successful queries (empty list for a select query that returns no rows).
+If an error occurs `nil` is returned. If nil is returned `Sqlite.strerror()` can be used for more information as to why it failed.
+
+```cs
+sqlite.execute("UPDATE mytable SET mycolumn = 10"); // true
+sqlite.execute("UPDATE unknown_table SET mycolumn = 10"); // nil
+print(Sqlite.strerror()); // no such table: unknown_table
+```
+
+#### Arguments
+Passing user input to a query should always be done through the method of binding parameters and never through string interpolation, 
+otherwise your application will be at risk to SQL injection. Binding values to placeholders is incredibly simple.
+
+```cs
+sqlite.execute("SELECT * FROM mytable WHERE mycolumn = ?", [
+    "test"
+]);
+```
+
+The `?` will take the value of the item in the list. If there are multiple placeholders then it is done by index, for example.
+
+```cs
+sqlite.execute("SELECT * FROM mytable WHERE mycolumn = ? AND mycolumn1 = ?", [
+    "test",
+    "next value"
+]);
+```
+The first `?` matches with the first value in the list, and the second `?` with the second value in the list, and so on.
+
+### sqlite.close()
+
+Closes the database.
+
+```cs
+sqlite.close();
+```

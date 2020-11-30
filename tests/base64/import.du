@@ -1,0 +1,8 @@
+/**
+ * import.du
+ *
+ * General import file for all the base64 tests
+ */
+
+import "encode.du";
+import "decode.du";

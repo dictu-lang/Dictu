@@ -4,6 +4,6 @@
 * General import file for all the function tests
 */
 
-import "tests/functions/parameters.du";
-import "tests/functions/return.du";
-import "tests/functions/arrow.du";
+import "parameters.du";
+import "return.du";
+import "arrow.du";

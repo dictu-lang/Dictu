@@ -1,0 +1,15 @@
+/**
+ * bcrypt.du
+ *
+ * Testing the Hashlib.bcrypt() and Hashlib.bcryptVerify() methods
+ */
+
+import Hashlib;
+
+var hash = Hashlib.bcrypt("Dictu");
+
+assert(type(hash) == "string");
+assert(hash.len() >= 56);
+
+assert(Hashlib.bcryptVerify("Dictu", hash));
+assert(Hashlib.bcryptVerify("WRONG!", hash) == false);
