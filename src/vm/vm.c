@@ -437,7 +437,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                     return callNativeMethod(vm, value, argCount);
                 }
 
-                runtimeError(vm, "Socket has no method %s().", name->chars);
+                runtimeError(vm, "Object has no method %s().", name->chars);
                 return false;
             }
 
@@ -1084,7 +1084,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                RUNTIME_ERROR("Unable to resolve path.");
+                RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
             char *source = readFile(vm, path);

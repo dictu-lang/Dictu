@@ -1,7 +1,7 @@
 #ifndef dictu_base64_h
 #define dictu_base64_h
 
-#include "base64Lib.h"
+#include "base64/base64Lib.h"
 #include "optionals.h"
 
 ObjModule *createBase64Module(DictuVM *vm);
