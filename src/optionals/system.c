@@ -276,7 +276,7 @@ static Value exitNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 void initArgv(DictuVM *vm, Table *table, int argc, char *argv[]) {
-    ObjList *list = initList(vm);
+    ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
     for (int i = 1; i < argc; i++) {

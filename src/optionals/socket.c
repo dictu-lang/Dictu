@@ -135,7 +135,7 @@ static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
     int c = sizeof(struct sockaddr_in);
     int newSockId = accept(sock->socket, (struct sockaddr *)&client, (socklen_t*)&c);
 
-    ObjList *list = initList(vm);
+    ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
     ObjAbstract *newSock = newSocket(vm, newSockId, sock->socketFamily, sock->socketProtocol, 0);
@@ -263,7 +263,7 @@ void freeSocket(DictuVM *vm, ObjAbstract *abstract) {
 }
 
 ObjAbstract *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
-    ObjAbstract *abstract = initAbstract(vm, freeSocket);
+    ObjAbstract *abstract = newAbstract(vm, freeSocket);
     push(vm, OBJ_VAL(abstract));
 
     SocketData *socket = ALLOCATE(vm, SocketData, 1);

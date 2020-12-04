@@ -67,7 +67,7 @@ static Value typeNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value setNative(DictuVM *vm, int argCount, Value *args) {
-    ObjSet *set = initSet(vm);
+    ObjSet *set = newSet(vm);
     push(vm, OBJ_VAL(set));
 
     for (int i = 0; i < argCount; i++) {

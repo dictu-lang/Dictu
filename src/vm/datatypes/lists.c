@@ -273,8 +273,8 @@ static Value copyListShallow(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjList *oldList = AS_LIST(args[0]);
-    ObjList *newList = copyList(vm, oldList, true);
-    return OBJ_VAL(newList);
+    ObjList *list = copyList(vm, oldList, true);
+    return OBJ_VAL(list);
 }
 
 static Value copyListDeep(DictuVM *vm, int argCount, Value *args) {
@@ -284,9 +284,9 @@ static Value copyListDeep(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjList *oldList = AS_LIST(args[0]);
-    ObjList *newList = copyList(vm, oldList, false);
+    ObjList *list = copyList(vm, oldList, false);
 
-    return OBJ_VAL(newList);
+    return OBJ_VAL(list);
 }
 
 

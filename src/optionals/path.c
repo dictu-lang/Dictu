@@ -173,7 +173,7 @@ static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
         path = AS_CSTRING(args[0]);
     }
 
-    ObjList *dir_contents = initList(vm);
+    ObjList *dir_contents = newList(vm);
     push(vm, OBJ_VAL(dir_contents));
 
     #ifdef _WIN32

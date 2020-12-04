@@ -21,6 +21,7 @@
 #include "datatypes/files.h"
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
+#include "datatypes/result.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -98,7 +99,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
-    initTable(&vm->socketMethods);
+    initTable(&vm->resultMethods);
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
@@ -115,6 +116,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     declareFileMethods(vm);
     declareClassMethods(vm);
     declareInstanceMethods(vm);
+    declareResultMethods(vm);
 
     // Native functions
     defineAllNatives(vm);
@@ -144,7 +146,7 @@ void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->fileMethods);
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
-    freeTable(vm, &vm->socketMethods);
+    freeTable(vm, &vm->resultMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
@@ -426,6 +428,16 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 }
 
                 runtimeError(vm, "File has no method %s().", name->chars);
+                return false;
+            }
+
+            case OBJ_RESULT: {
+                Value value;
+                if (tableGet(&vm->resultMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Result has no method %s().", name->chars);
                 return false;
             }
 
@@ -945,7 +957,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjList *listOne = AS_LIST(peek(vm, 1));
                 ObjList *listTwo = AS_LIST(peek(vm, 0));
 
-                ObjList *finalList = initList(vm);
+                ObjList *finalList = newList(vm);
                 push(vm, OBJ_VAL(finalList));
 
                 for (int i = 0; i < listOne->values.count; ++i) {
@@ -1193,7 +1205,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList(vm);
+            ObjList *list = newList(vm);
             push(vm, OBJ_VAL(list));
             DISPATCH();
         }
@@ -1237,7 +1249,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict(vm);
+            ObjDict *dict = newDict(vm);
             push(vm, OBJ_VAL(dict));
             DISPATCH();
         }
@@ -1416,8 +1428,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             switch (getObjType(objectValue)) {
                 case OBJ_LIST: {
-                    ObjList *newList = initList(vm);
-                    push(vm, OBJ_VAL(newList));
+                    ObjList *createdList = newList(vm);
+                    push(vm, OBJ_VAL(createdList));
                     ObjList *list = AS_LIST(objectValue);
 
                     if (IS_EMPTY(sliceEndIndex)) {
@@ -1431,11 +1443,11 @@ static DictuInterpretResult run(DictuVM *vm) {
                     }
 
                     for (int i = indexStart; i < indexEnd; i++) {
-                        writeValueArray(vm, &newList->values, list->values.values[i]);
+                        writeValueArray(vm, &createdList->values, list->values.values[i]);
                     }
 
                     pop(vm);
-                    returnVal = OBJ_VAL(newList);
+                    returnVal = OBJ_VAL(createdList);
 
                     break;
                 }
@@ -1690,7 +1702,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *openTypeString = AS_STRING(openType);
             ObjString *fileNameString = AS_STRING(fileName);
 
-            ObjFile *file = initFile(vm);
+            ObjFile *file = newFile(vm);
             file->file = fopen(fileNameString->chars, openTypeString->chars);
             file->path = fileNameString->chars;
             file->openType = openTypeString->chars;

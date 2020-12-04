@@ -123,7 +123,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
-    ObjList *finalList = initList(vm);
+    ObjList *finalList = newList(vm);
     push(vm, OBJ_VAL(finalList));
     bool returnValue = false;
 
@@ -146,7 +146,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
         returnValue = true;
 
-        ObjList *rowList = initList(vm);
+        ObjList *rowList = newList(vm);
         push(vm, OBJ_VAL(rowList));
 
         for (int i = 0; i < sqlite3_column_count(result.stmt); i++) {
@@ -232,7 +232,7 @@ void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
 }
 
 ObjAbstract *newSqlite(DictuVM *vm) {
-    ObjAbstract *abstract = initAbstract(vm, freeSqlite);
+    ObjAbstract *abstract = newAbstract(vm, freeSqlite);
     push(vm, OBJ_VAL(abstract));
 
     Database *db = ALLOCATE(vm, Database, 1);

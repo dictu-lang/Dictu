@@ -1,5 +1,4 @@
 #include "nil.h"
-#include "../vm.h"
 
 static Value toStringNil(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);

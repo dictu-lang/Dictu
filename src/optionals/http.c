@@ -19,7 +19,7 @@ static Value strerrorHttpNative(DictuVM *vm, int argCount, Value *args) {
 
 static void createResponse(DictuVM *vm, Response *response) {
     response->vm = vm;
-    response->headers = initList(vm);
+    response->headers = newList(vm);
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(response->headers));
 
@@ -123,7 +123,7 @@ static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
 
-    ObjDict *responseVal = initDict(vm);
+    ObjDict *responseVal = newDict(vm);
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(responseVal));
 

@@ -124,13 +124,13 @@ static ObjString *allocateString(DictuVM *vm, char *chars, int length,
     return string;
 }
 
-ObjList *initList(DictuVM *vm) {
+ObjList *newList(DictuVM *vm) {
     ObjList *list = ALLOCATE_OBJ(vm, ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
-ObjDict *initDict(DictuVM *vm) {
+ObjDict *newDict(DictuVM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
     dict->count = 0;
     dict->capacityMask = -1;
@@ -138,7 +138,7 @@ ObjDict *initDict(DictuVM *vm) {
     return dict;
 }
 
-ObjSet *initSet(DictuVM *vm) {
+ObjSet *newSet(DictuVM *vm) {
     ObjSet *set = ALLOCATE_OBJ(vm, ObjSet, OBJ_SET);
     set->count = 0;
     set->capacityMask = -1;
@@ -146,17 +146,40 @@ ObjSet *initSet(DictuVM *vm) {
     return set;
 }
 
-ObjFile *initFile(DictuVM *vm) {
+ObjFile *newFile(DictuVM *vm) {
     return ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
 }
 
-ObjAbstract *initAbstract(DictuVM *vm, AbstractFreeFn func) {
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func) {
     ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
     abstract->data = NULL;
     abstract->func = func;
     initTable(&abstract->values);
 
     return abstract;
+}
+
+static ObjResult *newResult(DictuVM *vm, ResultType type, Value value) {
+    ObjResult *result = ALLOCATE_OBJ(vm, ObjResult, OBJ_RESULT);
+    result->type = type;
+    result->value = value;
+
+    return result;
+}
+
+Value newResultSuccess(DictuVM *vm, Value value) {
+    push(vm, value);
+    ObjResult *result = newResult(vm, SUCCESS, value);
+    pop(vm);
+    return OBJ_VAL(result);
+}
+
+Value newResultError(DictuVM *vm, char *errorMsg) {
+    Value error = OBJ_VAL(copyString(vm, errorMsg, strlen(errorMsg)));
+    push(vm, error);
+    ObjResult *result = newResult(vm, ERROR, error);
+    pop(vm);
+    return OBJ_VAL(result);
 }
 
 static uint32_t hashString(const char *key, int length) {
@@ -602,6 +625,12 @@ char *objectToString(Value value) {
         // TODO: Think about string conversion for abstract types
         case OBJ_ABSTRACT: {
             break;
+        }
+
+        case OBJ_RESULT: {
+            char *resultString = malloc(sizeof(char) * 9);
+            snprintf(resultString, 9, "<result>");
+            return resultString;
         }
     }
 

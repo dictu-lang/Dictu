@@ -57,7 +57,7 @@ static Value parseJson(DictuVM *vm, json_value *json) {
         }
 
         case json_object: {
-            ObjDict *dict = initDict(vm);
+            ObjDict *dict = newDict(vm);
             // Push value to stack to avoid GC
             push(vm, OBJ_VAL(dict));
 
@@ -77,7 +77,7 @@ static Value parseJson(DictuVM *vm, json_value *json) {
         }
 
         case json_array: {
-            ObjList *list = initList(vm);
+            ObjList *list = newList(vm);
             // Push value to stack to avoid GC
             push(vm, OBJ_VAL(list));
 
