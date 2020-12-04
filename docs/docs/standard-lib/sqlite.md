@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Sqlite
-nav_order: 23
+nav_order: 12
+parent: Standard Library
 ---
 
 # Sqlite

@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Hashlib
-nav_order: 22
+nav_order: 11
+parent: Standard Library
 ---
 
 # Hashlib

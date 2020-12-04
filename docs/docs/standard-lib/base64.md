@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Base64
-nav_order: 21
+nav_order: 10
+parent: Standard Library
 ---
 
 # Random

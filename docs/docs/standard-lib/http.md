@@ -1,7 +1,8 @@
 ---
 layout: default
 title: HTTP
-nav_order: 18
+nav_order: 7
+parent: Standard Library
 ---
 
 # HTTP
