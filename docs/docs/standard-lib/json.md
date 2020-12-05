@@ -1,7 +1,8 @@
 ---
 layout: default
 title: JSON
-nav_order: 17
+nav_order: 6
+parent: Standard Library
 ---
 
 # JSON

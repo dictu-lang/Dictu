@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Datetime
-nav_order: 13
+nav_order: 2
+parent: Standard Library
 ---
 
 # Datetime
