@@ -89,13 +89,13 @@ static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
 
     int retval = rmdir(dir);
 
-    if (-1 == retval) {
+    if (retval < 0) {
         char buf[MAX_ERROR_LEN];
         getStrerror(buf, errno);
         return newResultError(vm, buf);
     }
 
-    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
@@ -124,11 +124,13 @@ static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
 
     int retval = MKDIR(dir, mode);
 
-    if (retval == NOTOK) {
-      SET_ERRNO(GET_SELF_CLASS);
+    if (retval < 0) {
+        char buf[MAX_ERROR_LEN];
+        getStrerror(buf, errno);
+        return newResultError(vm, buf);
     }
 
-    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 #ifdef HAS_ACCESS
@@ -152,15 +154,15 @@ static Value accessNative(DictuVM *vm, int argCount, Value *args) {
 
     int mode = AS_NUMBER(args[1]);
 
-    RESET_ERRNO(GET_SELF_CLASS);
-
     int retval = access(file, mode);
 
-    if (retval == -1) {
-      SET_ERRNO(GET_SELF_CLASS);
+    if (retval < 0) {
+        char buf[MAX_ERROR_LEN];
+        getStrerror(buf, errno);
+        return newResultError(vm, buf);
     }
 
-    return NUMBER_VAL((retval == -1 ? NOTOK : OK));
+    return newResultSuccess(vm, NIL_VAL);
 }
 #endif
 
@@ -179,11 +181,13 @@ static Value removeNative(DictuVM *vm, int argCount, Value *args) {
 
     int retval = REMOVE(file);
 
-    if (retval == NOTOK) {
-      SET_ERRNO(GET_SELF_CLASS);
+    if (retval < 0) {
+        char buf[MAX_ERROR_LEN];
+        getStrerror(buf, errno);
+        return newResultError(vm, buf);
     }
 
-    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
@@ -201,11 +205,13 @@ static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
 
     int retval = chdir(dir);
 
-    if (retval == NOTOK) {
-        SET_ERRNO(GET_SELF_CLASS);
+    if (retval < 0) {
+        char buf[MAX_ERROR_LEN];
+        getStrerror(buf, errno);
+        return newResultError(vm, buf);
     }
 
-    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value getCWDNative(DictuVM *vm, int argCount, Value *args) {
@@ -214,12 +220,12 @@ static Value getCWDNative(DictuVM *vm, int argCount, Value *args) {
     char cwd[PATH_MAX];
 
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        return OBJ_VAL(copyString(vm, cwd, strlen(cwd)));
+        return newResultSuccess(vm, OBJ_VAL(copyString(vm, cwd, strlen(cwd))));
     }
 
-    SET_ERRNO(GET_SELF_CLASS);
-
-    return NIL_VAL;
+    char buf[MAX_ERROR_LEN];
+    getStrerror(buf, errno);
+    return newResultError(vm, buf);
 }
 
 static Value timeNative(DictuVM *vm, int argCount, Value *args) {
@@ -318,7 +324,6 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     /**
      * Define System methods
      */
-    // defineNative(vm, &module->values, "strerror", strerrorNative);
 #ifndef _WIN32
     defineNative(vm, &module->values, "getgid", getgidNative);
     defineNative(vm, &module->values, "getegid", getegidNative);
@@ -350,8 +355,6 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     }
 
     initPlatform(vm, &module->values);
-
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
 
     defineNativeProperty(vm, &module->values, "S_IRWXU", NUMBER_VAL(448));
     defineNativeProperty(vm, &module->values, "S_IRUSR", NUMBER_VAL(256));

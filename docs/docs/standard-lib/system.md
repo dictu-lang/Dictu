@@ -22,7 +22,6 @@ parent: Standard Library
 
 | Constant        | Description                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------|
-| System.errno    | Number of the last error.                                                                         |
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
 | System.S_IRWXU  | Read, write, and execute by owner.                                                                |
@@ -44,19 +43,10 @@ parent: Standard Library
 | System.W_OK     | Test for write permission.
 | System.R_OK     | Test for read permission.
 
-### System.strerror(number: error -> optional)
-Get the string representation of an error.
-An optional error status can be passed, otherwise the default is System.errno.
-It returns a string that describes the error.
-
-```cs
-print(System.strerror());
-```
-
 ### System.mkdir(string, number: mode -> optional)
 
 Make directory.
-Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap nil.
 
 It can take an optional number argument that specifies the mode. If a mode is not passed, the directory will be created with `0777` permissions.
 
@@ -76,9 +66,9 @@ System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 ### System.access(string, number)
 
 Check user's permissions for a file
-Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap nil.
 
-**Note:** This method and the F_OK|X_OK|W_OK|R_OK constants are not available on windows systems.
+**Note:** This method and the F_OK\|X_OK\|W_OK\|R_OK constants are not available on windows systems.
 
 ```cs
 var F_OK = System.F_OK;
@@ -90,7 +80,7 @@ System.access("/", F_OK);
 
 Remove directory.
 
-Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap nil.
 
 ```cs
 System.rmdir(dir);
@@ -100,7 +90,7 @@ System.rmdir(dir);
 
 Delete a file from filesystem.
 
-Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap nil.
 
 ```cs
 System.remove(file);
@@ -108,7 +98,7 @@ System.remove(file);
 
 ### System.getpid()
 
-Returns the process ID (PID) of the calling process.
+Returns the process ID (PID) of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -118,7 +108,7 @@ System.getpid();
 
 ### System.getppid()
 
-Returns the process ID of the parent of the calling process
+Returns the process ID of the parent of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -128,7 +118,7 @@ System.getppid();
 
 ### System.getuid()
 
-Returns the real user ID of the calling process.
+Returns the real user ID of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -138,7 +128,7 @@ System.getuid();
 
 ### System.geteuid()
 
-Returns the effective user ID of the calling process.
+Returns the effective user ID of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -148,7 +138,7 @@ System.geteuid();
 
 ### System.getgid()
 
-Returns the real group ID of the calling process.
+Returns the real group ID of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -158,7 +148,7 @@ System.getgid();
 
 ### System.getegid()
 
-Returns the effective group ID of the calling process.
+Returns the effective group ID of the calling process as a number.
 
 **Note:** This is not available on windows systems.
 
@@ -170,17 +160,17 @@ System.getegid();
 
 Get the current working directory of the Dictu process.
 
-Returns a string upon success or nil otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap a string.
 
 ```cs
-System.getCWD(); // '/Some/Path/To/A/Directory'
+System.getCWD().unwrap(); // '/Some/Path/To/A/Directory'
 ```
 
 ### System.setCWD(string)
 
 Set current working directory of the Dictu process.
 
-Returns 0 upon success or -1 otherwise and sets System.errno accordingly.
+Returns a Result type and on success will unwrap nil.
 
 ```cs
 if (System.setCWD('/') == -1) {
@@ -198,7 +188,7 @@ System.sleep(3); // Pauses execution for 3 seconds
 
 ### System.clock()
 
-Returns number of clock ticks since the start of the program, useful for benchmarks.
+Returns number of clock ticks since the start of the program as a number, useful for benchmarks.
 
 ```cs
 System.clock();
@@ -206,7 +196,7 @@ System.clock();
 
 ### System.time()
 
-Returns UNIX timestamp.
+Returns UNIX timestamp as a number.
 
 ```cs
 System.time();

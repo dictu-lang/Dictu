@@ -14,29 +14,23 @@ if (System.platform == 'darwin') {
     file.write("test");
   }
 
-  assert(System.remove(sys_test_remove_file) == 0);
-  assert(System.mkdir(sys_test_remove_directory) == 0);
-  assert(System.remove(sys_test_remove_directory) == -1);
-  assert(System.errno == C.EPERM);
-  assert(System.strerror() == "Operation not permitted");
-  assert(System.rmdir(sys_test_remove_directory) == 0);
+  assert(System.remove(sys_test_remove_file).success() == true);
+  assert(System.mkdir(sys_test_remove_directory).success() == true);
+  assert(System.remove(sys_test_remove_directory).success() == false);
+  assert(System.remove(sys_test_remove_directory).unwrapError() == "Operation not permitted");
+  assert(System.rmdir(sys_test_remove_directory).success() == true);
 
 } else {
-
   var sys_test_remove = "sys_test_remove";
 
   with (sys_test_remove, "w") {
     file.write("test");
   }
 
-  assert(System.remove(sys_test_remove) == 0);
-  assert(System.mkdir(sys_test_remove) == 0);
-  assert(System.remove(sys_test_remove) == -1);
-  assert(System.errno == C.EISDIR or System.errno == C.EACCES);
-  if (System.errno == C.EISDIR) {
-    assert(System.strerror() == "Is a directory");
-  } else if (System.errno == C.EACCES) {
-    assert(System.strerror() == "Permission denied");
-  }
-  assert(System.rmdir(sys_test_remove) == 0);
+  assert(System.remove(sys_test_remove).success() == true);
+  assert(System.mkdir(sys_test_remove).success() == true);
+  var remove = System.remove(sys_test_remove);
+  assert(remove.success() == false);
+  assert(remove.unwrapError() == "Is a directory" or remove.unwrapError() == "Permission denied");
+  assert(System.rmdir(sys_test_remove).success == true);
 }
