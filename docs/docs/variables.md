@@ -140,14 +140,3 @@ You can convert values into booleans with the `toBool()` method. Dictu will deci
 [1].toBool(); // true
 [[]].toBool(); // true
 ```
-
-### value.toNumber();
-
-The `toNumber()` method is only for converting a string to a number. This method has a few strange caveats (see the examples below).
-
-```cs
-"123".toNumber(); // 123
-" 123".toNumber(); // 123
-"123 ".toNumber(); // nil
-"Hello".toNumber(); // nil
-```

@@ -120,12 +120,12 @@ Returns an uppercase version of the given string.
 
 ### string.toNumber()
 
-Casts a string to a number. Returns `nil` on failure.
+Casts a string to a number. This method returns a Result type and will unwrap to a number.
 
 ```cs
-"10.2".toNumber(); // 10.2
-"10".toNumber(); // 10
-"10px".toNumber(); // nil
+"10.2".toNumber().unwrap(); // 10.2
+"10".toNumber().unwrap(); // 10
+"10px".toNumber(); // <Result>
 ```
 
 ### string.toBool()
