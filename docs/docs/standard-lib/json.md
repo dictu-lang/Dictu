@@ -24,19 +24,10 @@ To make use of the JSON module an import is required.
 import JSON;
 ```
 
-### Constants
-
-| Constant             | Description                                                |
-|----------------------|------------------------------------------------------------|
-| JSON.errno           | Number of the last error                                   |
-| JSON.ENULL           | Error value when JSON object is nil                        |
-| JSON.ENOTYPE         | Error value when there's no corresponding data type        |
-| JSON.EINVAL          | Error value when it's an invalid JSON Object               |
-| JSON.ENOSERIAL       | Error value when the object is not serializable            |
-
 ### JSON.parse(string)
 
 Parses a JSON string and turns it into a valid Dictu datatype.
+Returns a Result type and unwraps to <any> datatype.
 
 ```cs
 JSON.parse('true'); // true
@@ -48,6 +39,7 @@ JSON.parse('null'); // nil
 ### JSON.stringify(value, number: indent -> optional)
 
 Stringify converts a Dictu value into a valid JSON string.
+Returns a Result type and unwraps to string.
 
 ```cs
 JSON.stringify(true); // 'true'

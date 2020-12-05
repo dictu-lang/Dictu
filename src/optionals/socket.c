@@ -51,12 +51,11 @@ static Value createSocket(DictuVM *vm, int argCount, Value *args) {
 
     int sock = socket(socketFamily, socketType, 0);
     if (sock == -1) {
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
     ObjAbstract *s = newSocket(vm, sock, socketFamily, socketType, 0);
-    return OBJ_VAL(s);
+    return newResultSuccess(vm, OBJ_VAL(s));
 }
 
 static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
@@ -86,13 +85,10 @@ static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
     server.sin_port = htons(port);
 
     if (bind(sock->socket, (struct sockaddr *)&server , sizeof(server)) < 0) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
@@ -114,13 +110,10 @@ static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
 
     SocketData *sock = AS_SOCKET(args[0]);
     if (listen(sock->socket, backlog) == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
@@ -134,6 +127,10 @@ static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
     struct sockaddr_in client;
     int c = sizeof(struct sockaddr_in);
     int newSockId = accept(sock->socket, (struct sockaddr *)&client, (socklen_t*)&c);
+
+    if (newSockId < 0) {
+        ERROR_RESULT;
+    }
 
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
@@ -155,7 +152,7 @@ static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
 
     pop(vm);
 
-    return OBJ_VAL(list);
+    return newResultSuccess(vm, OBJ_VAL(list));
 }
 
 static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
@@ -175,13 +172,10 @@ static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
     int writeRet = write(sock->socket , message->chars, message->length);
 
     if (writeRet == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return NUMBER_VAL(writeRet);
+    return newResultSuccess(vm, NUMBER_VAL(writeRet));
 }
 
 static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
@@ -207,17 +201,13 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     int readSize = recv(sock->socket, buffer, bufferSize, 0);
 
     if (readSize == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
         FREE_ARRAY(vm, char, buffer, bufferSize);
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    ObjString *rString = copyString(vm, buffer, readSize);
-    FREE_ARRAY(vm, char, buffer, bufferSize);
+    ObjString *rString = takeString(vm, buffer, readSize);
 
-    return OBJ_VAL(rString);
+    return newResultSuccess(vm, OBJ_VAL(rString));
 }
 
 static Value closeSocket(DictuVM *vm, int argCount, Value *args) {
@@ -249,13 +239,10 @@ static Value setSocketOpt(DictuVM *vm, int argCount, Value *args) {
     int option = AS_NUMBER(args[2]);
 
     if (setsockopt(sock->socket, level, option, &(int){1}, sizeof(int)) == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 void freeSocket(DictuVM *vm, ObjAbstract *abstract) {

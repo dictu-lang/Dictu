@@ -6,50 +6,48 @@
  */
 import JSON;
 
-assert(JSON.stringify(true) == 'true');
-assert(JSON.stringify(false) == 'false');
-assert(JSON.stringify(nil) == 'null');
-assert(JSON.stringify(10) == '10');
-assert(JSON.stringify(10.5) == '10.5');
-assert(JSON.stringify("test") == '"test"');
-assert(JSON.stringify([]) == '[]');
-assert(JSON.stringify({}) == '{}');
+assert(JSON.stringify(true).unwrap() == 'true');
+assert(JSON.stringify(false).unwrap() == 'false');
+assert(JSON.stringify(nil).unwrap() == 'null');
+assert(JSON.stringify(10).unwrap() == '10');
+assert(JSON.stringify(10.5).unwrap() == '10.5');
+assert(JSON.stringify("test").unwrap() == '"test"');
+assert(JSON.stringify([]).unwrap() == '[]');
+assert(JSON.stringify({}).unwrap() == '{}');
 
-assert(JSON.stringify([true]) == '[true]');
-assert(JSON.stringify([false]) == '[false]');
-assert(JSON.stringify([nil]) == '[null]');
-assert(JSON.stringify([10]) == '[10]');
-assert(JSON.stringify([10.5]) == '[10.5]');
-assert(JSON.stringify(["test"]) == '["test"]');
-assert(JSON.stringify([[]]) == '[[]]');
-assert(JSON.stringify([{}]) == '[{}]');
+assert(JSON.stringify([true]).unwrap() == '[true]');
+assert(JSON.stringify([false]).unwrap() == '[false]');
+assert(JSON.stringify([nil]).unwrap() == '[null]');
+assert(JSON.stringify([10]).unwrap() == '[10]');
+assert(JSON.stringify([10.5]).unwrap() == '[10.5]');
+assert(JSON.stringify(["test"]).unwrap() == '["test"]');
+assert(JSON.stringify([[]]).unwrap() == '[[]]');
+assert(JSON.stringify([{}]).unwrap() == '[{}]');
 
-assert(JSON.stringify({"test": true}) == '{"test": true}');
-assert(JSON.stringify({"test": false}) == '{"test": false}');
-assert(JSON.stringify({"test": nil}) == '{"test": null}');
-assert(JSON.stringify({"test": 10}) == '{"test": 10}');
-assert(JSON.stringify({"test": 10.5}) == '{"test": 10.5}');
-assert(JSON.stringify({"test": "test"}) == '{"test": "test"}');
-assert(JSON.stringify({"test": []}) == '{"test": []}');
-assert(JSON.stringify({"test": {}}) == '{"test": {}}');
-assert(JSON.stringify({10: {}}) == '{"10": {}}');
-assert(JSON.stringify({true: false}) == '{"true": false}');
-assert(JSON.stringify({nil: 10.5}) == '{"null": 10.5}');
+assert(JSON.stringify({"test": true}).unwrap() == '{"test": true}');
+assert(JSON.stringify({"test": false}).unwrap() == '{"test": false}');
+assert(JSON.stringify({"test": nil}).unwrap() == '{"test": null}');
+assert(JSON.stringify({"test": 10}).unwrap() == '{"test": 10}');
+assert(JSON.stringify({"test": 10.5}).unwrap() == '{"test": 10.5}');
+assert(JSON.stringify({"test": "test"}).unwrap() == '{"test": "test"}');
+assert(JSON.stringify({"test": []}).unwrap() == '{"test": []}');
+assert(JSON.stringify({"test": {}}).unwrap() == '{"test": {}}');
+assert(JSON.stringify({10: {}}).unwrap() == '{"10": {}}');
+assert(JSON.stringify({true: false}).unwrap() == '{"true": false}');
+assert(JSON.stringify({nil: 10.5}).unwrap() == '{"null": 10.5}');
 
-assert(JSON.stringify({"test": {"test": [1, 2, 3, {"test": true}]}}) == '{"test": {"test": [1, 2, 3, {"test": true}]}}');
+assert(JSON.stringify({"test": {"test": [1, 2, 3, {"test": true}]}}).unwrap() == '{"test": {"test": [1, 2, 3, {"test": true}]}}');
 
 
-class JSON_TEST_ERROR {
+class JsonTestError {
   init() {
     this.test = 0;
   }
 }
 
-var test_json_stringify_error = JSON_TEST_ERROR();
-assert(JSON.stringify(test_json_stringify_error) == nil);
-assert(JSON.errno != 0);
-assert(JSON.ENOSERIAL == JSON.errno);
-assert(JSON.strerror() == "Object is not serializable");
+var jsonError = JsonTestError();
+assert(JSON.stringify(jsonError).success() == false);
+assert(JSON.stringify(jsonError).unwrapError() == "Object is not serializable");
 
 // 2 space indent
 var twoSpace = '[\n' +
@@ -69,6 +67,6 @@ var fourSpace = '[\n' +
     '    2\n' +
     ']';
 
-assert(JSON.stringify([1, 2], 2) == twoSpace);
-assert(JSON.stringify([1, 2], 3) == threeSpace);
-assert(JSON.stringify([1, 2], 4) == fourSpace);
+assert(JSON.stringify([1, 2], 2).unwrap() == twoSpace);
+assert(JSON.stringify([1, 2], 3).unwrap() == threeSpace);
+assert(JSON.stringify([1, 2], 4).unwrap() == fourSpace);
