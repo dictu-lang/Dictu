@@ -7,6 +7,8 @@
 
 #define UNUSED(__x__) (void) __x__
 
+#define MAX_ERROR_LEN 256
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif

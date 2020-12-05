@@ -157,7 +157,7 @@ ObjModule *createHashlibModule(DictuVM *vm) {
     /**
      * Define Http methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
+    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "sha256", sha256);
     defineNative(vm, &module->values, "hmac", hmac);
     defineNative(vm, &module->values, "bcrypt", bcrypt);

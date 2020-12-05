@@ -163,7 +163,7 @@ ObjModule *createDatetimeModule(DictuVM *vm) {
     /**
      * Define Datetime methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
+    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "now", nowNative);
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
     defineNative(vm, &module->values, "strftime", strftimeNative);

@@ -315,7 +315,7 @@ ObjModule *createSocketModule(DictuVM *vm) {
     /**
      * Define Socket methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
+    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "create", createSocket);
 
     /**

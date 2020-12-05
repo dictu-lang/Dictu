@@ -246,7 +246,7 @@ ObjModule *createPathModule(DictuVM *vm) {
 #ifdef HAS_REALPATH
     defineNative(vm, &module->values, "realpath", realpathNative);
 #endif
-    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
+    // defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
     defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);

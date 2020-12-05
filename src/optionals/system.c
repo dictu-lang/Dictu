@@ -90,7 +90,9 @@ static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
     int retval = rmdir(dir);
 
     if (-1 == retval) {
-      SET_ERRNO(GET_SELF_CLASS);
+        char buf[MAX_ERROR_LEN];
+        getStrerror(buf, errno);
+        return newResultError(vm, buf);
     }
 
     return NUMBER_VAL(retval == 0 ? OK : NOTOK);
@@ -316,7 +318,7 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     /**
      * Define System methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
+    // defineNative(vm, &module->values, "strerror", strerrorNative);
 #ifndef _WIN32
     defineNative(vm, &module->values, "getgid", getgidNative);
     defineNative(vm, &module->values, "getegid", getegidNative);
