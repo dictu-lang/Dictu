@@ -326,10 +326,6 @@ ObjModule *createHTTPModule(DictuVM *vm) {
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "post", post);
 
-    /**
-     * Define Http properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     pop(vm);
     pop(vm);
 

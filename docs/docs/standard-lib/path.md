@@ -28,7 +28,6 @@ import Path;
 
 | Constant           | Description                          |
 |--------------------|--------------------------------------|
-| Path.errno         | Number of the last error             |
 | Path.delimiter     | System dependent path delimiter      |
 | Path.dirSeparator  | System dependent directory separator |
 
@@ -66,19 +65,9 @@ Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
 
-### Path.strerror(number: error -> optional)
-Get the string representation of an error.
-An optional error status can be passed, otherwise the default is Path.errno.
-It returns a string that describes the error.
-**Note:** This is not available on windows systems.
-
-```cs
-print(Path.strerror());
-```
-
 ### Path.realpath(string)
 
-Returns the canonicalized absolute pathname or nil on error and sets Path.errno accordingly.
+Returns A result type and unwraps the canonicalized absolute pathname as a string.
 
 **Note:** This is not available on windows systems.
 

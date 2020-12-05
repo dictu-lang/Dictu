@@ -291,7 +291,6 @@ ObjModule *createJSONModule(DictuVM *vm) {
     /**
      * Define Json properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "ENULL", NUMBER_VAL(JSON_ENULL));
     defineNativeProperty(vm, &module->values, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
     defineNativeProperty(vm, &module->values, "EINVAL", NUMBER_VAL(JSON_EINVAL));

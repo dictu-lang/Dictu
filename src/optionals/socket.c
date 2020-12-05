@@ -315,13 +315,11 @@ ObjModule *createSocketModule(DictuVM *vm) {
     /**
      * Define Socket methods
      */
-    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "create", createSocket);
 
     /**
      * Define Socket properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "AF_INET", NUMBER_VAL(AF_INET));
     defineNativeProperty(vm, &module->values, "SOCK_STREAM", NUMBER_VAL(SOCK_STREAM));
     defineNativeProperty(vm, &module->values, "SOL_SOCKET", NUMBER_VAL(SOL_SOCKET));

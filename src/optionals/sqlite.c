@@ -258,13 +258,11 @@ ObjModule *createSqliteModule(DictuVM *vm) {
     /**
      * Define Sqlite methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorSqliteNative);
     defineNative(vm, &module->values, "connect", connectSqlite);
 
     /**
      * Define Sqlite properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     // This value is a workaround due to the fact that SQLite errors are based on the DB struct rather than errno
     // It will be available within Dictu but should not be used
     defineNativeProperty(vm, &module->values, "__error__", NIL_VAL);

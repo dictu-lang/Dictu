@@ -171,11 +171,6 @@ ObjModule *createDatetimeModule(DictuVM *vm) {
     defineNative(vm, &module->values, "strptime", strptimeNative);
     #endif
 
-    /**
-     * Define Datetime properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-
     pop(vm);
     pop(vm);
 

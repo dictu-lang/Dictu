@@ -247,7 +247,6 @@ ObjModule *createMathsModule(DictuVM *vm) {
     /**
      * Define Math properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
     pop(vm);

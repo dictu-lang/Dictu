@@ -84,11 +84,6 @@ ObjModule *createRandomModule(DictuVM *vm)
     defineNative(vm, &module->values, "range", randomRange);
     defineNative(vm, &module->values, "select", randomSelect);
 
-    /**
-     * Define Random properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-
     pop(vm);
     pop(vm);
 
