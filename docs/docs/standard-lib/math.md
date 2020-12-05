@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Math
-nav_order: 14
+nav_order: 3
+parent: Standard Library
 ---
 
 # Math

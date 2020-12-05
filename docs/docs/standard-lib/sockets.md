@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Socket
-nav_order: 19
+nav_order: 8
+parent: Standard Library
 ---
 
 # Socket
