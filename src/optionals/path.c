@@ -20,9 +20,7 @@ static Value realpathNative(DictuVM *vm, int argCount, Value *args) {
 
     char tmp[PATH_MAX + 1];
     if (NULL == realpath(path, tmp)) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, tmp, strlen (tmp))));

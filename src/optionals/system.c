@@ -90,9 +90,7 @@ static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
     int retval = rmdir(dir);
 
     if (retval < 0) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -125,9 +123,7 @@ static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
     int retval = MKDIR(dir, mode);
 
     if (retval < 0) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -157,9 +153,7 @@ static Value accessNative(DictuVM *vm, int argCount, Value *args) {
     int retval = access(file, mode);
 
     if (retval < 0) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -182,9 +176,7 @@ static Value removeNative(DictuVM *vm, int argCount, Value *args) {
     int retval = REMOVE(file);
 
     if (retval < 0) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -206,9 +198,7 @@ static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
     int retval = chdir(dir);
 
     if (retval < 0) {
-        char buf[MAX_ERROR_LEN];
-        getStrerror(buf, errno);
-        return newResultError(vm, buf);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -223,9 +213,7 @@ static Value getCWDNative(DictuVM *vm, int argCount, Value *args) {
         return newResultSuccess(vm, OBJ_VAL(copyString(vm, cwd, strlen(cwd))));
     }
 
-    char buf[MAX_ERROR_LEN];
-    getStrerror(buf, errno);
-    return newResultError(vm, buf);
+    ERROR_RESULT;
 }
 
 static Value timeNative(DictuVM *vm, int argCount, Value *args) {
