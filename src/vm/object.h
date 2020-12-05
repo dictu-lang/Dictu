@@ -251,6 +251,8 @@ ObjFile *newFile(DictuVM *vm);
 
 ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func);
 
+ObjResult *newResult(DictuVM *vm, ResultType type, Value value);
+
 Value newResultSuccess(DictuVM *vm, Value value);
 
 Value newResultError(DictuVM *vm, char *errorMsg);

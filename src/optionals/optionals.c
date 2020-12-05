@@ -21,13 +21,6 @@ ObjModule *importBuiltinModule(DictuVM *vm, int index) {
     return modules[index].module(vm);
 }
 
-Value getErrno(DictuVM* vm, ObjModule* module) {
-    Value errno_value = 0;
-    ObjString *name = copyString(vm, "errno", 5);
-    tableGet(&module->values, name, &errno_value);
-    return errno_value;
-}
-
 int findBuiltinModule(char *name, int length) {
     for (int i = 0; modules[i].module != NULL; ++i) {
         if (strncmp(modules[i].name, name, length) == 0) {

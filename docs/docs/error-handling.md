@@ -18,6 +18,31 @@ SUCCESS or ERROR. Logic which may return an error will always return a Result
 type which will wrap a value on success or wrap a string on failure with a given
 error message. This wrapped value *must* be unwrapped before accessing it.
 
+### Result type
+Note, if returning a Result type from a function there is nothing in the interpreter
+that will enforce both Success and Error types can be returned, or even that these are the only
+types that can be returned, however it is very much recommended that if you return a Result type
+from a function, this is the only type you ever return - this will made handling a result type
+much easier for the caller.
+
+#### Success
+Creating a Success type is incredibly simple with the builtin `Success()` function.
+Any type can be passed to Success to be wrapped.
+
+```cs
+var result = Success(10);
+print(result.unwrap()); // 10
+```
+
+#### Error
+Creating an Error type is incredibly simple with the builtin `Error()` function.
+Only a string can be passed to Success to be wrapped.
+
+```cs
+var result = Error("Some error happened!!");
+print(result.unwrapError()); // 'Some error happened!!'
+```
+
 ### .unwrap()
 
 As previously explained to get a value out of a Result it needs to be unwrapped.

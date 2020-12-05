@@ -159,7 +159,7 @@ ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func) {
     return abstract;
 }
 
-static ObjResult *newResult(DictuVM *vm, ResultType type, Value value) {
+ObjResult *newResult(DictuVM *vm, ResultType type, Value value) {
     ObjResult *result = ALLOCATE_OBJ(vm, ObjResult, OBJ_RESULT);
     result->type = type;
     result->value = value;
