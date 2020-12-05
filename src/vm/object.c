@@ -628,8 +628,15 @@ char *objectToString(Value value) {
         }
 
         case OBJ_RESULT: {
-            char *resultString = malloc(sizeof(char) * 9);
-            snprintf(resultString, 9, "<Result>");
+            ObjResult *result = AS_RESULT(value);
+            if (result->type == SUCCESS) {
+                char *resultString = malloc(sizeof(char) * 13);
+                snprintf(resultString, 13, "<Result Suc>");
+                return resultString;
+            }
+
+            char *resultString = malloc(sizeof(char) * 13);
+            snprintf(resultString, 13, "<Result Err>");
             return resultString;
         }
     }

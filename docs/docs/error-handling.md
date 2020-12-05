@@ -25,7 +25,7 @@ If you attempt to unwrap a Result that is of ERROR status a runtime error will b
 
 ```cs
 var num = "10".toNumber();
-print(num); // <Result>
+print(num); // <Result Suc>
 print(num.unwrap()); // 10
 ```
 

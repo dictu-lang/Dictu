@@ -125,7 +125,7 @@ Casts a string to a number. This method returns a Result type and will unwrap to
 ```cs
 "10.2".toNumber().unwrap(); // 10.2
 "10".toNumber().unwrap(); // 10
-"10px".toNumber(); // <Result>
+"10px".toNumber(); // <Result Err>
 ```
 
 ### string.toBool()

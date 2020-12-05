@@ -9,13 +9,17 @@
 import Sqlite;
 
 var connection = Sqlite.connect(":memory:");
-var resp = connection.execute("CREATE TABLE test (x int)");
+
+assert(connection.success());
+connection = connection.unwrap();
+
+var resp = connection.execute("CREATE TABLE test (x int)").unwrap();
 
 assert(resp == true);
 
 resp = connection.execute("CREATE TABLE test (x int)");
 
-assert(resp == nil);
-assert(Sqlite.strerror() == "table test already exists");
+assert(resp.success() == false);
+assert(resp.unwrapError() == "table test already exists");
 
 connection.close();
