@@ -1193,21 +1193,15 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_LIST): {
+            int count = READ_BYTE();
             ObjList *list = initList(vm);
             push(vm, OBJ_VAL(list));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_LIST): {
-            Value addValue = peek(vm, 0);
-            Value listValue = peek(vm, 1);
+            for (int i = count; i > 0; i--) {
+                writeValueArray(vm, &list->values, peek(vm, i));
+            }
 
-            ObjList *list = AS_LIST(listValue);
-            writeValueArray(vm, &list->values, addValue);
-
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count + 1;
             push(vm, OBJ_VAL(list));
             DISPATCH();
         }
