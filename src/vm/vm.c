@@ -1237,27 +1237,21 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_DICT): {
+            int count = READ_BYTE();
             ObjDict *dict = initDict(vm);
             push(vm, OBJ_VAL(dict));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_DICT): {
-            Value value = peek(vm, 0);
-            Value key = peek(vm, 1);
+            for (int i = count * 2; i > 0; i -= 2) {
+                if (!isValidKey(peek(vm, i))) {
+                    RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                }
 
-            if (!isValidKey(key)) {
-                RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
             }
 
-            ObjDict *dict = AS_DICT(peek(vm, 2));
-            dictSet(vm, dict, key, value);
-
-            pop(vm);
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count * 2 + 1;
             push(vm, OBJ_VAL(dict));
+
             DISPATCH();
         }
 
