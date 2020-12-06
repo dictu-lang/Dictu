@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Standard Library
-nav_order: 13
+title: Error Handling
+nav_order: 12
 ---
 
 # Error Handling
