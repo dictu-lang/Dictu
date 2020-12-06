@@ -29,7 +29,6 @@ import Math;
 
 | Constant     | Description                                            |
 |--------------|--------------------------------------------------------|
-| Math.errno   | Number of the last error                               |
 | Math.PI      | The mathematical constant: 3.14159265358979            |
 | Math.e       | The mathematical constant: 2.71828182845905            |
 

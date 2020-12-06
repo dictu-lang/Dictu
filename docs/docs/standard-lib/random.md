@@ -25,12 +25,6 @@ To make use of the Random module an import is required.
 import Random;
 ```
 
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Random.errno         | Number of the last error        |
-
 ### Random.random()
 
 Return a random float between 0 and 1.

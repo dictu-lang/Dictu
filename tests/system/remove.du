@@ -32,5 +32,5 @@ if (System.platform == 'darwin') {
   var remove = System.remove(sys_test_remove);
   assert(remove.success() == false);
   assert(remove.unwrapError() == "Is a directory" or remove.unwrapError() == "Permission denied");
-  assert(System.rmdir(sys_test_remove).success == true);
+  assert(System.rmdir(sys_test_remove).success() == true);
 }
