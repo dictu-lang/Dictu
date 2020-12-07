@@ -950,16 +950,17 @@ static void string(Compiler *compiler, bool canAssign) {
 static void list(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    emitByte(compiler, OP_NEW_LIST);
+    int count = 0;
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACKET))
             break;
 
         expression(compiler);
-        emitByte(compiler, OP_ADD_LIST);
+        count++;
     } while (match(compiler, TOKEN_COMMA));
 
+    emitBytes(compiler, OP_NEW_LIST, count);
     consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
@@ -1688,8 +1689,6 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_NIL:
         case OP_TRUE:
         case OP_FALSE:
-        case OP_NEW_LIST:
-        case OP_ADD_LIST:
         case OP_SUBSCRIPT:
         case OP_SUBSCRIPT_ASSIGN:
         case OP_SLICE:
@@ -1741,6 +1740,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_CALL:
         case OP_METHOD:
         case OP_IMPORT:
+        case OP_NEW_LIST:
         case OP_NEW_DICT:
             return 1;
 
