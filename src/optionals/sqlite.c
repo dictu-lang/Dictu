@@ -148,7 +148,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
         return newResultSuccess(vm, OBJ_VAL(finalList));
     }
 
-    return newResultSuccess(vm, TRUE_VAL);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value closeConnection(DictuVM *vm, int argCount, Value *args) {

@@ -13,11 +13,8 @@ var connection = Sqlite.connect(":memory:");
 assert(connection.success());
 connection = connection.unwrap();
 
-var resp = connection.execute("CREATE TABLE test (x int)").unwrap();
-
-assert(resp == true);
-
-resp = connection.execute("CREATE TABLE test (x int)");
+connection.execute("CREATE TABLE test (x int)").unwrap();
+var resp = connection.execute("CREATE TABLE test (x int)");
 
 assert(resp.success() == false);
 assert(resp.unwrapError() == "table test already exists");

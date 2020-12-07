@@ -40,7 +40,7 @@ The `execute` method is ran on the abstract that is returned from `.connect` rat
 lower case `sqlite`. The `execute` method executes an SQL query and can return one of 3 values.
 
 A Result type is returned, the value being wrapped depends on the query:
-  If the query is a type that does not return data (such as UPDATE / DELETE), then `true` is wrapped on successful queries.
+  If the query is a type that does not return data (such as UPDATE / DELETE), then `nil` is wrapped on successful queries.
   If the query is a SELECT statement then a list is wrapped on successful queries (empty list for a select query that returns no rows).
 
 ```cs

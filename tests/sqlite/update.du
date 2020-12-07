@@ -12,12 +12,8 @@ var connection = Sqlite.connect(":memory:");
 assert(connection.success());
 connection = connection.unwrap();
 
-var resp = connection.execute("CREATE TABLE test (x int)").unwrap();
-
-assert(resp == true);
-
-resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
-assert(resp == true);
+connection.execute("CREATE TABLE test (x int)").unwrap();
+var resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
 
 var select = connection.execute("SELECT * FROM test").unwrap();
 assert(select == [[10]]);
@@ -25,7 +21,6 @@ assert(select == [[10]]);
 resp = connection.execute("INSERT INTO test VALUES (?)", [
     11
 ]).unwrap();
-assert(resp == true);
 
 select = connection.execute("SELECT * FROM test").unwrap();
 assert(select == [[10], [11]]);
@@ -51,8 +46,7 @@ select = connection.execute("SELECT * FROM test WHERE x = ?", [
 ]).unwrap();
 assert(select == []);
 
-var update = connection.execute("UPDATE test SET x = 20 WHERE x = 10").unwrap();
-assert(update == true);
+connection.execute("UPDATE test SET x = 20 WHERE x = 10").unwrap();
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     10
