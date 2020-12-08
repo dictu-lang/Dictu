@@ -1309,11 +1309,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                     pop(vm);
                     if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
-                    } else {
-                        push(vm, NIL_VAL);
+                        DISPATCH();
                     }
 
-                    DISPATCH();
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
                 default: {
@@ -1502,7 +1501,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        dictValue = NIL_VAL;
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                     }
 
                     vm->stackTop[-1] = dictValue;
