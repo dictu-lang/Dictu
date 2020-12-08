@@ -104,6 +104,9 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     vm->initString = copyString(vm, "init", 4);
     vm->replVar = copyString(vm, "_", 1);
 
+    // Native functions
+    defineAllNatives(vm);
+
     // Native methods
     declareNumberMethods(vm);
     declareBoolMethods(vm);
@@ -115,9 +118,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     declareFileMethods(vm);
     declareClassMethods(vm);
     declareInstanceMethods(vm);
-
-    // Native functions
-    defineAllNatives(vm);
 
     /**
      * Native classes which are not required to be
@@ -392,7 +392,11 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_LIST: {
                 Value value;
                 if (tableGet(&vm->listMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount);
                 }
 
                 runtimeError(vm, "List has no method %s().", name->chars);
@@ -1718,7 +1722,8 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     pop(vm);
 
     push(vm, OBJ_VAL(module));
-    module->path = getDirectory(vm, moduleName);
+    // module->path = getDirectory(vm, moduleName);
+    module->path = NULL;
     pop(vm);
 
     ObjFunction *function = compile(vm, module, source);

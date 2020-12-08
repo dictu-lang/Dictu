@@ -375,4 +375,18 @@ void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
     defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->listMethods, "sort", sortList);
+
+    dictuInterpret(vm, "List", "def map(list, func) {var temp = []; for (var i = 0; i < list.len(); i += 1) {temp.push(func(list[i]));}return temp;}");
+
+    Value List;
+    tableGet(&vm->modules, copyString(vm, "List", 4), &List);
+
+    ObjModule *ListModule = AS_MODULE(List);
+
+    Value map;
+    ObjString *mapString = copyString(vm, "map", 3);
+    push(vm, OBJ_VAL(mapString));
+    tableGet(&ListModule->values, mapString, &map);
+    tableSet(vm, &vm->listMethods, mapString, map);
+    pop(vm);
 }
