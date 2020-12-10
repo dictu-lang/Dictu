@@ -1,0 +1,22 @@
+def map(list, func) {
+    const temp = [];
+
+    for (var i = 0; i < list.len(); i += 1) {
+        temp.push(func(list[i]));
+    }
+
+    return temp;
+}
+
+def filter(list, func=def(x) => x) {
+    const temp = [];
+
+    for (var i = 0; i < list.len(); i += 1) {
+        const result = func(list[i]);
+        if (result) {
+            temp.push(list[i]);
+        }
+    }
+
+    return temp;
+}

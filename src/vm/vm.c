@@ -15,7 +15,7 @@
 #include "datatypes/bool.h"
 #include "datatypes/nil.h"
 #include "datatypes/strings.h"
-#include "datatypes/lists.h"
+#include "datatypes/lists/lists.h"
 #include "datatypes/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
@@ -396,7 +396,10 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                         return callNativeMethod(vm, value, argCount);
                     }
 
-                    return call(vm, AS_CLOSURE(value), argCount);
+                    push(vm, peek(vm, 0));
+                    vm->stackTop[-2] = peek(vm, 2);
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "List has no method %s().", name->chars);
@@ -1722,8 +1725,7 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     pop(vm);
 
     push(vm, OBJ_VAL(module));
-    // module->path = getDirectory(vm, moduleName);
-    module->path = NULL;
+    module->path = getDirectory(vm, moduleName);
     pop(vm);
 
     ObjFunction *function = compile(vm, module, source);

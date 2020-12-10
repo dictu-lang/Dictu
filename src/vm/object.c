@@ -561,7 +561,7 @@ char *objectToString(Value value) {
 
         case OBJ_NATIVE: {
             char *nativeString = malloc(sizeof(char) * 12);
-            memcpy(nativeString, "<native fn>", 11);
+            memcpy(nativeString, "<fn native>", 11);
             nativeString[11] = '\0';
             return nativeString;
         }
