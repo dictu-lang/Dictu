@@ -88,7 +88,8 @@ bool resolvePath(char *directory, char *path, char *ret) {
 ObjString *getDirectory(DictuVM *vm, char *source) {
     // Slight workaround to ensure only .du files are the ones
     // attempted to be found.
-    if (vm->repl || source[-3] != '.') {
+    int len = strlen(source);
+    if (vm->repl || len < 4 || source[len - 3] != '.') {
         source = "";
     }
 
