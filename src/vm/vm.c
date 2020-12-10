@@ -102,7 +102,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
-    vm->replVar = copyString(vm, "_", 1);
 
     // Native functions
     defineAllNatives(vm);
@@ -125,6 +124,10 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
      */
     createSystemModule(vm, argc, argv);
     createCModule(vm);
+
+    if (vm->repl) {
+        vm->replVar = copyString(vm, "_", 1);
+    }
 
     return vm;
 }
@@ -397,7 +400,10 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                     }
 
                     push(vm, peek(vm, 0));
-                    vm->stackTop[-2] = peek(vm, 2);
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
 
                     return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
