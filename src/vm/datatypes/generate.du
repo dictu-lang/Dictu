@@ -16,11 +16,12 @@ def generate(filename) {
         while ((line = file.readLine()) != nil) {
             output += '"{}\\n" \\\n'.format(line);
         }
+
+        output += "\n";
     }
 
     with("{}-source.h".format(filename), "w") {
-        // -3 to remove the newline, slash, and space
-        file.write(output[:-3]);
+        file.write(output);
     }
 }
 

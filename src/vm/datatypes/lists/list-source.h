@@ -35,4 +35,5 @@
 "    }\n" \
 "\n" \
 "    return accumulator;\n" \
-"}\n"
+"}\n" \
+
