@@ -30,7 +30,7 @@ def filter(list, func=def(x) => x) {
 def reduce(list, func, initial=0) {
     var accumulator = initial;
 
-    for(var i = 0; i<list.len(); i += 1) {
+    for(var i = 0; i < list.len(); i += 1) {
         accumulator = func(accumulator, list[i]);
     }
 

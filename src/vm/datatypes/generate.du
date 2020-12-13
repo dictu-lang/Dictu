@@ -19,7 +19,8 @@ def generate(filename) {
     }
 
     with("{}-source.h".format(filename), "w") {
-        file.write(output);
+        // -3 to remove the newline, slash, and space
+        file.write(output[:-3]);
     }
 }
 

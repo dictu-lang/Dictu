@@ -1428,6 +1428,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > list->values.count) {
                             indexEnd = list->values.count;
+                        } else if (indexEnd < 0) {
+                            indexEnd = list->values.count + indexEnd;
                         }
                     }
 
@@ -1451,6 +1453,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > string->length) {
                             indexEnd = string->length;
+                        }  else if (indexEnd < 0) {
+                            indexEnd = string->length + indexEnd;
                         }
                     }
 
