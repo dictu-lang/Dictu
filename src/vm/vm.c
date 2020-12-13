@@ -1205,21 +1205,15 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = newList(vm);
+            int count = READ_BYTE();
+            ObjList *list = initList(vm);
             push(vm, OBJ_VAL(list));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_LIST): {
-            Value addValue = peek(vm, 0);
-            Value listValue = peek(vm, 1);
+            for (int i = count; i > 0; i--) {
+                writeValueArray(vm, &list->values, peek(vm, i));
+            }
 
-            ObjList *list = AS_LIST(listValue);
-            writeValueArray(vm, &list->values, addValue);
-
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count + 1;
             push(vm, OBJ_VAL(list));
             DISPATCH();
         }
@@ -1249,27 +1243,21 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = newDict(vm);
+            int count = READ_BYTE();
+            ObjDict *dict = initDict(vm);
             push(vm, OBJ_VAL(dict));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_DICT): {
-            Value value = peek(vm, 0);
-            Value key = peek(vm, 1);
+            for (int i = count * 2; i > 0; i -= 2) {
+                if (!isValidKey(peek(vm, i))) {
+                    RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                }
 
-            if (!isValidKey(key)) {
-                RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
             }
 
-            ObjDict *dict = AS_DICT(peek(vm, 2));
-            dictSet(vm, dict, key, value);
-
-            pop(vm);
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count * 2 + 1;
             push(vm, OBJ_VAL(dict));
+
             DISPATCH();
         }
 
@@ -1333,11 +1321,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                     pop(vm);
                     if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
-                    } else {
-                        push(vm, NIL_VAL);
+                        DISPATCH();
                     }
 
-                    DISPATCH();
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
                 default: {
@@ -1526,7 +1513,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        dictValue = NIL_VAL;
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                     }
 
                     vm->stackTop[-1] = dictValue;
