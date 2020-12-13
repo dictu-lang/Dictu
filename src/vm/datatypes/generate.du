@@ -10,18 +10,15 @@ def generate(filename) {
     var output;
     with("{}.du".format(filename), "r") {
         const basename = Path.basename(filename);
-        const name = "{}{}".format(basename[0].upper(), basename[1:]);
         var line = file.readLine();
-        output = 'char* dictu{}Source = "{}\\n"\n'.format(name, line);
+        output = '#define DICTU_{}_SOURCE "{}\\n" \\\n'.format(basename.upper(), line);
         // When you reach the end of the file, nil is returned
         while ((line = file.readLine()) != nil) {
-            output += '"{}\\n"\n'.format(line);
+            output += '"{}\\n" \\\n'.format(line);
         }
-
-        output += ";";
     }
 
-    with("{}-source.c".format(filename), "w") {
+    with("{}-source.h".format(filename), "w") {
         file.write(output);
     }
 }

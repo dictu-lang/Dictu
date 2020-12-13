@@ -10,7 +10,7 @@
  *       must be made due to the fact the VM is not re-enterable
  */
 
-#include "list-source.c"
+#include "list-source.h"
 
 static Value toStringList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -386,7 +386,7 @@ void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->listMethods, "sort", sortList);
 
-    dictuInterpret(vm, "List", dictuListSource);
+    dictuInterpret(vm, "List", DICTU_LIST_SOURCE);
 
     Value List;
     tableGet(&vm->modules, copyString(vm, "List", 4), &List);
