@@ -1206,7 +1206,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEW_LIST): {
             int count = READ_BYTE();
-            ObjList *list = initList(vm);
+            ObjList *list = newList(vm);
             push(vm, OBJ_VAL(list));
 
             for (int i = count; i > 0; i--) {
@@ -1244,7 +1244,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEW_DICT): {
             int count = READ_BYTE();
-            ObjDict *dict = initDict(vm);
+            ObjDict *dict = newDict(vm);
             push(vm, OBJ_VAL(dict));
 
             for (int i = count * 2; i > 0; i -= 2) {
