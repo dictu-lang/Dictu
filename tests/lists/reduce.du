@@ -1,0 +1,37 @@
+/**
+ * reduce.du
+ *
+ * Testing the list.reduce() method
+ *
+ * .reduce() runs a user defined function on each element in the list
+ * returning a single value.
+ */
+
+def add(accumulator, currentValue) {
+    return accumulator + currentValue;
+}
+
+var list = [1, 2, 3, 4, 5];
+
+var l = list.reduce(add);
+assert(l == 15);
+
+list.reduce(add);
+// Returns a new list so old list should be unchanged
+assert(list == [1, 2, 3, 4, 5]);
+
+// Arrow function
+l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue);
+assert(l == 15);
+
+// Initial value
+l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue, 100);
+assert(l == 115);
+
+// Strings
+var string = ["Dictu ", "is", " great!"].reduce(def (accumulator, currentValue) => accumulator + currentValue, "");
+assert(string == "Dictu is great!");
+
+// Lists
+var newList = [["Dictu "], ["is"], [" great!"]].reduce(def (accumulator, currentValue) => accumulator + currentValue, []);
+assert(newList == ["Dictu ", "is", " great!"]);

@@ -15,7 +15,7 @@
 #include "datatypes/bool.h"
 #include "datatypes/nil.h"
 #include "datatypes/strings.h"
-#include "datatypes/lists.h"
+#include "datatypes/lists/lists.h"
 #include "datatypes/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
@@ -102,7 +102,9 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
-    vm->replVar = copyString(vm, "_", 1);
+
+    // Native functions
+    defineAllNatives(vm);
 
     // Native methods
     declareNumberMethods(vm);
@@ -116,15 +118,16 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     declareClassMethods(vm);
     declareInstanceMethods(vm);
 
-    // Native functions
-    defineAllNatives(vm);
-
     /**
      * Native classes which are not required to be
      * imported. For imported modules see optionals.c
      */
     createSystemModule(vm, argc, argv);
     createCModule(vm);
+
+    if (vm->repl) {
+        vm->replVar = copyString(vm, "_", 1);
+    }
 
     return vm;
 }
@@ -392,7 +395,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_LIST: {
                 Value value;
                 if (tableGet(&vm->listMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "List has no method %s().", name->chars);
@@ -1414,6 +1427,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > list->values.count) {
                             indexEnd = list->values.count;
+                        } else if (indexEnd < 0) {
+                            indexEnd = list->values.count + indexEnd;
                         }
                     }
 
@@ -1437,6 +1452,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > string->length) {
                             indexEnd = string->length;
+                        }  else if (indexEnd < 0) {
+                            indexEnd = string->length + indexEnd;
                         }
                     }
 

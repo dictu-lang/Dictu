@@ -1675,9 +1675,19 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 }
 
 static void expressionStatement(Compiler *compiler) {
+    Token previous = compiler->parser->previous;
+    advance(compiler->parser);
+    TokenType t = compiler->parser->current.type;
+
+    for (int i = 0; i < compiler->parser->current.length; ++i) {
+        backTrack(&compiler->parser->scanner);
+    }
+    compiler->parser->current = compiler->parser->previous;
+    compiler->parser->previous = previous;
+
     expression(compiler);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (compiler->parser->vm->repl) {
+    if (compiler->parser->vm->repl && t != TOKEN_EQUAL) {
         emitByte(compiler, OP_POP_REPL);
     } else {
         emitByte(compiler, OP_POP);

@@ -219,3 +219,43 @@ list1.sort();
 
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
+
+### list.map(func)
+
+To run a function on every element in a list we use `.map`. Map expects a single parameter which is a callback
+function which will be ran and the return value will be saved to a list. The callback itself also expects one
+parameter which is the current item in the list.
+
+Note: `.map()` returns a new list.
+
+```cs
+print([1, 2, 3, 4, 5].map(def (x) => x * 2)); // [2, 4, 6, 8, 10]
+```
+
+### list.filter(func)
+
+To filter out values within a list we use `.filter()`. Filter expects a single parameter which is a callback
+and if the callback returns a truthy value it will be appended to the list. The callback itself also expects one
+parameter which is the current item in the list.
+
+Note: `.filter()` returns a new list.
+
+```cs
+print([1, 2, 3, 4, 5].filter(def (x) => x > 2)); // [3, 4, 5]
+```
+
+### list.reduce(func, value: initial -> optional)
+
+To reduce a list down to a single value we use `.reduce()`. Reduce expects at least one parameter which is a callback
+that will be executed on each item of the list. The value of the callback function is returned and saved for the next
+call. The callback itself also expects two parameters which is the accumulated value and the current value in the list.
+
+```cs
+print([1, 2, 3, 4, 5].reduce(def (accumulate, element) => accumulate + element)); // 15
+```
+
+By default the initial value for `.reduce()` is 0, however we can change this to be any value.
+
+```cs
+print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
+```

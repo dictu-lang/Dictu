@@ -19,3 +19,6 @@ import "toString.du";
 import "toBool.du";
 import "plusOperator.du";
 import "sort.du";
+import "map.du";
+import "filter.du";
+import "reduce.du";

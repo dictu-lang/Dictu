@@ -1,0 +1,34 @@
+import Path;
+
+/**
+ * This file is used to generate the source of any datatype
+ * methods that are actually written in Dictu ready to be loaded
+ * by the VM on init.
+ */
+
+def generate(filename) {
+    var output;
+    with("{}.du".format(filename), "r") {
+        const basename = Path.basename(filename);
+        var line = file.readLine();
+        output = '#define DICTU_{}_SOURCE "{}\\n" \\\n'.format(basename.upper(), line);
+        // When you reach the end of the file, nil is returned
+        while ((line = file.readLine()) != nil) {
+            output += '"{}\\n" \\\n'.format(line);
+        }
+
+        output += "\n";
+    }
+
+    with("{}-source.h".format(filename), "w") {
+        file.write(output);
+    }
+}
+
+var files = [
+    'lists/list'
+];
+
+for (var i = 0; i < files.len(); i += 1) {
+    generate(files[i]);
+}
