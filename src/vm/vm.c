@@ -1266,6 +1266,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
@@ -1327,6 +1331,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
+                case OBJ_RESULT: {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 default: {
                     RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
                 }
@@ -1339,6 +1347,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
@@ -1480,6 +1492,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
