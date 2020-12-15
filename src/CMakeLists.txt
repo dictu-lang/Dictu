@@ -28,6 +28,7 @@ else()
     list(FILTER sources EXCLUDE REGEX "sqlite3.c")
     list(FILTER headers EXCLUDE REGEX "sqlite3.h")
     list(APPEND libraries ${SQLITE_LIB})
+    add_compile_definitions(INCLUDE_SQLITE_LIB)
 endif()
 
 if(WIN32)
