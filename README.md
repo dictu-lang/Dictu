@@ -62,8 +62,7 @@ var userInput;
 var guess = 10;
 
 while {
-    userInput = input("Input your guess: ").toNumber();
-    print(userInput);
+    userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;

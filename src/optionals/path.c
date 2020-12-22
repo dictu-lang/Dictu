@@ -20,11 +20,10 @@ static Value realpathNative(DictuVM *vm, int argCount, Value *args) {
 
     char tmp[PATH_MAX + 1];
     if (NULL == realpath(path, tmp)) {
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return OBJ_VAL(copyString(vm, tmp, strlen (tmp)));
+    return newResultSuccess(vm, OBJ_VAL(copyString(vm, tmp, strlen (tmp))));
 }
 #endif
 
@@ -173,7 +172,7 @@ static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
         path = AS_CSTRING(args[0]);
     }
 
-    ObjList *dir_contents = initList(vm);
+    ObjList *dir_contents = newList(vm);
     push(vm, OBJ_VAL(dir_contents));
 
     #ifdef _WIN32
@@ -246,7 +245,6 @@ ObjModule *createPathModule(DictuVM *vm) {
 #ifdef HAS_REALPATH
     defineNative(vm, &module->values, "realpath", realpathNative);
 #endif
-    defineNative(vm, &module->values, "strerror", strerrorNative); // only realpath uses errno
     defineNative(vm, &module->values, "isAbsolute", isAbsoluteNative);
     defineNative(vm, &module->values, "basename", basenameNative);
     defineNative(vm, &module->values, "extname", extnameNative);
@@ -258,7 +256,6 @@ ObjModule *createPathModule(DictuVM *vm) {
     /**
      * Define Path properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "delimiter", OBJ_VAL(
         copyString(vm, PATH_DELIMITER_AS_STRING, PATH_DELIMITER_STRLEN)));
     defineNativeProperty(vm, &module->values, "dirSeparator", OBJ_VAL(

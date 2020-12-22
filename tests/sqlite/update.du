@@ -9,56 +9,53 @@
 import Sqlite;
 
 var connection = Sqlite.connect(":memory:");
-var resp = connection.execute("CREATE TABLE test (x int)");
+assert(connection.success());
+connection = connection.unwrap();
 
-assert(resp == true);
+connection.execute("CREATE TABLE test (x int)").unwrap();
+var resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
 
-resp = connection.execute("INSERT INTO test VALUES (10)");
-assert(resp == true);
-
-var select = connection.execute("SELECT * FROM test");
+var select = connection.execute("SELECT * FROM test").unwrap();
 assert(select == [[10]]);
 
 resp = connection.execute("INSERT INTO test VALUES (?)", [
     11
-]);
-assert(resp == true);
+]).unwrap();
 
-select = connection.execute("SELECT * FROM test");
+select = connection.execute("SELECT * FROM test").unwrap();
 assert(select == [[10], [11]]);
 
-select = connection.execute("SELECT * FROM test WHERE x = 10");
+select = connection.execute("SELECT * FROM test WHERE x = 10").unwrap();
 assert(select == [[10]]);
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     10
-]);
+]).unwrap();
 assert(select == [[10]]);
 
-select = connection.execute("SELECT * FROM test WHERE x = 11");
+select = connection.execute("SELECT * FROM test WHERE x = 11").unwrap();
 assert(select == [[11]]);
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     11
-]);
+]).unwrap();
 assert(select == [[11]]);
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     nil
-]);
+]).unwrap();
 assert(select == []);
 
-var update = connection.execute("UPDATE test SET x = 20 WHERE x = 10");
-assert(update == true);
+connection.execute("UPDATE test SET x = 20 WHERE x = 10").unwrap();
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     10
-]);
+]).unwrap();
 assert(select == []);
 
 select = connection.execute("SELECT * FROM test WHERE x = ?", [
     20
-]);
+]).unwrap();
 assert(select == [[20]]);
 
 connection.close();

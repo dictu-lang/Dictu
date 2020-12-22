@@ -23,12 +23,6 @@ To make use of the Base64 module an import is required.
 import Base64;
 ```
 
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Base64.errno         | Number of the last error        |
-
 ### Base64.encode(string)
 
 Base64 encode a given string.

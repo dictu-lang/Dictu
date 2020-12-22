@@ -26,10 +26,10 @@ static Value toNumberString(DictuVM *vm, int argCount, Value *args) {
 
     // Failed conversion
     if (errno != 0 || *end != '\0') {
-        return NIL_VAL;
+        return newResultError(vm, "Can not convert to number");
     }
 
-    return NUMBER_VAL(number);
+    return newResultSuccess(vm, NUMBER_VAL(number));
 }
 
 static Value formatString(DictuVM *vm, int argCount, Value *args) {
@@ -130,7 +130,7 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
     int delimiterLength = strlen(delimiter);
     char *token;
 
-    ObjList *list = initList(vm);
+    ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
     if (delimiterLength == 0) {
         for (int tokenCount = 0; tokenCount < string->length; tokenCount++) {

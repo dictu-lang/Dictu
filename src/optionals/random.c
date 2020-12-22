@@ -79,15 +79,10 @@ ObjModule *createRandomModule(DictuVM *vm)
     /**
      * Define Random methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
+    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "random", randomRandom);
     defineNative(vm, &module->values, "range", randomRange);
     defineNative(vm, &module->values, "select", randomSelect);
-
-    /**
-     * Define Random properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
 
     pop(vm);
     pop(vm);

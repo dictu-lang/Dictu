@@ -23,15 +23,9 @@ To make use of the Sqlite module an import is required.
 import Sqlite;
 ```
 
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Sqlite.errno         | Number of the last error        |
-
 ### Sqlite.connect(string: database)
 
-This opens a connection to a SQLite database and returns an abstract SQLite type.
+This opens a connection to a SQLite database. Returns a Result type and on success wraps an abstract SQLite type.
 
 Note: You can pass ":memory:" to open the SQLite database in memory rather than a file.
 
@@ -45,14 +39,14 @@ Sqlite.connect("my/database/file.db");
 The `execute` method is ran on the abstract that is returned from `.connect` rather than the `Sqlite` module, hence the
 lower case `sqlite`. The `execute` method executes an SQL query and can return one of 3 values.
 
-If the query is a type that does not return data (such as UPDATE / DELETE), then `true` is returned on successful queries.
-If the query is a SELECT statement then a list is returned on successful queries (empty list for a select query that returns no rows).
-If an error occurs `nil` is returned. If nil is returned `Sqlite.strerror()` can be used for more information as to why it failed.
+A Result type is returned, the value being wrapped depends on the query:
+  If the query is a type that does not return data (such as UPDATE / DELETE), then `nil` is wrapped on successful queries.
+  If the query is a SELECT statement then a list is wrapped on successful queries (empty list for a select query that returns no rows).
 
 ```cs
-sqlite.execute("UPDATE mytable SET mycolumn = 10"); // true
-sqlite.execute("UPDATE unknown_table SET mycolumn = 10"); // nil
-print(Sqlite.strerror()); // no such table: unknown_table
+sqlite.execute("UPDATE mytable SET mycolumn = 10"); // <Result Suc>
+var query = sqlite.execute("UPDATE unknown_table SET mycolumn = 10"); // <Result Err>
+print(query.unwrapError()); // no such table: unknown_table
 ```
 
 #### Arguments

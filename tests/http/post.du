@@ -7,7 +7,9 @@
 import HTTP;
 
 // HTTP
-var response = HTTP.post("http://httpbin.org/post", {"test": 10});
+var result = HTTP.post("http://httpbin.org/post", {"test": 10});
+assert(result.success());
+var response = result.unwrap();
 
 assert(response["statusCode"] == 200);
 assert(response["headers"].len() > 0);
@@ -15,7 +17,9 @@ assert(response["content"].contains("origin"));
 assert(response["content"].contains('"test": "10"'));
 
 // HTTPS
-var response = HTTP.post("https://httpbin.org/post", {"test": 10});
+result = HTTP.post("https://httpbin.org/post", {"test": 10});
+assert(result.success());
+var response = result.unwrap();
 
 assert(response["statusCode"] == 200);
 assert(response["headers"].len() > 0);
@@ -23,5 +27,5 @@ assert(response["content"].contains("origin"));
 assert(response["content"].contains('"test": "10"'));
 
 response = HTTP.post("https://BAD_URL.test_for_error", {"test": 10});
-assert(response == nil);
-assert(HTTP.strerror() == "Couldn't resolve host name");
+assert(response.success() == false);
+assert(response.unwrapError() == "Couldn't resolve host name");

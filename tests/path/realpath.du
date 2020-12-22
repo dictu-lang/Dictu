@@ -10,8 +10,7 @@ import Path;
 if (System.platform != "windows") {
   assert(Path.delimiter == ":");
   assert(Path.dirSeparator == "/");
-  assert(Path.realpath("/usr/../usr/../usr") == "/usr");
-  assert(Path.realpath("doesnotexist/../../") == nil);
-  assert(Path.errno == C.ENOENT);
-  assert(Path.strerror() == "No such file or directory");
+  assert(Path.realpath("/usr/../usr/../usr").unwrap() == "/usr");
+  assert(Path.realpath("doesnotexist/../../").success() == false);
+  assert(Path.realpath("doesnotexist/../../").unwrapError() == "No such file or directory");
 }

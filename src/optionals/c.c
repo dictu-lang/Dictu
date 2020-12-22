@@ -4,49 +4,20 @@
 #define strerror_r(ERRNO, BUF, LEN) strerror_s(BUF, LEN, ERRNO)
 #endif
 
-Value strerrorGeneric(DictuVM *vm, int error) {
-    if (error <= 0) {
-        runtimeError(vm, "strerror() argument should be > 0");
-        return EMPTY_VAL;
-    }
-
-    char buf[MAX_ERROR_LEN];
-
+void getStrerror(char *buf, int error) {
 #ifdef POSIX_STRERROR
-    int retval = strerror_r(error, buf, sizeof(buf));
+    int intval = strerror_r(error, buf, MAX_ERROR_LEN);
 
-    if (!retval) {
-        return OBJ_VAL(copyString(vm, buf, strlen(buf)));
-    }
-
-    if (retval == EINVAL) {
-        runtimeError(vm, "strerror() argument should be <= %d", LAST_ERROR);
-        return EMPTY_VAL;
+    if (intval == 0) {
+        return;
     }
 
     /* it is safe to assume that we do not reach here */
-    return OBJ_VAL(copyString(vm, "Buffer is too small", 19));
+    memcpy(buf, "Buffer is too small", 19);
+    buf[19] = '\0';
 #else
-    char *tmp;
-    tmp = strerror_r(error, buf, sizeof(buf));
-    return OBJ_VAL(copyString(vm, buf, strlen(buf)));
+    strerror_r(error, buf, MAX_ERROR_LEN);
 #endif
-}
-
-Value strerrorNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    int error;
-    if (argCount == 1) {
-      error = AS_NUMBER(args[0]);
-    } else {
-        error = AS_NUMBER(getErrno(vm, GET_SELF_CLASS));
-    }
-
-    return strerrorGeneric(vm, error);
 }
 
 void createCModule(DictuVM *vm) {
@@ -54,11 +25,6 @@ void createCModule(DictuVM *vm) {
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
-
-    /**
-     * Define C methods
-     */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
 
     /**
      * Define C properties

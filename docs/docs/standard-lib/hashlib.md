@@ -23,12 +23,6 @@ To make use of the Hashlib module an import is required.
 import Hashlib;
 ```
 
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Hashlib.errno        | Number of the last error        |
-
 ### Hashlib.sha256(string)
 
 Hashes a given string using the SHA-256 algorithm.

@@ -18,24 +18,18 @@ var PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
 
 var sys_test_dir = "test_dir";
 
-assert(System.mkdir(sys_test_dir, PERM[0755]) == 0);
-assert(System.mkdir(sys_test_dir, PERM[0755]) == -1);
-assert(System.errno == C.EEXIST);
-assert(System.strerror() == "File exists");
-assert(System.rmdir(sys_test_dir) == 0);
-assert(System.rmdir(sys_test_dir) == -1); // Directory doesn't exist
-assert(System.errno == C.ENOENT);
-assert(System.strerror() == "No such file or directory");
+assert(System.mkdir(sys_test_dir, PERM[0755]).success() == true);
+assert(System.mkdir(sys_test_dir, PERM[0755]).success() == false);
+assert(System.mkdir(sys_test_dir, PERM[0755]).unwrapError() == "File exists");
+assert(System.rmdir(sys_test_dir).success() == true);
+assert(System.rmdir(sys_test_dir).success() == false); // Directory doesn't exist
+assert(System.rmdir(sys_test_dir).unwrapError() == "No such file or directory");
 
 with(sys_test_dir, "w") {
   file.write ("test");
 }
 
-assert(System.rmdir(sys_test_dir) == -1);
-assert(System.errno == C.ENOTDIR or System.errno == C.EINVAL);
-if (System.errno == C.ENOTDIR) {
-  assert(System.strerror() == "Not a directory");
-} else if (System.errno == C.EINVAL) {
-  assert(System.strerror() == "Invalid argument");
-}
-assert(System.remove(sys_test_dir) == 0);
+assert(System.rmdir(sys_test_dir).success() == false);
+assert(System.rmdir(sys_test_dir).unwrapError() == "Not a directory" or
+      System.rmdir(sys_test_dir).unwrapError() == "Invalid argument");
+assert(System.remove(sys_test_dir).success() == true);

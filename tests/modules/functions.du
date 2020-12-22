@@ -57,7 +57,7 @@ assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
         {
             {
                 import JSON;
-                assert(JSON.parse("10") == 10);
+                assert(JSON.parse("10").unwrap() == 10);
             }
         }
     }

@@ -67,7 +67,7 @@ static Value typeNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value setNative(DictuVM *vm, int argCount, Value *args) {
-    ObjSet *set = initSet(vm);
+    ObjSet *set = newSet(vm);
     push(vm, OBJ_VAL(set));
 
     for (int i = 0; i < argCount; i++) {
@@ -179,6 +179,29 @@ static Value isDefinedNative(DictuVM *vm, int argCount, Value *args) {
     return FALSE_VAL;
 }
 
+static Value generateSuccessResult(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "Success() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    return newResultSuccess(vm, args[0]);
+}
+
+static Value generateErrorResult(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "Error() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "Error() only takes a string as an argument");
+        return EMPTY_VAL;
+    }
+
+    return OBJ_VAL(newResult(vm, ERROR, args[0]));
+}
+
 // End of natives
 
 void defineAllNatives(DictuVM *vm) {
@@ -188,7 +211,9 @@ void defineAllNatives(DictuVM *vm) {
             "set",
             "print",
             "assert",
-            "isDefined"
+            "isDefined",
+            "Success",
+            "Error"
     };
 
     NativeFn nativeFunctions[] = {
@@ -197,7 +222,9 @@ void defineAllNatives(DictuVM *vm) {
             setNative,
             printNative,
             assertNative,
-            isDefinedNative
+            isDefinedNative,
+            generateSuccessResult,
+            generateErrorResult
     };
 
 

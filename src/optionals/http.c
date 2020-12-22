@@ -1,25 +1,8 @@
 #include "http.h"
 
-static Value strerrorHttpNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    int error;
-    if (argCount == 1) {
-        error = AS_NUMBER(args[0]);
-    } else {
-        error = AS_NUMBER(getErrno(vm, GET_SELF_CLASS));
-    }
-
-    char *error_string = (char *) curl_easy_strerror(error);
-    return OBJ_VAL(copyString(vm, error_string, strlen(error_string)));
-}
-
 static void createResponse(DictuVM *vm, Response *response) {
     response->vm = vm;
-    response->headers = initList(vm);
+    response->headers = newList(vm);
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(response->headers));
 
@@ -123,7 +106,7 @@ static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
 
-    ObjDict *responseVal = initDict(vm);
+    ObjDict *responseVal = newDict(vm);
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(responseVal));
 
@@ -204,12 +187,11 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
             curl_global_cleanup();
             pop(vm);
 
-            errno = curlResponse;
-            SET_ERRNO(GET_SELF_CLASS);
-            return NIL_VAL;
+            char *errorString = (char *) curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
         }
 
-        return OBJ_VAL(endRequest(vm, curl, response));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response)));
     }
 
     /* always cleanup */
@@ -217,9 +199,8 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     curl_global_cleanup();
     pop(vm);
 
-    errno = CURLE_FAILED_INIT;
-    SET_ERRNO(GET_SELF_CLASS);
-    return NIL_VAL;
+    char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
 }
 
 static Value post(DictuVM *vm, int argCount, Value *args) {
@@ -295,12 +276,11 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
             curl_global_cleanup();
             pop(vm);
 
-            errno = curlResponse;
-            SET_ERRNO(GET_SELF_CLASS);
-            return NIL_VAL;
+            char *errorString = (char *) curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
         }
 
-        return OBJ_VAL(endRequest(vm, curl, response));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response)));
     }
 
     /* always cleanup */
@@ -308,9 +288,8 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
     curl_global_cleanup();
     pop(vm);
 
-    errno = CURLE_FAILED_INIT;
-    SET_ERRNO(GET_SELF_CLASS);
-    return NIL_VAL;
+    char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
 }
 
 ObjModule *createHTTPModule(DictuVM *vm) {
@@ -322,14 +301,9 @@ ObjModule *createHTTPModule(DictuVM *vm) {
     /**
      * Define Http methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorHttpNative);
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "post", post);
 
-    /**
-     * Define Http properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     pop(vm);
     pop(vm);
 
