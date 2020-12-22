@@ -2,6 +2,16 @@
 
 #include "lists.h"
 
+/*
+ * Note: We should try to implement everything we can in C
+ *       rather than in the host language as C will always
+ *       be faster than Dictu, and there will be extra work
+ *       at startup running the Dictu code, however compromises
+ *       must be made due to the fact the VM is not re-enterable
+ */
+
+#include "list-source.h"
+
 static Value toStringList(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
@@ -375,4 +385,14 @@ void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
     defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->listMethods, "sort", sortList);
+
+    dictuInterpret(vm, "List", DICTU_LIST_SOURCE);
+
+    Value List;
+    tableGet(&vm->modules, copyString(vm, "List", 4), &List);
+
+    ObjModule *ListModule = AS_MODULE(List);
+    push(vm, List);
+    tableAddAll(vm, &ListModule->values, &vm->listMethods);
+    pop(vm);
 }
