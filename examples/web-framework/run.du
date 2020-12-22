@@ -61,4 +61,8 @@ app.get("/logout", def (request) => {
     return "Logged out!";
 });
 
+app.get("/api/test", def (request) => {
+    return JsonResponse([1, 2, 3]);
+});
+
 app.start();

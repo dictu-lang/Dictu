@@ -11,11 +11,19 @@ class Server {
     }
 
     start() {
-        this.socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+        var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+
+        if (!socket.success()) {
+            print(this.socket.unwrapError());
+            System.exit(1);
+        }
+
+        this.socket = socket.unwrap();
+
         this.socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR);
         print("Starting server on {}:{}".format(this.host, this.port));
-        if (!this.socket.bind(this.host, this.port)) {
-            print(Socket.strerror());
+        if (!this.socket.bind(this.host, this.port).success()) {
+            print("Failed to bind socket");
             System.exit(1);
         }
 
@@ -23,13 +31,21 @@ class Server {
     }
 
     listen() {
-        if (!this.socket.listen()) {
-            print(Socket.strerror());
+        var result = this.socket.listen();
+        if (!result.success()) {
+            print(result.unwrapError());
             System.exit(1);
         }
         
         while {
-            var [client, address] = this.socket.accept();
+            var connection = this.socket.accept();
+
+            if (!connection.success()) {
+                print(connection.unwrapError());
+                System.exit(1);
+            }
+
+            var [client, address] = connection.unwrap();
             this.handleClient(client, address);
         }
     }
@@ -45,10 +61,12 @@ class Server {
     getData(client, size=2048) {
         var buffer = client.recv(size);
 
-        if (buffer == nil) {
-            print(Socket.strerror());
+        if (!buffer.success()) {
+            print(buffer.unwrapError());
             System.exit(1);
         }
+
+        buffer = buffer.unwrap();
 
         if (buffer.len() != size) {
             return buffer;
@@ -57,12 +75,12 @@ class Server {
         while {
             var data = client.recv(size);
 
-            if (data == nil) {
-                print(Socket.strerror());
+            if (!data.success()) {
+                print(data.unwrapError());
                 System.exit(1);
             }
 
-            buffer += data;
+            buffer += data.unwrap();
 
             if (buffer.contains(this.HTTP_DELIMITER)) {
                 break;

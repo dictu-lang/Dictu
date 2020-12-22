@@ -29,7 +29,12 @@ class SessionHandler < BaseSessionHandler {
             
             // Ensure the cookies signature is correct
             if (Hashlib.verify(Base64.encode(sessionHmac), base64Hmac)) {
-                request.session = JSON.parse(decodedSession);
+                var parsedSession = JSON.parse(decodedSession);
+                if (parsedSession.success()) {
+                    request.session = parsedSession.unwrap();
+                } else {
+                    request.session = {};
+                }
             }
         }
     }
@@ -37,11 +42,15 @@ class SessionHandler < BaseSessionHandler {
     save(session, sessionCopy, response) {
         // Session updated. Update cookie
         if (session != sessionCopy) {
-            var stringSession = JSON.stringify(session);
-            var base64Session = Base64.encode(stringSession);
-            var base64Hmac = Base64.encode(Hashlib.hmac(this.key, stringSession, true));
+            var stringSessionResult = JSON.stringify(session);
 
-            response.setCookie("session={}.{}".format(base64Session, base64Hmac));
+            if (stringSessionResult.success()) {
+                var stringSession = stringSessionResult.unwrap();
+                var base64Session = Base64.encode(stringSession);
+                var base64Hmac = Base64.encode(Hashlib.hmac(this.key, stringSession, true));
+
+                response.setCookie("session={}.{}".format(base64Session, base64Hmac));
+            }
         }
     }
 }

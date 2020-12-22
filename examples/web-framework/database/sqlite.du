@@ -2,19 +2,18 @@ import Sqlite;
 
 class SqliteConnection {
     init(path) {
-        this.connection = Sqlite.connect(path);
+        this.connection = Sqlite.connect(path).unwrap();
     }
 
     execute(query, values) {
         var result = this.connection.execute(query, values);
 
-        // nil return means we got an error, oh no!
-        if (result == nil) {
-            print(Sqlite.strerror());
+        if (!result.success()) {
+            print(result.unwrapError());
             System.exit(1);
         }
 
-        return result;
+        return result.unwrap();
     }
 
     close() {

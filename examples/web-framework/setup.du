@@ -8,7 +8,7 @@ import Sqlite;
 
  var path = input("Where is the SQLite database file located? ");
 
- var connection = Sqlite.connect(path);
+ var connection = Sqlite.connect(path).unwrap();
 
  var table = "CREATE TABLE users (username TEXT, password TEXT)";
  connection.execute(table);

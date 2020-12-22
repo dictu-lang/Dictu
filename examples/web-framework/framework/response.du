@@ -68,7 +68,7 @@ class JsonResponse < BaseResponse {
     init(content, status=200) {
         super.init();
 
-        this.content = JSON.stringify(content);
+        this.content = JSON.stringify(content).unwrap();
         this.status = this.statusCodes[status];
 
         this.headers["Content-Length"] = this.content.len();

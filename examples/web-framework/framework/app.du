@@ -1,8 +1,8 @@
 import Datetime;
 
-import "framework/server.du" as ServerModule;
-import "framework/request.du" as RequestModule;
-import "framework/response.du" as ResponseModule;
+import "server.du" as ServerModule;
+import "request.du" as RequestModule;
+import "response.du" as ResponseModule;
 
 class App {
     init(host="127.0.0.1", port=6000, debug=false) {
