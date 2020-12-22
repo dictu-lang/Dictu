@@ -38,8 +38,7 @@
 
 void createCModule(DictuVM *vm);
 
-#define MAX_ERROR_LEN 256
-Value strerrorGeneric(DictuVM *, int);
+void getStrerror(char *buf, int error);
 Value strerrorNative(DictuVM *, int, Value *);
 
 #endif //dictu_c_h

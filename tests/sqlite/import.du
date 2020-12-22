@@ -1,0 +1,11 @@
+/**
+ * import.du
+ *
+ * General import file for all the SQLite tests
+ */
+
+import "create.du";
+import "insert.du";
+import "select.du";
+import "update.du";
+import "delete.du";

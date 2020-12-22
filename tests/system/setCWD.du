@@ -6,18 +6,17 @@
  * setCWD() sets the current working directory
  */
 
-var cwd = System.getCWD();
+var cwd = System.getCWD().unwrap();
 assert(cwd != nil);
 assert(type(cwd) == "string");
 assert(cwd.len() > 0);
-assert(System.setCWD("/") == 0);
+assert(System.setCWD("/").success() == true);
 if (System.platform == "windows") {
-    assert(System.getCWD() == "C:\\" or System.getCWD() == "D:\\");
+    assert(System.getCWD().unwrap() == "C:\\" or System.getCWD().unwrap() == "D:\\");
 } else {
-    assert(System.getCWD() == "/");
+    assert(System.getCWD().unwrap() == "/");
 }
-assert(System.setCWD(cwd) == 0);
-assert(System.getCWD() == cwd);
-assert(System.setCWD("some/directory/that/doesnt/exist") == -1);
-assert(System.errno == C.ENOENT);
-assert(System.strerror() == "No such file or directory");
+assert(System.setCWD(cwd).success() == true);
+assert(System.getCWD().unwrap() == cwd);
+assert(System.setCWD("some/directory/that/doesnt/exist").success() == false);
+assert(System.setCWD("some/directory/that/doesnt/exist").unwrapError() == "No such file or directory");

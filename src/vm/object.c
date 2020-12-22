@@ -124,13 +124,13 @@ static ObjString *allocateString(DictuVM *vm, char *chars, int length,
     return string;
 }
 
-ObjList *initList(DictuVM *vm) {
+ObjList *newList(DictuVM *vm) {
     ObjList *list = ALLOCATE_OBJ(vm, ObjList, OBJ_LIST);
     initValueArray(&list->values);
     return list;
 }
 
-ObjDict *initDict(DictuVM *vm) {
+ObjDict *newDict(DictuVM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
     dict->count = 0;
     dict->capacityMask = -1;
@@ -138,7 +138,7 @@ ObjDict *initDict(DictuVM *vm) {
     return dict;
 }
 
-ObjSet *initSet(DictuVM *vm) {
+ObjSet *newSet(DictuVM *vm) {
     ObjSet *set = ALLOCATE_OBJ(vm, ObjSet, OBJ_SET);
     set->count = 0;
     set->capacityMask = -1;
@@ -146,17 +146,40 @@ ObjSet *initSet(DictuVM *vm) {
     return set;
 }
 
-ObjFile *initFile(DictuVM *vm) {
+ObjFile *newFile(DictuVM *vm) {
     return ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
 }
 
-ObjAbstract *initAbstract(DictuVM *vm, AbstractFreeFn func) {
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func) {
     ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
     abstract->data = NULL;
     abstract->func = func;
     initTable(&abstract->values);
 
     return abstract;
+}
+
+ObjResult *newResult(DictuVM *vm, ResultType type, Value value) {
+    ObjResult *result = ALLOCATE_OBJ(vm, ObjResult, OBJ_RESULT);
+    result->type = type;
+    result->value = value;
+
+    return result;
+}
+
+Value newResultSuccess(DictuVM *vm, Value value) {
+    push(vm, value);
+    ObjResult *result = newResult(vm, SUCCESS, value);
+    pop(vm);
+    return OBJ_VAL(result);
+}
+
+Value newResultError(DictuVM *vm, char *errorMsg) {
+    Value error = OBJ_VAL(copyString(vm, errorMsg, strlen(errorMsg)));
+    push(vm, error);
+    ObjResult *result = newResult(vm, ERROR, error);
+    pop(vm);
+    return OBJ_VAL(result);
 }
 
 static uint32_t hashString(const char *key, int length) {
@@ -447,7 +470,7 @@ char *setToString(Value value) {
 char *classToString(Value value) {
     ObjClass *klass = AS_CLASS(value);
     char *classString = malloc(sizeof(char) * (klass->name->length + 7));
-    memcpy(classString, "<cls ", 5);
+    memcpy(classString, "<Cls ", 5);
     memcpy(classString + 5, klass->name->chars, klass->name->length);
     memcpy(classString + 5 + klass->name->length, ">", 1);
     classString[klass->name->length + 6] = '\0';
@@ -469,7 +492,7 @@ char *objectToString(Value value) {
         case OBJ_MODULE: {
             ObjModule *module = AS_MODULE(value);
             char *moduleString = malloc(sizeof(char) * (module->name->length + 11));
-            snprintf(moduleString, (module->name->length + 10), "<module %s>", module->name->chars);
+            snprintf(moduleString, (module->name->length + 10), "<Module %s>", module->name->chars);
             return moduleString;
         }
 
@@ -477,7 +500,7 @@ char *objectToString(Value value) {
             if (IS_TRAIT(value)) {
                 ObjClass *trait = AS_CLASS(value);
                 char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
-                snprintf(traitString, trait->name->length + 9, "<trait %s>", trait->name->chars);
+                snprintf(traitString, trait->name->length + 9, "<Trait %s>", trait->name->chars);
                 return traitString;
             }
 
@@ -493,12 +516,12 @@ char *objectToString(Value value) {
 
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        snprintf(methodString, method->method->function->name->length + 17, "<bound method %s>", method->method->function->name->chars);
+                        snprintf(methodString, method->method->function->name->length + 17, "<Bound Method %s>", method->method->function->name->chars);
                         break;
                     }
 
                     default: {
-                        snprintf(methodString, method->method->function->name->length + 17, "<static method %s>", method->method->function->name->chars);
+                        snprintf(methodString, method->method->function->name->length + 17, "<Static Method %s>", method->method->function->name->chars);
                         break;
                     }
                 }
@@ -507,13 +530,13 @@ char *objectToString(Value value) {
 
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        memcpy(methodString, "<static method>", 15);
+                        memcpy(methodString, "<Static Method>", 15);
                         methodString[15] = '\0';
                         break;
                     }
 
                     default: {
-                        memcpy(methodString, "<bound method>", 15);
+                        memcpy(methodString, "<Bound Method>", 15);
                         methodString[15] = '\0';
                         break;
                     }
@@ -532,7 +555,7 @@ char *objectToString(Value value) {
                 snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
             } else {
                 closureString = malloc(sizeof(char) * 9);
-                memcpy(closureString, "<script>", 8);
+                memcpy(closureString, "<Script>", 8);
                 closureString[8] = '\0';
             }
 
@@ -561,7 +584,7 @@ char *objectToString(Value value) {
 
         case OBJ_NATIVE: {
             char *nativeString = malloc(sizeof(char) * 12);
-            memcpy(nativeString, "<native fn>", 11);
+            memcpy(nativeString, "<fn native>", 11);
             nativeString[11] = '\0';
             return nativeString;
         }
@@ -576,7 +599,7 @@ char *objectToString(Value value) {
         case OBJ_FILE: {
             ObjFile *file = AS_FILE(value);
             char *fileString = malloc(sizeof(char) * (strlen(file->path) + 8));
-            snprintf(fileString, strlen(file->path) + 8, "<file %s>", file->path);
+            snprintf(fileString, strlen(file->path) + 8, "<File %s>", file->path);
             return fileString;
         }
 
@@ -602,6 +625,19 @@ char *objectToString(Value value) {
         // TODO: Think about string conversion for abstract types
         case OBJ_ABSTRACT: {
             break;
+        }
+
+        case OBJ_RESULT: {
+            ObjResult *result = AS_RESULT(value);
+            if (result->type == SUCCESS) {
+                char *resultString = malloc(sizeof(char) * 13);
+                snprintf(resultString, 13, "<Result Suc>");
+                return resultString;
+            }
+
+            char *resultString = malloc(sizeof(char) * 13);
+            snprintf(resultString, 13, "<Result Err>");
+            return resultString;
         }
     }
 

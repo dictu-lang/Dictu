@@ -32,7 +32,7 @@ static Value keysDict(DictuVM *vm, int argCount, Value *args) {
 
     ObjDict *dict = AS_DICT(args[0]);
 
-    ObjList *list = initList(vm);
+    ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
     for (int i = 0; i < dict->capacityMask + 1; ++i) {

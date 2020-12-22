@@ -3,11 +3,14 @@ file(GLOB_RECURSE sources "*.c")
 file(GLOB_RECURSE headers "*.h")
 set(libraries)
 
-SET(INCLUDE_DIR include/)
+set(INCLUDE_DIR include/)
 
 # Remove CLI files
 list(FILTER sources EXCLUDE REGEX "(main|linenoise).c")
 list(FILTER headers EXCLUDE REGEX "linenoise.h")
+
+find_library(SQLITE_LIB SQLite3)
+set(THREADS)
 
 if(DISABLE_HTTP)
     list(FILTER sources EXCLUDE REGEX "http.c")
@@ -17,7 +20,16 @@ else()
     list(APPEND libraries curl)
 endif()
 
-list(APPEND libraries sqlite3)
+if(NOT SQLITE_LIB)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    set(THREADS Threads::Threads)
+else()
+    list(FILTER sources EXCLUDE REGEX "sqlite3.c")
+    list(FILTER headers EXCLUDE REGEX "sqlite3.h")
+    list(APPEND libraries ${SQLITE_LIB})
+    add_compile_definitions(INCLUDE_SQLITE_LIB)
+endif()
 
 if(WIN32)
     # ws2_32 is required for winsock2.h to work correctly
@@ -50,5 +62,5 @@ set_property(TARGET objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
 add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:objlib>)
 add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:objlib>)
 
-target_link_libraries(${PROJECT_NAME}_static ${libraries})
-target_link_libraries(${PROJECT_NAME} ${libraries})
+target_link_libraries(${PROJECT_NAME}_static ${libraries} ${CMAKE_DL_LIBS} ${THREADS})
+target_link_libraries(${PROJECT_NAME} ${libraries} ${CMAKE_DL_LIBS} ${THREADS})

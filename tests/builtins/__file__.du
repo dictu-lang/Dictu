@@ -7,7 +7,7 @@ import Path;
 
 assert(Path.basename(__file__) == "__file__.du");
 if (System.platform == "windows") {
-    assert(Path.dirname(__file__) == System.getCWD() + r"\tests\builtins");
+    assert(Path.dirname(__file__) == System.getCWD().unwrap() + r"\tests\builtins");
 } else {
-    assert(Path.dirname(__file__) == System.getCWD() + "/tests/builtins");
+    assert(Path.dirname(__file__) == System.getCWD().unwrap() + "/tests/builtins");
 }

@@ -6,31 +6,31 @@
  */
 import JSON;
 
-assert(JSON.parse('true') == true);
-assert(JSON.parse('false') == false);
-assert(JSON.parse('null') == nil);
-assert(JSON.parse('10') == 10);
-assert(JSON.parse('10.5') == 10.5);
-assert(JSON.parse('"test"') == "test");
-assert(JSON.parse('[]') == []);
-assert(JSON.parse('{}') == {});
+assert(JSON.parse('true').unwrap() == true);
+assert(JSON.parse('false').unwrap() == false);
+assert(JSON.parse('null').unwrap() == nil);
+assert(JSON.parse('10').unwrap() == 10);
+assert(JSON.parse('10.5').unwrap() == 10.5);
+assert(JSON.parse('"test"').unwrap() == "test");
+assert(JSON.parse('[]').unwrap() == []);
+assert(JSON.parse('{}').unwrap() == {});
 
-assert(JSON.parse('[true]') == [true]);
-assert(JSON.parse('[false]') == [false]);
-assert(JSON.parse('[null]') == [nil]);
-assert(JSON.parse('[10]') == [10]);
-assert(JSON.parse('[10.5]') == [10.5]);
-assert(JSON.parse('["test"]') == ["test"]);
-assert(JSON.parse('[[]]') == [[]]);
-assert(JSON.parse('[{}]') == [{}]);
+assert(JSON.parse('[true]').unwrap() == [true]);
+assert(JSON.parse('[false]').unwrap() == [false]);
+assert(JSON.parse('[null]').unwrap() == [nil]);
+assert(JSON.parse('[10]').unwrap() == [10]);
+assert(JSON.parse('[10.5]').unwrap() == [10.5]);
+assert(JSON.parse('["test"]').unwrap() == ["test"]);
+assert(JSON.parse('[[]]').unwrap() == [[]]);
+assert(JSON.parse('[{}]').unwrap() == [{}]);
 
-assert(JSON.parse('{"test": true}') == {"test": true});
-assert(JSON.parse('{"test": false}') == {"test": false});
-assert(JSON.parse('{"test": null}') == {"test": nil});
-assert(JSON.parse('{"test": 10}') == {"test": 10});
-assert(JSON.parse('{"test": 10.5}') == {"test": 10.5});
-assert(JSON.parse('{"test": "test"}') == {"test": "test"});
-assert(JSON.parse('{"test": []}') == {"test": []});
-assert(JSON.parse('{"test": {}}') == {"test": {}});
+assert(JSON.parse('{"test": true}').unwrap() == {"test": true});
+assert(JSON.parse('{"test": false}').unwrap() == {"test": false});
+assert(JSON.parse('{"test": null}').unwrap() == {"test": nil});
+assert(JSON.parse('{"test": 10}').unwrap() == {"test": 10});
+assert(JSON.parse('{"test": 10.5}').unwrap() == {"test": 10.5});
+assert(JSON.parse('{"test": "test"}').unwrap() == {"test": "test"});
+assert(JSON.parse('{"test": []}').unwrap() == {"test": []});
+assert(JSON.parse('{"test": {}}').unwrap() == {"test": {}});
 
-assert(JSON.parse('{"test": {"test": [1, 2, 3, {"test": true}]}}') == {"test": {"test": [1, 2, 3, {"test": true}]}});
+assert(JSON.parse('{"test": {"test": [1, 2, 3, {"test": true}]}}').unwrap() == {"test": {"test": [1, 2, 3, {"test": true}]}});

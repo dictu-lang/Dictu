@@ -7,6 +7,15 @@
 
 #define UNUSED(__x__) (void) __x__
 
+#define MAX_ERROR_LEN 256
+
+#define ERROR_RESULT             \
+do {                             \
+char buf[MAX_ERROR_LEN];         \
+getStrerror(buf, errno);         \
+return newResultError(vm, buf);  \
+} while (false)
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif

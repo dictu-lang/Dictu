@@ -17,4 +17,4 @@ def test() {}
 class Test {}
 trait Trait {}
 
-assert("{} {} {}".format(test, Test, Trait) == '<fn test> <cls Test> <trait Trait>');
+assert("{} {} {}".format(test, Test, Trait) == '<fn test> <Cls Test> <Trait Trait>');

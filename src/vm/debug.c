@@ -206,9 +206,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:
-            return simpleInstruction("OP_NEW_LIST", offset);
-        case OP_ADD_LIST:
-            return simpleInstruction("OP_ADD_LIST", offset);
+            return byteInstruction("OP_NEW_LIST", chunk, offset);
         case OP_UNPACK_LIST:
             return byteInstruction("OP_UNPACK_LIST", chunk, offset);
         case OP_SUBSCRIPT:
@@ -220,9 +218,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_PUSH:
             return simpleInstruction("OP_PUSH", offset);
         case OP_NEW_DICT:
-            return simpleInstruction("OP_NEW_DICT", offset);
-        case OP_ADD_DICT:
-            return simpleInstruction("OP_ADD_DICT", offset);
+            return byteInstruction("OP_NEW_DICT", chunk, offset);
         case OP_CALL:
             return byteInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE:

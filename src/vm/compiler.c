@@ -950,23 +950,24 @@ static void string(Compiler *compiler, bool canAssign) {
 static void list(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    emitByte(compiler, OP_NEW_LIST);
+    int count = 0;
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACKET))
             break;
 
         expression(compiler);
-        emitByte(compiler, OP_ADD_LIST);
+        count++;
     } while (match(compiler, TOKEN_COMMA));
 
+    emitBytes(compiler, OP_NEW_LIST, count);
     consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
 static void dict(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    emitByte(compiler, OP_NEW_DICT);
+    int count = 0;
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACE))
@@ -975,8 +976,10 @@ static void dict(Compiler *compiler, bool canAssign) {
         expression(compiler);
         consume(compiler, TOKEN_COLON, "Expected ':'");
         expression(compiler);
-        emitByte(compiler, OP_ADD_DICT);
+        count++;
     } while (match(compiler, TOKEN_COMMA));
+
+    emitBytes(compiler, OP_NEW_DICT, count);
 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
@@ -1672,13 +1675,114 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 }
 
 static void expressionStatement(Compiler *compiler) {
+    Token previous = compiler->parser->previous;
+    advance(compiler->parser);
+    TokenType t = compiler->parser->current.type;
+
+    for (int i = 0; i < compiler->parser->current.length; ++i) {
+        backTrack(&compiler->parser->scanner);
+    }
+    compiler->parser->current = compiler->parser->previous;
+    compiler->parser->previous = previous;
+
     expression(compiler);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (compiler->parser->vm->repl) {
+    if (compiler->parser->vm->repl && t != TOKEN_EQUAL) {
         emitByte(compiler, OP_POP_REPL);
     } else {
         emitByte(compiler, OP_POP);
     }
+}
+
+static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
+    switch (code) {
+        case OP_NIL:
+        case OP_TRUE:
+        case OP_FALSE:
+        case OP_SUBSCRIPT:
+        case OP_SUBSCRIPT_ASSIGN:
+        case OP_SLICE:
+        case OP_PUSH:
+        case OP_POP:
+        case OP_EQUAL:
+        case OP_GREATER:
+        case OP_LESS:
+        case OP_ADD:
+        case OP_INCREMENT:
+        case OP_DECREMENT:
+        case OP_MULTIPLY:
+        case OP_DIVIDE:
+        case OP_POW:
+        case OP_MOD:
+        case OP_NOT:
+        case OP_NEGATE:
+        case OP_CLOSE_UPVALUE:
+        case OP_RETURN:
+        case OP_EMPTY:
+        case OP_END_CLASS:
+        case OP_IMPORT_VARIABLE:
+        case OP_IMPORT_END:
+        case OP_USE:
+        case OP_OPEN_FILE:
+        case OP_CLOSE_FILE:
+        case OP_BREAK:
+        case OP_BITWISE_AND:
+        case OP_BITWISE_XOR:
+        case OP_BITWISE_OR:
+        case OP_POP_REPL:
+            return 0;
+
+        case OP_CONSTANT:
+        case OP_UNPACK_LIST:
+        case OP_GET_LOCAL:
+        case OP_SET_LOCAL:
+        case OP_GET_GLOBAL:
+        case OP_GET_MODULE:
+        case OP_DEFINE_MODULE:
+        case OP_SET_MODULE:
+        case OP_GET_UPVALUE:
+        case OP_SET_UPVALUE:
+        case OP_GET_PROPERTY:
+        case OP_GET_PROPERTY_NO_POP:
+        case OP_SET_PROPERTY:
+        case OP_SET_INIT_PROPERTIES:
+        case OP_GET_SUPER:
+        case OP_CALL:
+        case OP_METHOD:
+        case OP_IMPORT:
+        case OP_NEW_LIST:
+        case OP_NEW_DICT:
+            return 1;
+
+        case OP_DEFINE_OPTIONAL:
+        case OP_JUMP:
+        case OP_JUMP_IF_NIL:
+        case OP_JUMP_IF_FALSE:
+        case OP_LOOP:
+        case OP_INVOKE:
+        case OP_SUPER:
+        case OP_CLASS:
+        case OP_SUBCLASS:
+        case OP_IMPORT_BUILTIN:
+            return 2;
+
+        case OP_IMPORT_BUILTIN_VARIABLE:
+            return 3;
+
+        case OP_CLOSURE: {
+            ObjFunction* loadedFn = AS_FUNCTION(constants.values[ip + 1]);
+
+            // There is one byte for the constant, then two for each upvalue.
+            return 1 + (loadedFn->upvalueCount * 2);
+        }
+
+        case OP_IMPORT_FROM: {
+            int count = constants.values[ip + 1];
+            return 1 + count;
+        }
+    }
+
+    return 0;
 }
 
 static void endLoop(Compiler *compiler) {
@@ -1694,7 +1798,7 @@ static void endLoop(Compiler *compiler) {
             patchJump(compiler, i + 1);
             i += 3;
         } else {
-            i++;
+            i += 1 + getArgCount(compiler->function->chunk.code[i], compiler->function->chunk.constants, i);
         }
     }
 

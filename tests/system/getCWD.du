@@ -6,5 +6,5 @@
  * getCWD() gets the current working directory of the process
  */
 
-assert(type(System.getCWD()) == 'string');
-assert(System.getCWD().len() > 0);
+assert(type(System.getCWD().unwrap()) == 'string');
+assert(System.getCWD().unwrap().len() > 0);

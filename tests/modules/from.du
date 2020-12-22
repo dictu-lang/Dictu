@@ -18,11 +18,11 @@ assert(x == 10);
 
 
 from JSON import parse;
-assert(parse("10") == 10);
+assert(parse("10").unwrap() == 10);
 
 {
     from JSON import parse;
-    assert(parse("10") == 10);
+    assert(parse("10").unwrap() == 10);
 
     {
         from Math import PI;

@@ -13,42 +13,6 @@ typedef struct {
 
 ObjAbstract *newSqlite(DictuVM *vm);
 
-Value strerrorSqliteNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "strerror() takes 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (argCount == 1) {
-        if (!IS_NUMBER(args[0])) {
-            runtimeError(vm, "strerror() argument must be a number");
-            return EMPTY_VAL;
-        }
-
-        char *err = (char*)sqlite3_errstr(AS_NUMBER(args[0]));
-        return OBJ_VAL(copyString(vm, err, strlen(err)));
-    }
-
-    ObjString *key = copyString(vm, "__error__", 9);
-    push(vm, OBJ_VAL(key));
-
-    Value error;
-    tableGet(&(GET_SELF_CLASS)->values, key, &error);
-    pop(vm);
-
-    return error;
-}
-
-static void handleSqliteError(DictuVM *vm, sqlite3 *db) {
-    char *err = (char *)sqlite3_errmsg(db);
-
-    Value moduleValue = 0;
-    tableGet(&vm->modules, copyString(vm, "Sqlite", 6), &moduleValue);
-    ObjModule *module = AS_MODULE(moduleValue);
-
-    defineNativeProperty(vm, &module->values, "__error__", OBJ_VAL(copyString(vm, err, strlen(err))));
-}
-
 static int countParameters(char *query) {
     int length = strlen(query);
     int count = 0;
@@ -90,7 +54,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
     char *sql = AS_CSTRING(args[1]);
-    ObjList *list;
+    ObjList *list = NULL;
     int parameterCount = countParameters(sql);;
     int argumentCount = 0;
 
@@ -113,17 +77,17 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
     int err = sqlite3_prepare_v2(db->db, sql, -1, &result.stmt, NULL);
     if (err != SQLITE_OK) {
-        handleSqliteError(vm, db->db);
-        return NIL_VAL;
+        char *error = (char *)sqlite3_errmsg(db->db);
+        return newResultError(vm, error);
     }
 
-    if (parameterCount != 0) {
+    if (parameterCount != 0 && list != NULL) {
         for (int i = 0; i < parameterCount; ++i) {
             bindValue(result.stmt, i + 1, list->values.values[i]);
         }
     }
 
-    ObjList *finalList = initList(vm);
+    ObjList *finalList = newList(vm);
     push(vm, OBJ_VAL(finalList));
     bool returnValue = false;
 
@@ -139,14 +103,14 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
                 break;
             }
 
-            handleSqliteError(vm, db->db);
             sqlite3_finalize(result.stmt);
-            return NIL_VAL;
+            char *error = (char *)sqlite3_errmsg(db->db);
+            return newResultError(vm, error);
         }
 
         returnValue = true;
 
-        ObjList *rowList = initList(vm);
+        ObjList *rowList = newList(vm);
         push(vm, OBJ_VAL(rowList));
 
         for (int i = 0; i < sqlite3_column_count(result.stmt); i++) {
@@ -181,10 +145,10 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
     pop(vm);
 
     if (returnValue) {
-        return OBJ_VAL(finalList);
+        return newResultSuccess(vm, OBJ_VAL(finalList));
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value closeConnection(DictuVM *vm, int argCount, Value *args) {
@@ -218,19 +182,21 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
     int err = sqlite3_open(name, &db->db);
 
     if (err) {
-        handleSqliteError(vm, db->db);
-        return NIL_VAL;
+        char *error = (char *)sqlite3_errmsg(db->db);
+        return newResultError(vm, error);
     }
 
-    return OBJ_VAL(abstract);
+    return newResultSuccess(vm, OBJ_VAL(abstract));
 }
 
 void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
+    Database *db = (Database*)abstract->data;
+    sqlite3_close(db->db);
     FREE(vm, Database, abstract->data);
 }
 
 ObjAbstract *newSqlite(DictuVM *vm) {
-    ObjAbstract *abstract = initAbstract(vm, freeSqlite);
+    ObjAbstract *abstract = newAbstract(vm, freeSqlite);
     push(vm, OBJ_VAL(abstract));
 
     Database *db = ALLOCATE(vm, Database, 1);
@@ -256,16 +222,7 @@ ObjModule *createSqliteModule(DictuVM *vm) {
     /**
      * Define Sqlite methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorSqliteNative);
     defineNative(vm, &module->values, "connect", connectSqlite);
-
-    /**
-     * Define Sqlite properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-    // This value is a workaround due to the fact that SQLite errors are based on the DB struct rather than errno
-    // It will be available within Dictu but should not be used
-    defineNativeProperty(vm, &module->values, "__error__", NIL_VAL);
 
     pop(vm);
     pop(vm);

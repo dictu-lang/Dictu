@@ -3,7 +3,7 @@
  *
  * Testing the str.toBool() method
  *
- * .toNumber() converts a string to a boolean
+ * .toBool() converts a string to a boolean
  */
 
 assert("10".toBool() == true);
