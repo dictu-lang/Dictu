@@ -158,6 +158,12 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             break;
         }
 
+        case OBJ_RESULT: {
+            ObjResult *result = (ObjResult *) object;
+            grayValue(vm, result->value);
+            break;
+        }
+
         case OBJ_NATIVE:
         case OBJ_STRING:
         case OBJ_FILE:
@@ -267,6 +273,11 @@ void freeObject(DictuVM *vm, Obj *object) {
             FREE(vm, ObjAbstract, object);
             break;
         }
+
+        case OBJ_RESULT: {
+            FREE(vm, ObjResult, object);
+            break;
+        }
     }
 }
 
@@ -305,7 +316,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->fileMethods);
     grayTable(vm, &vm->classMethods);
     grayTable(vm, &vm->instanceMethods);
-    grayTable(vm, &vm->socketMethods);
+    grayTable(vm, &vm->resultMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->replVar);

@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Math
-nav_order: 14
+nav_order: 3
+parent: Standard Library
 ---
 
 # Math
@@ -28,7 +29,6 @@ import Math;
 
 | Constant     | Description                                            |
 |--------------|--------------------------------------------------------|
-| Math.errno   | Number of the last error                               |
 | Math.PI      | The mathematical constant: 3.14159265358979            |
 | Math.e       | The mathematical constant: 2.71828182845905            |
 

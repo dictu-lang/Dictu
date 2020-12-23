@@ -26,6 +26,7 @@
 #define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 #define AS_ABSTRACT(value)      ((ObjAbstract*)AS_OBJ(value))
+#define AS_RESULT(value)        ((ObjResult*)AS_OBJ(value))
 
 #define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
@@ -42,6 +43,7 @@
 #define IS_SET(value)             isObjType(value, OBJ_SET)
 #define IS_FILE(value)            isObjType(value, OBJ_FILE)
 #define IS_ABSTRACT(value)        isObjType(value, OBJ_ABSTRACT)
+#define IS_RESULT(value)          isObjType(value, OBJ_RESULT)
 
 typedef enum {
     OBJ_MODULE,
@@ -57,6 +59,7 @@ typedef enum {
     OBJ_SET,
     OBJ_FILE,
     OBJ_ABSTRACT,
+    OBJ_RESULT,
     OBJ_UPVALUE
 } ObjType;
 
@@ -163,6 +166,17 @@ struct sObjAbstract {
     AbstractFreeFn func;
 };
 
+typedef enum {
+    SUCCESS,
+    ERR
+} ResultStatus;
+
+struct sObjResult {
+    Obj obj;
+    ResultStatus status;
+    Value value;
+};
+
 typedef struct sUpvalue {
     Obj obj;
 
@@ -227,15 +241,21 @@ ObjString *takeString(DictuVM *vm, char *chars, int length);
 
 ObjString *copyString(DictuVM *vm, const char *chars, int length);
 
-ObjList *initList(DictuVM *vm);
+ObjList *newList(DictuVM *vm);
 
-ObjDict *initDict(DictuVM *vm);
+ObjDict *newDict(DictuVM *vm);
 
-ObjSet *initSet(DictuVM *vm);
+ObjSet *newSet(DictuVM *vm);
 
-ObjFile *initFile(DictuVM *vm);
+ObjFile *newFile(DictuVM *vm);
 
-ObjAbstract *initAbstract(DictuVM *vm, AbstractFreeFn func);
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func);
+
+ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value);
+
+Value newResultSuccess(DictuVM *vm, Value value);
+
+Value newResultError(DictuVM *vm, char *errorMsg);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 

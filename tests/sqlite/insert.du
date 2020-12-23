@@ -9,18 +9,13 @@
 import Sqlite;
 
 var connection = Sqlite.connect(":memory:");
-var resp = connection.execute("CREATE TABLE test (x int)");
+assert(connection.success());
+connection = connection.unwrap();
 
-assert(resp == true);
-
-resp = connection.execute("INSERT INTO test VALUES (10)");
-
-assert(resp == true);
-
+var resp = connection.execute("CREATE TABLE test (x int)").unwrap();
+resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
 resp = connection.execute("INSERT INTO test VALUES (?)", [
     10
-]);
-
-assert(resp == true);
+]).unwrap();
 
 connection.close();

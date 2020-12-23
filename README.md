@@ -1,13 +1,4 @@
-<p align="center">
-    <a href="https://dictu-lang.com">
-        <img src="docs/assets/images/dictu-logo/dictu-light-png-8x.png" alt="Dictu logo" width="560px">
-    </a>
-</p>
-
---------------------------------------------------------------------------------
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab84059049bd4ba7b7b8c1fcfaac4ea5)](https://app.codacy.com/manual/jasonhall96686/Dictu?utm_source=github.com&utm_medium=referral&utm_content=Jason2605/Dictu&utm_campaign=Badge_Grade_Dashboard)
-[![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
+# Dictu
 
 *What is Dictu?*  
 Dictu is a very simple dynamically typed programming language 
@@ -18,6 +9,9 @@ Dictu means `simplistic` in Latin.
 
 ### Dictu documentation
 Documentation for Dictu can be found [here](https://dictu-lang.com/)
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ab84059049bd4ba7b7b8c1fcfaac4ea5)](https://app.codacy.com/manual/jasonhall96686/Dictu?utm_source=github.com&utm_medium=referral&utm_content=Jason2605/Dictu&utm_campaign=Badge_Grade_Dashboard)
+[![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
 
 ## Running Dictu
 Dictu currently has two options when building, there is a CMakeLists file included so the build files can be generated with
@@ -68,8 +62,7 @@ var userInput;
 var guess = 10;
 
 while {
-    userInput = input("Input your guess: ").toNumber();
-    print(userInput);
+    userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;

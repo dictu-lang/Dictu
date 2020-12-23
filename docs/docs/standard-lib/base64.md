@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Base64
-nav_order: 21
+nav_order: 10
+parent: Standard Library
 ---
 
 # Random
@@ -21,12 +22,6 @@ To make use of the Base64 module an import is required.
 ```js
 import Base64;
 ```
-
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Base64.errno         | Number of the last error        |
 
 ### Base64.encode(string)
 

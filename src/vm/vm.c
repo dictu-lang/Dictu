@@ -15,12 +15,13 @@
 #include "datatypes/bool.h"
 #include "datatypes/nil.h"
 #include "datatypes/strings.h"
-#include "datatypes/lists.h"
+#include "datatypes/lists/lists.h"
 #include "datatypes/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
+#include "datatypes/result.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -98,11 +99,13 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     initTable(&vm->fileMethods);
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
-    initTable(&vm->socketMethods);
+    initTable(&vm->resultMethods);
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
-    vm->replVar = copyString(vm, "_", 1);
+
+    // Native functions
+    defineAllNatives(vm);
 
     // Native methods
     declareNumberMethods(vm);
@@ -115,9 +118,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     declareFileMethods(vm);
     declareClassMethods(vm);
     declareInstanceMethods(vm);
-
-    // Native functions
-    defineAllNatives(vm);
+    declareResultMethods(vm);
 
     /**
      * Native classes which are not required to be
@@ -125,6 +126,10 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
      */
     createSystemModule(vm, argc, argv);
     createCModule(vm);
+
+    if (vm->repl) {
+        vm->replVar = copyString(vm, "_", 1);
+    }
 
     return vm;
 }
@@ -144,7 +149,7 @@ void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->fileMethods);
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
-    freeTable(vm, &vm->socketMethods);
+    freeTable(vm, &vm->resultMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
@@ -392,7 +397,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_LIST: {
                 Value value;
                 if (tableGet(&vm->listMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "List has no method %s().", name->chars);
@@ -426,6 +441,16 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 }
 
                 runtimeError(vm, "File has no method %s().", name->chars);
+                return false;
+            }
+
+            case OBJ_RESULT: {
+                Value value;
+                if (tableGet(&vm->resultMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Result has no method %s().", name->chars);
                 return false;
             }
 
@@ -945,7 +970,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjList *listOne = AS_LIST(peek(vm, 1));
                 ObjList *listTwo = AS_LIST(peek(vm, 0));
 
-                ObjList *finalList = initList(vm);
+                ObjList *finalList = newList(vm);
                 push(vm, OBJ_VAL(finalList));
 
                 for (int i = 0; i < listOne->values.count; ++i) {
@@ -1193,21 +1218,15 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_LIST): {
-            ObjList *list = initList(vm);
+            int count = READ_BYTE();
+            ObjList *list = newList(vm);
             push(vm, OBJ_VAL(list));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_LIST): {
-            Value addValue = peek(vm, 0);
-            Value listValue = peek(vm, 1);
+            for (int i = count; i > 0; i--) {
+                writeValueArray(vm, &list->values, peek(vm, i));
+            }
 
-            ObjList *list = AS_LIST(listValue);
-            writeValueArray(vm, &list->values, addValue);
-
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count + 1;
             push(vm, OBJ_VAL(list));
             DISPATCH();
         }
@@ -1237,27 +1256,21 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(NEW_DICT): {
-            ObjDict *dict = initDict(vm);
+            int count = READ_BYTE();
+            ObjDict *dict = newDict(vm);
             push(vm, OBJ_VAL(dict));
-            DISPATCH();
-        }
 
-        CASE_CODE(ADD_DICT): {
-            Value value = peek(vm, 0);
-            Value key = peek(vm, 1);
+            for (int i = count * 2; i > 0; i -= 2) {
+                if (!isValidKey(peek(vm, i))) {
+                    RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                }
 
-            if (!isValidKey(key)) {
-                RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
             }
 
-            ObjDict *dict = AS_DICT(peek(vm, 2));
-            dictSet(vm, dict, key, value);
-
-            pop(vm);
-            pop(vm);
-            pop(vm);
-
+            vm->stackTop -= count * 2 + 1;
             push(vm, OBJ_VAL(dict));
+
             DISPATCH();
         }
 
@@ -1266,6 +1279,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
@@ -1321,11 +1338,14 @@ static DictuInterpretResult run(DictuVM *vm) {
                     pop(vm);
                     if (dictGet(dict, indexValue, &v)) {
                         push(vm, v);
-                    } else {
-                        push(vm, NIL_VAL);
+                        DISPATCH();
                     }
 
-                    DISPATCH();
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                }
+
+                case OBJ_RESULT: {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
                 }
 
                 default: {
@@ -1340,6 +1360,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
@@ -1416,8 +1440,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             switch (getObjType(objectValue)) {
                 case OBJ_LIST: {
-                    ObjList *newList = initList(vm);
-                    push(vm, OBJ_VAL(newList));
+                    ObjList *createdList = newList(vm);
+                    push(vm, OBJ_VAL(createdList));
                     ObjList *list = AS_LIST(objectValue);
 
                     if (IS_EMPTY(sliceEndIndex)) {
@@ -1427,15 +1451,17 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > list->values.count) {
                             indexEnd = list->values.count;
+                        } else if (indexEnd < 0) {
+                            indexEnd = list->values.count + indexEnd;
                         }
                     }
 
                     for (int i = indexStart; i < indexEnd; i++) {
-                        writeValueArray(vm, &newList->values, list->values.values[i]);
+                        writeValueArray(vm, &createdList->values, list->values.values[i]);
                     }
 
                     pop(vm);
-                    returnVal = OBJ_VAL(newList);
+                    returnVal = OBJ_VAL(createdList);
 
                     break;
                 }
@@ -1450,6 +1476,8 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                         if (indexEnd > string->length) {
                             indexEnd = string->length;
+                        }  else if (indexEnd < 0) {
+                            indexEnd = string->length + indexEnd;
                         }
                     }
 
@@ -1481,6 +1509,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
+                if (IS_RESULT(subscriptValue)) {
+                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
+                }
+
                 RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
             }
 
@@ -1514,7 +1546,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        dictValue = NIL_VAL;
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                     }
 
                     vm->stackTop[-1] = dictValue;
@@ -1690,7 +1722,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *openTypeString = AS_STRING(openType);
             ObjString *fileNameString = AS_STRING(fileName);
 
-            ObjFile *file = initFile(vm);
+            ObjFile *file = newFile(vm);
             file->file = fopen(fileNameString->chars, openTypeString->chars);
             file->path = fileNameString->chars;
             file->openType = openTypeString->chars;

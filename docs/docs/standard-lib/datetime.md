@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Datetime
-nav_order: 13
+nav_order: 2
+parent: Standard Library
 ---
 
 # Datetime
@@ -22,12 +23,6 @@ To make use of the Datetime module an import is required.
 ```cs
 import Datetime;
 ```
-
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Datetime.errno       | Number of the last error        |
 
 ### Datetime.now()
 

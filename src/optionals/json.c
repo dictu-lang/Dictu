@@ -1,63 +1,14 @@
 #include "json.h"
 
-struct json_error_table_t {
-  int error;
-  const char *description;
-} json_error_table [] = {
-#define JSON_ENULL 1
-  { JSON_ENULL, "Json object value is nil"},
-#define JSON_ENOTYPE 2
-  { JSON_ENOTYPE, "No such type"},
-#define JSON_EINVAL 3
-  { JSON_EINVAL, "Invalid JSON object"},
-#define JSON_ENOSERIAL 4
-  { JSON_ENOSERIAL, "Object is not serializable"},
-  { -1, NULL}};
-
-static Value strerrorJsonNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 1) {
-        runtimeError(vm, "strerror() takes either 0 or 1 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    int error;
-    if (argCount == 1) {
-        error = AS_NUMBER(args[0]);
-    } else {
-        error = AS_NUMBER(getErrno(vm, GET_SELF_CLASS));
-    }
-
-    if (error == 0) {
-        return OBJ_VAL(copyString(vm, "", 0));
-    }
-
-    if (error < 0) {
-        runtimeError(vm, "strerror() argument should be greater than or equal to 0");
-        return EMPTY_VAL;
-    }
-
-    for (int i = 0; json_error_table[i].error != -1; i++) {
-        if (error == json_error_table[i].error) {
-            return OBJ_VAL(copyString(vm, json_error_table[i].description,
-                strlen (json_error_table[i].description)));
-        }
-    }
-
-    runtimeError(vm, "strerror() argument should be <= %d", JSON_ENOSERIAL);
-    return EMPTY_VAL;
-}
-
 static Value parseJson(DictuVM *vm, json_value *json) {
     switch (json->type) {
         case json_none:
         case json_null: {
-            // TODO: We return nil on failure however "null" is valid JSON
-            // TODO: We need a better way of handling this scenario
             return NIL_VAL;
         }
 
         case json_object: {
-            ObjDict *dict = initDict(vm);
+            ObjDict *dict = newDict(vm);
             // Push value to stack to avoid GC
             push(vm, OBJ_VAL(dict));
 
@@ -77,7 +28,7 @@ static Value parseJson(DictuVM *vm, json_value *json) {
         }
 
         case json_array: {
-            ObjList *list = initList(vm);
+            ObjList *list = newList(vm);
             // Push value to stack to avoid GC
             push(vm, OBJ_VAL(list));
 
@@ -111,7 +62,6 @@ static Value parseJson(DictuVM *vm, json_value *json) {
         }
 
         default: {
-            errno = JSON_ENOTYPE;
             return EMPTY_VAL;
         }
     }
@@ -132,21 +82,18 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
     json_value *json_obj = json_parse(json->chars, json->length);
 
     if (json_obj == NULL) {
-        errno = JSON_EINVAL;
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        return newResultError(vm, "Invalid JSON object");
     }
 
     Value val = parseJson(vm, json_obj);
 
     if (val == EMPTY_VAL) {
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        return newResultError(vm, "Invalid JSON object");
     }
 
     json_value_free(json_obj);
 
-    return val;
+    return newResultSuccess(vm, val);
 }
 
 json_value* stringifyJson(DictuVM *vm, Value value) {
@@ -246,9 +193,7 @@ static Value stringify(DictuVM *vm, int argCount, Value *args) {
     json_value *json = stringifyJson(vm, args[0]);
 
     if (json == NULL) {
-        errno = JSON_ENOSERIAL;
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        return newResultError(vm, "Object is not serializable");
     }
 
     json_serialize_opts default_opts =
@@ -272,7 +217,8 @@ static Value stringify(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *string = takeString(vm, buf, actualLength);
     json_builder_free(json);
-    return OBJ_VAL(string);
+
+    return newResultSuccess(vm, OBJ_VAL(string));
 }
 
 ObjModule *createJSONModule(DictuVM *vm) {
@@ -284,18 +230,9 @@ ObjModule *createJSONModule(DictuVM *vm) {
     /**
      * Define Json methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorJsonNative);
     defineNative(vm, &module->values, "parse", parse);
     defineNative(vm, &module->values, "stringify", stringify);
 
-    /**
-     * Define Json properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
-    defineNativeProperty(vm, &module->values, "ENULL", NUMBER_VAL(JSON_ENULL));
-    defineNativeProperty(vm, &module->values, "ENOTYPE", NUMBER_VAL(JSON_ENOTYPE));
-    defineNativeProperty(vm, &module->values, "EINVAL", NUMBER_VAL(JSON_EINVAL));
-    defineNativeProperty(vm, &module->values, "ENOSERIAL", NUMBER_VAL(JSON_ENOSERIAL));
     pop(vm);
     pop(vm);
 

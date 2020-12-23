@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Random
-nav_order: 20
+nav_order: 9
+parent: Standard Library
 ---
 
 # Random
@@ -23,12 +24,6 @@ To make use of the Random module an import is required.
 ```js
 import Random;
 ```
-
-### Constants
-
-| Constant             | Description                     |
-|----------------------|---------------------------------|
-| Random.errno         | Number of the last error        |
 
 ### Random.random()
 

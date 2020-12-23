@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Socket
-nav_order: 19
+nav_order: 8
+parent: Standard Library
 ---
 
 # Socket
@@ -27,7 +28,6 @@ import Socket;
 
 | Constant             | Description                     |
 |----------------------|---------------------------------|
-| Socket.errno         | Number of the last error        |
 | Socket.AF_INET       | AF_INET protocol family         |
 | Socket.SOCK_STREAM   | SOCK_STREAM protocol type       |
 | Socket.SOL_SOCKET    | SOL_SOCKET option level         |
@@ -35,21 +35,22 @@ import Socket;
 
 ### Socket.create(number: family, number: type)
 
-Create a new socket object given a socket type and socket family. This will return
-a new socket object in which the rest of the methods are ran on.
+Create a new socket object given a socket type and socket family.
+This will return a Result and unwrap to a new socket object in which the rest of the methods are ran on.
 
 ```cs
-var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM);
+var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM).unwrap();
 ```
 
 ### socket.bind(string, number)
 
-This will bind a given socket object to an IP and port number. On failure `nil` is returned
-and `errno` is set accordingly.
+This will bind a given socket object to an IP and port number.
+Returns a Result type and on success will unwrap to nil.
 
 ```cs
-if (!socket.bind("host", 10)) {
-    print(Socket.strerror());
+var result = socket.bind("host", 10);
+if (!result.success()) {
+    print(result.unwrapError());
     // ...
 }
 ```
@@ -58,12 +59,13 @@ if (!socket.bind("host", 10)) {
 
 This will enable connections to be made. The backlog parameter specifies how many
 pending connections can be queued before they begin to get rejected. If left unspecified
-a reasonable value is chosen. `listen()` will return `nil` on failure and set `errno` accordingly
-or `true` on success.
+a reasonable value is chosen. 
+Returns a Result type and on success will unwrap to nil.
 
 ```cs
-if (!socket.listen()) {
-    print(Socket.strerror());
+var result = socket.listen();
+if (!result.success()) {
+    print(result.unwrapError());
     // ...
 }
 ```
@@ -71,22 +73,24 @@ if (!socket.listen()) {
 ### socket.accept()
 
 This will accept incoming connections. The socket must be bound to an address an listening for incoming connections before
-`.accept()` can be used. `.accept()` returns a list of two values where the first value is a **new** socket object and the second 
+`.accept()` can be used.
+Returns a Result type that wraps a list of two values where the first value is a **new** socket object and the second 
 is the address connecting to the socket as a string.
 
 ```cs
-var [client, address] = socket.accept();
+var [client, address] = socket.accept().unwrap();
 print(address); // 127.0.0.1
 ```
 
 ### socket.write(string)
 
-This will write data to the remote client socket. On failure `nil` is returned and `errno` is set accordingly,
-otherwise the amount of characters sent is returned.
+This will write data to the remote client socket.
+Returns a Result type and on success will unwrap to a number (amount of chars written).
 
 ```cs
-if (!socket.write("Some Data")) {
-    print(Socket.strerror());
+var result = socket.write("Some Data");
+if (!result.success()) {
+    print(result.unwrapError());
     // ...
 }
 ```
@@ -94,14 +98,15 @@ if (!socket.write("Some Data")) {
 ### socket.recv(number)
 
 This will receive data from the client socket. The maximum amount of data to be read at a given
-time is specified by the argument passed to `recv()`. On failure `nil` is returned and `errno` is set accordingly,
-otherwise a string is returned.
+time is specified by the argument passed to `recv()`. 
+Returns a Result type and on success will unwrap to a string.
 
 Note: The argument passed to recv should be a relatively small power of 2, such as 2048 or 4096.
 
 ```cs
-if (!socket.recv(2048)) {
-    print(Socket.strerror());
+var result = socket.recv(2048);
+if (!result.success()) {
+    print(result.unwrapError());
     // ...
 }
 ```
@@ -116,12 +121,13 @@ socket.close();
 
 ### socket.setsocketopt(number: level, number: option)
 
-Set a socket option on a given socket. On failure `nil` is returned and `errno` is set accordingly,
-otherwise a string is returned.
+Set a socket option on a given socket.
+Returns a Result type and on success will unwrap to nil.
 
 ```cs
-if (!socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR)) {
-    print(Socket.strerror());
+var result = socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR);
+if (!result.success()) {
+    print(result.unwrapError());
     // ...
 }
 ```

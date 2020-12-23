@@ -38,7 +38,7 @@ struct _vm {
     Table fileMethods;
     Table classMethods;
     Table instanceMethods;
-    Table socketMethods;
+    Table resultMethods;
     ObjString *initString;
     ObjString *replVar;
     ObjUpvalue *openUpvalues;
