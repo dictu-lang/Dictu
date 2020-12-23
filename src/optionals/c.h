@@ -39,6 +39,5 @@
 void createCModule(DictuVM *vm);
 
 void getStrerror(char *buf, int error);
-Value strerrorNative(DictuVM *, int, Value *);
 
 #endif //dictu_c_h

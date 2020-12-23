@@ -57,7 +57,6 @@ ObjModule *createBase64Module(DictuVM *vm) {
     /**
      * Define Base64 methods
      */
-    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "encode", encode);
     defineNative(vm, &module->values, "decode", decode);
 
