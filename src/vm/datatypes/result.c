@@ -8,7 +8,7 @@ static Value unwrap(DictuVM *vm, int argCount, Value *args) {
 
     ObjResult *result = AS_RESULT(args[0]);
 
-    if (result->type == ERROR) {
+    if (result->status == ERR) {
         runtimeError(vm, "Attempted unwrap() on an error Result value '%s'", AS_CSTRING(result->value));
         return EMPTY_VAL;
     }
@@ -24,7 +24,7 @@ static Value unwrapError(DictuVM *vm, int argCount, Value *args) {
 
     ObjResult *result = AS_RESULT(args[0]);
 
-    if (result->type == SUCCESS) {
+    if (result->status == SUCCESS) {
         runtimeError(vm, "Attempted unwrapError() on a success Result value");
         return EMPTY_VAL;
     }
@@ -39,7 +39,7 @@ static Value success(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjResult *result = AS_RESULT(args[0]);
-    return BOOL_VAL(result->type == SUCCESS);
+    return BOOL_VAL(result->status == SUCCESS);
 }
 
 void declareResultMethods(DictuVM *vm) {

@@ -159,9 +159,9 @@ ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func) {
     return abstract;
 }
 
-ObjResult *newResult(DictuVM *vm, ResultType type, Value value) {
+ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value) {
     ObjResult *result = ALLOCATE_OBJ(vm, ObjResult, OBJ_RESULT);
-    result->type = type;
+    result->status = status;
     result->value = value;
 
     return result;
@@ -177,7 +177,7 @@ Value newResultSuccess(DictuVM *vm, Value value) {
 Value newResultError(DictuVM *vm, char *errorMsg) {
     Value error = OBJ_VAL(copyString(vm, errorMsg, strlen(errorMsg)));
     push(vm, error);
-    ObjResult *result = newResult(vm, ERROR, error);
+    ObjResult *result = newResult(vm, ERR, error);
     pop(vm);
     return OBJ_VAL(result);
 }
@@ -629,7 +629,7 @@ char *objectToString(Value value) {
 
         case OBJ_RESULT: {
             ObjResult *result = AS_RESULT(value);
-            if (result->type == SUCCESS) {
+            if (result->status == SUCCESS) {
                 char *resultString = malloc(sizeof(char) * 13);
                 snprintf(resultString, 13, "<Result Suc>");
                 return resultString;
