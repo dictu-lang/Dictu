@@ -197,7 +197,7 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *buffer = ALLOCATE(vm, char, bufferSize);
+    char *buffer = ALLOCATE(vm, char, bufferSize + 1);
     int readSize = recv(sock->socket, buffer, bufferSize, 0);
 
     if (readSize == -1) {
