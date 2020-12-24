@@ -48,7 +48,20 @@ This will bind a given socket object to an IP and port number.
 Returns a Result type and on success will unwrap to nil.
 
 ```cs
-var result = socket.bind("host", 10);
+var result = socket.bind("127.0.0.1", 1000);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.connect(string, number)
+
+This will connect to a socket on a given host and IP.
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+var result = socket.connect("127.0.0.1", 1000);
 if (!result.success()) {
     print(result.unwrapError());
     // ...
