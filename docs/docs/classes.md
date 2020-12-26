@@ -47,6 +47,38 @@ class SomeClass {
 SomeClass("Object created!"); // Object created!
 ```
 
+### Implicit properties
+
+Dictu actually has a way to define properties on the object without explicitly setting each variable passed into the constructor on the object through `this`.
+
+```cs
+class SomeClass {
+    // The var keyword here makes the argument passed in be set as an instance variable
+    init(var a, var b) {}
+}
+
+var obj = SomeClass(10, 20);
+print("{} {}".format(obj.a, obj.b)); // "10 20"
+```
+
+The `var` keyword is optional on the constructor parameters, and can be in any order.
+
+```cs
+class SomeClass {
+    init(var a, b, c, var d) {
+        // b and c are not set as instance properties
+    }
+}
+
+var obj = SomeClass(10, 20, 30, 40);
+print("{} {} {} {}".format(
+    obj.getAttribute("a"),
+    obj.getAttribute("b"),
+    obj.getAttribute("c"),
+    obj.getAttribute("d")
+)); // "10 nil nil 40"
+```
+
 ## Methods
 
 Methods are functions defined within a class. When defining a method in Dictu, the `def` keyword is not used and instead its just the method name and parameter list.
@@ -177,6 +209,33 @@ var myObject = Test();
 myObject.setAttribute("x", 100);
 print(myObject.x); // 100
 ```
+
+### Optional Chaining
+
+Optional chaining allows you to read a property or method of an instance without explicitly having to check for `nil` before
+attempting to access.
+
+**Note:** If the left hand value is not nil the property / method **must** still exist when attempting to access otherwise a runtime error will occur.
+
+```js
+class Test {
+    // Lets say you have a method that 
+    // could return an object or nil
+    someMethod() {
+        return nil;
+    }
+    
+    someOtherMethod() {
+        print("method!");
+    }
+}
+
+// Here there is no explicit nil check.
+print(Test().someMethod()?.someOtherMethod()); // nil
+
+// If the operand is not nil the method / property must exist  
+print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
+``` 
 
 ## Class variables
 

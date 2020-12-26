@@ -1,8 +1,7 @@
 var guess = 10;
 
 while {
-    var userInput = input("Input your guess: ").toNumber();
-    print(userInput);
+    var userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;

@@ -4,4 +4,4 @@
 * General import file for all the function tests
 */
 
-import "tests/bool/toString.du";
+import "toString.du";

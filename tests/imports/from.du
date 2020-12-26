@@ -5,19 +5,19 @@
  *
  */
 
-from "tests/imports/class.du" import Test;
+from "class.du" import Test;
 
 assert(type(Test) == 'class');
 assert(Test().x == 10);
 
-from "tests/imports/class.du" import Test, AnotherTest;
+from "class.du" import Test, AnotherTest;
 
 assert(type(Test) == 'class');
 assert(Test().x == 10);
 assert(type(AnotherTest) == 'class');
 assert(AnotherTest().y == 10);
 
-import "tests/imports/middle-import.du" as MiddleImportModule;
+import "middle-import.du" as MiddleImportModule;
 
 assert(type(MiddleImportModule.Test) == 'class');
 assert(MiddleImportModule.Test().x == 10);

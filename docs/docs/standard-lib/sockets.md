@@ -1,0 +1,134 @@
+---
+layout: default
+title: Socket
+nav_order: 8
+parent: Standard Library
+---
+
+# Socket
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Socket
+
+To make use of the Socket module an import is required.
+
+```cs
+import Socket;
+```
+
+### Constants
+
+| Constant             | Description                     |
+|----------------------|---------------------------------|
+| Socket.AF_INET       | AF_INET protocol family         |
+| Socket.SOCK_STREAM   | SOCK_STREAM protocol type       |
+| Socket.SOL_SOCKET    | SOL_SOCKET option level         |
+| Socket.SO_REUSEADDR  | SO_REUSEADDR allow socket reuse |
+
+### Socket.create(number: family, number: type)
+
+Create a new socket object given a socket type and socket family.
+This will return a Result and unwrap to a new socket object in which the rest of the methods are ran on.
+
+```cs
+var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM).unwrap();
+```
+
+### socket.bind(string, number)
+
+This will bind a given socket object to an IP and port number.
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+var result = socket.bind("host", 10);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.listen(number: backlog -> optional)
+
+This will enable connections to be made. The backlog parameter specifies how many
+pending connections can be queued before they begin to get rejected. If left unspecified
+a reasonable value is chosen. 
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+var result = socket.listen();
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.accept()
+
+This will accept incoming connections. The socket must be bound to an address an listening for incoming connections before
+`.accept()` can be used.
+Returns a Result type that wraps a list of two values where the first value is a **new** socket object and the second 
+is the address connecting to the socket as a string.
+
+```cs
+var [client, address] = socket.accept().unwrap();
+print(address); // 127.0.0.1
+```
+
+### socket.write(string)
+
+This will write data to the remote client socket.
+Returns a Result type and on success will unwrap to a number (amount of chars written).
+
+```cs
+var result = socket.write("Some Data");
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.recv(number)
+
+This will receive data from the client socket. The maximum amount of data to be read at a given
+time is specified by the argument passed to `recv()`. 
+Returns a Result type and on success will unwrap to a string.
+
+Note: The argument passed to recv should be a relatively small power of 2, such as 2048 or 4096.
+
+```cs
+var result = socket.recv(2048);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.close()
+
+Closes a socket.
+
+```cs
+socket.close();
+```
+
+### socket.setsocketopt(number: level, number: option)
+
+Set a socket option on a given socket.
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+var result = socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+

@@ -29,3 +29,17 @@ nav_order: 6
 | &=           | Same as &, however its shorthand to assign too                 | x &= 10 Same as x = x & 10 |
 | ^=           | Same as ^, however its shorthand to assign too                 | x ^= 10 Same as x = x ^ 10 |
 | \|=           | Same as \|, however its shorthand to assign too                 | x \|= 10 Same as x = x |
+| ?            | Ternary operator - See below                                   | true ? 'value' : 'other' |
+| ?.           | Optional chaining - See [classes](/docs/classes/#optional-chaining) | object?.someMethod()     |
+
+## Ternary Operator
+
+The ternary operator is an operator which takes 3 operands and returns either the second or third depending on whether the first operand is truthy. 
+
+```cs
+var value = true ? 'true!' : 'false!';
+print(value); // 'true!'
+
+var otherValue = 0 ? 'true!' : 'false!';
+print(otherValue); // 'false!'
+```

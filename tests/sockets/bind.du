@@ -7,13 +7,10 @@
  */
 import Socket;
 
-var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM).unwrap();
 
-assert(socket != nil);
-assert(type(socket) == "socket");
-
-assert(socket.bind("127.0.0.1", 8080) == true);
-assert(socket.bind("aaa", 8080) == nil);
+assert(socket.bind("127.0.0.1", 8080).success() == true);
+assert(socket.bind("aaa", 8080).success() == false);
 
 socket.close();
 

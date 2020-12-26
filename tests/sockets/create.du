@@ -7,10 +7,9 @@
  */
 import Socket;
 
-var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM).unwrap();
 
 assert(socket != nil);
-assert(type(socket) == "socket");
 
 socket.close();
 

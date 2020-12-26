@@ -18,7 +18,7 @@ class TestOverload {
     }
 }
 
-assert(Test.toString() == '<cls Test>');
+assert(Test.toString() == '<Cls Test>');
 assert(Test().toString() == '<Test instance>');
-assert(TestOverload.toString() == '<cls TestOverload>');
+assert(TestOverload.toString() == '<Cls TestOverload>');
 assert(TestOverload().toString() == 'Testing object');

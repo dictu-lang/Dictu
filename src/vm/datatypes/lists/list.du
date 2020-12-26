@@ -1,0 +1,38 @@
+/**
+ * This file contains all the methods for Lists written in Dictu that
+ * are unable to be written in C due to re-enterability issues.
+ *
+ * We should always strive to write methods in C where possible.
+ */
+def map(list, func) {
+    const temp = [];
+
+    for (var i = 0; i < list.len(); i += 1) {
+        temp.push(func(list[i]));
+    }
+
+    return temp;
+}
+
+def filter(list, func=def(x) => x) {
+    const temp = [];
+
+    for (var i = 0; i < list.len(); i += 1) {
+        const result = func(list[i]);
+        if (result) {
+            temp.push(list[i]);
+        }
+    }
+
+    return temp;
+}
+
+def reduce(list, func, initial=0) {
+    var accumulator = initial;
+
+    for(var i = 0; i < list.len(); i += 1) {
+        accumulator = func(accumulator, list[i]);
+    }
+
+    return accumulator;
+}
