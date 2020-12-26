@@ -1,6 +1,6 @@
 #include "process.h"
 
-static Value execute(VM *vm, ObjList *argList, bool wait) {
+static Value execute(DictuVM *vm, ObjList *argList, bool wait) {
     char **arguments = ALLOCATE(vm, char *, argList->values.count + 1);
     for (int i = 0; i < argList->values.count; ++i) {
         arguments[i] = AS_CSTRING(argList->values.values[i]);
@@ -29,7 +29,7 @@ static Value execute(VM *vm, ObjList *argList, bool wait) {
     return NIL_VAL;
 }
 
-static Value executeReturnOutput(VM *vm, ObjList *argList) {
+static Value executeReturnOutput(DictuVM *vm, ObjList *argList) {
     char **arguments = ALLOCATE(vm, char *, argList->values.count + 1);
     for (int i = 0; i < argList->values.count; ++i) {
         arguments[i] = AS_CSTRING(argList->values.values[i]);
@@ -76,7 +76,7 @@ static Value executeReturnOutput(VM *vm, ObjList *argList) {
     return OBJ_VAL(takeString(vm, output, total));
 }
 
-static Value execNative(VM *vm, int argCount, Value *args) {
+static Value execNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "exec() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -91,14 +91,14 @@ static Value execNative(VM *vm, int argCount, Value *args) {
     return execute(vm, argList, false);
 }
 
-static Value runNative(VM *vm, int argCount, Value *args) {
+static Value runNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "run() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_LIST(args[0])) {
-        runtimeError(vm, "Argument passed to run() must be a string");
+        runtimeError(vm, "Argument passed to run() must be a list");
         return EMPTY_VAL;
     }
 
@@ -122,7 +122,7 @@ static Value runNative(VM *vm, int argCount, Value *args) {
     return execute(vm, argList, true);
 }
 
-ObjModule *createProcessModule(VM *vm) {
+ObjModule *createProcessModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Process", 7);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);

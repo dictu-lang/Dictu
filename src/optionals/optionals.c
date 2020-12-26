@@ -11,6 +11,7 @@ BuiltinModules modules[] = {
         {"Base64", &createBase64Module},
         {"Hashlib", &createHashlibModule},
         {"Sqlite", &createSqliteModule},
+        {"Process", &createProcessModule},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPModule},
 #endif

@@ -2,8 +2,7 @@
 #define dictu_process_h
 
 #include "optionals.h"
-#include "../vm.h"
 
-ObjModule *createProcessModule(VM *vm);
+ObjModule *createProcessModule(DictuVM *vm);
 
 #endif //dictu_process_h
