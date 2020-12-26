@@ -190,15 +190,15 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     SocketData *sock = AS_SOCKET(args[0]);
-    int bufferSize = AS_NUMBER(args[1]);
+    int bufferSize = AS_NUMBER(args[1]) + 1;
 
     if (bufferSize < 1) {
         runtimeError(vm, "recv() argument must be greater than 1");
         return EMPTY_VAL;
     }
 
-    char *buffer = ALLOCATE(vm, char, bufferSize + 1);
-    int readSize = recv(sock->socket, buffer, bufferSize, 0);
+    char *buffer = ALLOCATE(vm, char, bufferSize);
+    int readSize = recv(sock->socket, buffer, bufferSize - 1, 0);
 
     if (readSize == -1) {
         FREE_ARRAY(vm, char, buffer, bufferSize);
