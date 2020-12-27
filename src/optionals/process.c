@@ -19,14 +19,12 @@ static Value execute(DictuVM *vm, ObjList *argList, bool wait) {
         int status = 0;
         waitpid(pid, &status, 0);
 
-        if (WIFEXITED(status)) {
-            status = WEXITSTATUS(status);
+        if (WIFEXITED(status) && (status = WEXITSTATUS(status)) != 0) {
+            ERROR_RESULT;
         }
-
-        return NUMBER_VAL(status);
     }
 
-    return NIL_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value executeReturnOutput(DictuVM *vm, ObjList *argList) {
@@ -70,10 +68,10 @@ static Value executeReturnOutput(DictuVM *vm, ObjList *argList) {
         total += numRead;
     }
 
+    output = SHRINK_ARRAY(vm, output, char, size, total + 1);
     output[total] = '\0';
-    vm->bytesAllocated -= size - total - 1;
 
-    return OBJ_VAL(takeString(vm, output, total));
+    return newResultSuccess(vm, OBJ_VAL(takeString(vm, output, total)));
 }
 
 static Value execNative(DictuVM *vm, int argCount, Value *args) {
