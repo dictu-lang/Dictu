@@ -86,7 +86,8 @@ static Value execNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjList *argList = AS_LIST(args[0]);
-    return execute(vm, argList, false);
+    execute(vm, argList, false);
+    return NIL_VAL;
 }
 
 static Value runNative(DictuVM *vm, int argCount, Value *args) {
