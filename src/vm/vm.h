@@ -39,7 +39,7 @@ struct _vm {
     Table fileMethods;
     Table classMethods;
     Table instanceMethods;
-    Table socketMethods;
+    Table resultMethods;
     Registry nativeRegistry;
     ObjString *initString;
     ObjString *replVar;

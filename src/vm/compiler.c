@@ -405,10 +405,12 @@ static uint8_t parseVariable(Compiler *compiler, const char *errorMessage, bool 
 static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
     if (compiler->scopeDepth == 0) {
         if (constant) {
-            tableSet(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]), NIL_VAL);
+            tableSet(compiler->parser->vm, &compiler->parser->vm->constants,
+                     AS_STRING(currentChunk(compiler)->constants.values[global]), NIL_VAL);
         } else {
             // If it's not constant, remove
-            tableDelete(compiler->parser->vm, &compiler->parser->vm->constants, AS_STRING(currentChunk(compiler)->constants.values[global]));
+            tableDelete(compiler->parser->vm, &compiler->parser->vm->constants,
+                        AS_STRING(currentChunk(compiler)->constants.values[global]));
         }
 
         emitBytes(compiler, OP_DEFINE_MODULE, global);
@@ -437,7 +439,8 @@ static int argumentList(Compiler *compiler) {
     return argCount;
 }
 
-static void and_(Compiler *compiler, bool canAssign) {
+static void and_(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     UNUSED(canAssign);
 
     // left operand...
@@ -457,13 +460,97 @@ static void and_(Compiler *compiler, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static void binary(Compiler *compiler, bool canAssign) {
+static bool foldBinary(Compiler *compiler, TokenType operatorType) {
+#define FOLD(operator)                                                         \
+    do {                                                                       \
+        Chunk *chunk = currentChunk(compiler);                                 \
+        uint8_t index = chunk->code[chunk->count - 1];                         \
+        uint8_t constant = chunk->code[chunk->count - 3];                      \
+        if (chunk->code[chunk->count - 2] != OP_CONSTANT) return false;        \
+        if (chunk->code[chunk->count - 4] != OP_CONSTANT) return false;        \
+        chunk->constants.values[constant] = NUMBER_VAL(                        \
+            AS_NUMBER(chunk->constants.values[constant]) operator              \
+            AS_NUMBER(chunk->constants.values[index])                          \
+        );                                                                     \
+        chunk->constants.count--;                                              \
+        chunk->count -= 2;                                                     \
+        return true;                                                           \
+    } while (false)
+
+#define FOLD_FUNC(func)                                                        \
+    do {                                                                       \
+        Chunk *chunk = currentChunk(compiler);                                 \
+        uint8_t index = chunk->code[chunk->count - 1];                         \
+        uint8_t constant = chunk->code[chunk->count - 3];                      \
+        if (chunk->code[chunk->count - 2] != OP_CONSTANT) return false;        \
+        if (chunk->code[chunk->count - 4] != OP_CONSTANT) return false;        \
+        chunk->constants.values[constant] = NUMBER_VAL(                        \
+            func(                                                              \
+                AS_NUMBER(chunk->constants.values[constant]),                  \
+                AS_NUMBER(chunk->constants.values[index])                      \
+            )                                                                  \
+        );                                                                     \
+        chunk->constants.count--;                                              \
+        chunk->count -= 2;                                                     \
+        return true;                                                           \
+    } while (false)
+
+    switch (operatorType) {
+        case TOKEN_PLUS: {
+            FOLD(+);
+            return false;
+        }
+
+        case TOKEN_MINUS: {
+            FOLD(-);
+            return false;
+        }
+
+        case TOKEN_STAR: {
+            FOLD(*);
+            return false;
+        }
+
+        case TOKEN_SLASH: {
+            FOLD(/);
+            return false;
+        }
+
+        case TOKEN_PERCENT: {
+            FOLD_FUNC(fmod);
+            return false;
+        }
+
+        case TOKEN_STAR_STAR: {
+            FOLD_FUNC(powf);
+            return false;
+        }
+
+        default: {
+            return false;
+        }
+    }
+#undef FOLD
+#undef FOLD_FUNC
+}
+
+static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     UNUSED(canAssign);
 
     TokenType operatorType = compiler->parser->previous.type;
 
     ParseRule *rule = getRule(operatorType);
     parsePrecedence(compiler, (Precedence) (rule->precedence + 1));
+
+    TokenType currentToken = compiler->parser->previous.type;
+
+    // Attempt constant fold.
+    if ((previousToken.type == TOKEN_NUMBER) &&
+        (currentToken == TOKEN_NUMBER || currentToken == TOKEN_LEFT_PAREN) &&
+        foldBinary(compiler, operatorType)
+            ) {
+        return;
+    }
 
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:
@@ -516,7 +603,8 @@ static void binary(Compiler *compiler, bool canAssign) {
     }
 }
 
-static void ternary(Compiler *compiler, bool canAssign) {
+static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     UNUSED(canAssign);
     // Jump to the else branch if the condition is false.
     int elseJump = emitJump(compiler, OP_JUMP_IF_FALSE);
@@ -538,14 +626,17 @@ static void ternary(Compiler *compiler, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static void call(Compiler *compiler, bool canAssign) {
+static void call(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     UNUSED(canAssign);
 
     int argCount = argumentList(compiler);
     emitBytes(compiler, OP_CALL, argCount);
 }
 
-static void dot(Compiler *compiler, bool canAssign) {
+static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
+
     consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
@@ -594,6 +685,15 @@ static void dot(Compiler *compiler, bool canAssign) {
     } else {
         emitBytes(compiler, OP_GET_PROPERTY, name);
     }
+}
+
+static void chain(Compiler *compiler, Token previousToken, bool canAssign) {
+    // If the operand is not nil we want to stop, otherwise continue
+    int endJump = emitJump(compiler, OP_JUMP_IF_NIL);
+
+    dot(compiler, previousToken, canAssign);
+
+    patchJump(compiler, endJump);
 }
 
 static void literal(Compiler *compiler, bool canAssign) {
@@ -723,11 +823,11 @@ static void number(Compiler *compiler, bool canAssign) {
 
     // We allocate the whole range for the worst case.
     // Also account for the null-byte.
-    char* buffer = ALLOCATE(compiler->parser->vm, char, compiler->parser->previous.length + 1);
-    char* current = buffer;
+    char *buffer = ALLOCATE(compiler->parser->vm, char, compiler->parser->previous.length + 1);
+    char *current = buffer;
 
     // Strip it of any underscores.
-    for(int i = 0; i < compiler->parser->previous.length; i++) {
+    for (int i = 0; i < compiler->parser->previous.length; i++) {
         char c = compiler->parser->previous.start[i];
 
         if (c != '_') {
@@ -746,7 +846,8 @@ static void number(Compiler *compiler, bool canAssign) {
     FREE_ARRAY(compiler->parser->vm, char, buffer, compiler->parser->previous.length + 1);
 }
 
-static void or_(Compiler *compiler, bool canAssign) {
+static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     UNUSED(canAssign);
 
     // left operand...
@@ -836,32 +937,37 @@ static void string(Compiler *compiler, bool canAssign) {
 
     memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
     int length = parseString(string, parser->previous.length - 2);
+
+    // If there were escape chars and the string shrank, resize the buffer
+    if (length != parser->previous.length - 1) {
+        string = SHRINK_ARRAY(parser->vm, string, char, parser->previous.length - 1, length + 1);
+    }
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(copyString(parser->vm, string, length)));
-    FREE_ARRAY(parser->vm, char, string, parser->previous.length - 1);
+    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
 }
 
 static void list(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    emitByte(compiler, OP_NEW_LIST);
+    int count = 0;
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACKET))
             break;
 
         expression(compiler);
-        emitByte(compiler, OP_ADD_LIST);
+        count++;
     } while (match(compiler, TOKEN_COMMA));
 
+    emitBytes(compiler, OP_NEW_LIST, count);
     consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
 static void dict(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    emitByte(compiler, OP_NEW_DICT);
+    int count = 0;
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACE))
@@ -870,13 +976,16 @@ static void dict(Compiler *compiler, bool canAssign) {
         expression(compiler);
         consume(compiler, TOKEN_COLON, "Expected ':'");
         expression(compiler);
-        emitByte(compiler, OP_ADD_DICT);
+        count++;
     } while (match(compiler, TOKEN_COMMA));
+
+    emitBytes(compiler, OP_NEW_DICT, count);
 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
 
-static void subscript(Compiler *compiler, bool canAssign) {
+static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
+    UNUSED(previousToken);
     // slice with no initial index [1, 2, 3][:100]
     if (match(compiler, TOKEN_COLON)) {
         emitByte(compiler, OP_EMPTY);
@@ -1105,12 +1214,51 @@ static void useStatement(Compiler *compiler) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after use statement.");
 }
 
+static bool foldUnary(Compiler *compiler, TokenType operatorType) {
+    TokenType valueToken = compiler->parser->previous.type;
+
+    switch (operatorType) {
+        case TOKEN_BANG: {
+            if (valueToken == TOKEN_TRUE) {
+                Chunk *chunk = currentChunk(compiler);
+                chunk->code[chunk->count - 1] = OP_FALSE;
+                return true;
+            } else if (valueToken == TOKEN_FALSE) {
+                Chunk *chunk = currentChunk(compiler);
+                chunk->code[chunk->count - 1] = OP_TRUE;
+                return true;
+            }
+
+            return false;
+        }
+
+        case TOKEN_MINUS: {
+            if (valueToken == TOKEN_NUMBER) {
+                Chunk *chunk = currentChunk(compiler);
+                uint8_t constant = chunk->code[chunk->count - 1];
+                chunk->constants.values[constant] = NUMBER_VAL(-AS_NUMBER(chunk->constants.values[constant]));
+                return true;
+            }
+
+            return false;
+        }
+
+        default: {
+            return false;
+        }
+    }
+}
+
 static void unary(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     TokenType operatorType = compiler->parser->previous.type;
-
     parsePrecedence(compiler, PREC_UNARY);
+
+    // Constant fold.
+    if (foldUnary(compiler, operatorType)) {
+        return;
+    }
 
     switch (operatorType) {
         case TOKEN_BANG:
@@ -1185,6 +1333,7 @@ ParseRule rules[] = {
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
+        {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
         {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
         {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
@@ -1249,7 +1398,7 @@ ParseRule rules[] = {
 static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     Parser *parser = compiler->parser;
     advance(parser);
-    ParseFn prefixRule = getRule(parser->previous.type)->prefix;
+    ParsePrefixFn prefixRule = getRule(parser->previous.type)->prefix;
     if (prefixRule == NULL) {
         error(parser, "Expect expression.");
         return;
@@ -1259,9 +1408,10 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     prefixRule(compiler, canAssign);
 
     while (precedence <= getRule(parser->current.type)->precedence) {
+        Token token = compiler->parser->previous;
         advance(parser);
-        ParseFn infixRule = getRule(parser->previous.type)->infix;
-        infixRule(compiler, canAssign);
+        ParseInfixFn infixRule = getRule(parser->previous.type)->infix;
+        infixRule(compiler, token, canAssign);
     }
 
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
@@ -1525,13 +1675,114 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 }
 
 static void expressionStatement(Compiler *compiler) {
+    Token previous = compiler->parser->previous;
+    advance(compiler->parser);
+    TokenType t = compiler->parser->current.type;
+
+    for (int i = 0; i < compiler->parser->current.length; ++i) {
+        backTrack(&compiler->parser->scanner);
+    }
+    compiler->parser->current = compiler->parser->previous;
+    compiler->parser->previous = previous;
+
     expression(compiler);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (compiler->parser->vm->repl) {
+    if (compiler->parser->vm->repl && t != TOKEN_EQUAL) {
         emitByte(compiler, OP_POP_REPL);
     } else {
         emitByte(compiler, OP_POP);
     }
+}
+
+static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
+    switch (code) {
+        case OP_NIL:
+        case OP_TRUE:
+        case OP_FALSE:
+        case OP_SUBSCRIPT:
+        case OP_SUBSCRIPT_ASSIGN:
+        case OP_SLICE:
+        case OP_PUSH:
+        case OP_POP:
+        case OP_EQUAL:
+        case OP_GREATER:
+        case OP_LESS:
+        case OP_ADD:
+        case OP_INCREMENT:
+        case OP_DECREMENT:
+        case OP_MULTIPLY:
+        case OP_DIVIDE:
+        case OP_POW:
+        case OP_MOD:
+        case OP_NOT:
+        case OP_NEGATE:
+        case OP_CLOSE_UPVALUE:
+        case OP_RETURN:
+        case OP_EMPTY:
+        case OP_END_CLASS:
+        case OP_IMPORT_VARIABLE:
+        case OP_IMPORT_END:
+        case OP_USE:
+        case OP_OPEN_FILE:
+        case OP_CLOSE_FILE:
+        case OP_BREAK:
+        case OP_BITWISE_AND:
+        case OP_BITWISE_XOR:
+        case OP_BITWISE_OR:
+        case OP_POP_REPL:
+            return 0;
+
+        case OP_CONSTANT:
+        case OP_UNPACK_LIST:
+        case OP_GET_LOCAL:
+        case OP_SET_LOCAL:
+        case OP_GET_GLOBAL:
+        case OP_GET_MODULE:
+        case OP_DEFINE_MODULE:
+        case OP_SET_MODULE:
+        case OP_GET_UPVALUE:
+        case OP_SET_UPVALUE:
+        case OP_GET_PROPERTY:
+        case OP_GET_PROPERTY_NO_POP:
+        case OP_SET_PROPERTY:
+        case OP_SET_INIT_PROPERTIES:
+        case OP_GET_SUPER:
+        case OP_CALL:
+        case OP_METHOD:
+        case OP_IMPORT:
+        case OP_NEW_LIST:
+        case OP_NEW_DICT:
+            return 1;
+
+        case OP_DEFINE_OPTIONAL:
+        case OP_JUMP:
+        case OP_JUMP_IF_NIL:
+        case OP_JUMP_IF_FALSE:
+        case OP_LOOP:
+        case OP_INVOKE:
+        case OP_SUPER:
+        case OP_CLASS:
+        case OP_SUBCLASS:
+        case OP_IMPORT_BUILTIN:
+            return 2;
+
+        case OP_IMPORT_BUILTIN_VARIABLE:
+            return 3;
+
+        case OP_CLOSURE: {
+            ObjFunction* loadedFn = AS_FUNCTION(constants.values[ip + 1]);
+
+            // There is one byte for the constant, then two for each upvalue.
+            return 1 + (loadedFn->upvalueCount * 2);
+        }
+
+        case OP_IMPORT_FROM: {
+            int count = constants.values[ip + 1];
+            return 1 + count;
+        }
+    }
+
+    return 0;
 }
 
 static void endLoop(Compiler *compiler) {
@@ -1547,7 +1798,7 @@ static void endLoop(Compiler *compiler) {
             patchJump(compiler, i + 1);
             i += 3;
         } else {
-            i++;
+            i += 1 + getArgCount(compiler->function->chunk.code[i], compiler->function->chunk.constants, i);
         }
     }
 
@@ -1748,8 +1999,8 @@ static void importStatement(Compiler *compiler) {
         declareVariable(compiler, &compiler->parser->previous);
 
         int index = findBuiltinModule(
-            (char *)compiler->parser->previous.start,
-            compiler->parser->previous.length - compiler->parser->current.length
+                (char *) compiler->parser->previous.start,
+                compiler->parser->previous.length - compiler->parser->current.length
         );
 
         if (index == -1) {
@@ -1817,7 +2068,7 @@ static void fromImportStatement(Compiler *compiler) {
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
 
         int index = findBuiltinModule(
-                (char *)compiler->parser->previous.start,
+                (char *) compiler->parser->previous.start,
                 compiler->parser->previous.length
         );
 

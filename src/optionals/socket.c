@@ -24,6 +24,17 @@ unsigned long inet_addr_new(const char* cp) {
 #include <arpa/inet.h>
 #endif
 
+typedef struct {
+    int socket;
+    int socketFamily;    /* Address family, e.g., AF_INET */
+    int socketType;      /* Socket type, e.g., SOCK_STREAM */
+    int socketProtocol;  /* Protocol type, usually 0 */
+} SocketData;
+
+#define AS_SOCKET(v) ((SocketData*)AS_ABSTRACT(v)->data)
+
+ObjAbstract *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol);
+
 static Value createSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "create() takes 2 arguments (%d given)", argCount);
@@ -40,12 +51,11 @@ static Value createSocket(DictuVM *vm, int argCount, Value *args) {
 
     int sock = socket(socketFamily, socketType, 0);
     if (sock == -1) {
-        SET_ERRNO(GET_SELF_CLASS);
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    ObjSocket *s = newSocket(vm, sock, socketFamily, socketType, 0);
-    return OBJ_VAL(s);
+    ObjAbstract *s = newSocket(vm, sock, socketFamily, socketType, 0);
+    return newResultSuccess(vm, OBJ_VAL(s));
 }
 
 static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
@@ -64,7 +74,7 @@ static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
     char *host = AS_CSTRING(args[1]);
     int port = AS_NUMBER(args[2]);
 
@@ -75,13 +85,10 @@ static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
     server.sin_port = htons(port);
 
     if (bind(sock->socket, (struct sockaddr *)&server , sizeof(server)) < 0) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
@@ -101,15 +108,12 @@ static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
         backlog = AS_NUMBER(args[1]);
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
     if (listen(sock->socket, backlog) == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
@@ -118,16 +122,20 @@ static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
 
     struct sockaddr_in client;
     int c = sizeof(struct sockaddr_in);
     int newSockId = accept(sock->socket, (struct sockaddr *)&client, (socklen_t*)&c);
 
-    ObjList *list = initList(vm);
+    if (newSockId < 0) {
+        ERROR_RESULT;
+    }
+
+    ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
-    ObjSocket *newSock = newSocket(vm, newSockId, sock->socketFamily, sock->socketProtocol, 0);
+    ObjAbstract *newSock = newSocket(vm, newSockId, sock->socketFamily, sock->socketProtocol, 0);
 
     push(vm, OBJ_VAL(newSock));
     writeValueArray(vm, &list->values, OBJ_VAL(newSock));
@@ -144,7 +152,7 @@ static Value acceptSocket(DictuVM *vm, int argCount, Value *args) {
 
     pop(vm);
 
-    return OBJ_VAL(list);
+    return newResultSuccess(vm, OBJ_VAL(list));
 }
 
 static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
@@ -158,19 +166,16 @@ static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
     ObjString *message = AS_STRING(args[1]);
 
     int writeRet = write(sock->socket , message->chars, message->length);
 
     if (writeRet == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return NUMBER_VAL(writeRet);
+    return newResultSuccess(vm, NUMBER_VAL(writeRet));
 }
 
 static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
@@ -184,8 +189,8 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
-    int bufferSize = AS_NUMBER(args[1]);
+    SocketData *sock = AS_SOCKET(args[0]);
+    int bufferSize = AS_NUMBER(args[1]) + 1;
 
     if (bufferSize < 1) {
         runtimeError(vm, "recv() argument must be greater than 1");
@@ -193,30 +198,62 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *buffer = ALLOCATE(vm, char, bufferSize);
-    int readSize = recv(sock->socket, buffer, bufferSize, 0);
+    int readSize = recv(sock->socket, buffer, bufferSize - 1, 0);
 
     if (readSize == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
         FREE_ARRAY(vm, char, buffer, bufferSize);
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    ObjString *rString = copyString(vm, buffer, readSize);
-    FREE_ARRAY(vm, char, buffer, bufferSize);
+    // Resize string
+    if (readSize != bufferSize) {
+        buffer = SHRINK_ARRAY(vm, buffer, char, bufferSize, readSize + 1);
+    }
 
-    return OBJ_VAL(rString);
+    buffer[readSize] = '\0';
+    ObjString *rString = takeString(vm, buffer, readSize);
+
+    return newResultSuccess(vm, OBJ_VAL(rString));
+}
+
+static Value connectSocket(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "connect() takes two arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "host passed to bind() must be a string");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[2])) {
+        runtimeError(vm, "port passed to bind() must be a number");
+        return EMPTY_VAL;
+    }
+
+    SocketData *sock = AS_SOCKET(args[0]);
+
+    struct sockaddr_in server;
+
+    server.sin_family = sock->socketFamily;
+    server.sin_addr.s_addr = inet_addr(AS_CSTRING(args[1]));
+    server.sin_port = htons(AS_NUMBER(args[2]));
+
+    if (connect(sock->socket, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value closeSocket(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(vm);
     if (argCount != 0) {
         runtimeError(vm, "close() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
     close(sock->socket);
 
     return NIL_VAL;
@@ -233,18 +270,47 @@ static Value setSocketOpt(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjSocket *sock = AS_SOCKET(args[0]);
+    SocketData *sock = AS_SOCKET(args[0]);
     int level = AS_NUMBER(args[1]);
     int option = AS_NUMBER(args[2]);
 
     if (setsockopt(sock->socket, level, option, &(int){1}, sizeof(int)) == -1) {
-        Value module = 0;
-        tableGet(&vm->modules, copyString(vm, "Socket", 6), &module);
-        SET_ERRNO(AS_MODULE(module));
-        return NIL_VAL;
+        ERROR_RESULT;
     }
 
-    return TRUE_VAL;
+    return newResultSuccess(vm, NIL_VAL);
+}
+
+void freeSocket(DictuVM *vm, ObjAbstract *abstract) {
+    FREE(vm, SocketData, abstract->data);
+}
+
+ObjAbstract *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
+    ObjAbstract *abstract = newAbstract(vm, freeSocket);
+    push(vm, OBJ_VAL(abstract));
+
+    SocketData *socket = ALLOCATE(vm, SocketData, 1);
+    socket->socket = sock;
+    socket->socketFamily = socketFamily;
+    socket->socketType = socketType;
+    socket->socketProtocol = socketProtocol;
+
+    abstract->data = socket;
+
+    /**
+     * Setup Socket object methods
+     */
+    defineNative(vm, &abstract->values, "bind", bindSocket);
+    defineNative(vm, &abstract->values, "listen", listenSocket);
+    defineNative(vm, &abstract->values, "accept", acceptSocket);
+    defineNative(vm, &abstract->values, "write", writeSocket);
+    defineNative(vm, &abstract->values, "recv", recvSocket);
+    defineNative(vm, &abstract->values, "connect", connectSocket);
+    defineNative(vm, &abstract->values, "close", closeSocket);
+    defineNative(vm, &abstract->values, "setsockopt", setSocketOpt);
+    pop(vm);
+
+    return abstract;
 }
 
 #ifdef _WIN32
@@ -273,28 +339,15 @@ ObjModule *createSocketModule(DictuVM *vm) {
     /**
      * Define Socket methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "create", createSocket);
 
     /**
      * Define Socket properties
      */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "AF_INET", NUMBER_VAL(AF_INET));
     defineNativeProperty(vm, &module->values, "SOCK_STREAM", NUMBER_VAL(SOCK_STREAM));
     defineNativeProperty(vm, &module->values, "SOL_SOCKET", NUMBER_VAL(SOL_SOCKET));
     defineNativeProperty(vm, &module->values, "SO_REUSEADDR", NUMBER_VAL(SO_REUSEADDR));
-
-    /**
-     * Setup Socket object methods
-     */
-    defineNative(vm, &vm->socketMethods, "bind", bindSocket);
-    defineNative(vm, &vm->socketMethods, "listen", listenSocket);
-    defineNative(vm, &vm->socketMethods, "accept", acceptSocket);
-    defineNative(vm, &vm->socketMethods, "write", writeSocket);
-    defineNative(vm, &vm->socketMethods, "recv", recvSocket);
-    defineNative(vm, &vm->socketMethods, "close", closeSocket);
-    defineNative(vm, &vm->socketMethods, "setsockopt", setSocketOpt);
 
     pop(vm);
     pop(vm);

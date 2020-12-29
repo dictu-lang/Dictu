@@ -1,0 +1,26 @@
+/**
+ * create.du
+ *
+ * Testing Sqlite.connect() and Sqlite.execute()
+ *
+ * Tests creating a table in SQLite
+ */
+
+import Sqlite;
+
+var connection = Sqlite.connect(":memory:");
+
+assert(connection.success());
+connection = connection.unwrap();
+
+connection.execute("CREATE TABLE test (x int)").unwrap();
+var resp = connection.execute("CREATE TABLE test (x int)");
+
+assert(resp.success() == false);
+assert(resp.unwrapError() == "table test already exists");
+
+connection.close();
+
+// Assert operations on a closed connection fail correctly
+assert(connection.execute("CREATE TABLE test1 (x int)").success() == false);
+assert(connection.execute("CREATE TABLE test1 (x int)").unwrapError() == "Database connection is closed");

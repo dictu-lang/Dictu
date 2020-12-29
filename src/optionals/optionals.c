@@ -8,6 +8,9 @@ BuiltinModules modules[] = {
         {"Datetime", &createDatetimeModule},
         {"Socket", &createSocketModule},
         {"Random", &createRandomModule},
+        {"Base64", &createBase64Module},
+        {"Hashlib", &createHashlibModule},
+        {"Sqlite", &createSqliteModule},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPModule},
 #endif
@@ -16,13 +19,6 @@ BuiltinModules modules[] = {
 
 ObjModule *importBuiltinModule(DictuVM *vm, int index) {
     return modules[index].module(vm);
-}
-
-Value getErrno(DictuVM* vm, ObjModule* module) {
-    Value errno_value = 0;
-    ObjString *name = copyString(vm, "errno", 5);
-    tableGet(&module->values, name, &errno_value);
-    return errno_value;
 }
 
 int findBuiltinModule(char *name, int length) {

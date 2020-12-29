@@ -18,10 +18,7 @@ static Value toStringNumber(DictuVM *vm, int argCount, Value *args) {
     }
     
     snprintf(numberString, numberStringLength, "%.15g", number);
-    Value newString = OBJ_VAL(copyString(vm, numberString, numberStringLength - 1));
-    FREE_ARRAY(vm, char, numberString, numberStringLength);
-
-    return newString;
+    return OBJ_VAL(takeString(vm, numberString, numberStringLength - 1));
 }
 
 void declareNumberMethods(DictuVM *vm) {

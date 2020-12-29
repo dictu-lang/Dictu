@@ -29,15 +29,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     char *value = getenv(AS_CSTRING(args[0]));
 
     if (value != NULL) {
-        return OBJ_VAL(copyString(vm, value, strlen(value)));
+        return newResultSuccess(vm, OBJ_VAL(copyString(vm, value, strlen(value))));
     }
 
-    /* getenv() doesn't set errno, so we provide an own error */
-    errno = EINVAL; /* EINVAL seems appropriate */
-
-    SET_ERRNO(GET_SELF_CLASS);
-
-    return NIL_VAL;
+    return newResultError(vm, "No environment variable set");
 }
 
 static Value set(DictuVM *vm, int argCount, Value *args) {
@@ -62,10 +57,10 @@ static Value set(DictuVM *vm, int argCount, Value *args) {
 
     /* both set errno, though probably they can not fail */
     if (retval == NOTOK) {
-        SET_ERRNO(GET_SELF_CLASS);
+        return newResultError(vm, "Failed to set environment variable");
     }
 
-    return NUMBER_VAL(retval == 0 ? OK : NOTOK);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 ObjModule *createEnvModule(DictuVM *vm) {
@@ -77,14 +72,8 @@ ObjModule *createEnvModule(DictuVM *vm) {
     /**
      * Define Env methods
      */
-    defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "set", set);
-
-    /**
-     * Define Env properties
-     */
-    defineNativeProperty(vm, &module->values, "errno", NUMBER_VAL(0));
 
     pop(vm);
     pop(vm);

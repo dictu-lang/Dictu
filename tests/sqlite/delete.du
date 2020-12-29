@@ -1,0 +1,61 @@
+/**
+ * update.du
+ *
+ * Testing Sqlite.connect() and Sqlite.execute()
+ *
+ * Tests inserting, selecting and deleting from a table in SQLite
+ */
+
+import Sqlite;
+
+var connection = Sqlite.connect(":memory:");
+assert(connection.success());
+connection = connection.unwrap();
+
+connection.execute("CREATE TABLE test (x int)").unwrap();
+connection.execute("INSERT INTO test VALUES (10)").unwrap();
+
+var select = connection.execute("SELECT * FROM test").unwrap();
+assert(select == [[10]]);
+
+var resp = connection.execute("INSERT INTO test VALUES (?)", [
+    11
+]).unwrap();
+
+select = connection.execute("SELECT * FROM test").unwrap();
+assert(select == [[10], [11]]);
+
+select = connection.execute("SELECT * FROM test WHERE x = 10").unwrap();
+assert(select == [[10]]);
+
+select = connection.execute("SELECT * FROM test WHERE x = ?", [
+    10
+]).unwrap();
+assert(select == [[10]]);
+
+select = connection.execute("SELECT * FROM test WHERE x = 11").unwrap();
+assert(select == [[11]]);
+
+select = connection.execute("SELECT * FROM test WHERE x = ?", [
+    11
+]).unwrap();
+assert(select == [[11]]);
+
+select = connection.execute("SELECT * FROM test WHERE x = ?", [
+    nil
+]).unwrap();
+assert(select == []);
+
+var delete = connection.execute("DELETE FROM test WHERE x = ?", [
+    10
+]).unwrap();
+
+select = connection.execute("SELECT * FROM test").unwrap();
+assert(select == [[11]]);
+
+delete = connection.execute("DELETE FROM test").unwrap();
+
+select = connection.execute("SELECT * FROM test").unwrap();
+assert(select == []);
+
+connection.close();

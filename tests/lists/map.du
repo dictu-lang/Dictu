@@ -1,0 +1,23 @@
+/**
+ * map.du
+ *
+ * Testing the list.map() method
+ *
+ * .map() runs a user defined function on each element in the list
+ * returning a new list.
+ */
+
+def add(a) {
+    return a + 10;
+}
+
+var l = [1, 2, 3, 4, 5].map(add);
+assert(l == [11, 12, 13, 14, 15]);
+
+l.map(add);
+// Returns a new list so old list should be unchanged
+assert(l == [11, 12, 13, 14, 15]);
+
+// Arrow function
+l = l.map(def (a) => a * a);
+assert(l == [121, 144, 169, 196, 225]);

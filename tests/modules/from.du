@@ -4,25 +4,25 @@
  * Testing from imports
  */
 
-from "tests/variables/scope.du" import x;
+from "../variables/scope.du" import x;
 assert(x == 10);
 
 {
-    from "tests/variables/scope.du" import x;
+    from "../variables/scope.du" import x;
     assert(x == 10);
     {
-        from "tests/variables/scope.du" import x;
+        from "../variables/scope.du" import x;
         assert(x == 10);
     }
 }
 
 
 from JSON import parse;
-assert(parse("10") == 10);
+assert(parse("10").unwrap() == 10);
 
 {
     from JSON import parse;
-    assert(parse("10") == 10);
+    assert(parse("10").unwrap() == 10);
 
     {
         from Math import PI;

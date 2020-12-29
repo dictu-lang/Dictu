@@ -12,15 +12,9 @@
 #include "datetime.h"
 #include "socket.h"
 #include "random.h"
-
-#define GET_SELF_CLASS \
-  AS_MODULE(args[-1])
-
-#define SET_ERRNO(module_)                                              \
-  defineNativeProperty(vm, &module_->values, "errno", NUMBER_VAL(errno))
-
-#define RESET_ERRNO(module_)                                       \
-  defineNativeProperty(vm, &module_->values, "errno", 0)
+#include "base64.h"
+#include "hashlib.h"
+#include "sqlite.h"
 
 typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
 
@@ -30,8 +24,6 @@ typedef struct {
 } BuiltinModules;
 
 ObjModule *importBuiltinModule(DictuVM *vm, int index);
-
-Value getErrno(DictuVM* vm, ObjModule* module);
 
 int findBuiltinModule(char *name, int length);
 

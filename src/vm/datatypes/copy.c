@@ -3,9 +3,9 @@
 ObjList *copyList(DictuVM* vm, ObjList *oldList, bool shallow);
 
 ObjDict *copyDict(DictuVM* vm, ObjDict *oldDict, bool shallow) {
-    ObjDict *newDict = initDict(vm);
+    ObjDict *dict = newDict(vm);
     // Push to stack to avoid GC
-    push(vm, OBJ_VAL(newDict));
+    push(vm, OBJ_VAL(dict));
 
     for (int i = 0; i <= oldDict->capacityMask; ++i) {
         if (IS_EMPTY(oldDict->entries[i].key)) {
@@ -26,18 +26,18 @@ ObjDict *copyDict(DictuVM* vm, ObjDict *oldDict, bool shallow) {
 
         // Push to stack to avoid GC
         push(vm, val);
-        dictSet(vm, newDict, oldDict->entries[i].key, val);
+        dictSet(vm, dict, oldDict->entries[i].key, val);
         pop(vm);
     }
 
     pop(vm);
-    return newDict;
+    return dict;
 }
 
 ObjList *copyList(DictuVM* vm, ObjList *oldList, bool shallow) {
-    ObjList *newList = initList(vm);
+    ObjList *list = newList(vm);
     // Push to stack to avoid GC
-    push(vm, OBJ_VAL(newList));
+    push(vm, OBJ_VAL(list));
 
     for (int i = 0; i < oldList->values.count; ++i) {
         Value val = oldList->values.values[i];
@@ -54,12 +54,12 @@ ObjList *copyList(DictuVM* vm, ObjList *oldList, bool shallow) {
 
         // Push to stack to avoid GC
         push(vm, val);
-        writeValueArray(vm, &newList->values, val);
+        writeValueArray(vm, &list->values, val);
         pop(vm);
     }
 
     pop(vm);
-    return newList;
+    return list;
 }
 
 ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {

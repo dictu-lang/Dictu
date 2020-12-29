@@ -1,0 +1,25 @@
+/**
+ * filter.du
+ *
+ * Testing the list.filter() method
+ *
+ * .filter() runs a user defined function on each element in the list
+ * keeping elements that evaluate to true based on the function
+ */
+
+def size(a) {
+    return a < 10;
+}
+
+var list = [8, 9, 10, 11, 12];
+
+var l = list.filter(size);
+assert(l == [8, 9]);
+
+list.filter(size);
+// Returns a new list so old list should be unchanged
+assert(list == [8, 9, 10, 11, 12]);
+
+// Arrow function
+l = list.filter(def (a) => a < 10);
+assert(l == [8, 9]);

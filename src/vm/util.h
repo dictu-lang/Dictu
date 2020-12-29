@@ -5,6 +5,8 @@
 
 char *readFile(DictuVM *vm, const char *path);
 
+ObjString *getDirectory(DictuVM *vm, char *source);
+
 void defineNative(DictuVM *vm, Table *table, const char *name, NativeFn function);
 
 void defineNativeProperty(DictuVM *vm, Table *table, const char *name, Value value);
@@ -12,5 +14,9 @@ void defineNativeProperty(DictuVM *vm, Table *table, const char *name, Value val
 bool isValidKey(Value value);
 
 Value boolNative(DictuVM *vm, int argCount, Value *args);
+
+ObjString *dirname(DictuVM *vm, char *path, int len);
+
+bool resolvePath(char *directory, char *path, char *ret);
 
 #endif //dictu_util_h

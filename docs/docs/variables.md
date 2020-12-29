@@ -25,6 +25,7 @@ nav_order: 3
 | Dictionary | {“key1”: 10, 2: “two”, true: “true”, nil: “nil”} | Dictionaries have key-value pairs, like a dictionary (Word: Definition). Values can be any of the data types above except lists. |
 | Set | `set("1", 1, "1")` will actually mean `{"1", 1}` | Sets are unordered collections of hashable, unique values. You can create a set with the `set()` function. |
 | Nil | nil | Don’t confuse `nil` with `null`! While they mean the same thing in the English language, and the latter is more common in programming, `null` has no significance in Dictu. |
+| Result | Success, Error | See [Error Handling section.](/docs/error-handling) |
 
 ## Declaring a variable
 
@@ -107,47 +108,4 @@ print(val3); // 3
 // Error!
 var [d] = [1, 2];
 var [e, f] = [1];
-```
-
-## Type casting
-
-You can convert between data types using several built-in methods.
-
-### value.toString();
-You can convert values into strings with the toString() method. This method can be called on variables, constants, and directly on values, as shown below.
-```cs
-true.toString(); // 'true'
-nil.toString(); // 'nil'
-1.toString(); // '1'
-{"key": "value"}.toString(); // {"key": "value"}
-[1,2,3].toString(); // '[1, 2, 3]'
-set().toString(); // '{}'
-```
-
-### value.toBool();
-You can convert values into booleans with the `toBool()` method. Dictu will decide whether a value is "truthy" or not. A "truthy" value is longer than 0 or is not 0 when checking number types. `nil` is always false.
-
-```cs
-"".toBool(); // false
-" ".toBool(); // true
-"test".toBool(); // true
-"false".toBool(); // true
-
-0.toBool(); // false
-10.toBool(); // true
-
-[].toBool(); // false
-[1].toBool(); // true
-[[]].toBool(); // true
-```
-
-### value.toNumber();
-
-The `toNumber()` method is only for converting a string to a number. This method has a few strange caveats (see the examples below).
-
-```cs
-"123".toNumber(); // 123
-" 123".toNumber(); // 123
-"123 ".toNumber(); // nil
-"Hello".toNumber(); // nil
 ```

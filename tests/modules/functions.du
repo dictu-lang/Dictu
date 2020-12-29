@@ -4,13 +4,13 @@
  * Testing importing functions from another script works
  */
 
-import "tests/functions/parameters.du" as ParametersModule;
-import "tests/functions/arrow.du" as ArrowFuncModule;
+import "../functions/parameters.du" as ParametersModule;
+import "../functions/arrow.du" as ArrowFuncModule;
 
 /**
  * ParametersModule
  *
- * Mirrors the function calls in tests/functions/parameters.du
+ * Mirrors the function calls in parameters.du
  */
 ParametersModule.test(10);
 ParametersModule.test1(5, 5);
@@ -28,7 +28,7 @@ ParametersModule.largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1
 /**
  * ArrowFuncModule
  *
- * Mirrors some of the tests in tests/functions/arrow.du
+ * Mirrors some of the tests in arrow.du
  */
 
 assert(type(ArrowFuncModule.func) == "function");
@@ -45,7 +45,7 @@ assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
  */
 {
     {
-        import "tests/functions/arrow.du" as NestedArrowFuncModule;
+        import "../functions/arrow.du" as NestedArrowFuncModule;
         assert(type(NestedArrowFuncModule.func) == "function");
         assert(NestedArrowFuncModule.func() == 10);
 
@@ -57,7 +57,7 @@ assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
         {
             {
                 import JSON;
-                assert(JSON.parse("10") == 10);
+                assert(JSON.parse("10").unwrap() == 10);
             }
         }
     }

@@ -25,7 +25,8 @@
 #define AS_DICT(value)          ((ObjDict*)AS_OBJ(value))
 #define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
-#define AS_SOCKET(value)        ((ObjSocket*)AS_OBJ(value))
+#define AS_ABSTRACT(value)      ((ObjAbstract*)AS_OBJ(value))
+#define AS_RESULT(value)        ((ObjResult*)AS_OBJ(value))
 
 #define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
@@ -41,7 +42,8 @@
 #define IS_DICT(value)            isObjType(value, OBJ_DICT)
 #define IS_SET(value)             isObjType(value, OBJ_SET)
 #define IS_FILE(value)            isObjType(value, OBJ_FILE)
-#define IS_SOCKET(value)        isObjType(value, OBJ_SOCKET)
+#define IS_ABSTRACT(value)        isObjType(value, OBJ_ABSTRACT)
+#define IS_RESULT(value)          isObjType(value, OBJ_RESULT)
 
 typedef enum {
     OBJ_MODULE,
@@ -56,7 +58,8 @@ typedef enum {
     OBJ_DICT,
     OBJ_SET,
     OBJ_FILE,
-    OBJ_SOCKET,
+    OBJ_ABSTRACT,
+    OBJ_RESULT,
     OBJ_UPVALUE
 } ObjType;
 
@@ -86,6 +89,7 @@ struct sObj {
 typedef struct {
     Obj obj;
     ObjString* name;
+    ObjString* path;
     Table values;
 } ObjModule;
 
@@ -154,6 +158,26 @@ struct sObjFile {
     char *openType;
 };
 
+typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
+
+struct sObjAbstract {
+    Obj obj;
+    Table values;
+    void *data;
+    AbstractFreeFn func;
+};
+
+typedef enum {
+    SUCCESS,
+    ERR
+} ResultStatus;
+
+struct sObjResult {
+    Obj obj;
+    ResultStatus status;
+    Value value;
+};
+
 typedef struct sUpvalue {
     Obj obj;
 
@@ -200,14 +224,6 @@ typedef struct {
     ObjClosure *method;
 } ObjBoundMethod;
 
-typedef struct {
-    Obj obj;
-    int socket;
-    int socketFamily;    /* Address family, e.g., AF_INET */
-    int socketType;      /* Socket type, e.g., SOCK_STREAM */
-    int socketProtocol;  /* Protocol type, usually 0 */
-} ObjSocket;
-
 ObjModule *newModule(DictuVM *vm, ObjString *name);
 
 ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method);
@@ -226,15 +242,21 @@ ObjString *takeString(DictuVM *vm, char *chars, int length);
 
 ObjString *copyString(DictuVM *vm, const char *chars, int length);
 
-ObjList *initList(DictuVM *vm);
+ObjList *newList(DictuVM *vm);
 
-ObjDict *initDict(DictuVM *vm);
+ObjDict *newDict(DictuVM *vm);
 
-ObjSet *initSet(DictuVM *vm);
+ObjSet *newSet(DictuVM *vm);
 
-ObjFile *initFile(DictuVM *vm);
+ObjFile *newFile(DictuVM *vm);
 
-ObjSocket *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol);
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func);
+
+ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value);
+
+Value newResultSuccess(DictuVM *vm, Value value);
+
+Value newResultError(DictuVM *vm, char *errorMsg);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 
