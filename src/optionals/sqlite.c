@@ -2,6 +2,7 @@
 
 typedef struct {
     sqlite3 *db;
+    bool open;
 } Database;
 
 typedef struct {
@@ -53,6 +54,11 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
     }
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
+
+    if (!db->open) {
+        return newResultError(vm, "Database connection is closed");
+    }
+
     char *sql = AS_CSTRING(args[1]);
     ObjList *list = NULL;
     int parameterCount = countParameters(sql);;
@@ -158,7 +164,11 @@ static Value closeConnection(DictuVM *vm, int argCount, Value *args) {
     }
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
-    sqlite3_close(db->db);
+
+    if (db->open) {
+        sqlite3_close(db->db);
+        db->open = false;
+    }
 
     return NIL_VAL;
 }
@@ -191,7 +201,10 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
 
 void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
     Database *db = (Database*)abstract->data;
-    sqlite3_close(db->db);
+    if (db->open) {
+        sqlite3_close(db->db);
+        db->open = false;
+    }
     FREE(vm, Database, abstract->data);
 }
 
@@ -200,6 +213,7 @@ ObjAbstract *newSqlite(DictuVM *vm) {
     push(vm, OBJ_VAL(abstract));
 
     Database *db = ALLOCATE(vm, Database, 1);
+    db->open = true;
 
     /**
      * Setup Sqlite object methods

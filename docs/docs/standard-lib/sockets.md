@@ -39,7 +39,13 @@ Create a new socket object given a socket type and socket family.
 This will return a Result and unwrap to a new socket object in which the rest of the methods are ran on.
 
 ```cs
-var socket = Socket.create(Socket.AF_INET, Sockket.SOCK_STREAM).unwrap();
+var result = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+
+var socket = result.unwrap();
 ```
 
 ### socket.bind(string, number)
@@ -48,7 +54,20 @@ This will bind a given socket object to an IP and port number.
 Returns a Result type and on success will unwrap to nil.
 
 ```cs
-var result = socket.bind("host", 10);
+var result = socket.bind("127.0.0.1", 1000);
+if (!result.success()) {
+    print(result.unwrapError());
+    // ...
+}
+```
+
+### socket.connect(string, number)
+
+This will connect to a socket on a given host and IP.
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+var result = socket.connect("127.0.0.1", 1000);
 if (!result.success()) {
     print(result.unwrapError());
     // ...
