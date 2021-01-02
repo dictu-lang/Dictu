@@ -29,8 +29,8 @@ import Process;
 Executing an external process can be done via `.exec`. Unlike `.run()` exec does not wait for the process
 to finish executing, so it is only useful for circumstances where you wish to "fire and forget".
 
-`.exec()` expects a list as a parameter which is the command and any arguments for the command as individual list elements,
-and it will return `nil`.
+`.exec()` expects a list as a parameter which is the command and any arguments for the command as individual list elements, which all must be strings.
+It will return a Result that unwraps to `nil` on success.
 
 ```cs
 Process.exec(["ls", "-la"]);

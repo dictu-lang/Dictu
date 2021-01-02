@@ -190,6 +190,13 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
 
     close(fd[1]);
 
+    int status = 0;
+    waitpid(pid, &status, 0);
+
+    if (WIFEXITED(status) && (status = WEXITSTATUS(status)) != 0) {
+        ERROR_RESULT;
+    }
+
     int size = 1024;
     char* output = ALLOCATE(vm, char, size);
     char buffer[1024];
