@@ -198,7 +198,7 @@ static const char *const usage[] = {
 };
 
 int main(int argc, char *argv[]) {
-    int version;
+    int version = 0;
     char *cmd = NULL;
 
     struct argparse_option options[] = {

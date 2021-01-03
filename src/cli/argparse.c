@@ -95,7 +95,7 @@ argparse_getvalue(struct argparse *self, const struct argparse_option *opt,
             }
             if (errno)
                 argparse_error(self, opt, strerror(errno), flags);
-            if (s[0] != '\0')
+            if (s != NULL && s[0] != '\0')
                 argparse_error(self, opt, "expects an integer value", flags);
             break;
         case ARGPARSE_OPT_FLOAT:
@@ -111,7 +111,7 @@ argparse_getvalue(struct argparse *self, const struct argparse_option *opt,
             }
             if (errno)
                 argparse_error(self, opt, strerror(errno), flags);
-            if (s[0] != '\0')
+            if (s != NULL && s[0] != '\0')
                 argparse_error(self, opt, "expects a numerical value", flags);
             break;
         default:
@@ -278,7 +278,7 @@ argparse_parse(struct argparse *self, int argc, const char **argv)
     }
 
     end:
-    memmove(self->out + self->cpidx, self->argv,
+    memmove((void *)(self->out + self->cpidx), self->argv,
             self->argc * sizeof(*self->out));
     self->out[self->cpidx + self->argc] = NULL;
 
