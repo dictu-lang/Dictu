@@ -32,7 +32,7 @@ static char* buildArgs(DictuVM *vm, ObjList* list, int *size) {
     }
     string[pointer] = '\0';
 
-    *size = pointer;
+    *size = length;
     return string;
 }
 
