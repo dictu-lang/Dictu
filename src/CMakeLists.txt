@@ -40,7 +40,10 @@ endif()
 
 if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    set(CMAKE_C_FLAGS "/WX /W1")
+    # An issue on CI/CD with winbase.h producing C5105 warnings
+    if(NOT CICD)
+        set(CMAKE_C_FLAGS "/WX /W1")
+    endif()
     set(CMAKE_C_FLAGS_DEBUG "/Zi")
     set(CMAKE_C_FLAGS_RELEASE "/O2")
 else()
