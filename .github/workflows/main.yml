@@ -64,6 +64,6 @@ jobs:
          - uses: actions/checkout@v2
          - name: Make dictu and run tests (No HTTP No Linenoise)
            run: |
-             cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
+             cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
              cmake --build build
              Debug\dictu.exe tests/runTests.du
