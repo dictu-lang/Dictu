@@ -9,6 +9,7 @@
 #endif
 
 #include "../include/dictu_include.h"
+#include "argparse.h"
 
 #ifndef DISABLE_LINENOISE
 #include "linenoise.h"
@@ -63,9 +64,7 @@ static bool replCountQuotes(char *line) {
 }
 #endif
 
-static void repl(DictuVM *vm, int argc, char *argv[]) {
-    UNUSED(argc); UNUSED(argv);
-
+static void repl(DictuVM *vm) {
     printf(DICTU_STRING_VERSION);
     char *line;
 
@@ -177,35 +176,64 @@ static char *readFile(const char *path) {
     return buffer;
 }
 
-static void runFile(DictuVM *vm, int argc, char *argv[]) {
-    UNUSED(argc);
-
-    char *source = readFile(argv[1]);
+static void runFile(DictuVM *vm, char *filename) {
+    char *source = readFile(filename);
 
     if (source == NULL) {
-        fprintf(stderr, "Could not open file \"%s\".\n", argv[1]);
+        fprintf(stderr, "Could not open file \"%s\".\n", filename);
         exit(74);
     }
 
-    DictuInterpretResult result = dictuInterpret(vm, argv[1], source);
+    DictuInterpretResult result = dictuInterpret(vm, filename, source);
     free(source);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
-int main(int argc, char *argv[]) {
-    DictuVM *vm = dictuInitVM(argc == 1, argc, argv);
+static const char *const usage[] = {
+        "dictu [options] [[--] args]",
+        "dictu [options]",
+        NULL,
+};
 
-    if (argc == 1) {
-        repl(vm, argc, argv);
-    } else if (argc >= 2) {
-        runFile(vm, argc, argv);
-    } else {
-        fprintf(stderr, "Usage: dictu [path] [args]\n");
-        exit(64);
+int main(int argc, char *argv[]) {
+    int version = 0;
+    char *cmd = NULL;
+
+    struct argparse_option options[] = {
+            OPT_HELP(),
+            OPT_BOOLEAN('v', "version", &version, "Display Dictu version"),
+            OPT_STRING('c', "cmd", &cmd, "Run program passed in as string"),
+            OPT_END(),
+    };
+
+    struct argparse argparse;
+    argparse_init(&argparse, options, usage, 0);
+    argc = argparse_parse(&argparse, argc, (const char **)argv);
+
+    if (version) {
+        printf(DICTU_STRING_VERSION);
+        return 0;
     }
 
+    DictuVM *vm = dictuInitVM(argc == 0, argc, argv);
+
+    if (cmd != NULL) {
+        DictuInterpretResult result = dictuInterpret(vm, "repl", cmd);
+        if (result == INTERPRET_COMPILE_ERROR) exit(65);
+        if (result == INTERPRET_RUNTIME_ERROR) exit(70);
+        dictuFreeVM(vm);
+        return 0;
+    }
+
+    if (argc == 0) {
+        repl(vm);
+        dictuFreeVM(vm);
+        return 0;
+    }
+
+    runFile(vm, argv[0]);
     dictuFreeVM(vm);
     return 0;
 }

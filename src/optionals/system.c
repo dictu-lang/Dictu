@@ -275,7 +275,7 @@ void initArgv(DictuVM *vm, Table *table, int argc, char *argv[]) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
-    for (int i = 1; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         Value arg = OBJ_VAL(copyString(vm, argv[i], strlen(argv[i])));
         push(vm, arg);
         writeValueArray(vm, &list->values, arg);
