@@ -3,6 +3,9 @@ set(DISABLE_LINENOISE OFF CACHE BOOL "Determines if the REPL uses linenoise. Lin
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 if(DISABLE_LINENOISE)
+    list(FILTER sources EXCLUDE REGEX "linenoise.c")
+    list(FILTER headers EXCLUDE REGEX "linenoise.h")
+
     add_compile_definitions(DISABLE_LINENOISE)
 endif()
 

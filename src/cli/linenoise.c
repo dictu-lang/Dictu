@@ -103,7 +103,6 @@
  *
  */
 
-#ifndef DISABLE_LINENOISE
 #include <termios.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -1355,4 +1354,3 @@ int linenoiseHistoryLoad(const char *filename) {
     fclose(fp);
     return 0;
 }
-#endif

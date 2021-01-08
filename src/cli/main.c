@@ -145,6 +145,11 @@ static void repl(DictuVM *vm) {
             }
         }
 
+        if (line[0] == '\0') {
+            printf("\n");
+            break;
+        }
+
         dictuInterpret(vm, "repl", line);
         lineLength = 0;
         line[0] = '\0';
