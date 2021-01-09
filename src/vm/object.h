@@ -168,12 +168,12 @@ struct sObjAbstract {
 
 typedef enum {
     SUCCESS,
-    ERROR
-} ResultType;
+    ERR
+} ResultStatus;
 
 struct sObjResult {
     Obj obj;
-    ResultType type;
+    ResultStatus status;
     Value value;
 };
 
@@ -251,7 +251,7 @@ ObjFile *newFile(DictuVM *vm);
 
 ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func);
 
-ObjResult *newResult(DictuVM *vm, ResultType type, Value value);
+ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value);
 
 Value newResultSuccess(DictuVM *vm, Value value);
 

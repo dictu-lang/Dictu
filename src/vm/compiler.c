@@ -932,15 +932,16 @@ static void string(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     Parser *parser = compiler->parser;
+    int stringLength = parser->previous.length - 2;
 
-    char *string = ALLOCATE(parser->vm, char, parser->previous.length - 1);
+    char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
-    memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
-    int length = parseString(string, parser->previous.length - 2);
+    memcpy(string, parser->previous.start + 1, stringLength);
+    int length = parseString(string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
-    if (length != parser->previous.length - 1) {
-        string = SHRINK_ARRAY(parser->vm, string, char, parser->previous.length - 1, length + 1);
+    if (length != stringLength) {
+        string = SHRINK_ARRAY(parser->vm, string, char, stringLength + 1, length + 1);
     }
     string[length] = '\0';
 

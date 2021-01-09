@@ -230,7 +230,6 @@ ObjModule *createMathsModule(DictuVM *vm) {
     /**
      * Define Math methods
      */
-    // defineNative(vm, &module->values, "strerror", strerrorNative);
     defineNative(vm, &module->values, "average", averageNative);
     defineNative(vm, &module->values, "floor", floorNative);
     defineNative(vm, &module->values, "round", roundNative);

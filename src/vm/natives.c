@@ -199,7 +199,7 @@ static Value generateErrorResult(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    return OBJ_VAL(newResult(vm, ERROR, args[0]));
+    return OBJ_VAL(newResult(vm, ERR, args[0]));
 }
 
 // End of natives

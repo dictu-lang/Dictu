@@ -190,7 +190,7 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     SocketData *sock = AS_SOCKET(args[0]);
-    int bufferSize = AS_NUMBER(args[1]);
+    int bufferSize = AS_NUMBER(args[1]) + 1;
 
     if (bufferSize < 1) {
         runtimeError(vm, "recv() argument must be greater than 1");
@@ -198,20 +198,56 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *buffer = ALLOCATE(vm, char, bufferSize);
-    int readSize = recv(sock->socket, buffer, bufferSize, 0);
+    int readSize = recv(sock->socket, buffer, bufferSize - 1, 0);
 
     if (readSize == -1) {
         FREE_ARRAY(vm, char, buffer, bufferSize);
         ERROR_RESULT;
     }
 
+    // Resize string
+    if (readSize != bufferSize) {
+        buffer = SHRINK_ARRAY(vm, buffer, char, bufferSize, readSize + 1);
+    }
+
+    buffer[readSize] = '\0';
     ObjString *rString = takeString(vm, buffer, readSize);
 
     return newResultSuccess(vm, OBJ_VAL(rString));
 }
 
+static Value connectSocket(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "connect() takes two arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "host passed to bind() must be a string");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[2])) {
+        runtimeError(vm, "port passed to bind() must be a number");
+        return EMPTY_VAL;
+    }
+
+    SocketData *sock = AS_SOCKET(args[0]);
+
+    struct sockaddr_in server;
+
+    server.sin_family = sock->socketFamily;
+    server.sin_addr.s_addr = inet_addr(AS_CSTRING(args[1]));
+    server.sin_port = htons(AS_NUMBER(args[2]));
+
+    if (connect(sock->socket, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+
 static Value closeSocket(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(vm);
     if (argCount != 0) {
         runtimeError(vm, "close() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -269,6 +305,7 @@ ObjAbstract *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, 
     defineNative(vm, &abstract->values, "accept", acceptSocket);
     defineNative(vm, &abstract->values, "write", writeSocket);
     defineNative(vm, &abstract->values, "recv", recvSocket);
+    defineNative(vm, &abstract->values, "connect", connectSocket);
     defineNative(vm, &abstract->values, "close", closeSocket);
     defineNative(vm, &abstract->values, "setsockopt", setSocketOpt);
     pop(vm);
