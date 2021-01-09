@@ -13,6 +13,7 @@
 
 #ifndef DISABLE_LINENOISE
 #include "linenoise.h"
+#include "encodings/utf8.h"
 
 static bool replCountBraces(char *line) {
     int leftBraces = 0;
@@ -69,6 +70,12 @@ static void repl(DictuVM *vm) {
     char *line;
 
     #ifndef DISABLE_LINENOISE
+
+    linenoiseSetEncodingFunctions(
+            linenoiseUtf8PrevCharLen,
+            linenoiseUtf8NextCharLen,
+            linenoiseUtf8ReadCode);
+
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
@@ -136,6 +143,11 @@ static void repl(DictuVM *vm) {
             if (strlen(buffer) != BUFFER_SIZE - 1 || buffer[BUFFER_SIZE-2] == '\n') {
                 break;
             }
+        }
+
+        if (line[0] == '\0') {
+            printf("\n");
+            break;
         }
 
         dictuInterpret(vm, "repl", line);
