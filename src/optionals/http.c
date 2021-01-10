@@ -101,7 +101,12 @@ static char *dictToPostArgs(ObjDict *dict) {
 static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
-    ObjString *content = takeString(vm, response.res, response.len);
+    ObjString *content;
+    if (response.res != NULL) {
+        content = takeString(vm, response.res, response.len);
+    } else {
+        content = copyString(vm, "", 0);
+    }
 
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
