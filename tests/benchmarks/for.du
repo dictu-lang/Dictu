@@ -2,14 +2,14 @@ var list = [];
 
 var start = System.clock();
 
-for (var i = 0; i < 1000000; ++i) {
+for (var i = 0; i < 1000000; i += 1) {
     list.push(i);
 }
 
 var sum = 0;
 var leng = list.len();
 
-for (var i = 0; i < leng; ++i) {
+for (var i = 0; i < leng; i += 1) {
     sum += i;
 }
 

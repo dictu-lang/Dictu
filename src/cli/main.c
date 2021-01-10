@@ -89,12 +89,12 @@ static void repl(DictuVM *vm) {
         while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
             free(line);
             line = linenoise("... ");
-            int lineLength = strlen(line);
 
             if (line == NULL) {
                 return;
             }
 
+            int lineLength = strlen(line);
             char *temp = realloc(fullLine, sizeof(char) * fullLineLength + lineLength);
 
             if (temp == NULL) {

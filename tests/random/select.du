@@ -11,14 +11,14 @@ var histogram = {1: 0, 3: 0, 5: 0, 7: 0, 9: 0};
 var num_randomizations = 500;
 var percent_error_threshold = 0.05;
 
-for (var i = 0; i < num_randomizations; ++i) {
+for (var i = 0; i < num_randomizations; i += 1) {
     histogram[Random.select([1, 3, 5, 7, 9])] += 1;
 }
 
 var exp_percent = 0.2;
 var min_percent = exp_percent - percent_error_threshold;
 var max_percent = exp_percent + percent_error_threshold;
-for (var i = 0; i < histogram.len(); ++i) {
+for (var i = 0; i < histogram.len(); i += 1) {
     var key = histogram.keys()[i];
     var percent_of_key = histogram[key] / num_randomizations;
     assert(min_percent <= percent_of_key);
