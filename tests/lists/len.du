@@ -13,7 +13,7 @@ assert([1, 2, [3, 4]].len() == 3);
 
 var x = [];
 
-for (var i = 0; i < 1000; ++i) {
+for (var i = 0; i < 1000; i += 1) {
     assert(x.len() == i);
     x.push(i);
 }
@@ -21,7 +21,7 @@ for (var i = 0; i < 1000; ++i) {
 assert(x.len() == 1000);
 
 
-for (var i = 1000; i > 0; --i) {
+for (var i = 1000; i > 0; i -= 1) {
     assert(x.len() == i);
     x.pop();
 }

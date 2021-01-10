@@ -2,7 +2,7 @@ var start = System.clock();
 
 var count = 0;
 
-for (var i = 0; i < 1000000; ++i) {
+for (var i = 0; i < 1000000; i += 1) {
   if ("abc" == "abc")
     count = count + 1;
 

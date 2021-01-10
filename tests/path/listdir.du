@@ -8,7 +8,7 @@ import Path;
 
 var dir_contents = Path.listdir("tests/path/test_dir");
 var exp_dir_contents = ["test_file_1", "test_file_2", "test_file_3"];
-for (var i = 0; i < exp_dir_contents.len(); ++i) {
+for (var i = 0; i < exp_dir_contents.len(); i += 1) {
     var exp_inode = exp_dir_contents[i];
     assert(dir_contents.contains(exp_inode));
     exp_dir_contents.remove(exp_inode);
