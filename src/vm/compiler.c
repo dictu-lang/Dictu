@@ -1273,55 +1273,6 @@ static void unary(Compiler *compiler, bool canAssign) {
     }
 }
 
-static void prefix(Compiler *compiler, bool canAssign) {
-    UNUSED(canAssign);
-
-    TokenType operatorType = compiler->parser->previous.type;
-    Token cur = compiler->parser->current;
-    consume(compiler, TOKEN_IDENTIFIER, "Expected variable");
-    namedVariable(compiler, compiler->parser->previous, true);
-
-    int arg;
-    bool instance = false;
-
-    if (match(compiler, TOKEN_DOT)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
-        arg = identifierConstant(compiler, &compiler->parser->previous);
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, arg);
-        instance = true;
-    }
-
-    switch (operatorType) {
-        case TOKEN_PLUS_PLUS: {
-            emitByte(compiler, OP_INCREMENT);
-            break;
-        }
-        case TOKEN_MINUS_MINUS:
-            emitByte(compiler, OP_DECREMENT);
-            break;
-        default:
-            return;
-    }
-
-    if (instance) {
-        emitBytes(compiler, OP_SET_PROPERTY, arg);
-    } else {
-        uint8_t setOp;
-        arg = resolveLocal(compiler, &cur, false);
-        if (arg != -1) {
-            setOp = OP_SET_LOCAL;
-        } else if ((arg = resolveUpvalue(compiler, &cur)) != -1) {
-            setOp = OP_SET_UPVALUE;
-        } else {
-            arg = identifierConstant(compiler, &cur);
-            setOp = OP_SET_MODULE;
-        }
-
-        checkConst(compiler, setOp, arg);
-        emitBytes(compiler, setOp, (uint8_t) arg);
-    }
-}
-
 ParseRule rules[] = {
         {grouping, call,      PREC_CALL},               // TOKEN_LEFT_PAREN
         {NULL,     NULL,      PREC_NONE},               // TOKEN_RIGHT_PAREN
@@ -1335,8 +1286,8 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
-        {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
-        {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
