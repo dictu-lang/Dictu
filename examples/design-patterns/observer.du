@@ -25,7 +25,7 @@ class Publisher {
      * Notify all subscribed observers
      */
     notify() {
-        for (var i = 0; i < this.observers.len(); ++i) {
+        for (var i = 0; i < this.observers.len(); i += 1) {
             this.observers[i].update();
         }
     }

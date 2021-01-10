@@ -1,7 +1,7 @@
 var start = System.clock();
 var x = ["Dictu is great!"];
 
-for (var i = 0; i < 10000; ++i) {
+for (var i = 0; i < 10000; i += 1) {
     x.copy();
 }
 

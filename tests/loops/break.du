@@ -7,7 +7,7 @@
 var x = [];
 
 // Single break statement
-for (var i = 0; i < 10; ++i) {
+for (var i = 0; i < 10; i += 1) {
     if (i > 5)
         break;
 
@@ -19,7 +19,7 @@ assert(x == [0, 1, 2, 3, 4, 5]);
 var x = [];
 
 // Two break statements
-for (var i = 0; i < 10; ++i) {
+for (var i = 0; i < 10; i += 1) {
     if (i > 5)
         break;
 
@@ -40,7 +40,7 @@ while (i < 10) {
         break;
 
     y.push(i);
-    ++i;
+    i += 1;
 }
 
 assert(y == [0, 1, 2, 3, 4, 5]);
@@ -48,8 +48,8 @@ assert(y == [0, 1, 2, 3, 4, 5]);
 var z = [];
 
 // Nested for loop with multiple breaks
-for (var i = 0; i < 10; ++i) {
-    for (var j = 0; j < 10; ++j) {
+for (var i = 0; i < 10; i += 1) {
+    for (var j = 0; j < 10; j += 1) {
         if (j > 5)
             break;
 
@@ -78,19 +78,19 @@ while (i < 5) {
                 break;
 
             z.push(m);
-            ++m;
+            m += 1;
         }
         if (j > 3)
             break;
 
         z.push(j);
-        ++j;
+        j += 1;
     }
     if (i > 3)
         break;
 
     z.push(i);
-    ++i;
+    i += 1;
 }
 
 assert(z == [0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 1, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 2, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3]);

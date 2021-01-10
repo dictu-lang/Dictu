@@ -6,8 +6,8 @@ set(libraries)
 set(INCLUDE_DIR include/)
 
 # Remove CLI files
-list(FILTER sources EXCLUDE REGEX "(main|linenoise).c")
-list(FILTER headers EXCLUDE REGEX "linenoise.h")
+list(FILTER sources EXCLUDE REGEX "(main|linenoise|utf8).c")
+list(FILTER headers EXCLUDE REGEX "(linenoise|utf8).h")
 
 find_library(SQLITE_LIB SQLite3)
 set(THREADS)

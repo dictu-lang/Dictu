@@ -1,7 +1,7 @@
 def bubbleSort(list) {
  var sortedList = list.copy();
 
-  for (var i = 0; i < sortedList.len(); ++i) {
+  for (var i = 0; i < sortedList.len(); i += 1) {
     for (var j = 0; j < sortedList.len() - 1; ++j) {
       if (sortedList[j] > sortedList[j+1]) {
         var temp = sortedList[j+1];
