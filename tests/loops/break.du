@@ -49,7 +49,7 @@ var z = [];
 
 // Nested for loop with multiple breaks
 for (var i = 0; i < 10; i += 1) {
-    for (var j = 0; j < 10; ++j) {
+    for (var j = 0; j < 10; j += 1) {
         if (j > 5)
             break;
 
@@ -78,13 +78,13 @@ while (i < 5) {
                 break;
 
             z.push(m);
-            ++m;
+            m += 1;
         }
         if (j > 3)
             break;
 
         z.push(j);
-        ++j;
+        j += 1;
     }
     if (i > 3)
         break;
