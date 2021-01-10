@@ -14,7 +14,7 @@ class Request {
         this.parseUrl(routeData[1]);
         this.parseHeaders(headers);
 
-        if (this.headers.get("Content-Type", "") == "application/x-www-form-urlencoded") {
+        if (this.headers.get("Content-Type", "") == "application/x-www-form-urlencoded" and body != "") {
             this.parseBody(body);
         }
     }
