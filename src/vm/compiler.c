@@ -1658,8 +1658,6 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GREATER:
         case OP_LESS:
         case OP_ADD:
-        case OP_INCREMENT:
-        case OP_DECREMENT:
         case OP_MULTIPLY:
         case OP_DIVIDE:
         case OP_POW:
