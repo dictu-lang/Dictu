@@ -615,9 +615,8 @@ static DictuInterpretResult run(DictuVM *vm) {
     #define BINARY_OP(valueType, op, type) \
         do { \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
+              int length = 0; \
+              RUNTIME_ERROR("Unsupported operand types for "#op": '%s', '%s'", valueTypeToString(vm, peek(vm, 0), &length), valueTypeToString(vm, peek(vm, 1), &length)); \
           } \
           \
           type b = AS_NUMBER(pop(vm)); \
@@ -988,7 +987,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 push(vm, OBJ_VAL(finalList));
             } else {
-                RUNTIME_ERROR("Unsupported operand types.");
+                RUNTIME_ERROR("Unsupported operand types for +: %s, %s", valueToString(peek(vm, 0)), valueToString(peek(vm, 1)));
             }
             DISPATCH();
         }
