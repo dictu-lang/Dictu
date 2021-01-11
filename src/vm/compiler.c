@@ -575,7 +575,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
             emitByte(compiler, OP_ADD);
             break;
         case TOKEN_MINUS:
-            emitBytes(compiler, OP_NEGATE, OP_ADD);
+            emitByte(compiler, OP_SUBTRACT);
             break;
         case TOKEN_STAR:
             emitByte(compiler, OP_MULTIPLY);
@@ -655,7 +655,7 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, OP_SET_PROPERTY, name);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
@@ -1024,7 +1024,7 @@ static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
         emitByte(compiler, OP_PUSH);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
@@ -1100,7 +1100,7 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         checkConst(compiler, setOp, arg);
