@@ -1286,8 +1286,6 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
