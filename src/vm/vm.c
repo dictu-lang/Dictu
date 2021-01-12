@@ -617,6 +617,26 @@ static DictuInterpretResult run(DictuVM *vm) {
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
               int firstValLength = 0;                                                                     \
               int secondValLength = 0;                                                                    \
+              char *firstVal = valueTypeToString(vm, peek(vm, 1), &firstValLength);                       \
+              char *secondVal = valueTypeToString(vm, peek(vm, 0), &secondValLength);                     \
+                                                                                                          \
+              STORE_FRAME;                                                                                \
+              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+              return INTERPRET_RUNTIME_ERROR;                                                             \
+          }                                                                                               \
+                                                                                                          \
+          type b = AS_NUMBER(pop(vm));                                                                    \
+          type a = AS_NUMBER(pop(vm));                                                                    \
+          push(vm, valueType(a op b));                                                                    \
+        } while (false)
+
+    #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                                \
+        do {                                                                                              \
+          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
+              int firstValLength = 0;                                                                     \
+              int secondValLength = 0;                                                                    \
               char *firstVal = valueTypeToString(vm, peek(vm, 0), &firstValLength);                       \
               char *secondVal = valueTypeToString(vm, peek(vm, 1), &secondValLength);                     \
                                                                                                           \
@@ -629,7 +649,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
           type a = AS_NUMBER(pop(vm));                                                                    \
-          push(vm, valueType(a op b));                                                                    \
+          push(vm, valueType(func(a, b)));                                                                    \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
@@ -1033,26 +1053,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POW): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(powf(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, powf, double);
             DISPATCH();
         }
 
         CASE_CODE(MOD): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(fmod(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, fmod, double);
             DISPATCH();
         }
 
@@ -1761,6 +1767,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_OP_FUNCTION
 #undef STORE_FRAME
 #undef RUNTIME_ERROR
 

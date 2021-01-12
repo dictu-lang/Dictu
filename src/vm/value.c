@@ -439,6 +439,8 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
     }
 
     CONVERT(unknown, 7);
+#undef CONVERT
+#undef CONVERT_VARIABLE
 }
 
 void printValue(Value value) {
