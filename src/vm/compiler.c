@@ -1459,7 +1459,7 @@ static void parseClassBody(Compiler *compiler) {
 
             consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
             expression(compiler);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
         } else {
@@ -1693,6 +1693,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GET_PROPERTY:
         case OP_GET_PROPERTY_NO_POP:
         case OP_SET_PROPERTY:
+        case OP_SET_CLASS_VAR:
         case OP_SET_INIT_PROPERTIES:
         case OP_GET_SUPER:
         case OP_CALL:

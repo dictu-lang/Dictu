@@ -953,10 +953,25 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
                 tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
                 pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
                 DISPATCH();
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            STORE_FRAME;
+            int valLength = 0;
+            char *val = valueTypeToString(vm, peek(vm, 1), &valLength);
+            runtimeError(vm, "Can not set property on type '%s'", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
+            return INTERPRET_RUNTIME_ERROR;
+        }
+
+        CASE_CODE(SET_CLASS_VAR): {
+            // No type check required as this opcode is only ever emitted when parsing a class
+            ObjClass *klass = AS_CLASS(peek(vm, 1));
+            tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+            pop(vm);
+            DISPATCH();
         }
 
         CASE_CODE(SET_INIT_PROPERTIES): {
