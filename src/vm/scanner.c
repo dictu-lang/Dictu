@@ -388,18 +388,14 @@ Token scanToken(Scanner *scanner) {
         case '%':
             return makeToken(scanner, TOKEN_PERCENT);
         case '-': {
-            if (match(scanner, '-')) {
-                return makeToken(scanner, TOKEN_MINUS_MINUS);
-            } else if (match(scanner, '=')) {
+            if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_MINUS_EQUALS);
             } else {
                 return makeToken(scanner, TOKEN_MINUS);
             }
         }
         case '+': {
-            if (match(scanner, '+')) {
-                return makeToken(scanner, TOKEN_PLUS_PLUS);
-            } else if (match(scanner, '=')) {
+            if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_PLUS_EQUALS);
             } else {
                 return makeToken(scanner, TOKEN_PLUS);

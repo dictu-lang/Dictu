@@ -1286,8 +1286,6 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
@@ -1660,8 +1658,6 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GREATER:
         case OP_LESS:
         case OP_ADD:
-        case OP_INCREMENT:
-        case OP_DECREMENT:
         case OP_MULTIPLY:
         case OP_DIVIDE:
         case OP_POW:
