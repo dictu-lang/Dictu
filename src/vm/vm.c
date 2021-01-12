@@ -649,7 +649,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
           type a = AS_NUMBER(pop(vm));                                                                    \
-          push(vm, valueType(func(a, b)));                                                                    \
+          push(vm, valueType(func(a, b)));                                                                \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
@@ -659,6 +659,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             STORE_FRAME;                                                    \
             runtimeError(vm, __VA_ARGS__);                                  \
             return INTERPRET_RUNTIME_ERROR;                                 \
+        } while (0)
+
+    #define RUNTIME_ERROR_TYPE(error, distance)                                    \
+        do {                                                                       \
+            STORE_FRAME;                                                           \
+            int valLength = 0;                                                     \
+            char *val = valueTypeToString(vm, peek(vm, distance), &valLength);     \
+            runtimeError(vm, error, val);                                          \
+            FREE_ARRAY(vm, char, val, valLength + 1);                              \
+            return INTERPRET_RUNTIME_ERROR;                                        \
         } while (0)
 
     #ifdef COMPUTED_GOTO
@@ -901,12 +911,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
             }
 
-            STORE_FRAME;
-            int valLength = 0;
-            char *val = valueTypeToString(vm, peek(vm, 0), &valLength);
-            runtimeError(vm, "'%s' type has no properties", val);
-            FREE_ARRAY(vm, char, val, valLength + 1);
-            return INTERPRET_RUNTIME_ERROR;
+            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
@@ -958,12 +963,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 DISPATCH();
             }
 
-            STORE_FRAME;
-            int valLength = 0;
-            char *val = valueTypeToString(vm, peek(vm, 1), &valLength);
-            runtimeError(vm, "Can not set property on type '%s'", val);
-            FREE_ARRAY(vm, char, val, valLength + 1);
-            return INTERPRET_RUNTIME_ERROR;
+            RUNTIME_ERROR_TYPE("Can not set property on type '%s'", 1);
         }
 
         CASE_CODE(SET_CLASS_VAR): {
@@ -1087,12 +1087,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(vm, 0))) {
-                STORE_FRAME;
-                int valLength = 0;
-                char *val = valueTypeToString(vm, peek(vm, 0), &valLength);
-                runtimeError(vm, "Unsupported operand type for unary -: '%s'", val);
-                FREE_ARRAY(vm, char, val, valLength + 1);
-                return INTERPRET_RUNTIME_ERROR;
+                RUNTIME_ERROR_TYPE("Unsupported operand type for unary -: '%s'", 0);
             }
 
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
@@ -1309,11 +1304,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1374,12 +1365,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
-                case OBJ_RESULT: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
                 default: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                    RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
                 }
             }
         }
@@ -1390,11 +1377,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1436,7 +1419,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
         }
@@ -1521,7 +1504,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Can only slice on lists and strings.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
 
@@ -1539,11 +1522,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1586,7 +1565,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
             DISPATCH();
