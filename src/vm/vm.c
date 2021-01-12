@@ -1025,25 +1025,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(INCREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) + 1));
-            DISPATCH();
-        }
-
-        CASE_CODE(DECREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) - 1));
-            DISPATCH();
-        }
-
         CASE_CODE(MULTIPLY):
             BINARY_OP(NUMBER_VAL, *, double);
             DISPATCH();
