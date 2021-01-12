@@ -1019,32 +1019,31 @@ static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_ADD);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_ADD);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
-        emitByte(compiler, OP_PUSH);
-        emitByte(compiler, OP_SUBTRACT);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_SUBTRACT);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_MULTIPLY);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_MULTIPLY);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_DIVIDE);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_DIVIDE);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_AND);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_AND);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_XOR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_XOR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_OR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_OR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else {
         emitByte(compiler, OP_SUBSCRIPT);
@@ -1651,8 +1650,8 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_FALSE:
         case OP_SUBSCRIPT:
         case OP_SUBSCRIPT_ASSIGN:
+        case OP_SUBSCRIPT_PUSH:
         case OP_SLICE:
-        case OP_PUSH:
         case OP_POP:
         case OP_EQUAL:
         case OP_GREATER:

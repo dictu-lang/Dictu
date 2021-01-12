@@ -1424,6 +1424,61 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
         }
 
+        CASE_CODE(SUBSCRIPT_PUSH): {
+            Value value = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
+
+            if (!IS_OBJ(subscriptValue)) {
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+            }
+
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        RUNTIME_ERROR("List index must be a number.");
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        vm->stackTop[-1] = list->values.values[index];
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("List index out of bounds.");
+                }
+
+                case OBJ_DICT: {
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                    }
+
+                    Value dictValue;
+                    if (!dictGet(dict, indexValue, &dictValue)) {
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    }
+
+                    vm->stackTop[-1] = dictValue;
+                    push(vm, value);
+
+                    DISPATCH();
+                }
+
+                default: {
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+                }
+            }
+            DISPATCH();
+        }
+
         CASE_CODE(SLICE): {
             Value sliceEndIndex = peek(vm, 0);
             Value sliceStartIndex = peek(vm, 1);
@@ -1513,61 +1568,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             pop(vm);
 
             push(vm, returnVal);
-            DISPATCH();
-        }
-
-        CASE_CODE(PUSH): {
-            Value value = peek(vm, 0);
-            Value indexValue = peek(vm, 1);
-            Value subscriptValue = peek(vm, 2);
-
-            if (!IS_OBJ(subscriptValue)) {
-                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
-            }
-
-            switch (getObjType(subscriptValue)) {
-                case OBJ_LIST: {
-                    if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
-                    }
-
-                    ObjList *list = AS_LIST(subscriptValue);
-                    int index = AS_NUMBER(indexValue);
-
-                    // Allow negative indexes
-                    if (index < 0)
-                        index = list->values.count + index;
-
-                    if (index >= 0 && index < list->values.count) {
-                        vm->stackTop[-1] = list->values.values[index];
-                        push(vm, value);
-                        DISPATCH();
-                    }
-
-                    RUNTIME_ERROR("List index out of bounds.");
-                }
-
-                case OBJ_DICT: {
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
-                    }
-
-                    Value dictValue;
-                    if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
-                    }
-
-                    vm->stackTop[-1] = dictValue;
-                    push(vm, value);
-
-                    DISPATCH();
-                }
-
-                default: {
-                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
-                }
-            }
             DISPATCH();
         }
 
