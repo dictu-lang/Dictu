@@ -101,6 +101,11 @@ ObjString *getDirectory(DictuVM *vm, char *source) {
         runtimeError(vm, "Unable to resolve path '%s'", source);
         exit(1);
     }
+
+    if (vm->repl) {
+        return copyString(vm, res, strlen(res));
+    }
+
     return dirname(vm, res, strlen(res));
 }
 

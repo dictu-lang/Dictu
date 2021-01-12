@@ -879,6 +879,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                     push(vm, value);
                     DISPATCH();
                 }
+
+                RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
