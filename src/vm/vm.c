@@ -869,7 +869,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -881,6 +881,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
+                // Used to keep a reference to the class for the runtime error below
+                ObjClass *klassStore = klass;
                 ObjString *name = READ_STRING();
 
                 Value value;
@@ -893,9 +895,16 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     klass = klass->superclass;
                 }
+
+                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            STORE_FRAME;
+            int valLength = 0;
+            char *val = valueTypeToString(vm, peek(vm, 0), &valLength);
+            runtimeError(vm, "'%s' type has no properties", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
@@ -927,7 +936,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
         }
 
         CASE_CODE(SET_PROPERTY): {
@@ -1061,7 +1070,12 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
+                STORE_FRAME;
+                int valLength = 0;
+                char *val = valueTypeToString(vm, peek(vm, 0), &valLength);
+                runtimeError(vm, "Unsupported operand type for unary -: '%s'", val);
+                FREE_ARRAY(vm, char, val, valLength + 1);
+                return INTERPRET_RUNTIME_ERROR;
             }
 
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
