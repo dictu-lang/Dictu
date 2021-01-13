@@ -18,13 +18,17 @@ body {
     background-size: auto 20px;
 }
 
-.dark-mode {
+@media (prefers-color-scheme: dark) {
     .site-logo {
         filter: invert(1);
     }
 
-    a {
+    a, a.btn {
         color: #ffffff;
+    }
+
+    .nav-list-expander {
+        color: #2c84fa !important;
     }
 
     .btn.btn-primary {
