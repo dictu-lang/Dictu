@@ -18,17 +18,17 @@ body {
     background-size: auto 20px;
 }
 
+.nav-list-link {
+    color: #000000;
+}
+
 @media (prefers-color-scheme: dark) {
     .site-logo {
         filter: invert(1);
     }
 
-    a, a.btn {
+    .nav-list-link {
         color: #ffffff;
-    }
-
-    .nav-list-expander {
-        color: #2c84fa !important;
     }
 
     .btn.btn-primary {
