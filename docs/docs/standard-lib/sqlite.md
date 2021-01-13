@@ -19,6 +19,8 @@ parent: Standard Library
 ## Sqlite
 To make use of the Sqlite module an import is required.
 
+Note: Unlike SQLite and most other libraries, foreign keys **are** enabled by default when a connection is opened.
+
 ```js
 import Sqlite;
 ```
@@ -30,8 +32,8 @@ This opens a connection to a SQLite database. Returns a Result type and on succe
 Note: You can pass ":memory:" to open the SQLite database in memory rather than a file.
 
 ```cs
-Sqlite.connect(":memory:");
-Sqlite.connect("my/database/file.db");
+Sqlite.connect(":memory:").unwrap();
+Sqlite.connect("my/database/file.db").unwrap();
 ```
 
 ### sqlite.execute(string: query, list: arguments -> optional)

@@ -9,3 +9,4 @@ import "insert.du";
 import "select.du";
 import "update.du";
 import "delete.du";
+import "foreignKeys.du";
