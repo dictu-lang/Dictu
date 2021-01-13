@@ -18,12 +18,16 @@ body {
     background-size: auto 20px;
 }
 
-.dark-mode {
+.nav-list-link {
+    color: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
     .site-logo {
         filter: invert(1);
     }
 
-    a {
+    .nav-list-link {
         color: #ffffff;
     }
 
