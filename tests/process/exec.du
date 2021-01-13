@@ -1,0 +1,15 @@
+/**
+ * exec.du
+ *
+ * Testing the Process.exec() function
+ *
+ * exec() executes a new process and does not wait for a return.
+ */
+import Process;
+
+if (System.platform == "windows") {
+    assert(Process.exec(["cmd.exe", "/c", "dir"]).success());
+} else {
+    assert(Process.exec(["ls"]).success());
+    assert(Process.exec(["ls", "-la"]).success());
+}

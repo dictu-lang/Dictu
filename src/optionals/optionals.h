@@ -15,6 +15,7 @@
 #include "base64.h"
 #include "hashlib.h"
 #include "sqlite.h"
+#include "process.h"
 
 typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
 
