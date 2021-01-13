@@ -103,6 +103,8 @@ void graySet(DictuVM *vm, ObjSet *set);
 
 char *valueToString(Value value);
 
+char *valueTypeToString(DictuVM *vm, Value value, int *length);
+
 void printValue(Value value);
 
 #endif

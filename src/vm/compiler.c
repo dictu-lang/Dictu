@@ -575,7 +575,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
             emitByte(compiler, OP_ADD);
             break;
         case TOKEN_MINUS:
-            emitBytes(compiler, OP_NEGATE, OP_ADD);
+            emitByte(compiler, OP_SUBTRACT);
             break;
         case TOKEN_STAR:
             emitByte(compiler, OP_MULTIPLY);
@@ -655,7 +655,7 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, OP_SET_PROPERTY, name);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
@@ -1019,32 +1019,31 @@ static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_ADD);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_ADD);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
-        emitByte(compiler, OP_PUSH);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_SUBTRACT);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_MULTIPLY);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_MULTIPLY);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_DIVIDE);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_DIVIDE);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_AND);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_AND);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_XOR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_XOR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_OR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_OR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else {
         emitByte(compiler, OP_SUBSCRIPT);
@@ -1100,7 +1099,7 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         checkConst(compiler, setOp, arg);
@@ -1459,7 +1458,7 @@ static void parseClassBody(Compiler *compiler) {
 
             consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
             expression(compiler);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
         } else {
@@ -1651,8 +1650,8 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_FALSE:
         case OP_SUBSCRIPT:
         case OP_SUBSCRIPT_ASSIGN:
+        case OP_SUBSCRIPT_PUSH:
         case OP_SLICE:
-        case OP_PUSH:
         case OP_POP:
         case OP_EQUAL:
         case OP_GREATER:
@@ -1693,6 +1692,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GET_PROPERTY:
         case OP_GET_PROPERTY_NO_POP:
         case OP_SET_PROPERTY:
+        case OP_SET_CLASS_VAR:
         case OP_SET_INIT_PROPERTIES:
         case OP_GET_SUPER:
         case OP_CALL:
