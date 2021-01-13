@@ -14,7 +14,8 @@ static Value typeNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     int length = 0;
-    return OBJ_VAL(takeString(vm, valueTypeToString(vm, args[0], &length), length));
+    char *type = valueTypeToString(vm, args[0], &length);
+    return OBJ_VAL(takeString(vm, type, length));
 }
 
 static Value setNative(DictuVM *vm, int argCount, Value *args) {
