@@ -220,6 +220,11 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjList *list = AS_LIST(args[0]);
+
+    if (list->values.count == 0) {
+        return OBJ_VAL(copyString(vm, "", 0));
+    }
+
     char *delimiter = ", ";
 
     if (argCount == 1) {

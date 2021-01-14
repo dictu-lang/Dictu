@@ -13,8 +13,6 @@ typedef struct sObjFile ObjFile;
 typedef struct sObjAbstract ObjAbstract;
 typedef struct sObjResult ObjResult;
 
-#ifdef NAN_TAGGING
-
 // A mask that selects the sign bit.
 #define SIGN_BIT ((uint64_t)1 << 63)
 
@@ -73,40 +71,6 @@ static inline Value numToValue(double num) {
     return data.bits64;
 }
 
-#else
-
-typedef enum {
-  VAL_BOOL,
-  VAL_NIL, // [user-types]
-  VAL_NUMBER,
-  VAL_OBJ
-} ValueType;
-
-typedef struct {
-  ValueType type;
-  union {
-    bool boolean;
-    double number;
-    Obj* obj;
-  } as; // [as]
-} Value;
-
-#define IS_BOOL(value)    ((value).type == VAL_BOOL)
-#define IS_NIL(value)     ((value).type == VAL_NIL)
-#define IS_NUMBER(value)  ((value).type == VAL_NUMBER)
-#define IS_OBJ(value)     ((value).type == VAL_OBJ)
-
-#define AS_OBJ(value)     ((value).as.obj)
-#define AS_BOOL(value)    ((value).as.boolean)
-#define AS_NUMBER(value)  ((value).as.number)
-
-#define BOOL_VAL(value)   ((Value){ VAL_BOOL, { .boolean = value } })
-#define NIL_VAL           ((Value){ VAL_NIL, { .number = 0 } })
-#define NUMBER_VAL(value) ((Value){ VAL_NUMBER, { .number = value } })
-#define OBJ_VAL(object)   ((Value){ VAL_OBJ, { .obj = (Obj*)object } })
-
-#endif
-
 typedef struct {
     int capacity;
     int count;
@@ -138,6 +102,8 @@ bool setDelete(DictuVM *vm, ObjSet *set, Value value);
 void graySet(DictuVM *vm, ObjSet *set);
 
 char *valueToString(Value value);
+
+char *valueTypeToString(DictuVM *vm, Value value, int *length);
 
 void printValue(Value value);
 

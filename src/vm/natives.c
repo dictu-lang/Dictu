@@ -13,57 +13,9 @@ static Value typeNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (IS_BOOL(args[0])) {
-        return OBJ_VAL(copyString(vm, "bool", 4));
-    } else if (IS_NIL(args[0])) {
-        return OBJ_VAL(copyString(vm, "nil", 3));
-    } else if (IS_NUMBER(args[0])) {
-        return OBJ_VAL(copyString(vm, "number", 6));
-    } else if (IS_OBJ(args[0])) {
-        switch (OBJ_TYPE(args[0])) {
-            case OBJ_CLASS: {
-                switch (AS_CLASS(args[0])->type) {
-                    case CLASS_DEFAULT:
-                    case CLASS_ABSTRACT: {
-                        return OBJ_VAL(copyString(vm, "class", 5));
-                    }
-                    case CLASS_TRAIT: {
-                        return OBJ_VAL(copyString(vm, "trait", 5));
-                    }
-                }
-
-                break;
-            }
-            case OBJ_MODULE: {
-                return OBJ_VAL(copyString(vm, "module", 6));
-            }
-            case OBJ_INSTANCE: {
-                ObjString *className = AS_INSTANCE(args[0])->klass->name;
-                return OBJ_VAL(copyString(vm, className->chars, className->length));
-            }
-            case OBJ_BOUND_METHOD:
-                return OBJ_VAL(copyString(vm, "method", 6));
-            case OBJ_CLOSURE:
-            case OBJ_FUNCTION:
-                return OBJ_VAL(copyString(vm, "function", 8));
-            case OBJ_STRING:
-                return OBJ_VAL(copyString(vm, "string", 6));
-            case OBJ_LIST:
-                return OBJ_VAL(copyString(vm, "list", 4));
-            case OBJ_DICT:
-                return OBJ_VAL(copyString(vm, "dict", 4));
-            case OBJ_SET:
-                return OBJ_VAL(copyString(vm, "set", 3));
-            case OBJ_NATIVE:
-                return OBJ_VAL(copyString(vm, "native", 6));
-            case OBJ_FILE:
-                return OBJ_VAL(copyString(vm, "file", 4));
-            default:
-                break;
-        }
-    }
-
-    return OBJ_VAL(copyString(vm, "Unknown Type", 12));
+    int length = 0;
+    char *type = valueTypeToString(vm, args[0], &length);
+    return OBJ_VAL(takeString(vm, type, length));
 }
 
 static Value setNative(DictuVM *vm, int argCount, Value *args) {

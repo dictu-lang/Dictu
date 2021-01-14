@@ -138,13 +138,15 @@ myList.contains(10); // false
 ### list.join(string: delimiter -> optional)
 
 To convert a list of elements to a string use `.join()` to concatenate elements together by a given delimiter.
-If a delimiter is not supplied `", "` is the default.
+If a delimiter is not supplied `", "` is the default. Attempting to join an empty list will return an empty string.
 
 ```cs
 var myList = [1, 2, 3];
 print(myList.join()); // "1, 2, 3"
 print(myList.join("")); // "123"
 print(myList.join("-")); // "1-2-3"
+
+print([].join("delimiter")); // ""
 ```
 
 ### list.remove(value)

@@ -575,7 +575,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
             emitByte(compiler, OP_ADD);
             break;
         case TOKEN_MINUS:
-            emitBytes(compiler, OP_NEGATE, OP_ADD);
+            emitByte(compiler, OP_SUBTRACT);
             break;
         case TOKEN_STAR:
             emitByte(compiler, OP_MULTIPLY);
@@ -655,7 +655,7 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, OP_SET_PROPERTY, name);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
@@ -932,15 +932,16 @@ static void string(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     Parser *parser = compiler->parser;
+    int stringLength = parser->previous.length - 2;
 
-    char *string = ALLOCATE(parser->vm, char, parser->previous.length - 1);
+    char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
-    memcpy(string, parser->previous.start + 1, parser->previous.length - 2);
-    int length = parseString(string, parser->previous.length - 2);
+    memcpy(string, parser->previous.start + 1, stringLength);
+    int length = parseString(string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
-    if (length != parser->previous.length - 1) {
-        string = SHRINK_ARRAY(parser->vm, string, char, parser->previous.length - 1, length + 1);
+    if (length != stringLength) {
+        string = SHRINK_ARRAY(parser->vm, string, char, stringLength + 1, length + 1);
     }
     string[length] = '\0';
 
@@ -1018,32 +1019,31 @@ static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_ADD);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_ADD);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
-        emitByte(compiler, OP_PUSH);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_SUBTRACT);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_MULTIPLY);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_MULTIPLY);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_DIVIDE);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_DIVIDE);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_AND);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_AND);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_XOR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_XOR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         expression(compiler);
-        emitBytes(compiler, OP_PUSH, OP_BITWISE_OR);
+        emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_OR);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
     } else {
         emitByte(compiler, OP_SUBSCRIPT);
@@ -1099,7 +1099,7 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
-        emitBytes(compiler, OP_NEGATE, OP_ADD);
+        emitByte(compiler, OP_SUBTRACT);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         checkConst(compiler, setOp, arg);
@@ -1272,55 +1272,6 @@ static void unary(Compiler *compiler, bool canAssign) {
     }
 }
 
-static void prefix(Compiler *compiler, bool canAssign) {
-    UNUSED(canAssign);
-
-    TokenType operatorType = compiler->parser->previous.type;
-    Token cur = compiler->parser->current;
-    consume(compiler, TOKEN_IDENTIFIER, "Expected variable");
-    namedVariable(compiler, compiler->parser->previous, true);
-
-    int arg;
-    bool instance = false;
-
-    if (match(compiler, TOKEN_DOT)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
-        arg = identifierConstant(compiler, &compiler->parser->previous);
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, arg);
-        instance = true;
-    }
-
-    switch (operatorType) {
-        case TOKEN_PLUS_PLUS: {
-            emitByte(compiler, OP_INCREMENT);
-            break;
-        }
-        case TOKEN_MINUS_MINUS:
-            emitByte(compiler, OP_DECREMENT);
-            break;
-        default:
-            return;
-    }
-
-    if (instance) {
-        emitBytes(compiler, OP_SET_PROPERTY, arg);
-    } else {
-        uint8_t setOp;
-        arg = resolveLocal(compiler, &cur, false);
-        if (arg != -1) {
-            setOp = OP_SET_LOCAL;
-        } else if ((arg = resolveUpvalue(compiler, &cur)) != -1) {
-            setOp = OP_SET_UPVALUE;
-        } else {
-            arg = identifierConstant(compiler, &cur);
-            setOp = OP_SET_MODULE;
-        }
-
-        checkConst(compiler, setOp, arg);
-        emitBytes(compiler, setOp, (uint8_t) arg);
-    }
-}
-
 ParseRule rules[] = {
         {grouping, call,      PREC_CALL},               // TOKEN_LEFT_PAREN
         {NULL,     NULL,      PREC_NONE},               // TOKEN_RIGHT_PAREN
@@ -1334,8 +1285,6 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
         {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
-        {prefix,   NULL,      PREC_NONE},               // TOKEN_PLUS_PLUS
-        {prefix,   NULL,      PREC_NONE},               // TOKEN_MINUS_MINUS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
@@ -1509,7 +1458,7 @@ static void parseClassBody(Compiler *compiler) {
 
             consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
             expression(compiler);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
         } else {
@@ -1701,15 +1650,13 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_FALSE:
         case OP_SUBSCRIPT:
         case OP_SUBSCRIPT_ASSIGN:
+        case OP_SUBSCRIPT_PUSH:
         case OP_SLICE:
-        case OP_PUSH:
         case OP_POP:
         case OP_EQUAL:
         case OP_GREATER:
         case OP_LESS:
         case OP_ADD:
-        case OP_INCREMENT:
-        case OP_DECREMENT:
         case OP_MULTIPLY:
         case OP_DIVIDE:
         case OP_POW:
@@ -1745,6 +1692,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GET_PROPERTY:
         case OP_GET_PROPERTY_NO_POP:
         case OP_SET_PROPERTY:
+        case OP_SET_CLASS_VAR:
         case OP_SET_INIT_PROPERTIES:
         case OP_GET_SUPER:
         case OP_CALL:

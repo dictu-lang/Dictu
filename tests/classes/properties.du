@@ -27,10 +27,6 @@ obj.x *= 10;
 assert(obj.x == 200);
 obj.x /= 10;
 assert(obj.x == 20);
-++obj.x;
-assert(obj.x == 21);
---obj.x;
-assert(obj.x == 20);
 
 assert(obj.hasAttribute("x"));
 assert(!obj.hasAttribute("y"));

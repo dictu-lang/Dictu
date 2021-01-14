@@ -2,6 +2,7 @@
 
 typedef struct {
     sqlite3 *db;
+    bool open;
 } Database;
 
 typedef struct {
@@ -53,9 +54,14 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
     }
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
+
+    if (!db->open) {
+        return newResultError(vm, "Database connection is closed");
+    }
+
     char *sql = AS_CSTRING(args[1]);
     ObjList *list = NULL;
-    int parameterCount = countParameters(sql);;
+    int parameterCount = countParameters(sql);
     int argumentCount = 0;
 
     if (argCount == 2) {
@@ -105,6 +111,7 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
             sqlite3_finalize(result.stmt);
             char *error = (char *)sqlite3_errmsg(db->db);
+            pop(vm);
             return newResultError(vm, error);
         }
 
@@ -158,7 +165,11 @@ static Value closeConnection(DictuVM *vm, int argCount, Value *args) {
     }
 
     Database *db = AS_SQLITE_DATABASE(args[0]);
-    sqlite3_close(db->db);
+
+    if (db->open) {
+        sqlite3_close(db->db);
+        db->open = false;
+    }
 
     return NIL_VAL;
 }
@@ -186,12 +197,25 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, error);
     }
 
+    sqlite3_stmt *res;
+    err = sqlite3_prepare_v2(db->db, "PRAGMA foreign_keys = ON;", -1, &res, 0);
+
+    if (err) {
+        char *error = (char *)sqlite3_errmsg(db->db);
+        return newResultError(vm, error);
+    }
+
+    sqlite3_finalize(res);
+
     return newResultSuccess(vm, OBJ_VAL(abstract));
 }
 
 void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
     Database *db = (Database*)abstract->data;
-    sqlite3_close(db->db);
+    if (db->open) {
+        sqlite3_close(db->db);
+        db->open = false;
+    }
     FREE(vm, Database, abstract->data);
 }
 
@@ -200,6 +224,7 @@ ObjAbstract *newSqlite(DictuVM *vm) {
     push(vm, OBJ_VAL(abstract));
 
     Database *db = ALLOCATE(vm, Database, 1);
+    db->open = true;
 
     /**
      * Setup Sqlite object methods

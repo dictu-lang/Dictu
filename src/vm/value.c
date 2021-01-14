@@ -358,6 +358,91 @@ char *valueToString(Value value) {
     return unknown;
 }
 
+// Calling function needs to free memory
+char *valueTypeToString(DictuVM *vm, Value value, int *length) {
+#define CONVERT(typeString, size)                     \
+    do {                                              \
+        char *string = ALLOCATE(vm, char, size + 1);  \
+        memcpy(string, #typeString, size);            \
+        string[size] = '\0';                          \
+        *length = size;                               \
+        return string;                                \
+    } while (false)
+
+#define CONVERT_VARIABLE(typeString, size)            \
+    do {                                              \
+        char *string = ALLOCATE(vm, char, size + 1);  \
+        memcpy(string, typeString, size);             \
+        string[size] = '\0';                          \
+        *length = size;                               \
+        return string;                                \
+    } while (false)
+
+
+    if (IS_BOOL(value)) {
+        CONVERT(bool, 4);
+    } else if (IS_NIL(value)) {
+        CONVERT(nil, 3);
+    } else if (IS_NUMBER(value)) {
+        CONVERT(number, 6);
+    } else if (IS_OBJ(value)) {
+        switch (OBJ_TYPE(value)) {
+            case OBJ_CLASS: {
+                switch (AS_CLASS(value)->type) {
+                    case CLASS_DEFAULT:
+                    case CLASS_ABSTRACT: {
+                        CONVERT(class, 5);
+                    }
+                    case CLASS_TRAIT: {
+                        CONVERT(trait, 5);
+                    }
+                }
+
+                break;
+            }
+            case OBJ_MODULE: {
+                CONVERT(module, 6);
+            }
+            case OBJ_INSTANCE: {
+                ObjString *className = AS_INSTANCE(value)->klass->name;
+
+                CONVERT_VARIABLE(className->chars, className->length);
+            }
+            case OBJ_BOUND_METHOD: {
+                CONVERT(method, 6);
+            }
+            case OBJ_CLOSURE:
+            case OBJ_FUNCTION: {
+                CONVERT(function, 8);
+            }
+            case OBJ_STRING: {
+                CONVERT(string, 6);
+            }
+            case OBJ_LIST: {
+                CONVERT(list, 4);
+            }
+            case OBJ_DICT: {
+                CONVERT(dict, 4);
+            }
+            case OBJ_SET: {
+                CONVERT(set, 3);
+            }
+            case OBJ_NATIVE: {
+                CONVERT(native, 6);
+            }
+            case OBJ_FILE: {
+                CONVERT(file, 4);
+            }
+            default:
+                break;
+        }
+    }
+
+    CONVERT(unknown, 7);
+#undef CONVERT
+#undef CONVERT_VARIABLE
+}
+
 void printValue(Value value) {
     char *output = valueToString(value);
     printf("%s", output);

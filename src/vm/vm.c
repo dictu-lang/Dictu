@@ -612,17 +612,44 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    #define BINARY_OP(valueType, op, type) \
-        do { \
-          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-          } \
-          \
-          type b = AS_NUMBER(pop(vm)); \
-          type a = AS_NUMBER(pop(vm)); \
-          push(vm, valueType(a op b)); \
+    #define BINARY_OP(valueType, op, type)                                                                \
+        do {                                                                                              \
+          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
+              int firstValLength = 0;                                                                     \
+              int secondValLength = 0;                                                                    \
+              char *firstVal = valueTypeToString(vm, peek(vm, 1), &firstValLength);                       \
+              char *secondVal = valueTypeToString(vm, peek(vm, 0), &secondValLength);                     \
+                                                                                                          \
+              STORE_FRAME;                                                                                \
+              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+              return INTERPRET_RUNTIME_ERROR;                                                             \
+          }                                                                                               \
+                                                                                                          \
+          type b = AS_NUMBER(pop(vm));                                                                    \
+          type a = AS_NUMBER(pop(vm));                                                                    \
+          push(vm, valueType(a op b));                                                                    \
+        } while (false)
+
+    #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                                \
+        do {                                                                                              \
+          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
+              int firstValLength = 0;                                                                     \
+              int secondValLength = 0;                                                                    \
+              char *firstVal = valueTypeToString(vm, peek(vm, 0), &firstValLength);                       \
+              char *secondVal = valueTypeToString(vm, peek(vm, 1), &secondValLength);                     \
+                                                                                                          \
+              STORE_FRAME;                                                                                \
+              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+              return INTERPRET_RUNTIME_ERROR;                                                             \
+          }                                                                                               \
+                                                                                                          \
+          type b = AS_NUMBER(pop(vm));                                                                    \
+          type a = AS_NUMBER(pop(vm));                                                                    \
+          push(vm, valueType(func(a, b)));                                                                \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
@@ -632,6 +659,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             STORE_FRAME;                                                    \
             runtimeError(vm, __VA_ARGS__);                                  \
             return INTERPRET_RUNTIME_ERROR;                                 \
+        } while (0)
+
+    #define RUNTIME_ERROR_TYPE(error, distance)                                    \
+        do {                                                                       \
+            STORE_FRAME;                                                           \
+            int valLength = 0;                                                     \
+            char *val = valueTypeToString(vm, peek(vm, distance), &valLength);     \
+            runtimeError(vm, error, val);                                          \
+            FREE_ARRAY(vm, char, val, valLength + 1);                              \
+            return INTERPRET_RUNTIME_ERROR;                                        \
         } while (0)
 
     #ifdef COMPUTED_GOTO
@@ -842,7 +879,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -852,8 +889,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                     push(vm, value);
                     DISPATCH();
                 }
+
+                RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
+                // Used to keep a reference to the class for the runtime error below
+                ObjClass *klassStore = klass;
                 ObjString *name = READ_STRING();
 
                 Value value;
@@ -866,9 +907,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     klass = klass->superclass;
                 }
+
+                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
@@ -900,7 +943,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
         }
 
         CASE_CODE(SET_PROPERTY): {
@@ -915,10 +958,20 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
                 tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
                 pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
                 DISPATCH();
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            RUNTIME_ERROR_TYPE("Can not set property on type '%s'", 1);
+        }
+
+        CASE_CODE(SET_CLASS_VAR): {
+            // No type check required as this opcode is only ever emitted when parsing a class
+            ObjClass *klass = AS_CLASS(peek(vm, 1));
+            tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+            pop(vm);
+            DISPATCH();
         }
 
         CASE_CODE(SET_INIT_PROPERTIES): {
@@ -988,27 +1041,13 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 push(vm, OBJ_VAL(finalList));
             } else {
-                RUNTIME_ERROR("Unsupported operand types.");
+                RUNTIME_ERROR("Unsupported operand types for +: %s, %s", valueToString(peek(vm, 0)), valueToString(peek(vm, 1)));
             }
             DISPATCH();
         }
 
-        CASE_CODE(INCREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) + 1));
-            DISPATCH();
-        }
-
-        CASE_CODE(DECREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) - 1));
+        CASE_CODE(SUBTRACT): {
+            BINARY_OP(NUMBER_VAL, -, double);
             DISPATCH();
         }
 
@@ -1021,26 +1060,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POW): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(powf(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, powf, double);
             DISPATCH();
         }
 
         CASE_CODE(MOD): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(fmod(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, fmod, double);
             DISPATCH();
         }
 
@@ -1062,7 +1087,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
+                RUNTIME_ERROR_TYPE("Unsupported operand type for unary -: '%s'", 0);
             }
 
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
@@ -1279,11 +1304,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1344,12 +1365,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
-                case OBJ_RESULT: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
                 default: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                    RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
                 }
             }
         }
@@ -1360,11 +1377,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1406,9 +1419,64 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
+        }
+
+        CASE_CODE(SUBSCRIPT_PUSH): {
+            Value value = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
+
+            if (!IS_OBJ(subscriptValue)) {
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+            }
+
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        RUNTIME_ERROR("List index must be a number.");
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        vm->stackTop[-1] = list->values.values[index];
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("List index out of bounds.");
+                }
+
+                case OBJ_DICT: {
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                    }
+
+                    Value dictValue;
+                    if (!dictGet(dict, indexValue, &dictValue)) {
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    }
+
+                    vm->stackTop[-1] = dictValue;
+                    push(vm, value);
+
+                    DISPATCH();
+                }
+
+                default: {
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+                }
+            }
+            DISPATCH();
         }
 
         CASE_CODE(SLICE): {
@@ -1491,7 +1559,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Can only slice on lists and strings.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
 
@@ -1500,65 +1568,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             pop(vm);
 
             push(vm, returnVal);
-            DISPATCH();
-        }
-
-        CASE_CODE(PUSH): {
-            Value value = peek(vm, 0);
-            Value indexValue = peek(vm, 1);
-            Value subscriptValue = peek(vm, 2);
-
-            if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
-            }
-
-            switch (getObjType(subscriptValue)) {
-                case OBJ_LIST: {
-                    if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
-                    }
-
-                    ObjList *list = AS_LIST(subscriptValue);
-                    int index = AS_NUMBER(indexValue);
-
-                    // Allow negative indexes
-                    if (index < 0)
-                        index = list->values.count + index;
-
-                    if (index >= 0 && index < list->values.count) {
-                        vm->stackTop[-1] = list->values.values[index];
-                        push(vm, value);
-                        DISPATCH();
-                    }
-
-                    RUNTIME_ERROR("List index out of bounds.");
-                }
-
-                case OBJ_DICT: {
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
-                    }
-
-                    Value dictValue;
-                    if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
-                    }
-
-                    vm->stackTop[-1] = dictValue;
-                    push(vm, value);
-
-                    DISPATCH();
-                }
-
-                default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
-                }
-            }
             DISPATCH();
         }
 
@@ -1749,6 +1758,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_OP_FUNCTION
 #undef STORE_FRAME
 #undef RUNTIME_ERROR
 

@@ -20,3 +20,7 @@ assert(resp.success() == false);
 assert(resp.unwrapError() == "table test already exists");
 
 connection.close();
+
+// Assert operations on a closed connection fail correctly
+assert(connection.execute("CREATE TABLE test1 (x int)").success() == false);
+assert(connection.execute("CREATE TABLE test1 (x int)").unwrapError() == "Database connection is closed");
