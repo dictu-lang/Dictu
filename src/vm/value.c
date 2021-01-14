@@ -433,6 +433,9 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
             case OBJ_FILE: {
                 CONVERT(file, 4);
             }
+            case OBJ_RESULT: {
+                CONVERT(result, 6);
+            }
             default:
                 break;
         }

@@ -1,0 +1,41 @@
+/**
+* match.du
+*
+* Testing Result.match()
+*
+*/
+
+def success(result) {
+    return result;
+}
+
+def error(err) {
+    return err;
+}
+
+var result = Success(10).match(success, error);
+assert(result == 10);
+
+result = Error("Error!").match(success, error);
+assert(result == "Error!");
+
+
+assert(
+  Success([1, 2, 3]).match(
+      def (result) => result,
+      def (err) => err
+  ) == [1, 2, 3]
+);
+
+assert(
+    Error("test").match(
+        def (result) => result,
+        def (err) => err
+    ) == "test"
+);
+
+var number = "10".toNumber().match(success, error);
+assert(number == 10);
+
+var number = "test".toNumber().match(success, error);
+assert(number == "Can not convert to number");

@@ -21,7 +21,7 @@
 #include "datatypes/files.h"
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
-#include "datatypes/result.h"
+#include "datatypes/result/result.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -264,7 +264,10 @@ static bool callValue(DictuVM *vm, Value callee, int argCount) {
         }
     }
 
-    runtimeError(vm, "Can only call functions and classes.");
+    int valLength = 0;
+    char *val = valueTypeToString(vm, callee, &valLength);
+    runtimeError(vm, "'%s' is not callable", val);
+    FREE_ARRAY(vm, char, val, valLength + 1);
     return false;
 }
 
@@ -447,7 +450,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_RESULT: {
                 Value value;
                 if (tableGet(&vm->resultMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "Result has no method %s().", name->chars);
