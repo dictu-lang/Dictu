@@ -1,0 +1,14 @@
+/**
+ * This file contains all the methods for Results written in Dictu that
+ * are unable to be written in C due to re-enterability issues.
+ *
+ * We should always strive to write methods in C where possible.
+ */
+
+def match(result, successCallback, errorCallback) {
+    if (result.success()) {
+        return successCallback(result.unwrap());
+    }
+
+    return errorCallback(result.unwrapError());
+}

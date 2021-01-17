@@ -6,6 +6,7 @@ import "variables/import.du";
 import "lists/import.du";
 import "dicts/import.du";
 import "sets/import.du";
+import "result/import.du";
 import "operators/import.du";
 import "loops/import.du";
 import "functions/import.du";

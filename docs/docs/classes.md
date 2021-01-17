@@ -373,7 +373,7 @@ class MyClass {
 var myObject = MyClass("Jason");
 myObject.hello(); // Hello Jason
 
-MyTrait(); // Runtime error: Can only call functions and classes.
+MyTrait(); // Runtime error: 'trait' is not callable
 ```
 
 Sometimes we will have multiple traits, each with slightly different functionality, but we need

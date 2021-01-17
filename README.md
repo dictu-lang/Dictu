@@ -14,8 +14,7 @@ Documentation for Dictu can be found [here](https://dictu-lang.com/)
 [![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
 
 ## Running Dictu
-Dictu currently has two options when building, there is a CMakeLists file included so the build files can be generated with
-CMake or there is an included makefile for users that are more familiar with that.
+Dictu requires that you have CMake installed and it is at least version 3.16.3.
 
 ### CMake
 ```bash

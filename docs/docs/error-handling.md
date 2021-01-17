@@ -10,6 +10,9 @@ nav_order: 12
 ## Table of contents
 {: .no_toc .text-delta }
 
+1. TOC
+{:toc}
+
 ## Error Handling
 
 Dictu does not have exceptions like many other languages, and instead
@@ -72,4 +75,33 @@ Check if a Result type is in a SUCCESS state, returns a boolean.
 ```cs
 "10".toNumber().success(); // true
 "number".toNumber().success(); // false
+```
+
+### .match(func: success, func: error)
+
+`.match` takes two callbacks that are ran depending upon the status of the result type. The callbacks passed to
+match must both have one parameter each, on success the unwrapped value is passed as the first argument and on
+error the unwrapError reason is passed to the failure callback. The value returned from `.match()` is the value
+returned from the user defined callback.
+
+```cs
+var number = "10".toNumber().match(
+    def (result) => result,
+    def (error) => {
+        print(error);
+        System.exit(1);
+    }
+);
+
+print(number); // 10
+
+var number = "number".toNumber().match(
+    def (result) => result,
+    def (error) => {
+        print(error); // Can not convert to number
+        System.exit(1);
+    }
+);
+
+print(number);
 ```

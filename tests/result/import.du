@@ -1,0 +1,8 @@
+/**
+* import.du
+*
+* General import file for all the dictionary tests
+*/
+
+import "unwrap.du";
+import "match.du";
