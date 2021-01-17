@@ -65,7 +65,7 @@ attempting to unwrap a Result that is an ERROR gives you a runtime error. Instea
 error.
 
 ```cs
-"num".toNumber().unwrapError(); // 'Can not convert to number'
+"num".toNumber().unwrapError(); // 'Can not convert 'num' to number'
 ```
 
 ### .success()
@@ -98,7 +98,7 @@ print(number); // 10
 var number = "number".toNumber().match(
     def (result) => result,
     def (error) => {
-        print(error); // Can not convert to number
+        print(error); // Can not convert 'number' to number
         System.exit(1);
     }
 );
