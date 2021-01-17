@@ -29,10 +29,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     char *value = getenv(AS_CSTRING(args[0]));
 
     if (value != NULL) {
-        return newResultSuccess(vm, OBJ_VAL(copyString(vm, value, strlen(value))));
+        return OBJ_VAL(copyString(vm, value, strlen(value)));
     }
 
-    return newResultError(vm, "No environment variable set");
+    return NIL_VAL;
 }
 
 static Value set(DictuVM *vm, int argCount, Value *args) {
