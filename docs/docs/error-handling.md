@@ -10,6 +10,9 @@ nav_order: 12
 ## Table of contents
 {: .no_toc .text-delta }
 
+1. TOC
+{:toc}
+
 ## Error Handling
 
 Dictu does not have exceptions like many other languages, and instead
