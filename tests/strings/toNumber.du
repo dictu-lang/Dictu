@@ -18,3 +18,10 @@ assert("number".toNumber().success() == false);
 assert("10number".toNumber().success() == false);
 assert("10number10".toNumber().success() == false);
 assert("10..".toNumber().success() == false);
+
+// Test failure reason
+assert("10  ".toNumber().unwrapError() == "Can not convert '10  ' to number");
+assert("number".toNumber().unwrapError() == "Can not convert 'number' to number");
+assert("10number".toNumber().unwrapError() == "Can not convert '10number' to number");
+assert("10number10".toNumber().unwrapError() == "Can not convert '10number10' to number");
+assert("10..".toNumber().unwrapError() == "Can not convert '10..' to number");
