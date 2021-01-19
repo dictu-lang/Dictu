@@ -26,7 +26,19 @@ static Value toNumberString(DictuVM *vm, int argCount, Value *args) {
 
     // Failed conversion
     if (errno != 0 || *end != '\0') {
-        return newResultError(vm, "Can not convert to number");
+        int length = AS_STRING(args[0])->length;
+
+        char *errorMsg = ALLOCATE(vm, char, 29 + length);
+        memcpy(errorMsg, "Can not convert '", 17);
+        memcpy(errorMsg + 17, numberString, length);
+        memcpy(errorMsg + 17 + length, "' to number", 11);
+        errorMsg[28 + length] = '\0';
+
+        Value result = newResultError(vm, errorMsg);
+
+        FREE_ARRAY(vm, char, errorMsg, 29 + length);
+
+        return result;
     }
 
     return newResultSuccess(vm, NUMBER_VAL(number));
