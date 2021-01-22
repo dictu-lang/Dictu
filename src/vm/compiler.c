@@ -407,10 +407,6 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
         if (constant) {
             tableSet(compiler->parser->vm, &compiler->parser->vm->constants,
                      AS_STRING(currentChunk(compiler)->constants.values[global]), NIL_VAL);
-        } else {
-            // If it's not constant, remove
-            tableDelete(compiler->parser->vm, &compiler->parser->vm->constants,
-                        AS_STRING(currentChunk(compiler)->constants.values[global]));
         }
 
         emitBytes(compiler, OP_DEFINE_MODULE, global);
@@ -2229,6 +2225,8 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
     }
 
     ObjFunction *function = endCompiler(&compiler);
+
+    freeTable(vm, &vm->constants);
 
     // If there was a compile error, the code is not valid, so don't
     // create a function.
