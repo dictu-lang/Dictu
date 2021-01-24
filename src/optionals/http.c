@@ -177,6 +177,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
@@ -262,6 +263,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postValue);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
