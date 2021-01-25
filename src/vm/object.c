@@ -65,7 +65,8 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     klass->superclass = superclass;
     klass->type = type;
     initTable(&klass->abstractMethods);
-    initTable(&klass->methods);
+    initTable(&klass->privateMethods);
+    initTable(&klass->publicMethods);
     initTable(&klass->properties);
     return klass;
 }
@@ -83,7 +84,7 @@ ObjClosure *newClosure(DictuVM *vm, ObjFunction *function) {
     return closure;
 }
 
-ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type) {
+ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, AccessLevel level) {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
@@ -93,6 +94,7 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type) {
     function->propertyNames = NULL;
     function->name = NULL;
     function->type = type;
+    function->accessLevel = level;
     function->module = module;
     initChunk(vm, &function->chunk);
 

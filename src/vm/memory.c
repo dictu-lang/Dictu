@@ -101,7 +101,8 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             grayObject(vm, (Obj *) klass->name);
             grayObject(vm, (Obj *) klass->superclass);
-            grayTable(vm, &klass->methods);
+            grayTable(vm, &klass->publicMethods);
+            grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);
             grayTable(vm, &klass->properties);
             break;
@@ -191,7 +192,8 @@ void freeObject(DictuVM *vm, Obj *object) {
 
         case OBJ_CLASS: {
             ObjClass *klass = (ObjClass *) object;
-            freeTable(vm, &klass->methods);
+            freeTable(vm, &klass->publicMethods);
+            freeTable(vm, &klass->privateMethods);
             freeTable(vm, &klass->abstractMethods);
             freeTable(vm, &klass->properties);
             FREE(vm, ObjClass, object);

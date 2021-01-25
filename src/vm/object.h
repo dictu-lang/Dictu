@@ -70,6 +70,11 @@ typedef enum {
 } ClassType;
 
 typedef enum {
+    ACCESS_PUBLIC,
+    ACCESS_PRIVATE
+} AccessLevel;
+
+typedef enum {
     TYPE_FUNCTION,
     TYPE_ARROW_FUNCTION,
     TYPE_INITIALIZER,
@@ -100,6 +105,7 @@ typedef struct {
     Chunk chunk;
     ObjString *name;
     FunctionType type;
+    AccessLevel accessLevel;
     ObjModule* module;
     int propertyCount;
     int *propertyNames;
@@ -205,7 +211,8 @@ typedef struct sObjClass {
     Obj obj;
     ObjString *name;
     struct sObjClass *superclass;
-    Table methods;
+    Table publicMethods;
+    Table privateMethods;
     Table abstractMethods;
     Table properties;
     ClassType type;
@@ -231,7 +238,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
 
 ObjClosure *newClosure(DictuVM *vm, ObjFunction *function);
 
-ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type);
+ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, AccessLevel level);
 
 ObjInstance *newInstance(DictuVM *vm, ObjClass *klass);
 

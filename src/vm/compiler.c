@@ -143,7 +143,7 @@ static void patchJump(Compiler *compiler, int offset) {
     currentChunk(compiler)->code[offset + 1] = jump & 0xff;
 }
 
-static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
+static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type, AccessLevel level) {
     compiler->parser = parser;
     compiler->enclosing = parent;
     initTable(&compiler->stringConstants);
@@ -162,7 +162,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, parser->module, type);
+    compiler->function = newFunction(parser->vm, parser->module, type, level);
 
     switch (type) {
         case TYPE_INITIALIZER:
@@ -641,7 +641,11 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
         emitBytes(compiler, OP_SET_PROPERTY, name);
     } else if (match(compiler, TOKEN_LEFT_PAREN)) {
         int argCount = argumentList(compiler);
-        emitBytes(compiler, OP_INVOKE, argCount);
+        if (compiler->class == NULL) {
+            emitBytes(compiler, OP_INVOKE, argCount);
+        } else {
+            emitBytes(compiler, OP_INTERNAL_INVOKE, argCount);
+        }
         emitByte(compiler, name);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
@@ -718,8 +722,8 @@ static void block(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
-static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type) {
-    initCompiler(compiler->parser, fnCompiler, compiler, type);
+static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type, AccessLevel level) {
+    initCompiler(compiler->parser, fnCompiler, compiler, type, level);
     beginScope(fnCompiler);
 
     // Compile the parameter list.
@@ -792,7 +796,7 @@ static void arrow(Compiler *compiler, bool canAssign) {
     Compiler fnCompiler;
 
     // Setup function and parse parameters
-    beginFunction(compiler, &fnCompiler, TYPE_ARROW_FUNCTION);
+    beginFunction(compiler, &fnCompiler, TYPE_ARROW_FUNCTION, ACCESS_PUBLIC);
 
     consume(&fnCompiler, TOKEN_ARROW, "Expect '=>' after function arguments.");
 
@@ -1315,6 +1319,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
         {static_,  NULL,      PREC_NONE},               // TOKEN_STATIC
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_PRIVATE
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
@@ -1374,11 +1379,11 @@ void expression(Compiler *compiler) {
     parsePrecedence(compiler, PREC_ASSIGNMENT);
 }
 
-static void function(Compiler *compiler, FunctionType type) {
+static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     Compiler fnCompiler;
 
     // Setup function and parse parameters
-    beginFunction(compiler, &fnCompiler, type);
+    beginFunction(compiler, &fnCompiler, type, level);
 
     // The body.
     consume(&fnCompiler, TOKEN_LEFT_BRACE, "Expect '{' before function body.");
@@ -1391,10 +1396,15 @@ static void function(Compiler *compiler, FunctionType type) {
 }
 
 static void method(Compiler *compiler) {
+    AccessLevel level = ACCESS_PUBLIC;
     FunctionType type;
 
     compiler->class->staticMethod = false;
     type = TYPE_METHOD;
+
+    if (match(compiler, TOKEN_PRIVATE)) {
+        level = ACCESS_PRIVATE;
+    }
 
     if (match(compiler, TOKEN_STATIC)) {
         type = TYPE_STATIC;
@@ -1418,12 +1428,12 @@ static void method(Compiler *compiler) {
     }
 
     if (type != TYPE_ABSTRACT) {
-        function(compiler, type);
+        function(compiler, type, level);
     } else {
         Compiler fnCompiler;
 
         // Setup function and parse parameters
-        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
+        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT, ACCESS_PUBLIC);
         endCompiler(&fnCompiler);
 
         if (check(compiler, TOKEN_LEFT_BRACE)) {
@@ -1567,7 +1577,7 @@ static void traitDeclaration(Compiler *compiler) {
 
 static void funDeclaration(Compiler *compiler) {
     uint8_t global = parseVariable(compiler, "Expect function name.", false);
-    function(compiler, TYPE_FUNCTION);
+    function(compiler, TYPE_FUNCTION, ACCESS_PUBLIC);
     defineVariable(compiler, global, false);
 }
 
@@ -1704,6 +1714,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
         case OP_INVOKE:
+        case OP_INTERNAL_INVOKE:
         case OP_SUPER:
         case OP_CLASS:
         case OP_SUBCLASS:
@@ -2214,7 +2225,7 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
     parser.scanner = scanner;
 
     Compiler compiler;
-    initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL);
+    initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL, ACCESS_PUBLIC);
 
     advance(compiler.parser);
 

@@ -210,6 +210,8 @@ static TokenType identifierType(Scanner *scanner) {
             break;
         case 'o':
             return checkKeyword(scanner, 1, 1, "r", TOKEN_OR);
+        case 'p':
+            return checkKeyword(scanner, 1, 6, "rivate", TOKEN_PRIVATE);
         case 'r':
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
