@@ -1192,6 +1192,16 @@ static void this_(Compiler *compiler, bool canAssign) {
     }
 }
 
+static void private_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
+    if (compiler->class == NULL) {
+        error(compiler->parser, "Cannot utilise 'private' outside of a class.");
+    } else if (compiler->class->abstractClass) {
+        error(compiler->parser, "Cannot utilise 'private' inside of an abstract class.");
+    }
+}
+
 static void static_(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
@@ -1319,7 +1329,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
         {static_,  NULL,      PREC_NONE},               // TOKEN_STATIC
-        {NULL,     NULL,      PREC_NONE},               // TOKEN_PRIVATE
+        {private_, NULL,      PREC_NONE},               // TOKEN_PRIVATE
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
@@ -1403,6 +1413,11 @@ static void method(Compiler *compiler) {
     type = TYPE_METHOD;
 
     if (match(compiler, TOKEN_PRIVATE)) {
+        if (compiler->class->abstractClass) {
+            error(compiler->parser, "Private methods can not appear within abstract classes.");
+            return;
+        }
+
         level = ACCESS_PRIVATE;
     }
 
