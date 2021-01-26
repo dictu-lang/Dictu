@@ -641,10 +641,10 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
         emitBytes(compiler, OP_SET_PROPERTY, name);
     } else if (match(compiler, TOKEN_LEFT_PAREN)) {
         int argCount = argumentList(compiler);
-        if (compiler->class == NULL) {
-            emitBytes(compiler, OP_INVOKE, argCount);
-        } else {
+        if (compiler->class != NULL && (previousToken.type == TOKEN_THIS || identifiersEqual(&previousToken, &compiler->class->name))) {
             emitBytes(compiler, OP_INTERNAL_INVOKE, argCount);
+        } else {
+            emitBytes(compiler, OP_INVOKE, argCount);
         }
         emitByte(compiler, name);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {

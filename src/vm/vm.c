@@ -297,27 +297,65 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
 }
 
 static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
-    ObjInstance *instance = AS_INSTANCE(peek(vm, argCount));
+    Value receiver = peek(vm, argCount);
 
-    Value value;
-    // Look for the method.
-    if (tableGet(&instance->klass->privateMethods, name, &value)) {
-        return call(vm, AS_CLOSURE(value), argCount);
-    }
+    if (IS_INSTANCE(receiver)) {
+        ObjInstance *instance = AS_INSTANCE(receiver);
 
-    if (tableGet(&instance->klass->publicMethods, name, &value)) {
-        return call(vm, AS_CLOSURE(value), argCount);
-    }
+        Value value;
+        // Look for the method.
+        if (tableGet(&instance->klass->privateMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
 
-    // Check for instance methods.
-    if (tableGet(&vm->instanceMethods, name, &value)) {
-        return callNativeMethod(vm, value, argCount);
-    }
+        if (tableGet(&instance->klass->publicMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
 
-    // Look for a field which may shadow a method.
-    if (tableGet(&instance->fields, name, &value)) {
-        vm->stackTop[-argCount - 1] = value;
-        return callValue(vm, value, argCount);
+        // Check for instance methods.
+        if (tableGet(&vm->instanceMethods, name, &value)) {
+            return callNativeMethod(vm, value, argCount);
+        }
+
+        // Look for a field which may shadow a method.
+        if (tableGet(&instance->fields, name, &value)) {
+            vm->stackTop[-argCount - 1] = value;
+            return callValue(vm, value, argCount);
+        }
+    } else if (IS_CLASS(receiver)) {
+        ObjClass *instance = AS_CLASS(receiver);
+        Value method;
+        if (tableGet(&instance->privateMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&instance->publicMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&vm->classMethods, name, &method)) {
+            return callNativeMethod(vm, method, argCount);
+        }
     }
 
     runtimeError(vm, "Undefined property '%s'.", name->chars);
