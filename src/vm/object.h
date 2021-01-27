@@ -214,14 +214,16 @@ typedef struct sObjClass {
     Table publicMethods;
     Table privateMethods;
     Table abstractMethods;
-    Table properties;
+    Table publicProperties;
+    Table privateProperties;
     ClassType type;
 } ObjClass;
 
 typedef struct {
     Obj obj;
     ObjClass *klass;
-    Table fields;
+    Table privateFields;
+    Table publicFields;
 } ObjInstance;
 
 typedef struct {

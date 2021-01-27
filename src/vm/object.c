@@ -67,7 +67,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->abstractMethods);
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
-    initTable(&klass->properties);
+    initTable(&klass->publicProperties);
     return klass;
 }
 
@@ -104,7 +104,8 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
 ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
-    initTable(&instance->fields);
+    initTable(&instance->publicFields);
+    initTable(&instance->privateFields);
     return instance;
 }
 
