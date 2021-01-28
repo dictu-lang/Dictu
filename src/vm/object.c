@@ -92,6 +92,9 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
     function->propertyCount = 0;
     function->propertyIndexes = NULL;
     function->propertyNames = NULL;
+    function->privatePropertyCount = 0;
+    function->privatePropertyIndexes = NULL;
+    function->propertyNames = NULL;
     function->name = NULL;
     function->type = type;
     function->accessLevel = level;

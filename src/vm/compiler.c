@@ -791,8 +791,12 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
         int index = 0;
         uint8_t identifiers[255];
         int indexes[255];
+
+        uint8_t privateIdentifiers[255];
+        int privateIndexes[255];
         do {
             bool varKeyword = match(compiler, TOKEN_VAR);
+            bool privateKeyword = match(compiler, TOKEN_PRIVATE);
             consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
             uint8_t paramConstant = identifierConstant(fnCompiler, &fnCompiler->parser->previous);
             declareVariable(fnCompiler, &fnCompiler->parser->previous);
@@ -803,6 +807,16 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 indexes[fnCompiler->function->propertyCount++] = index;
             } else if (varKeyword) {
                 error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
+            }
+
+            if (type == TYPE_INITIALIZER && privateKeyword) {
+                privateIdentifiers[fnCompiler->function->privatePropertyCount] = paramConstant;
+                privateIndexes[fnCompiler->function->privatePropertyCount++] = index;
+
+                tableSet(compiler->parser->vm, &compiler->class->privateVariables,
+                        AS_STRING(currentChunk(fnCompiler)->constants.values[paramConstant]), EMPTY_VAL);
+            } else if (privateKeyword) {
+                error(fnCompiler->parser, "private keyword in a function definition that is not a class constructor");
             }
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
@@ -841,6 +855,21 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             }
 
             emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+        }
+
+        if (fnCompiler->function->privatePropertyCount > 0) {
+            DictuVM *vm = fnCompiler->parser->vm;
+            push(vm, OBJ_VAL(fnCompiler->function));
+            fnCompiler->function->privatePropertyIndexes = ALLOCATE(vm, int, fnCompiler->function->privatePropertyCount);
+            fnCompiler->function->privatePropertyNames = ALLOCATE(vm, int, fnCompiler->function->privatePropertyCount);
+            pop(vm);
+
+            for (int i = 0; i < fnCompiler->function->privatePropertyCount; ++i) {
+                fnCompiler->function->privatePropertyNames[i] = privateIdentifiers[i];
+                fnCompiler->function->privatePropertyIndexes[i] = privateIndexes[i];
+            }
+
+            emitBytes(fnCompiler, OP_SET_PRIVATE_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
     }
 
@@ -1553,10 +1582,8 @@ static void parseClassBody(Compiler *compiler) {
                 if (check(compiler, TOKEN_SEMICOLON)) {
                     uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
                     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
-                    push(compiler->parser->vm, OBJ_VAL(string));
                     tableSet(compiler->parser->vm, &compiler->class->privateVariables,
                              AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
-                    pop(compiler->parser->vm);
                     continue;
                 }
 
@@ -1801,6 +1828,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_SET_PRIVATE_PROPERTY:
         case OP_SET_CLASS_VAR:
         case OP_SET_INIT_PROPERTIES:
+        case OP_SET_PRIVATE_INIT_PROPERTIES:
         case OP_GET_SUPER:
         case OP_CALL:
         case OP_METHOD:

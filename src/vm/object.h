@@ -110,6 +110,9 @@ typedef struct {
     int propertyCount;
     int *propertyNames;
     int *propertyIndexes;
+    int privatePropertyCount;
+    int *privatePropertyNames;
+    int *privatePropertyIndexes;
 } ObjFunction;
 
 typedef Value (*NativeFn)(DictuVM *vm, int argCount, Value *args);

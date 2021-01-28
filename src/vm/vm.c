@@ -964,6 +964,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
+                if (tableGet(&instance->privateFields, name, &value)) {
+                    RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                }
+
                 RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
             } else if (IS_MODULE(peek(vm, 0))) {
                 ObjModule *module = AS_MODULE(peek(vm, 0));
@@ -1098,6 +1102,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
+            if (tableGet(&instance->privateFields, name, &value)) {
+                RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+            }
+
             RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
         }
 
@@ -1192,6 +1200,19 @@ static DictuInterpretResult run(DictuVM *vm) {
             for (int i = 0; i < function->propertyCount; ++i) {
                 ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->propertyNames[i]]);
                 tableSet(vm, &instance->publicFields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+            }
+
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_PRIVATE_INIT_PROPERTIES): {
+            ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            int argCount = function->arity + function->arityOptional;
+            ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
+
+            for (int i = 0; i < function->privatePropertyCount; ++i) {
+                ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->privatePropertyNames[i]]);
+                tableSet(vm, &instance->privateFields, propertyName, peek(vm, argCount - function->privatePropertyIndexes[i] - 1));
             }
 
             DISPATCH();
