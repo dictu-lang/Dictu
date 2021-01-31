@@ -289,6 +289,11 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
     // Look for the method.
     Value method;
     if (!tableGet(&klass->publicMethods, name, &method)) {
+        if (tableGet(&klass->privateMethods, name, &method)) {
+            runtimeError(vm, "Cannot access private property '%s' from superclass '%s'.", name->chars, klass->name->chars);
+            return false;
+        }
+
         runtimeError(vm, "Undefined property '%s'.", name->chars);
         return false;
     }
@@ -447,6 +452,11 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 if (tableGet(&instance->publicFields, name, &value)) {
                     vm->stackTop[-argCount - 1] = value;
                     return callValue(vm, value, argCount);
+                }
+
+                if (tableGet(&instance->klass->privateMethods, name, &value)) {
+                    runtimeError(vm, "Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    return false;
                 }
 
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
@@ -1003,7 +1013,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
         }
 
-        CASE_CODE(GET_PROPERTY_INTERNAL): {
+        CASE_CODE(GET_PRIVATE_PROPERTY): {
             if (IS_INSTANCE(peek(vm, 0))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
                 ObjString *name = READ_STRING();
@@ -1028,12 +1038,6 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = instance->klass;
 
                 while (klass != NULL) {
-                    if (tableGet(&klass->privateProperties, name, &value)) {
-                        pop(vm); // Class.
-                        push(vm, value);
-                        DISPATCH();
-                    }
-
                     if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
@@ -1052,12 +1056,6 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 Value value;
                 while (klass != NULL) {
-                    if (tableGet(&klass->privateProperties, name, &value)) {
-                        pop(vm); // Class.
-                        push(vm, value);
-                        DISPATCH();
-                    }
-
                     if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
@@ -1109,7 +1107,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
         }
 
-        CASE_CODE(GET_PROPERTY_NO_POP_INTERNAL): {
+        CASE_CODE(GET_PRIVATE_PROPERTY_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
                 RUNTIME_ERROR("Only instances have properties.");
             }
@@ -1135,11 +1133,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
-                if (tableGet(&klass->privateProperties, name, &value)) {
-                    push(vm, value);
-                    DISPATCH();
-                }
-
                 if (tableGet(&klass->publicProperties, name, &value)) {
                     push(vm, value);
                     DISPATCH();

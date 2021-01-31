@@ -211,10 +211,14 @@ void freeObject(DictuVM *vm, Obj *object) {
         case OBJ_FUNCTION: {
             ObjFunction *function = (ObjFunction *) object;
             if (function->type == TYPE_INITIALIZER) {
-                FREE_ARRAY(vm, int, function->privatePropertyNames, function->privatePropertyCount);
-                FREE_ARRAY(vm, int, function->privatePropertyIndexes, function->privatePropertyCount);
-                FREE_ARRAY(vm, int, function->propertyNames, function->propertyCount);
-                FREE_ARRAY(vm, int, function->propertyIndexes, function->propertyCount);
+                if (function->privatePropertyCount > 0) {
+                    FREE_ARRAY(vm, int, function->privatePropertyNames, function->privatePropertyCount);
+                    FREE_ARRAY(vm, int, function->privatePropertyIndexes, function->privatePropertyCount);
+                }
+                if (function->propertyCount > 0) {
+                    FREE_ARRAY(vm, int, function->propertyNames, function->propertyCount);
+                    FREE_ARRAY(vm, int, function->propertyIndexes, function->propertyCount);
+                }
             }
             freeChunk(vm, &function->chunk);
             FREE(vm, ObjFunction, object);

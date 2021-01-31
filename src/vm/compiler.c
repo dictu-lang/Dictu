@@ -662,42 +662,42 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
             expression(compiler);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_ADD);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
             emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
         } else {
-            emitBytes(compiler, OP_GET_PROPERTY_INTERNAL, name);
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY, name);
         }
     } else {
         if (canAssign && match(compiler, TOKEN_EQUAL)) {
@@ -1821,9 +1821,9 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GET_UPVALUE:
         case OP_SET_UPVALUE:
         case OP_GET_PROPERTY:
-        case OP_GET_PROPERTY_INTERNAL:
+        case OP_GET_PRIVATE_PROPERTY:
         case OP_GET_PROPERTY_NO_POP:
-        case OP_GET_PROPERTY_NO_POP_INTERNAL:
+        case OP_GET_PRIVATE_PROPERTY_NO_POP:
         case OP_SET_PROPERTY:
         case OP_SET_PRIVATE_PROPERTY:
         case OP_SET_CLASS_VAR:

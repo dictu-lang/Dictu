@@ -17,3 +17,4 @@ import "parameters.du";
 import "isInstance.du";
 import "constructor.du";
 import "optionalChaining.du";
+import "private.du";
