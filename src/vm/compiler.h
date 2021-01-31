@@ -59,6 +59,7 @@ typedef struct ClassCompiler {
     bool hasSuperclass;
     bool staticMethod;
     bool abstractClass;
+    Table privateVariables;
 } ClassCompiler;
 
 typedef struct Loop {

@@ -143,7 +143,7 @@ static void patchJump(Compiler *compiler, int offset) {
     currentChunk(compiler)->code[offset + 1] = jump & 0xff;
 }
 
-static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type) {
+static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, FunctionType type, AccessLevel level) {
     compiler->parser = parser;
     compiler->enclosing = parent;
     initTable(&compiler->stringConstants);
@@ -162,7 +162,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     parser->vm->compiler = compiler;
 
-    compiler->function = newFunction(parser->vm, parser->module, type);
+    compiler->function = newFunction(parser->vm, parser->module, type, level);
 
     switch (type) {
         case TYPE_INITIALIZER:
@@ -630,56 +630,117 @@ static void call(Compiler *compiler, Token previousToken, bool canAssign) {
     emitBytes(compiler, OP_CALL, argCount);
 }
 
+static bool privatePropertyExists(Token name, Compiler *compiler) {
+    ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
+    Value _;
+
+    return tableGet(&compiler->class->privateVariables, string, &_);
+}
+
 static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     UNUSED(previousToken);
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-    if (canAssign && match(compiler, TOKEN_EQUAL)) {
-        expression(compiler);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (match(compiler, TOKEN_LEFT_PAREN)) {
+    Token identifier = compiler->parser->previous;
+
+    if (match(compiler, TOKEN_LEFT_PAREN)) {
         int argCount = argumentList(compiler);
-        emitBytes(compiler, OP_INVOKE, argCount);
+        if (compiler->class != NULL && (previousToken.type == TOKEN_THIS || identifiersEqual(&previousToken, &compiler->class->name))) {
+            emitBytes(compiler, OP_INVOKE_INTERNAL, argCount);
+        } else {
+            emitBytes(compiler, OP_INVOKE, argCount);
+        }
         emitByte(compiler, name);
-    } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_ADD);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_SUBTRACT);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_MULTIPLY);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_DIVIDE);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_BITWISE_AND);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_BITWISE_XOR);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
-    } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
-        emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
-        expression(compiler);
-        emitByte(compiler, OP_BITWISE_OR);
-        emitBytes(compiler, OP_SET_PROPERTY, name);
+        return;
+    }
+
+    if (compiler->class != NULL && (previousToken.type == TOKEN_THIS &&
+                                    privatePropertyExists(identifier, compiler))) {
+        if (canAssign && match(compiler, TOKEN_EQUAL)) {
+            expression(compiler);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_ADD);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_SUBTRACT);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_MULTIPLY);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_DIVIDE);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_AND);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_XOR);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_OR);
+            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+        } else {
+            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY, name);
+        }
     } else {
-        emitBytes(compiler, OP_GET_PROPERTY, name);
+        if (canAssign && match(compiler, TOKEN_EQUAL)) {
+            expression(compiler);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_ADD);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_SUBTRACT);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_MULTIPLY);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_DIVIDE);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_AND);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_XOR);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
+            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            expression(compiler);
+            emitByte(compiler, OP_BITWISE_OR);
+            emitBytes(compiler, OP_SET_PROPERTY, name);
+        } else {
+            emitBytes(compiler, OP_GET_PROPERTY, name);
+        }
     }
 }
 
@@ -718,8 +779,8 @@ static void block(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
-static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type) {
-    initCompiler(compiler->parser, fnCompiler, compiler, type);
+static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type, AccessLevel level) {
+    initCompiler(compiler->parser, fnCompiler, compiler, type, level);
     beginScope(fnCompiler);
 
     // Compile the parameter list.
@@ -730,8 +791,12 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
         int index = 0;
         uint8_t identifiers[255];
         int indexes[255];
+
+        uint8_t privateIdentifiers[255];
+        int privateIndexes[255];
         do {
             bool varKeyword = match(compiler, TOKEN_VAR);
+            bool privateKeyword = match(compiler, TOKEN_PRIVATE);
             consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
             uint8_t paramConstant = identifierConstant(fnCompiler, &fnCompiler->parser->previous);
             declareVariable(fnCompiler, &fnCompiler->parser->previous);
@@ -742,6 +807,16 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 indexes[fnCompiler->function->propertyCount++] = index;
             } else if (varKeyword) {
                 error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
+            }
+
+            if (type == TYPE_INITIALIZER && privateKeyword) {
+                privateIdentifiers[fnCompiler->function->privatePropertyCount] = paramConstant;
+                privateIndexes[fnCompiler->function->privatePropertyCount++] = index;
+
+                tableSet(compiler->parser->vm, &compiler->class->privateVariables,
+                        AS_STRING(currentChunk(fnCompiler)->constants.values[paramConstant]), EMPTY_VAL);
+            } else if (privateKeyword) {
+                error(fnCompiler->parser, "private keyword in a function definition that is not a class constructor");
             }
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
@@ -781,6 +856,21 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
             emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
+
+        if (fnCompiler->function->privatePropertyCount > 0) {
+            DictuVM *vm = fnCompiler->parser->vm;
+            push(vm, OBJ_VAL(fnCompiler->function));
+            fnCompiler->function->privatePropertyIndexes = ALLOCATE(vm, int, fnCompiler->function->privatePropertyCount);
+            fnCompiler->function->privatePropertyNames = ALLOCATE(vm, int, fnCompiler->function->privatePropertyCount);
+            pop(vm);
+
+            for (int i = 0; i < fnCompiler->function->privatePropertyCount; ++i) {
+                fnCompiler->function->privatePropertyNames[i] = privateIdentifiers[i];
+                fnCompiler->function->privatePropertyIndexes[i] = privateIndexes[i];
+            }
+
+            emitBytes(fnCompiler, OP_SET_PRIVATE_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+        }
     }
 
     consume(fnCompiler, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
@@ -792,7 +882,7 @@ static void arrow(Compiler *compiler, bool canAssign) {
     Compiler fnCompiler;
 
     // Setup function and parse parameters
-    beginFunction(compiler, &fnCompiler, TYPE_ARROW_FUNCTION);
+    beginFunction(compiler, &fnCompiler, TYPE_ARROW_FUNCTION, ACCESS_PUBLIC);
 
     consume(&fnCompiler, TOKEN_ARROW, "Expect '=>' after function arguments.");
 
@@ -1188,6 +1278,16 @@ static void this_(Compiler *compiler, bool canAssign) {
     }
 }
 
+static void private_(Compiler *compiler, bool canAssign) {
+    UNUSED(canAssign);
+
+    if (compiler->class == NULL) {
+        error(compiler->parser, "Cannot utilise 'private' outside of a class.");
+    } else if (compiler->class->abstractClass) {
+        error(compiler->parser, "Cannot utilise 'private' inside of an abstract class.");
+    }
+}
+
 static void static_(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
@@ -1315,6 +1415,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_TRAIT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_USE
         {static_,  NULL,      PREC_NONE},               // TOKEN_STATIC
+        {private_, NULL,      PREC_NONE},               // TOKEN_PRIVATE
         {this_,    NULL,      PREC_NONE},               // TOKEN_THIS
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
@@ -1374,11 +1475,11 @@ void expression(Compiler *compiler) {
     parsePrecedence(compiler, PREC_ASSIGNMENT);
 }
 
-static void function(Compiler *compiler, FunctionType type) {
+static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     Compiler fnCompiler;
 
     // Setup function and parse parameters
-    beginFunction(compiler, &fnCompiler, type);
+    beginFunction(compiler, &fnCompiler, type, level);
 
     // The body.
     consume(&fnCompiler, TOKEN_LEFT_BRACE, "Expect '{' before function body.");
@@ -1390,11 +1491,21 @@ static void function(Compiler *compiler, FunctionType type) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler) {
+static void method(Compiler *compiler, bool private, Token *identifier) {
+    AccessLevel level = ACCESS_PUBLIC;
     FunctionType type;
 
     compiler->class->staticMethod = false;
     type = TYPE_METHOD;
+
+    if (match(compiler, TOKEN_PRIVATE) || private) {
+        if (compiler->class->abstractClass) {
+            error(compiler->parser, "Private methods can not appear within abstract classes.");
+            return;
+        }
+
+        level = ACCESS_PRIVATE;
+    }
 
     if (match(compiler, TOKEN_STATIC)) {
         type = TYPE_STATIC;
@@ -1408,8 +1519,11 @@ static void method(Compiler *compiler) {
         type = TYPE_ABSTRACT;
     }
 
-    consume(compiler, TOKEN_IDENTIFIER, "Expect method name.");
-    uint8_t constant = identifierConstant(compiler, &compiler->parser->previous);
+    if (identifier == NULL) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect method name.");
+        identifier = &compiler->parser->previous;
+    }
+    uint8_t constant = identifierConstant(compiler, identifier);
 
     // If the method is named "init", it's an initializer.
     if (compiler->parser->previous.length == 4 &&
@@ -1418,12 +1532,12 @@ static void method(Compiler *compiler) {
     }
 
     if (type != TYPE_ABSTRACT) {
-        function(compiler, type);
+        function(compiler, type, level);
     } else {
         Compiler fnCompiler;
 
         // Setup function and parse parameters
-        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT);
+        beginFunction(compiler, &fnCompiler, TYPE_ABSTRACT, ACCESS_PUBLIC);
         endCompiler(&fnCompiler);
 
         if (check(compiler, TOKEN_LEFT_BRACE)) {
@@ -1441,7 +1555,13 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
+    initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
+}
+
+static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
+    freeTable(compiler->parser->vm, &classCompiler->privateVariables);
+    compiler->class = compiler->class->enclosing;
 }
 
 static void parseClassBody(Compiler *compiler) {
@@ -1457,8 +1577,23 @@ static void parseClassBody(Compiler *compiler) {
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+        } else if (match(compiler, TOKEN_PRIVATE)) {
+            if (match(compiler, TOKEN_IDENTIFIER)) {
+                if (check(compiler, TOKEN_SEMICOLON)) {
+                    uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+                    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
+                    tableSet(compiler->parser->vm, &compiler->class->privateVariables,
+                             AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
+                    continue;
+                }
+
+                method(compiler, true, &compiler->parser->previous);
+                continue;
+            }
+
+            method(compiler, true, NULL);
         } else {
-            method(compiler);
+            method(compiler, false, NULL);
         }
     }
 }
@@ -1501,7 +1636,7 @@ static void classDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-    compiler->class = compiler->class->enclosing;
+    endClassCompiler(compiler, &classCompiler);
 }
 
 static void abstractClassDeclaration(Compiler *compiler) {
@@ -1541,7 +1676,7 @@ static void abstractClassDeclaration(Compiler *compiler) {
     }
 
     defineVariable(compiler, nameConstant, false);
-    compiler->class = compiler->class->enclosing;
+    endClassCompiler(compiler, &classCompiler);
 }
 
 static void traitDeclaration(Compiler *compiler) {
@@ -1562,12 +1697,12 @@ static void traitDeclaration(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after trait body.");
 
     defineVariable(compiler, nameConstant, false);
-    compiler->class = compiler->class->enclosing;
+    endClassCompiler(compiler, &classCompiler);
 }
 
 static void funDeclaration(Compiler *compiler) {
     uint8_t global = parseVariable(compiler, "Expect function name.", false);
-    function(compiler, TYPE_FUNCTION);
+    function(compiler, TYPE_FUNCTION, ACCESS_PUBLIC);
     defineVariable(compiler, global, false);
 }
 
@@ -1686,10 +1821,14 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GET_UPVALUE:
         case OP_SET_UPVALUE:
         case OP_GET_PROPERTY:
+        case OP_GET_PRIVATE_PROPERTY:
         case OP_GET_PROPERTY_NO_POP:
+        case OP_GET_PRIVATE_PROPERTY_NO_POP:
         case OP_SET_PROPERTY:
+        case OP_SET_PRIVATE_PROPERTY:
         case OP_SET_CLASS_VAR:
         case OP_SET_INIT_PROPERTIES:
+        case OP_SET_PRIVATE_INIT_PROPERTIES:
         case OP_GET_SUPER:
         case OP_CALL:
         case OP_METHOD:
@@ -1704,6 +1843,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
         case OP_INVOKE:
+        case OP_INVOKE_INTERNAL:
         case OP_SUPER:
         case OP_CLASS:
         case OP_SUBCLASS:
@@ -2214,7 +2354,7 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
     parser.scanner = scanner;
 
     Compiler compiler;
-    initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL);
+    initCompiler(&parser, &compiler, NULL, TYPE_TOP_LEVEL, ACCESS_PUBLIC);
 
     advance(compiler.parser);
 
@@ -2237,6 +2377,13 @@ void grayCompilerRoots(DictuVM *vm) {
     Compiler *compiler = vm->compiler;
 
     while (compiler != NULL) {
+        ClassCompiler *classCompiler = vm->compiler->class;
+
+        while (classCompiler != NULL) {
+            grayTable(vm, &classCompiler->privateVariables);
+            classCompiler = classCompiler->enclosing;
+        }
+
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
