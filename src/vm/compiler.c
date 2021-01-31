@@ -2375,9 +2375,10 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
 
 void grayCompilerRoots(DictuVM *vm) {
     Compiler *compiler = vm->compiler;
-    ClassCompiler *classCompiler = vm->compiler->class;
 
     while (compiler != NULL) {
+        ClassCompiler *classCompiler = vm->compiler->class;
+
         while (classCompiler != NULL) {
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
