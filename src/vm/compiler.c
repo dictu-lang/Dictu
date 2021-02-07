@@ -1420,6 +1420,7 @@ ParseRule rules[] = {
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
         {NULL,     NULL,      PREC_NONE},               // TOKEN_AS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ENUM
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
@@ -1572,7 +1573,7 @@ static void parseClassBody(Compiler *compiler) {
             consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-            consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
+            consume(compiler, TOKEN_EQUAL, "Expect '=' after class variable identifier.");
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
@@ -1698,6 +1699,29 @@ static void traitDeclaration(Compiler *compiler) {
 
     defineVariable(compiler, nameConstant, false);
     endClassCompiler(compiler, &classCompiler);
+}
+
+static void enumDeclaration(Compiler *compiler) {
+    consume(compiler, TOKEN_IDENTIFIER, "Expect enum name.");
+
+    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
+    declareVariable(compiler, &compiler->parser->previous);
+
+    emitBytes(compiler, OP_ENUM, nameConstant);
+
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
+
+    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");
+        uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+
+        consume(compiler, TOKEN_EQUAL, "Expect '=' after enum value identifier.");
+        expression(compiler);
+        emitBytes(compiler, OP_SET_ENUM_VALUE, name);
+    }
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
+    defineVariable(compiler, nameConstant, false);
 }
 
 static void funDeclaration(Compiler *compiler) {
@@ -2271,6 +2295,8 @@ static void declaration(Compiler *compiler) {
         varDeclaration(compiler, false);
     } else if (match(compiler, TOKEN_CONST)) {
         varDeclaration(compiler, true);
+    } else if (match(compiler, TOKEN_ENUM)) {
+        enumDeclaration(compiler);
     } else {
         statement(compiler);
     }

@@ -1938,6 +1938,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             defineMethod(vm, READ_STRING());
             DISPATCH();
 
+        CASE_CODE(ENUM): {
+            ObjEnum *enumObj = newEnum(vm, READ_STRING());
+            push(vm, OBJ_VAL(enumObj));
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_ENUM_VALUE): {
+            DISPATCH();
+        }
+
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
             if (!IS_TRAIT(trait)) {

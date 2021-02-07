@@ -71,6 +71,13 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     return klass;
 }
 
+ObjEnum *newEnum(DictuVM *vm, ObjString *name) {
+    ObjEnum *enumObj = ALLOCATE_OBJ(vm, ObjEnum , OBJ_ENUM);
+    enumObj->name = name;
+    initTable(&enumObj->values);
+    return enumObj;
+}
+
 ObjClosure *newClosure(DictuVM *vm, ObjFunction *function) {
     ObjUpvalue **upvalues = ALLOCATE(vm, ObjUpvalue*, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++) {
@@ -511,6 +518,18 @@ char *objectToString(Value value) {
             }
 
             return classToString(value);
+        }
+
+        case OBJ_ENUM: {
+            ObjEnum *enumObj = AS_ENUM(value);
+            char *enumString = malloc(sizeof(char) * (enumObj->name->length + 8));
+            memcpy(enumString, "<Enum ", 6);
+            memcpy(enumString + 6, enumObj->name->chars, enumObj->name->length);
+            memcpy(enumString + 6 + enumObj->name->length, ">", 1);
+
+            enumString[7 + enumObj->name->length] = '\0';
+
+            return enumString;
         }
 
         case OBJ_BOUND_METHOD: {
