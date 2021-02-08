@@ -37,7 +37,7 @@ def reduce(list, func, initial=0) {
     return accumulator;
 }
 
-def foreach(list, func) {
+def forEach(list, func) {
     for (var i = 0; i < list.len(); i += 1) {
         func(list[i]);
     }

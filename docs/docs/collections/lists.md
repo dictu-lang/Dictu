@@ -222,15 +222,15 @@ list1.sort();
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
 
-### list.foreach(func)
+### list.forEach(func)
 
-To run a function on every element in a list we use `.foreach`. The callback function
-passed to `.foreach` expects one parameter which will be the current value.
+To run a function on every element in a list we use `.forEach`. The callback function
+passed to `.forEach` expects one parameter which will be the current value.
 
 ```cs
 const myList = [1, 2, 3, 4, 5];
 
-myList.foreach(def (value) => {
+myList.forEach(def (value) => {
     print("Val: {}".format(value));
 });
 ```

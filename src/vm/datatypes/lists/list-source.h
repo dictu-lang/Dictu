@@ -37,7 +37,7 @@
 "    return accumulator;\n" \
 "}\n" \
 "\n" \
-"def foreach(list, func) {\n" \
+"def forEach(list, func) {\n" \
 "    for (var i = 0; i < list.len(); i += 1) {\n" \
 "        func(list[i]);\n" \
 "    }\n" \
