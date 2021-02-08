@@ -39,7 +39,7 @@
 "\n" \
 "def foreach(list, func) {\n" \
 "    for (var i = 0; i < list.len(); i += 1) {\n" \
-"        func(list[i], i);\n" \
+"        func(list[i]);\n" \
 "    }\n" \
 "}\n" \
 
