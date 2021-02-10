@@ -1711,14 +1711,18 @@ static void enumDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
 
-    while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
+    do {
+        if (check(compiler, TOKEN_RIGHT_BRACE)) {
+            error(compiler->parser, "Trailing comma in enum declaration");
+        }
+
         consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");
         uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
         consume(compiler, TOKEN_EQUAL, "Expect '=' after enum value identifier.");
         expression(compiler);
         emitBytes(compiler, OP_SET_ENUM_VALUE, name);
-    }
+    } while (match(compiler, TOKEN_COMMA));
 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
     defineVariable(compiler, nameConstant, false);
