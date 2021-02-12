@@ -11,6 +11,7 @@ import "operators/import.du";
 import "loops/import.du";
 import "functions/import.du";
 import "classes/import.du";
+import "enum/import.du";
 import "builtins/import.du";
 import "files/import.du";
 import "maths/import.du";

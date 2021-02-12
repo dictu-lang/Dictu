@@ -555,6 +555,18 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
+            case OBJ_ENUM: {
+                ObjEnum *enumObj = AS_ENUM(receiver);
+
+                Value value;
+                if (tableGet(&enumObj->values, name, &value)) {
+                    return callValue(vm, value, argCount);
+                }
+
+                runtimeError(vm, "'%s' enum has no property '%s'.", enumObj->name->chars, name->chars);
+                return false;
+            }
+
             default:
                 break;
         }
