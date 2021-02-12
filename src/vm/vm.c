@@ -182,7 +182,7 @@ Value peek(DictuVM *vm, int distance) {
 
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
-        runtimeError(vm, "Function '%s' expected %d arguments but got %d.",
+        runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
                      closure->function->name->chars,
                      closure->function->arity + closure->function->arityOptional,
                      argCount

@@ -169,12 +169,19 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
         case TYPE_METHOD:
         case TYPE_STATIC:
         case TYPE_ABSTRACT:
-        case TYPE_FUNCTION:
-        case TYPE_ARROW_FUNCTION: {
+        case TYPE_FUNCTION: {
             compiler->function->name = copyString(
                     parser->vm,
                     parser->previous.start,
                     parser->previous.length
+            );
+            break;
+        }
+        case TYPE_ARROW_FUNCTION: {
+            compiler->function->name = copyString(
+                    parser->vm,
+                    "<anonymous>",
+                    11
             );
             break;
         }
