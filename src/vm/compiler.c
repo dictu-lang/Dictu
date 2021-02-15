@@ -301,7 +301,7 @@ static int resolveLocal(Compiler *compiler, Token *name, bool inFunction) {
 // Adds an upvalue to [compiler]'s function with the given properties.
 // Does not add one if an upvalue for that variable is already in the
 // list. Returns the index of the upvalue.
-static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal) {
+static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal, bool constant) {
     // Look for an existing one.
     int upvalueCount = compiler->function->upvalueCount;
     for (int i = 0; i < upvalueCount; i++) {
@@ -319,6 +319,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal) {
 
     compiler->upvalues[upvalueCount].isLocal = isLocal;
     compiler->upvalues[upvalueCount].index = index;
+    compiler->upvalues[upvalueCount].constant = constant;
     return compiler->function->upvalueCount++;
 }
 
@@ -340,7 +341,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
         // Mark the local as an upvalue so we know to close it when it goes
         // out of scope.
         compiler->enclosing->locals[local].isUpvalue = true;
-        return addUpvalue(compiler, (uint8_t) local, true);
+        return addUpvalue(compiler, (uint8_t) local, true, compiler->enclosing->locals[local].constant);
     }
 
     // See if it's an upvalue in the immediately enclosing function. In
@@ -351,7 +352,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
     // deeply nested function that is closing over it.
     int upvalue = resolveUpvalue(compiler->enclosing, name);
     if (upvalue != -1) {
-        return addUpvalue(compiler, (uint8_t) upvalue, false);
+        return addUpvalue(compiler, (uint8_t) upvalue, false, compiler->enclosing->upvalues[upvalue].constant);
     }
 
     // If we got here, we walked all the way up the parent chain and
@@ -1146,6 +1147,12 @@ static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
 static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
     if (setOp == OP_SET_LOCAL) {
         if (compiler->locals[arg].constant) {
+            error(compiler->parser, "Cannot assign to a constant.");
+        }
+    } else if (setOp == OP_SET_UPVALUE) {
+        Upvalue upvalue = compiler->upvalues[arg];
+
+        if (upvalue.constant) {
             error(compiler->parser, "Cannot assign to a constant.");
         }
     } else if (setOp == OP_SET_MODULE) {
