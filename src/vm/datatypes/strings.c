@@ -244,7 +244,7 @@ static Value replaceString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+    if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "Arguments passed to replace() must be a strings");
         return EMPTY_VAL;
     }
