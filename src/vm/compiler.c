@@ -1788,8 +1788,8 @@ static void expressionStatement(Compiler *compiler) {
     }
 }
 
-static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
-    switch (code) {
+static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
+    switch (code[ip]) {
         case OP_NIL:
         case OP_TRUE:
         case OP_FALSE:
@@ -1802,6 +1802,7 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
         case OP_GREATER:
         case OP_LESS:
         case OP_ADD:
+        case OP_SUBTRACT:
         case OP_MULTIPLY:
         case OP_DIVIDE:
         case OP_POW:
@@ -1868,15 +1869,16 @@ static int getArgCount(uint8_t code, const ValueArray constants, int ip) {
             return 3;
 
         case OP_CLOSURE: {
-            ObjFunction* loadedFn = AS_FUNCTION(constants.values[ip + 1]);
+            int constant = code[ip + 1];
+            ObjFunction* loadedFn = AS_FUNCTION(constants.values[constant]);
 
             // There is one byte for the constant, then two for each upvalue.
             return 1 + (loadedFn->upvalueCount * 2);
         }
 
         case OP_IMPORT_FROM: {
-            int count = constants.values[ip + 1];
-            return 1 + count;
+            // 1 + amount of variables imported
+            return 1 + code[ip + 1];
         }
     }
 
@@ -1896,7 +1898,7 @@ static void endLoop(Compiler *compiler) {
             patchJump(compiler, i + 1);
             i += 3;
         } else {
-            i += 1 + getArgCount(compiler->function->chunk.code[i], compiler->function->chunk.constants, i);
+            i += 1 + getArgCount(compiler->function->chunk.code, compiler->function->chunk.constants, i);
         }
     }
 
