@@ -38,4 +38,4 @@ var number = "10".toNumber().match(success, error);
 assert(number == 10);
 
 var number = "test".toNumber().match(success, error);
-assert(number == "Can not convert to number");
+assert(number == "Can not convert 'test' to number");

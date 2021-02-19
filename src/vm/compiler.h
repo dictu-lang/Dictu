@@ -51,6 +51,10 @@ typedef struct {
     // Whether the captured variable is a local or upvalue in the
     // enclosing function.
     bool isLocal;
+
+    // Whether the upvalue was defined as constant
+    // Rather than having to walk a compiler chain (nested closures)
+    bool constant;
 } Upvalue;
 
 typedef struct ClassCompiler {
@@ -59,6 +63,7 @@ typedef struct ClassCompiler {
     bool hasSuperclass;
     bool staticMethod;
     bool abstractClass;
+    Table privateVariables;
 } ClassCompiler;
 
 typedef struct Loop {

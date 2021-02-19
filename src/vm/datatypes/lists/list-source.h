@@ -30,10 +30,16 @@
 "def reduce(list, func, initial=0) {\n" \
 "    var accumulator = initial;\n" \
 "\n" \
-"    for(var i = 0; i < list.len(); i += 1) {\n" \
+"    for (var i = 0; i < list.len(); i += 1) {\n" \
 "        accumulator = func(accumulator, list[i]);\n" \
 "    }\n" \
 "\n" \
 "    return accumulator;\n" \
+"}\n" \
+"\n" \
+"def forEach(list, func) {\n" \
+"    for (var i = 0; i < list.len(); i += 1) {\n" \
+"        func(list[i]);\n" \
+"    }\n" \
 "}\n" \
 

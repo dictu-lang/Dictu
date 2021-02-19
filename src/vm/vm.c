@@ -182,7 +182,7 @@ Value peek(DictuVM *vm, int distance) {
 
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
-        runtimeError(vm, "Function '%s' expected %d arguments but got %d.",
+        runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
                      closure->function->name->chars,
                      closure->function->arity + closure->function->arityOptional,
                      argCount
@@ -231,7 +231,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount) {
 
                 // Call the initializer, if there is one.
                 Value initializer;
-                if (tableGet(&klass->methods, vm->initString, &initializer)) {
+                if (tableGet(&klass->publicMethods, vm->initString, &initializer)) {
                     return call(vm, AS_CLOSURE(initializer), argCount);
                 } else if (argCount != 0) {
                     runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
@@ -288,12 +288,83 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount) {
     // Look for the method.
     Value method;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->publicMethods, name, &method)) {
+        if (tableGet(&klass->privateMethods, name, &method)) {
+            runtimeError(vm, "Cannot access private property '%s' from superclass '%s'.", name->chars, klass->name->chars);
+            return false;
+        }
+
         runtimeError(vm, "Undefined property '%s'.", name->chars);
         return false;
     }
 
     return call(vm, AS_CLOSURE(method), argCount);
+}
+
+static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
+    Value receiver = peek(vm, argCount);
+
+    if (IS_INSTANCE(receiver)) {
+        ObjInstance *instance = AS_INSTANCE(receiver);
+
+        Value value;
+        // Look for the method.
+        if (tableGet(&instance->klass->privateMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
+
+        if (tableGet(&instance->klass->publicMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
+
+        // Check for instance methods.
+        if (tableGet(&vm->instanceMethods, name, &value)) {
+            return callNativeMethod(vm, value, argCount);
+        }
+
+        // Look for a field which may shadow a method.
+        if (tableGet(&instance->publicFields, name, &value)) {
+            vm->stackTop[-argCount - 1] = value;
+            return callValue(vm, value, argCount);
+        }
+    } else if (IS_CLASS(receiver)) {
+        ObjClass *instance = AS_CLASS(receiver);
+        Value method;
+        if (tableGet(&instance->privateMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&instance->publicMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&vm->classMethods, name, &method)) {
+            return callNativeMethod(vm, method, argCount);
+        }
+    }
+
+    runtimeError(vm, "Undefined property '%s'.", name->chars);
+    return false;
 }
 
 static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
@@ -341,7 +412,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_CLASS: {
                 ObjClass *instance = AS_CLASS(receiver);
                 Value method;
-                if (tableGet(&instance->methods, name, &method)) {
+                if (tableGet(&instance->publicMethods, name, &method)) {
                     if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
                         if (tableGet(&vm->classMethods, name, &method)) {
                             return callNativeMethod(vm, method, argCount);
@@ -367,20 +438,25 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 ObjInstance *instance = AS_INSTANCE(receiver);
 
                 Value value;
-                // First look for a field which may shadow a method.
-                if (tableGet(&instance->fields, name, &value)) {
-                    vm->stackTop[-argCount - 1] = value;
-                    return callValue(vm, value, argCount);
-                }
-
                 // Look for the method.
-                if (tableGet(&instance->klass->methods, name, &value)) {
+                if (tableGet(&instance->klass->publicMethods, name, &value)) {
                     return call(vm, AS_CLOSURE(value), argCount);
                 }
 
                 // Check for instance methods.
                 if (tableGet(&vm->instanceMethods, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
+                }
+
+                // Look for a field which may shadow a method.
+                if (tableGet(&instance->publicFields, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
+
+                if (tableGet(&instance->klass->privateMethods, name, &value)) {
+                    runtimeError(vm, "Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    return false;
                 }
 
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
@@ -490,7 +566,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
 
 static bool bindMethod(DictuVM *vm, ObjClass *klass, ObjString *name) {
     Value method;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->publicMethods, name, &method)) {
         return false;
     }
 
@@ -559,12 +635,18 @@ static void closeUpvalues(DictuVM *vm, Value *last) {
 static void defineMethod(DictuVM *vm, ObjString *name) {
     Value method = peek(vm, 0);
     ObjClass *klass = AS_CLASS(peek(vm, 1));
+    ObjFunction *function = AS_CLOSURE(method)->function;
 
-    if (AS_CLOSURE(method)->function->type == TYPE_ABSTRACT) {
-        tableSet(vm, &klass->abstractMethods, name, method);
+    if (function->accessLevel == ACCESS_PRIVATE) {
+        tableSet(vm, &klass->privateMethods, name, method);
     } else {
-        tableSet(vm, &klass->methods, name, method);
+        if (function->type == TYPE_ABSTRACT) {
+            tableSet(vm, &klass->abstractMethods, name, method);
+        } else {
+            tableSet(vm, &klass->publicMethods, name, method);
+        }
     }
+
     pop(vm);
 }
 
@@ -574,7 +656,7 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
 
     // Inherit methods.
     if (superclass != NULL) {
-        tableAddAll(vm, &superclass->methods, &klass->methods);
+        tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
     }
 }
@@ -869,7 +951,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
                 ObjString *name = READ_STRING();
                 Value value;
-                if (tableGet(&instance->fields, name, &value)) {
+                if (tableGet(&instance->publicFields, name, &value)) {
                     pop(vm); // Instance.
                     push(vm, value);
                     DISPATCH();
@@ -883,13 +965,17 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = instance->klass;
 
                 while (klass != NULL) {
-                    if (tableGet(&klass->properties, name, &value)) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
                     }
 
                     klass = klass->superclass;
+                }
+
+                if (tableGet(&instance->privateFields, name, &value)) {
+                    RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
                 }
 
                 RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
@@ -912,7 +998,65 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 Value value;
                 while (klass != NULL) {
-                    if (tableGet(&klass->properties, name, &value)) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
+                        pop(vm); // Class.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
+                }
+
+                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
+            }
+
+            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+        }
+
+        CASE_CODE(GET_PRIVATE_PROPERTY): {
+            if (IS_INSTANCE(peek(vm, 0))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+                ObjString *name = READ_STRING();
+                Value value;
+                if (tableGet(&instance->privateFields, name, &value)) {
+                    pop(vm); // Instance.
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                if (tableGet(&instance->publicFields, name, &value)) {
+                    pop(vm); // Instance.
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                if (bindMethod(vm, instance->klass, name)) {
+                    DISPATCH();
+                }
+
+                // Check class for properties
+                ObjClass *klass = instance->klass;
+
+                while (klass != NULL) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    klass = klass->superclass;
+                }
+
+                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+            } else if (IS_CLASS(peek(vm, 0))) {
+                ObjClass *klass = AS_CLASS(peek(vm, 0));
+                // Used to keep a reference to the class for the runtime error below
+                ObjClass *klassStore = klass;
+                ObjString *name = READ_STRING();
+
+                Value value;
+                while (klass != NULL) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
                         DISPATCH();
@@ -935,7 +1079,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
             ObjString *name = READ_STRING();
             Value value;
-            if (tableGet(&instance->fields, name, &value)) {
+            if (tableGet(&instance->publicFields, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
@@ -948,7 +1092,48 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
-                if (tableGet(&klass->properties, name, &value)) {
+                if (tableGet(&klass->publicProperties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                klass = klass->superclass;
+            }
+
+            if (tableGet(&instance->privateFields, name, &value)) {
+                RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+            }
+
+            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+        }
+
+        CASE_CODE(GET_PRIVATE_PROPERTY_NO_POP): {
+            if (!IS_INSTANCE(peek(vm, 0))) {
+                RUNTIME_ERROR("Only instances have properties.");
+            }
+
+            ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+            ObjString *name = READ_STRING();
+            Value value;
+            if (tableGet(&instance->privateFields, name, &value)) {
+                push(vm, value);
+                DISPATCH();
+            }
+
+            if (tableGet(&instance->publicFields, name, &value)) {
+                push(vm, value);
+                DISPATCH();
+            }
+
+            if (bindMethod(vm, instance->klass, name)) {
+                DISPATCH();
+            }
+
+            // Check class for properties
+            ObjClass *klass = instance->klass;
+
+            while (klass != NULL) {
+                if (tableGet(&klass->publicProperties, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
@@ -962,14 +1147,14 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(SET_PROPERTY): {
             if (IS_INSTANCE(peek(vm, 1))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-                tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &instance->publicFields, READ_STRING(), peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
                 DISPATCH();
             } else if (IS_CLASS(peek(vm, 1))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
-                tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
@@ -979,10 +1164,23 @@ static DictuInterpretResult run(DictuVM *vm) {
             RUNTIME_ERROR_TYPE("Can not set property on type '%s'", 1);
         }
 
+        CASE_CODE(SET_PRIVATE_PROPERTY): {
+            if (IS_INSTANCE(peek(vm, 1))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
+                tableSet(vm, &instance->privateFields, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
+                DISPATCH();
+            }
+
+            DISPATCH();
+        }
+
         CASE_CODE(SET_CLASS_VAR): {
             // No type check required as this opcode is only ever emitted when parsing a class
             ObjClass *klass = AS_CLASS(peek(vm, 1));
-            tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+            tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
             pop(vm);
             DISPATCH();
         }
@@ -994,7 +1192,20 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             for (int i = 0; i < function->propertyCount; ++i) {
                 ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->propertyNames[i]]);
-                tableSet(vm, &instance->fields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+                tableSet(vm, &instance->publicFields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+            }
+
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_PRIVATE_INIT_PROPERTIES): {
+            ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            int argCount = function->arity + function->arityOptional;
+            ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
+
+            for (int i = 0; i < function->privatePropertyCount; ++i) {
+                ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->privatePropertyNames[i]]);
+                tableSet(vm, &instance->privateFields, propertyName, peek(vm, argCount - function->privatePropertyIndexes[i] - 1));
             }
 
             DISPATCH();
@@ -1607,6 +1818,18 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(INVOKE_INTERNAL): {
+            int argCount = READ_BYTE();
+            ObjString *method = READ_STRING();
+            frame->ip = ip;
+            if (!invokeInternal(vm, method, argCount)) {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm->frames[vm->frameCount - 1];
+            ip = frame->ip;
+            DISPATCH();
+        }
+
         CASE_CODE(SUPER): {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
@@ -1704,7 +1927,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 Value _;
-                if (!tableGet(&klass->methods, klass->abstractMethods.entries[i].key, &_)) {
+                if (!tableGet(&klass->publicMethods, klass->abstractMethods.entries[i].key, &_)) {
                     RUNTIME_ERROR("Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
                 }
             }
@@ -1723,7 +1946,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             ObjClass *klass = AS_CLASS(peek(vm, 1));
 
-            tableAddAll(vm, &AS_CLASS(trait)->methods, &klass->methods);
+            tableAddAll(vm, &AS_CLASS(trait)->publicMethods, &klass->publicMethods);
             pop(vm); // pop the trait
 
             DISPATCH();

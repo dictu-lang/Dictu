@@ -222,13 +222,25 @@ list1.sort();
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
 
+### list.forEach(func)
+
+To run a function on every element in a list we use `.forEach`. The callback function
+passed to `.forEach` expects one parameter which will be the current value.
+
+```cs
+const myList = [1, 2, 3, 4, 5];
+
+myList.forEach(def (value) => {
+    print("Val: {}".format(value));
+});
+```
+
 ### list.map(func)
 
-To run a function on every element in a list we use `.map`. Map expects a single parameter which is a callback
-function which will be ran and the return value will be saved to a list. The callback itself also expects one
+Similar to `.foreach`, `.map` will run a function for each element within the list, however
+the difference is that `.map` returns a new list of values generated from the callback function.
+Map expects a single parameter which is a callback. The callback itself also expects one
 parameter which is the current item in the list.
-
-Note: `.map()` returns a new list.
 
 ```cs
 print([1, 2, 3, 4, 5].map(def (x) => x * 2)); // [2, 4, 6, 8, 10]

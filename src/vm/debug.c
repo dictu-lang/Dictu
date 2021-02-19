@@ -147,14 +147,22 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return byteInstruction("OP_SET_UPVALUE", chunk, offset);
         case OP_GET_PROPERTY:
             return constantInstruction("OP_GET_PROPERTY", chunk, offset);
+        case OP_GET_PRIVATE_PROPERTY:
+            return constantInstruction("OP_GET_PRIVATE_PROPERTY", chunk, offset);
         case OP_GET_PROPERTY_NO_POP:
             return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
+        case OP_GET_PRIVATE_PROPERTY_NO_POP:
+            return constantInstruction("OP_GET_PRIVATE_PROPERTY_NO_POP", chunk, offset);
         case OP_SET_PROPERTY:
             return constantInstruction("OP_SET_PROPERTY", chunk, offset);
+        case OP_SET_PRIVATE_PROPERTY:
+            return constantInstruction("OP_SET_PRIVATE_PROPERTY", chunk, offset);
         case OP_SET_CLASS_VAR:
             return constantInstruction("OP_SET_CLASS_VAR", chunk, offset);
         case OP_SET_INIT_PROPERTIES:
             return constantInstruction("OP_SET_INIT_PROPERTIES", chunk, offset);
+        case OP_SET_PRIVATE_INIT_PROPERTIES:
+            return constantInstruction("OP_SET_PRIVATE_INIT_PROPERTIES", chunk, offset);
         case OP_GET_SUPER:
             return constantInstruction("OP_GET_SUPER", chunk, offset);
         case OP_EQUAL:
@@ -221,6 +229,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return byteInstruction("OP_NEW_DICT", chunk, offset);
         case OP_CALL:
             return byteInstruction("OP_CALL", chunk, offset);
+        case OP_INVOKE_INTERNAL:
+            return invokeInstruction("OP_INVOKE_INTERNAL", chunk, offset);
         case OP_INVOKE:
             return invokeInstruction("OP_INVOKE", chunk, offset);
         case OP_SUPER:

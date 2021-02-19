@@ -1,0 +1,16 @@
+/**
+ * foreach.du
+ *
+ * Testing the list.foreach() method
+ *
+ * .foreach() runs a user defined function on each element in the list.
+ */
+
+const myList = [1, 2, 3, 4, 5];
+var accumulator = 0;
+
+myList.forEach(def (value) => {
+    accumulator += value;
+});
+
+assert(accumulator == 15);

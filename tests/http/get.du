@@ -29,3 +29,14 @@ assert(response["headers"].len() > 0);
 response = HTTP.get("https://BAD_URL.test_for_error");
 assert(response.success() == false);
 assert(response.unwrapError() == "Couldn't resolve host name");
+
+// GZIP
+result = HTTP.get("https://httpbin.org/gzip");
+
+assert(result.success());
+response = result.unwrap();
+
+assert(response["statusCode"] == 200);
+assert(response["content"].contains("headers"));
+assert(response["headers"].len() > 0);
+assert(response["headers"].get("Host", false) == "httpbin.org");

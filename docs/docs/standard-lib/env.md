@@ -26,7 +26,7 @@ import Env;
 
 ### Env.get(string)
 
-Get an environment variable. `.get()` will return a Result type and on success will unwrap a string.
+Get an environment variable. `.get()` will return a string if a valid environment variable is found otherwise nil.
 
 ```cs
 Env.get("bad key!"); // nil

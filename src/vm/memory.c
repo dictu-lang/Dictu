@@ -101,9 +101,10 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             grayObject(vm, (Obj *) klass->name);
             grayObject(vm, (Obj *) klass->superclass);
-            grayTable(vm, &klass->methods);
+            grayTable(vm, &klass->publicMethods);
+            grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);
-            grayTable(vm, &klass->properties);
+            grayTable(vm, &klass->publicProperties);
             break;
         }
 
@@ -126,7 +127,8 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
             grayObject(vm, (Obj *) instance->klass);
-            grayTable(vm, &instance->fields);
+            grayTable(vm, &instance->publicFields);
+            grayTable(vm, &instance->privateFields);
             break;
         }
 
@@ -191,9 +193,10 @@ void freeObject(DictuVM *vm, Obj *object) {
 
         case OBJ_CLASS: {
             ObjClass *klass = (ObjClass *) object;
-            freeTable(vm, &klass->methods);
+            freeTable(vm, &klass->publicMethods);
+            freeTable(vm, &klass->privateMethods);
             freeTable(vm, &klass->abstractMethods);
-            freeTable(vm, &klass->properties);
+            freeTable(vm, &klass->publicProperties);
             FREE(vm, ObjClass, object);
             break;
         }
@@ -208,8 +211,14 @@ void freeObject(DictuVM *vm, Obj *object) {
         case OBJ_FUNCTION: {
             ObjFunction *function = (ObjFunction *) object;
             if (function->type == TYPE_INITIALIZER) {
-                FREE_ARRAY(vm, int, function->propertyNames, function->propertyCount);
-                FREE_ARRAY(vm, int, function->propertyIndexes, function->propertyCount);
+                if (function->privatePropertyCount > 0) {
+                    FREE_ARRAY(vm, int, function->privatePropertyNames, function->privatePropertyCount);
+                    FREE_ARRAY(vm, int, function->privatePropertyIndexes, function->privatePropertyCount);
+                }
+                if (function->propertyCount > 0) {
+                    FREE_ARRAY(vm, int, function->propertyNames, function->propertyCount);
+                    FREE_ARRAY(vm, int, function->propertyIndexes, function->propertyCount);
+                }
             }
             freeChunk(vm, &function->chunk);
             FREE(vm, ObjFunction, object);
@@ -218,7 +227,8 @@ void freeObject(DictuVM *vm, Obj *object) {
 
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
-            freeTable(vm, &instance->fields);
+            freeTable(vm, &instance->publicFields);
+            freeTable(vm, &instance->privateFields);
             FREE(vm, ObjInstance, object);
             break;
         }
