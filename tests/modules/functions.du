@@ -62,3 +62,19 @@ assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
         }
     }
 }
+
+/**
+ * Within a loop.
+ *     There was an issue where functions defined in a loop wrongly shuffled the bytecode
+ *     add a test to cover this
+ */
+var x = 0;
+
+while (x < 10) {
+    def myFunc() {
+        assert(type(x) == 'number');
+    }
+
+    myFunc();
+    x += 1;
+}
