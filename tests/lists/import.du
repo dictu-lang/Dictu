@@ -23,3 +23,4 @@ import "map.du";
 import "filter.du";
 import "reduce.du";
 import "forEach.du";
+import "find.du";

@@ -1,0 +1,13 @@
+/**
+ * find.du
+ *
+ * Testing the list.find() method
+ *
+ * .find() runs a user defined function on each element in the list and returns the item in the
+ * list that satisfies the callback
+ */
+
+const myList = [1, 2, 3, 4, 5];
+
+assert(myList.find(def (item) => item == 3) == 3);
+assert(myList.find(def (item) => item == 10) == nil);
