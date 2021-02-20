@@ -1,9 +1,9 @@
 /**
- * foreach.du
+ * forEach.du
  *
- * Testing the list.foreach() method
+ * Testing the list.forEach() method
  *
- * .foreach() runs a user defined function on each element in the list.
+ * .forEach() runs a user defined function on each element in the list.
  */
 
 const myList = [1, 2, 3, 4, 5];
