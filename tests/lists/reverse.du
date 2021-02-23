@@ -1,0 +1,12 @@
+/**
+ * reverse.du
+ *
+ * Testing list.reverse()
+ */
+
+const list = [1, 2, 3, 4];
+const reversedList = list.reverse();
+
+assert(list != reversedList);
+assert(list.len() == reversedList.len());
+assert(reversedList == [4, 3, 2, 1]);

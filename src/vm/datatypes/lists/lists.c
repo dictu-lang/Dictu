@@ -376,6 +376,24 @@ static Value sortList(DictuVM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value reverseList(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "reverse() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    ObjList* reversedList = newList(vm);
+    push(vm, OBJ_VAL(reversedList));
+
+    for (int i = list->values.count - 1; i >= 0; --i) {
+        writeValueArray(vm, &reversedList->values, list->values.values[i]);
+    }
+    pop(vm);
+
+    return OBJ_VAL(reversedList);
+}
+
 void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "toString", toStringList);
     defineNative(vm, &vm->listMethods, "len", lenList);
@@ -390,6 +408,7 @@ void declareListMethods(DictuVM *vm) {
     defineNative(vm, &vm->listMethods, "deepCopy", copyListDeep);
     defineNative(vm, &vm->listMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->listMethods, "sort", sortList);
+    defineNative(vm, &vm->listMethods, "reverse", reverseList);
 
     dictuInterpret(vm, "List", DICTU_LIST_SOURCE);
 
