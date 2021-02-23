@@ -383,15 +383,15 @@ static Value reverseList(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjList* list = AS_LIST(args[0]);
-    ObjList* reversedList = newList(vm);
-    push(vm, OBJ_VAL(reversedList));
+    int listLength = list->values.count;
 
-    for (int i = list->values.count - 1; i >= 0; --i) {
-        writeValueArray(vm, &reversedList->values, list->values.values[i]);
+    for (int i = 0; i < listLength / 2; i++) {
+        Value temp = list->values.values[i];
+        list->values.values[i] = list->values.values[listLength - i - 1];
+        list->values.values[listLength - i - 1] = temp;
     }
-    pop(vm);
 
-    return OBJ_VAL(reversedList);
+    return NIL_VAL;
 }
 
 void declareListMethods(DictuVM *vm) {

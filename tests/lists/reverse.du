@@ -5,8 +5,8 @@
  */
 
 const list = [1, 2, 3, 4];
-const reversedList = list.reverse();
+list.reverse();
 
-assert(list != reversedList);
-assert(list.len() == reversedList.len());
-assert(reversedList == [4, 3, 2, 1]);
+assert(list != [1, 2, 3, 4]);
+assert(list.len() == 4);
+assert(list == [4, 3, 2, 1]);
