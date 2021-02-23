@@ -178,6 +178,17 @@ myList.pop(0); // 1
 print(myList); // [2]
 ```
 
+### list.reverse()
+
+To reverse a list we use `.reverse()`, this will reverse a list *in-place* (modifying the list) rather than generating a new list.
+
+```cs
+const myList = [1, 2, 3, 4];
+myList.reverse();
+
+print(myList); // [4, 3, 2, 1]
+```
+
 ### Copying lists
 #### list.copy()
 
