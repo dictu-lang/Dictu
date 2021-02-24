@@ -253,7 +253,7 @@ static Value sleepNative(DictuVM *vm, int argCount, Value *args) {
 #elif _POSIX_C_SOURCE >= 199309L
     struct timespec ts;
     ts.tv_sec = stopTime;
-    ts.tv_nsec = stopTime * 1000000000;
+    ts.tv_nsec = fmod(stopTime, 1) * 1000000000;
     nanosleep(&ts, NULL);
 #else
     if (stopTime >= 1)
