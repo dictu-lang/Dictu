@@ -1817,7 +1817,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_IMPORT_END:
         case OP_USE:
         case OP_OPEN_FILE:
-        case OP_CLOSE_FILE:
         case OP_BREAK:
         case OP_BITWISE_AND:
         case OP_BITWISE_XOR:
@@ -1850,6 +1849,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_IMPORT:
         case OP_NEW_LIST:
         case OP_NEW_DICT:
+        case OP_CLOSE_FILE:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
@@ -2056,13 +2056,20 @@ static void withStatement(Compiler *compiler) {
 
     emitByte(compiler, OP_OPEN_FILE);
     statement(compiler);
-    emitByte(compiler, OP_CLOSE_FILE);
+    emitBytes(compiler, OP_CLOSE_FILE, compiler->localCount - 1);
     endScope(compiler);
 }
 
 static void returnStatement(Compiler *compiler) {
     if (compiler->type == TYPE_TOP_LEVEL) {
         error(compiler->parser, "Cannot return from top-level code.");
+    }
+
+    Token token = syntheticToken("file");
+    int local = resolveLocal(compiler, &token, true);
+
+    if (local != -1) {
+        emitBytes(compiler, OP_CLOSE_FILE, local);
     }
 
     if (match(compiler, TOKEN_SEMICOLON)) {
