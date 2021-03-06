@@ -2047,9 +2047,11 @@ static void withStatement(Compiler *compiler) {
     consume(compiler, TOKEN_COMMA, "Expect comma");
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after 'with'.");
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before with body.");
 
     beginScope(compiler);
 
+    int fileIndex = compiler->localCount;
     Local *local = &compiler->locals[compiler->localCount++];
     local->depth = compiler->scopeDepth;
     local->isUpvalue = false;
@@ -2057,8 +2059,8 @@ static void withStatement(Compiler *compiler) {
     local->constant = true;
 
     emitByte(compiler, OP_OPEN_FILE);
-    statement(compiler);
-    emitBytes(compiler, OP_CLOSE_FILE, compiler->localCount - 1);
+    block(compiler);
+    emitBytes(compiler, OP_CLOSE_FILE, fileIndex);
     endScope(compiler);
     compiler->withBlock = false;
 }
