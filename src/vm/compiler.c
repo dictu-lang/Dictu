@@ -150,6 +150,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
+    compiler->withBlock = false;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -2040,6 +2041,7 @@ static void ifStatement(Compiler *compiler) {
 }
 
 static void withStatement(Compiler *compiler) {
+    compiler->withBlock = true;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
     expression(compiler);
     consume(compiler, TOKEN_COMMA, "Expect comma");
@@ -2058,6 +2060,7 @@ static void withStatement(Compiler *compiler) {
     statement(compiler);
     emitBytes(compiler, OP_CLOSE_FILE, compiler->localCount - 1);
     endScope(compiler);
+    compiler->withBlock = false;
 }
 
 static void returnStatement(Compiler *compiler) {
@@ -2065,11 +2068,13 @@ static void returnStatement(Compiler *compiler) {
         error(compiler->parser, "Cannot return from top-level code.");
     }
 
-    Token token = syntheticToken("file");
-    int local = resolveLocal(compiler, &token, true);
+    if (compiler->withBlock) {
+        Token token = syntheticToken("file");
+        int local = resolveLocal(compiler, &token, true);
 
-    if (local != -1) {
-        emitBytes(compiler, OP_CLOSE_FILE, local);
+        if (local != -1) {
+            emitBytes(compiler, OP_CLOSE_FILE, local);
+        }
     }
 
     if (match(compiler, TOKEN_SEMICOLON)) {

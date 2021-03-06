@@ -101,6 +101,7 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
+    bool withBlock;
 } Compiler;
 
 typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);
