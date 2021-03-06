@@ -248,7 +248,7 @@ static Value sleepNative(DictuVM *vm, int argCount, Value *args) {
 
     double stopTime = AS_NUMBER(args[0]);
 
-#ifdef WIN32
+#ifdef _WIN32
     Sleep(stopTime * 1000);
 #elif _POSIX_C_SOURCE >= 199309L
     struct timespec ts;
@@ -258,9 +258,10 @@ static Value sleepNative(DictuVM *vm, int argCount, Value *args) {
 #else
     if (stopTime >= 1)
       sleep(stopTime);
-    usleep(stopTime * 1000);
-#endif
 
+    // 1000000 = 1 second
+    usleep(fmod(stopTime, 1) * 1000000);
+#endif
 
     return NIL_VAL;
 }
