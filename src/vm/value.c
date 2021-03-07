@@ -400,6 +400,9 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
 
                 break;
             }
+            case OBJ_ENUM: {
+                CONVERT(enum, 4);
+            }
             case OBJ_MODULE: {
                 CONVERT(module, 6);
             }

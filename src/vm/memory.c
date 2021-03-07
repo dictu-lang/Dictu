@@ -108,6 +108,13 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             break;
         }
 
+        case OBJ_ENUM: {
+            ObjEnum *enumObj = (ObjEnum *) object;
+            grayObject(vm, (Obj *) enumObj->name);
+            grayTable(vm, &enumObj->values);
+            break;
+        }
+
         case OBJ_CLOSURE: {
             ObjClosure *closure = (ObjClosure *) object;
             grayObject(vm, (Obj *) closure->function);
@@ -198,6 +205,13 @@ void freeObject(DictuVM *vm, Obj *object) {
             freeTable(vm, &klass->abstractMethods);
             freeTable(vm, &klass->publicProperties);
             FREE(vm, ObjClass, object);
+            break;
+        }
+
+        case OBJ_ENUM: {
+            ObjEnum *enumObj = (ObjEnum *) object;
+            freeTable(vm, &enumObj->values);
+            FREE(vm, ObjEnum, object);
             break;
         }
 

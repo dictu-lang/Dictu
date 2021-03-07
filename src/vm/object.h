@@ -15,6 +15,7 @@
 #define AS_MODULE(value)        ((ObjModule*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
+#define AS_ENUM(value)          ((ObjEnum*)AS_OBJ(value))
 #define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
@@ -33,6 +34,7 @@
 #define IS_CLASS(value)           isObjType(value, OBJ_CLASS)
 #define IS_DEFAULT_CLASS(value)   isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
 #define IS_TRAIT(value)           isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
+#define IS_ENUM(value)            isObjType(value, OBJ_ENUM)
 #define IS_CLOSURE(value)         isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value)        isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value)        isObjType(value, OBJ_INSTANCE)
@@ -49,6 +51,7 @@ typedef enum {
     OBJ_MODULE,
     OBJ_BOUND_METHOD,
     OBJ_CLASS,
+    OBJ_ENUM,
     OBJ_CLOSURE,
     OBJ_FUNCTION,
     OBJ_INSTANCE,
@@ -221,6 +224,12 @@ typedef struct sObjClass {
     ClassType type;
 } ObjClass;
 
+typedef struct sObjEnum {
+    Obj obj;
+    ObjString *name;
+    Table values;
+} ObjEnum;
+
 typedef struct {
     Obj obj;
     ObjClass *klass;
@@ -239,6 +248,8 @@ ObjModule *newModule(DictuVM *vm, ObjString *name);
 ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method);
 
 ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType type);
+
+ObjEnum *newEnum(DictuVM *vm, ObjString *name);
 
 ObjClosure *newClosure(DictuVM *vm, ObjFunction *function);
 
