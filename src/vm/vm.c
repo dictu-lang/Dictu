@@ -1983,8 +1983,11 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(CLOSE_FILE): {
-            ObjFile *file = AS_FILE(peek(vm, 0));
-            fclose(file->file);
+            uint8_t slot = READ_BYTE();
+            Value file = frame->slots[slot];
+            ObjFile *fileObject = AS_FILE(file);
+            fclose(fileObject->file);
+
             DISPATCH();
         }
     }
