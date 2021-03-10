@@ -6,10 +6,12 @@ import "variables/import.du";
 import "lists/import.du";
 import "dicts/import.du";
 import "sets/import.du";
+import "result/import.du";
 import "operators/import.du";
 import "loops/import.du";
 import "functions/import.du";
 import "classes/import.du";
+import "enum/import.du";
 import "builtins/import.du";
 import "files/import.du";
 import "maths/import.du";
@@ -21,6 +23,7 @@ import "path/import.du";
 import "sockets/import.du";
 import "base64/import.du";
 import "sqlite/import.du";
+import "process/import.du";
 
 if (isDefined("HTTP")) {
   import "http/import.du";

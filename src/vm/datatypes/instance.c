@@ -32,7 +32,7 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     Value _; // Unused variable
-    if (tableGet(&instance->fields, AS_STRING(value), &_)) {
+    if (tableGet(&instance->publicFields, AS_STRING(value), &_)) {
         return TRUE_VAL;
     }
 
@@ -61,7 +61,7 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     ObjInstance *instance = AS_INSTANCE(args[0]);
 
     Value value;
-    if (tableGet(&instance->fields, AS_STRING(key), &value)) {
+    if (tableGet(&instance->publicFields, AS_STRING(key), &value)) {
         return value;
     }
 
@@ -83,7 +83,7 @@ static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjInstance *instance = AS_INSTANCE(args[0]);
-    tableSet(vm, &instance->fields, AS_STRING(key), value);
+    tableSet(vm, &instance->publicFields, AS_STRING(key), value);
 
     return NIL_VAL;
 }

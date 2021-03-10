@@ -147,12 +147,22 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return byteInstruction("OP_SET_UPVALUE", chunk, offset);
         case OP_GET_PROPERTY:
             return constantInstruction("OP_GET_PROPERTY", chunk, offset);
+        case OP_GET_PRIVATE_PROPERTY:
+            return constantInstruction("OP_GET_PRIVATE_PROPERTY", chunk, offset);
         case OP_GET_PROPERTY_NO_POP:
             return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
+        case OP_GET_PRIVATE_PROPERTY_NO_POP:
+            return constantInstruction("OP_GET_PRIVATE_PROPERTY_NO_POP", chunk, offset);
         case OP_SET_PROPERTY:
             return constantInstruction("OP_SET_PROPERTY", chunk, offset);
+        case OP_SET_PRIVATE_PROPERTY:
+            return constantInstruction("OP_SET_PRIVATE_PROPERTY", chunk, offset);
+        case OP_SET_CLASS_VAR:
+            return constantInstruction("OP_SET_CLASS_VAR", chunk, offset);
         case OP_SET_INIT_PROPERTIES:
             return constantInstruction("OP_SET_INIT_PROPERTIES", chunk, offset);
+        case OP_SET_PRIVATE_INIT_PROPERTIES:
+            return constantInstruction("OP_SET_PRIVATE_INIT_PROPERTIES", chunk, offset);
         case OP_GET_SUPER:
             return constantInstruction("OP_GET_SUPER", chunk, offset);
         case OP_EQUAL:
@@ -163,10 +173,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_LESS", offset);
         case OP_ADD:
             return simpleInstruction("OP_ADD", offset);
-        case OP_INCREMENT:
-            return simpleInstruction("OP_INCREMENT", offset);
-        case OP_DECREMENT:
-            return simpleInstruction("OP_DECREMENT", offset);
+        case OP_SUBTRACT:
+            return simpleInstruction("OP_SUBTRACT", offset);
         case OP_MULTIPLY:
             return simpleInstruction("OP_MULTIPLY", offset);
         case OP_DIVIDE:
@@ -215,12 +223,14 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_SUBSCRIPT_ASSIGN", offset);
         case OP_SLICE:
             return simpleInstruction("OP_SLICE", offset);
-        case OP_PUSH:
-            return simpleInstruction("OP_PUSH", offset);
+        case OP_SUBSCRIPT_PUSH:
+            return simpleInstruction("OP_SUBSCRIPT_PUSH", offset);
         case OP_NEW_DICT:
             return byteInstruction("OP_NEW_DICT", chunk, offset);
         case OP_CALL:
             return byteInstruction("OP_CALL", chunk, offset);
+        case OP_INVOKE_INTERNAL:
+            return invokeInstruction("OP_INVOKE_INTERNAL", chunk, offset);
         case OP_INVOKE:
             return invokeInstruction("OP_INVOKE", chunk, offset);
         case OP_SUPER:
@@ -258,12 +268,16 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_END_CLASS", offset);
         case OP_METHOD:
             return constantInstruction("OP_METHOD", chunk, offset);
+        case OP_ENUM:
+            return constantInstruction("OP_ENUM", chunk, offset);
+        case OP_SET_ENUM_VALUE:
+            return constantInstruction("OP_SET_ENUM_VALUE", chunk, offset);
         case OP_USE:
             return constantInstruction("OP_USE", chunk, offset);
         case OP_OPEN_FILE:
             return constantInstruction("OP_OPEN_FILE", chunk, offset);
         case OP_CLOSE_FILE:
-            return simpleInstruction("OP_CLOSE_FILE", offset);
+            return constantInstruction("OP_CLOSE_FILE", chunk, offset);
         case OP_BREAK:
             return simpleInstruction("OP_BREAK", offset);
         default:

@@ -1,0 +1,18 @@
+/**
+* unwrap.du
+*
+* Testing Result.unwrap(), Result.unwrapError() and Result.success()
+*
+*/
+
+var result = Success(10);
+
+assert(type(result) == "result");
+assert(result.success() == true);
+assert(result.unwrap() == 10);
+
+result = Error("Error!!!");
+
+assert(type(result) == "result");
+assert(result.success() == false);
+assert(result.unwrapError() == "Error!!!");

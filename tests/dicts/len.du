@@ -13,14 +13,14 @@ assert({ 1: "one", 2: "two", 3: "three"}.len() == 3);
 var x = {};
 assert(x.len() == 0);
 
-for (var i = 0; i < 1000; ++i) {
+for (var i = 0; i < 1000; i += 1) {
     assert(x.len() == i);
     x[i] = i;
 }
 
 assert(x.len() == 1000);
 
-for (var i = 999; i >= 0; --i) {
+for (var i = 999; i >= 0; i -= 1) {
     x.remove(i);
     assert(x.len() == i);
 }

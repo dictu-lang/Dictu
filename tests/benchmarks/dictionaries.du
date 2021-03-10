@@ -2,18 +2,18 @@ var start = System.clock();
 
 var dict = {};
 
-for (var i = 1; i < 1000001; ++i) {
+for (var i = 1; i < 1000001; i += 1) {
   dict[str(i)] = i;
 }
 
 var sum = 0;
-for (var i = 1; i < 1000001; ++i) {
+for (var i = 1; i < 1000001; i += 1) {
     sum = sum + dict[str(i)];
 }
 
 print(sum);
 
-for (var i = 1; i < 1000001; ++i) {
+for (var i = 1; i < 1000001; i += 1) {
   dict.remove(str(i));
 }
 

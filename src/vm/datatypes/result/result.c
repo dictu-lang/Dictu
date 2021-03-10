@@ -1,5 +1,7 @@
 #include "result.h"
 
+#include "result-source.h"
+
 static Value unwrap(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "unwrap() takes no arguments (%d given)", argCount);
@@ -46,4 +48,14 @@ void declareResultMethods(DictuVM *vm) {
     defineNative(vm, &vm->resultMethods, "unwrap", unwrap);
     defineNative(vm, &vm->resultMethods, "unwrapError", unwrapError);
     defineNative(vm, &vm->resultMethods, "success", success);
+
+    dictuInterpret(vm, "Result", DICTU_RESULT_SOURCE);
+
+    Value Result;
+    tableGet(&vm->modules, copyString(vm, "Result", 6), &Result);
+
+    ObjModule *ResultModule = AS_MODULE(Result);
+    push(vm, Result);
+    tableAddAll(vm, &ResultModule->values, &vm->resultMethods);
+    pop(vm);
 }

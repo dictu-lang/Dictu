@@ -15,27 +15,18 @@
 
     <script>
         (()=>{
-  
-        if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            const cssFile = document.querySelector('[rel="stylesheet"]');
-            const originalCssRef = cssFile.getAttribute('href');
-            const darkModeCssRef = originalCssRef.replace('just-the-docs-default.css', 'just-the-docs-dark.css');
-            cssFile.setAttribute('href', darkModeCssRef);
+            if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                let oldLink = document.getElementById('favicon');
+                let link = document.createElement('link');
+                link.id = 'favicon';
+                link.rel = 'shortcut icon';
+                link.href = '{{ "/assets/favicon-dark.png" | absolute_url }}';
 
-            document.documentElement.classList.add('dark-mode');
-  
-            let oldLink = document.getElementById('favicon');
-            let link = document.createElement('link');
-            link.id = 'favicon';
-            link.rel = 'shortcut icon';
-            link.href = '{{ "/assets/favicon-dark.png" | absolute_url }}';
-  
-            if (oldLink) {
-                document.head.removeChild(oldLink);
+                if (oldLink) {
+                    document.head.removeChild(oldLink);
+                }
+                document.head.appendChild(link);
             }
-            document.head.appendChild(link);
-        }
-  
         })()
     </script>
   

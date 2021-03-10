@@ -175,7 +175,15 @@ static TokenType identifierType(Scanner *scanner) {
         case 'd':
             return checkKeyword(scanner, 1, 2, "ef", TOKEN_DEF);
         case 'e':
-            return checkKeyword(scanner, 1, 3, "lse", TOKEN_ELSE);
+            if (scanner->current - scanner->start > 1) {
+                switch (scanner->start[1]) {
+                    case 'l':
+                        return checkKeyword(scanner, 2, 2, "se", TOKEN_ELSE);
+                    case 'n':
+                        return checkKeyword(scanner, 2, 2, "um", TOKEN_ENUM);
+                }
+            }
+            break;
         case 'f':
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
@@ -210,6 +218,8 @@ static TokenType identifierType(Scanner *scanner) {
             break;
         case 'o':
             return checkKeyword(scanner, 1, 1, "r", TOKEN_OR);
+        case 'p':
+            return checkKeyword(scanner, 1, 6, "rivate", TOKEN_PRIVATE);
         case 'r':
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
@@ -388,18 +398,14 @@ Token scanToken(Scanner *scanner) {
         case '%':
             return makeToken(scanner, TOKEN_PERCENT);
         case '-': {
-            if (match(scanner, '-')) {
-                return makeToken(scanner, TOKEN_MINUS_MINUS);
-            } else if (match(scanner, '=')) {
+            if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_MINUS_EQUALS);
             } else {
                 return makeToken(scanner, TOKEN_MINUS);
             }
         }
         case '+': {
-            if (match(scanner, '+')) {
-                return makeToken(scanner, TOKEN_PLUS_PLUS);
-            } else if (match(scanner, '=')) {
+            if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_PLUS_EQUALS);
             } else {
                 return makeToken(scanner, TOKEN_PLUS);

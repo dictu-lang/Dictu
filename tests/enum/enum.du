@@ -1,0 +1,28 @@
+/**
+ * enum.du
+ *
+ * Testing enums
+ */
+
+enum Test {
+    a = 1,
+    b = 2,
+    c = 3
+}
+
+assert(Test.a == 1);
+assert(Test.b == 2);
+assert(Test.c == 3);
+
+const func = def () => 10;
+
+enum HeterogeneousEnum {
+    a = 0,
+    b = "string",
+    c = func
+}
+
+assert(HeterogeneousEnum.a == 0);
+assert(HeterogeneousEnum.b == "string");
+assert(HeterogeneousEnum.c == func);
+assert(HeterogeneousEnum.c() == 10);

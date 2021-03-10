@@ -32,6 +32,31 @@ class SomeClass {
 SomeClass(); // Object created!
 ```
 
+## Access Levels
+A big part of the OOP paradigm is encapsulation, the fact that the outside interface only shows what it needs to show and things
+internal to the class do not need to be known to the user of the interface. Dictu manages this concept much the same as other languages 
+through access levels. Unlike other languages, Dictu only has two access levels, `public` or `private`. If a method or instance variable
+is marked as `private` it is only accessible from within the class itself. To mark an instance variable as private it can be done in two
+ways, via [implicit properties](#implicit-properties) or by marking the property as private (note this must be done before defining the
+property otherwise it will be publically visible). To mark a method as private, preface the name with `private`.
+
+```js
+class SomeClass {
+    private x;
+    
+    init(x) {
+        this.x = x;
+    }
+
+    private getX() {
+        return this.x;
+    }
+}
+
+print(SomeClass(10).getX()); // 10
+print(SomeClass(10).x); // Cannot access private property 'x' on 'SomeClass' instance.
+```
+
 ## Constructor
 
 `init()` is the method name for a constructor in Dictu. A constructor is a method that is called when an object is instantiated. Instantiating an object, is just like invoking a function, except you "invoke" the class. You can also pass arguments to the constructor to be used.
@@ -50,10 +75,11 @@ SomeClass("Object created!"); // Object created!
 ### Implicit properties
 
 Dictu actually has a way to define properties on the object without explicitly setting each variable passed into the constructor on the object through `this`.
+If `var` is used the instance variable has public visibility, if `private` is used the instance variable has private visibility.
 
 ```cs
 class SomeClass {
-    // The var keyword here makes the argument passed in be set as an instance variable
+    // The var keyword here makes the argument passed in be set as an instance variable with public visibility
     init(var a, var b) {}
 }
 
@@ -61,7 +87,7 @@ var obj = SomeClass(10, 20);
 print("{} {}".format(obj.a, obj.b)); // "10 20"
 ```
 
-The `var` keyword is optional on the constructor parameters, and can be in any order.
+The `var` or `private` keywords are optional on the constructor parameters, and can be in any order.
 
 ```cs
 class SomeClass {
@@ -180,6 +206,8 @@ print(myObject.z); // Undefined property 'z'.
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
 
+Note: Will only retrieve properties with public visibility.
+
 ```cs
 class Test {
     init() {
@@ -197,6 +225,8 @@ print(myObject.getAttribute("y")); // nil
 ### setAttribute
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
+
+Note: Will set a property with public visibility.
 
 ```cs
 class Test {
@@ -296,6 +326,10 @@ Hello
 
 ## Inheritance
 
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
+
+Note: private methods and instance variables are not inherited.
+
 ```cs
 class BaseClass {
     init() {
@@ -317,8 +351,6 @@ var obj = NewClass();
 obj.printMessage("Hello!"); // Hello!
 print(obj.someVariable); // Hello!
 ```
-
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
 
 ## Abstract classes
 
@@ -373,7 +405,7 @@ class MyClass {
 var myObject = MyClass("Jason");
 myObject.hello(); // Hello Jason
 
-MyTrait(); // Runtime error: Can only call functions and classes.
+MyTrait(); // Runtime error: 'trait' is not callable
 ```
 
 Sometimes we will have multiple traits, each with slightly different functionality, but we need

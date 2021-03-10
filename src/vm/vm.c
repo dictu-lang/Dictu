@@ -21,7 +21,7 @@
 #include "datatypes/files.h"
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
-#include "datatypes/result.h"
+#include "datatypes/result/result.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -182,7 +182,7 @@ Value peek(DictuVM *vm, int distance) {
 
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
-        runtimeError(vm, "Function '%s' expected %d arguments but got %d.",
+        runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
                      closure->function->name->chars,
                      closure->function->arity + closure->function->arityOptional,
                      argCount
@@ -231,7 +231,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount) {
 
                 // Call the initializer, if there is one.
                 Value initializer;
-                if (tableGet(&klass->methods, vm->initString, &initializer)) {
+                if (tableGet(&klass->publicMethods, vm->initString, &initializer)) {
                     return call(vm, AS_CLOSURE(initializer), argCount);
                 } else if (argCount != 0) {
                     runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
@@ -264,7 +264,10 @@ static bool callValue(DictuVM *vm, Value callee, int argCount) {
         }
     }
 
-    runtimeError(vm, "Can only call functions and classes.");
+    int valLength = 0;
+    char *val = valueTypeToString(vm, callee, &valLength);
+    runtimeError(vm, "'%s' is not callable", val);
+    FREE_ARRAY(vm, char, val, valLength + 1);
     return false;
 }
 
@@ -285,12 +288,83 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount) {
     // Look for the method.
     Value method;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->publicMethods, name, &method)) {
+        if (tableGet(&klass->privateMethods, name, &method)) {
+            runtimeError(vm, "Cannot access private property '%s' from superclass '%s'.", name->chars, klass->name->chars);
+            return false;
+        }
+
         runtimeError(vm, "Undefined property '%s'.", name->chars);
         return false;
     }
 
     return call(vm, AS_CLOSURE(method), argCount);
+}
+
+static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
+    Value receiver = peek(vm, argCount);
+
+    if (IS_INSTANCE(receiver)) {
+        ObjInstance *instance = AS_INSTANCE(receiver);
+
+        Value value;
+        // Look for the method.
+        if (tableGet(&instance->klass->privateMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
+
+        if (tableGet(&instance->klass->publicMethods, name, &value)) {
+            return call(vm, AS_CLOSURE(value), argCount);
+        }
+
+        // Check for instance methods.
+        if (tableGet(&vm->instanceMethods, name, &value)) {
+            return callNativeMethod(vm, value, argCount);
+        }
+
+        // Look for a field which may shadow a method.
+        if (tableGet(&instance->publicFields, name, &value)) {
+            vm->stackTop[-argCount - 1] = value;
+            return callValue(vm, value, argCount);
+        }
+    } else if (IS_CLASS(receiver)) {
+        ObjClass *instance = AS_CLASS(receiver);
+        Value method;
+        if (tableGet(&instance->privateMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&instance->publicMethods, name, &method)) {
+            if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
+                if (tableGet(&vm->classMethods, name, &method)) {
+                    return callNativeMethod(vm, method, argCount);
+                }
+
+                runtimeError(vm, "'%s' is not static. Only static methods can be invoked directly from a class.",
+                             name->chars);
+                return false;
+            }
+
+            return callValue(vm, method, argCount);
+        }
+
+        if (tableGet(&vm->classMethods, name, &method)) {
+            return callNativeMethod(vm, method, argCount);
+        }
+    }
+
+    runtimeError(vm, "Undefined property '%s'.", name->chars);
+    return false;
 }
 
 static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
@@ -338,7 +412,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_CLASS: {
                 ObjClass *instance = AS_CLASS(receiver);
                 Value method;
-                if (tableGet(&instance->methods, name, &method)) {
+                if (tableGet(&instance->publicMethods, name, &method)) {
                     if (AS_CLOSURE(method)->function->type != TYPE_STATIC) {
                         if (tableGet(&vm->classMethods, name, &method)) {
                             return callNativeMethod(vm, method, argCount);
@@ -364,20 +438,25 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 ObjInstance *instance = AS_INSTANCE(receiver);
 
                 Value value;
-                // First look for a field which may shadow a method.
-                if (tableGet(&instance->fields, name, &value)) {
-                    vm->stackTop[-argCount - 1] = value;
-                    return callValue(vm, value, argCount);
-                }
-
                 // Look for the method.
-                if (tableGet(&instance->klass->methods, name, &value)) {
+                if (tableGet(&instance->klass->publicMethods, name, &value)) {
                     return call(vm, AS_CLOSURE(value), argCount);
                 }
 
                 // Check for instance methods.
                 if (tableGet(&vm->instanceMethods, name, &value)) {
                     return callNativeMethod(vm, value, argCount);
+                }
+
+                // Look for a field which may shadow a method.
+                if (tableGet(&instance->publicFields, name, &value)) {
+                    vm->stackTop[-argCount - 1] = value;
+                    return callValue(vm, value, argCount);
+                }
+
+                if (tableGet(&instance->klass->privateMethods, name, &value)) {
+                    runtimeError(vm, "Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    return false;
                 }
 
                 runtimeError(vm, "Undefined property '%s'.", name->chars);
@@ -447,7 +526,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_RESULT: {
                 Value value;
                 if (tableGet(&vm->resultMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "Result has no method %s().", name->chars);
@@ -466,6 +555,18 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
+            case OBJ_ENUM: {
+                ObjEnum *enumObj = AS_ENUM(receiver);
+
+                Value value;
+                if (tableGet(&enumObj->values, name, &value)) {
+                    return callValue(vm, value, argCount);
+                }
+
+                runtimeError(vm, "'%s' enum has no property '%s'.", enumObj->name->chars, name->chars);
+                return false;
+            }
+
             default:
                 break;
         }
@@ -477,7 +578,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
 
 static bool bindMethod(DictuVM *vm, ObjClass *klass, ObjString *name) {
     Value method;
-    if (!tableGet(&klass->methods, name, &method)) {
+    if (!tableGet(&klass->publicMethods, name, &method)) {
         return false;
     }
 
@@ -546,12 +647,18 @@ static void closeUpvalues(DictuVM *vm, Value *last) {
 static void defineMethod(DictuVM *vm, ObjString *name) {
     Value method = peek(vm, 0);
     ObjClass *klass = AS_CLASS(peek(vm, 1));
+    ObjFunction *function = AS_CLOSURE(method)->function;
 
-    if (AS_CLOSURE(method)->function->type == TYPE_ABSTRACT) {
-        tableSet(vm, &klass->abstractMethods, name, method);
+    if (function->accessLevel == ACCESS_PRIVATE) {
+        tableSet(vm, &klass->privateMethods, name, method);
     } else {
-        tableSet(vm, &klass->methods, name, method);
+        if (function->type == TYPE_ABSTRACT) {
+            tableSet(vm, &klass->abstractMethods, name, method);
+        } else {
+            tableSet(vm, &klass->publicMethods, name, method);
+        }
     }
+
     pop(vm);
 }
 
@@ -561,7 +668,7 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
 
     // Inherit methods.
     if (superclass != NULL) {
-        tableAddAll(vm, &superclass->methods, &klass->methods);
+        tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
     }
 }
@@ -612,17 +719,44 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
-    #define BINARY_OP(valueType, op, type) \
-        do { \
-          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            frame->ip = ip; \
-            runtimeError(vm, "Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-          } \
-          \
-          type b = AS_NUMBER(pop(vm)); \
-          type a = AS_NUMBER(pop(vm)); \
-          push(vm, valueType(a op b)); \
+    #define BINARY_OP(valueType, op, type)                                                                \
+        do {                                                                                              \
+          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
+              int firstValLength = 0;                                                                     \
+              int secondValLength = 0;                                                                    \
+              char *firstVal = valueTypeToString(vm, peek(vm, 1), &firstValLength);                       \
+              char *secondVal = valueTypeToString(vm, peek(vm, 0), &secondValLength);                     \
+                                                                                                          \
+              STORE_FRAME;                                                                                \
+              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+              return INTERPRET_RUNTIME_ERROR;                                                             \
+          }                                                                                               \
+                                                                                                          \
+          type b = AS_NUMBER(pop(vm));                                                                    \
+          type a = AS_NUMBER(pop(vm));                                                                    \
+          push(vm, valueType(a op b));                                                                    \
+        } while (false)
+
+    #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                                \
+        do {                                                                                              \
+          if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
+              int firstValLength = 0;                                                                     \
+              int secondValLength = 0;                                                                    \
+              char *firstVal = valueTypeToString(vm, peek(vm, 0), &firstValLength);                       \
+              char *secondVal = valueTypeToString(vm, peek(vm, 1), &secondValLength);                     \
+                                                                                                          \
+              STORE_FRAME;                                                                                \
+              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+              return INTERPRET_RUNTIME_ERROR;                                                             \
+          }                                                                                               \
+                                                                                                          \
+          type b = AS_NUMBER(pop(vm));                                                                    \
+          type a = AS_NUMBER(pop(vm));                                                                    \
+          push(vm, valueType(func(a, b)));                                                                \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
@@ -632,6 +766,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             STORE_FRAME;                                                    \
             runtimeError(vm, __VA_ARGS__);                                  \
             return INTERPRET_RUNTIME_ERROR;                                 \
+        } while (0)
+
+    #define RUNTIME_ERROR_TYPE(error, distance)                                    \
+        do {                                                                       \
+            STORE_FRAME;                                                           \
+            int valLength = 0;                                                     \
+            char *val = valueTypeToString(vm, peek(vm, distance), &valLength);     \
+            runtimeError(vm, error, val);                                          \
+            FREE_ARRAY(vm, char, val, valLength + 1);                              \
+            return INTERPRET_RUNTIME_ERROR;                                        \
         } while (0)
 
     #ifdef COMPUTED_GOTO
@@ -815,11 +959,112 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(GET_PROPERTY): {
+            Value receiver = peek(vm, 0);
+
+            if (!IS_OBJ(receiver)) {
+                RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+            }
+
+            switch (getObjType(receiver)) {
+                case OBJ_INSTANCE: {
+                    ObjInstance *instance = AS_INSTANCE(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&instance->publicFields, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    if (bindMethod(vm, instance->klass, name)) {
+                        DISPATCH();
+                    }
+
+                    // Check class for properties
+                    ObjClass *klass = instance->klass;
+
+                    while (klass != NULL) {
+                        if (tableGet(&klass->publicProperties, name, &value)) {
+                            pop(vm); // Instance.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
+                        klass = klass->superclass;
+                    }
+
+                    if (tableGet(&instance->privateFields, name, &value)) {
+                        RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    }
+
+                    RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+                }
+
+                case OBJ_MODULE: {
+                    ObjModule *module = AS_MODULE(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&module->values, name, &value)) {
+                        pop(vm); // Module.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
+                }
+
+                case OBJ_CLASS: {
+                    ObjClass *klass = AS_CLASS(receiver);
+                    // Used to keep a reference to the class for the runtime error below
+                    ObjClass *klassStore = klass;
+                    ObjString *name = READ_STRING();
+
+                    Value value;
+                    while (klass != NULL) {
+                        if (tableGet(&klass->publicProperties, name, &value)) {
+                            pop(vm); // Class.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
+                        klass = klass->superclass;
+                    }
+
+                    RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
+                }
+
+                case OBJ_ENUM: {
+                    ObjEnum *enumObj = AS_ENUM(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+
+                    if (tableGet(&enumObj->values, name, &value)) {
+                        pop(vm); // Enum.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("'%s' enum has no property: '%s'.", enumObj->name->chars, name->chars);
+                }
+
+                default: {
+                    RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+                }
+            }
+        }
+
+        CASE_CODE(GET_PRIVATE_PROPERTY): {
             if (IS_INSTANCE(peek(vm, 0))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
                 ObjString *name = READ_STRING();
                 Value value;
-                if (tableGet(&instance->fields, name, &value)) {
+                if (tableGet(&instance->privateFields, name, &value)) {
+                    pop(vm); // Instance.
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                if (tableGet(&instance->publicFields, name, &value)) {
                     pop(vm); // Instance.
                     push(vm, value);
                     DISPATCH();
@@ -833,7 +1078,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = instance->klass;
 
                 while (klass != NULL) {
-                    if (tableGet(&klass->properties, name, &value)) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
@@ -842,23 +1087,16 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
-            } else if (IS_MODULE(peek(vm, 0))) {
-                ObjModule *module = AS_MODULE(peek(vm, 0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&module->values, name, &value)) {
-                    pop(vm); // Module.
-                    push(vm, value);
-                    DISPATCH();
-                }
+                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
+                // Used to keep a reference to the class for the runtime error below
+                ObjClass *klassStore = klass;
                 ObjString *name = READ_STRING();
 
                 Value value;
                 while (klass != NULL) {
-                    if (tableGet(&klass->properties, name, &value)) {
+                    if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
                         DISPATCH();
@@ -866,9 +1104,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     klass = klass->superclass;
                 }
+
+                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
         }
 
         CASE_CODE(GET_PROPERTY_NO_POP): {
@@ -879,7 +1119,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
             ObjString *name = READ_STRING();
             Value value;
-            if (tableGet(&instance->fields, name, &value)) {
+            if (tableGet(&instance->publicFields, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
@@ -892,7 +1132,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
-                if (tableGet(&klass->properties, name, &value)) {
+                if (tableGet(&klass->publicProperties, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
@@ -900,25 +1140,89 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+            if (tableGet(&instance->privateFields, name, &value)) {
+                RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+            }
+
+            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+        }
+
+        CASE_CODE(GET_PRIVATE_PROPERTY_NO_POP): {
+            if (!IS_INSTANCE(peek(vm, 0))) {
+                RUNTIME_ERROR("Only instances have properties.");
+            }
+
+            ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
+            ObjString *name = READ_STRING();
+            Value value;
+            if (tableGet(&instance->privateFields, name, &value)) {
+                push(vm, value);
+                DISPATCH();
+            }
+
+            if (tableGet(&instance->publicFields, name, &value)) {
+                push(vm, value);
+                DISPATCH();
+            }
+
+            if (bindMethod(vm, instance->klass, name)) {
+                DISPATCH();
+            }
+
+            // Check class for properties
+            ObjClass *klass = instance->klass;
+
+            while (klass != NULL) {
+                if (tableGet(&klass->publicProperties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
+                klass = klass->superclass;
+            }
+
+            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
         }
 
         CASE_CODE(SET_PROPERTY): {
             if (IS_INSTANCE(peek(vm, 1))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-                tableSet(vm, &instance->fields, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &instance->publicFields, READ_STRING(), peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
                 DISPATCH();
             } else if (IS_CLASS(peek(vm, 1))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
-                tableSet(vm, &klass->properties, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
                 pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
                 DISPATCH();
             }
 
-            RUNTIME_ERROR("Only instances have properties.");
+            RUNTIME_ERROR_TYPE("Can not set property on type '%s'", 1);
+        }
+
+        CASE_CODE(SET_PRIVATE_PROPERTY): {
+            if (IS_INSTANCE(peek(vm, 1))) {
+                ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
+                tableSet(vm, &instance->privateFields, READ_STRING(), peek(vm, 0));
+                pop(vm);
+                pop(vm);
+                push(vm, NIL_VAL);
+                DISPATCH();
+            }
+
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_CLASS_VAR): {
+            // No type check required as this opcode is only ever emitted when parsing a class
+            ObjClass *klass = AS_CLASS(peek(vm, 1));
+            tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
+            pop(vm);
+            DISPATCH();
         }
 
         CASE_CODE(SET_INIT_PROPERTIES): {
@@ -928,7 +1232,20 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             for (int i = 0; i < function->propertyCount; ++i) {
                 ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->propertyNames[i]]);
-                tableSet(vm, &instance->fields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+                tableSet(vm, &instance->publicFields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+            }
+
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_PRIVATE_INIT_PROPERTIES): {
+            ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            int argCount = function->arity + function->arityOptional;
+            ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
+
+            for (int i = 0; i < function->privatePropertyCount; ++i) {
+                ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->privatePropertyNames[i]]);
+                tableSet(vm, &instance->privateFields, propertyName, peek(vm, argCount - function->privatePropertyIndexes[i] - 1));
             }
 
             DISPATCH();
@@ -988,27 +1305,13 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 push(vm, OBJ_VAL(finalList));
             } else {
-                RUNTIME_ERROR("Unsupported operand types.");
+                RUNTIME_ERROR("Unsupported operand types for +: %s, %s", valueToString(peek(vm, 0)), valueToString(peek(vm, 1)));
             }
             DISPATCH();
         }
 
-        CASE_CODE(INCREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) + 1));
-            DISPATCH();
-        }
-
-        CASE_CODE(DECREMENT): {
-            if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
-
-            }
-
-            push(vm, NUMBER_VAL(AS_NUMBER(pop(vm)) - 1));
+        CASE_CODE(SUBTRACT): {
+            BINARY_OP(NUMBER_VAL, -, double);
             DISPATCH();
         }
 
@@ -1021,26 +1324,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POW): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(powf(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, powf, double);
             DISPATCH();
         }
 
         CASE_CODE(MOD): {
-            if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {
-                RUNTIME_ERROR("Operands must be a numbers.");
-            }
-
-            double b = AS_NUMBER(pop(vm));
-            double a = AS_NUMBER(pop(vm));
-
-            push(vm, NUMBER_VAL(fmod(a, b)));
+            BINARY_OP_FUNCTION(NUMBER_VAL, **, fmod, double);
             DISPATCH();
         }
 
@@ -1062,7 +1351,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(NEGATE):
             if (!IS_NUMBER(peek(vm, 0))) {
-                RUNTIME_ERROR("Operand must be a number.");
+                RUNTIME_ERROR_TYPE("Unsupported operand type for unary -: '%s'", 0);
             }
 
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
@@ -1279,11 +1568,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 1);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1344,12 +1629,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                 }
 
-                case OBJ_RESULT: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
                 default: {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                    RUNTIME_ERROR_TYPE("'%s' is not subscriptable", 1);
                 }
             }
         }
@@ -1360,11 +1641,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value subscriptValue = peek(vm, 2);
 
             if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
             }
 
             switch (getObjType(subscriptValue)) {
@@ -1406,9 +1683,64 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
+        }
+
+        CASE_CODE(SUBSCRIPT_PUSH): {
+            Value value = peek(vm, 0);
+            Value indexValue = peek(vm, 1);
+            Value subscriptValue = peek(vm, 2);
+
+            if (!IS_OBJ(subscriptValue)) {
+                RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+            }
+
+            switch (getObjType(subscriptValue)) {
+                case OBJ_LIST: {
+                    if (!IS_NUMBER(indexValue)) {
+                        RUNTIME_ERROR("List index must be a number.");
+                    }
+
+                    ObjList *list = AS_LIST(subscriptValue);
+                    int index = AS_NUMBER(indexValue);
+
+                    // Allow negative indexes
+                    if (index < 0)
+                        index = list->values.count + index;
+
+                    if (index >= 0 && index < list->values.count) {
+                        vm->stackTop[-1] = list->values.values[index];
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("List index out of bounds.");
+                }
+
+                case OBJ_DICT: {
+                    ObjDict *dict = AS_DICT(subscriptValue);
+                    if (!isValidKey(indexValue)) {
+                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                    }
+
+                    Value dictValue;
+                    if (!dictGet(dict, indexValue, &dictValue)) {
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    }
+
+                    vm->stackTop[-1] = dictValue;
+                    push(vm, value);
+
+                    DISPATCH();
+                }
+
+                default: {
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
+                }
+            }
+            DISPATCH();
         }
 
         CASE_CODE(SLICE): {
@@ -1491,7 +1823,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 default: {
-                    RUNTIME_ERROR("Can only slice on lists and strings.");
+                    RUNTIME_ERROR_TYPE("'%s' does not support item assignment", 2);
                 }
             }
 
@@ -1500,65 +1832,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             pop(vm);
 
             push(vm, returnVal);
-            DISPATCH();
-        }
-
-        CASE_CODE(PUSH): {
-            Value value = peek(vm, 0);
-            Value indexValue = peek(vm, 1);
-            Value subscriptValue = peek(vm, 2);
-
-            if (!IS_OBJ(subscriptValue)) {
-                if (IS_RESULT(subscriptValue)) {
-                    RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries not Result, don't forget to .unwrap().");
-                }
-
-                RUNTIME_ERROR("Can only subscript on lists, strings or dictionaries.");
-            }
-
-            switch (getObjType(subscriptValue)) {
-                case OBJ_LIST: {
-                    if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
-                    }
-
-                    ObjList *list = AS_LIST(subscriptValue);
-                    int index = AS_NUMBER(indexValue);
-
-                    // Allow negative indexes
-                    if (index < 0)
-                        index = list->values.count + index;
-
-                    if (index >= 0 && index < list->values.count) {
-                        vm->stackTop[-1] = list->values.values[index];
-                        push(vm, value);
-                        DISPATCH();
-                    }
-
-                    RUNTIME_ERROR("List index out of bounds.");
-                }
-
-                case OBJ_DICT: {
-                    ObjDict *dict = AS_DICT(subscriptValue);
-                    if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
-                    }
-
-                    Value dictValue;
-                    if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
-                    }
-
-                    vm->stackTop[-1] = dictValue;
-                    push(vm, value);
-
-                    DISPATCH();
-                }
-
-                default: {
-                    RUNTIME_ERROR("Only lists and dictionaries support subscript assignment.");
-                }
-            }
             DISPATCH();
         }
 
@@ -1578,6 +1851,18 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *method = READ_STRING();
             frame->ip = ip;
             if (!invoke(vm, method, argCount)) {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm->frames[vm->frameCount - 1];
+            ip = frame->ip;
+            DISPATCH();
+        }
+
+        CASE_CODE(INVOKE_INTERNAL): {
+            int argCount = READ_BYTE();
+            ObjString *method = READ_STRING();
+            frame->ip = ip;
+            if (!invokeInternal(vm, method, argCount)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm->frames[vm->frameCount - 1];
@@ -1682,7 +1967,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 }
 
                 Value _;
-                if (!tableGet(&klass->methods, klass->abstractMethods.entries[i].key, &_)) {
+                if (!tableGet(&klass->publicMethods, klass->abstractMethods.entries[i].key, &_)) {
                     RUNTIME_ERROR("Class %s does not implement abstract method %s", klass->name->chars, klass->abstractMethods.entries[i].key->chars);
                 }
             }
@@ -1693,6 +1978,21 @@ static DictuInterpretResult run(DictuVM *vm) {
             defineMethod(vm, READ_STRING());
             DISPATCH();
 
+        CASE_CODE(ENUM): {
+            ObjEnum *enumObj = newEnum(vm, READ_STRING());
+            push(vm, OBJ_VAL(enumObj));
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_ENUM_VALUE): {
+            Value value = peek(vm, 0);
+            ObjEnum *enumObj = AS_ENUM(peek(vm, 1));
+
+            tableSet(vm, &enumObj->values, READ_STRING(), value);
+            pop(vm);
+            DISPATCH();
+        }
+
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
             if (!IS_TRAIT(trait)) {
@@ -1701,7 +2001,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             ObjClass *klass = AS_CLASS(peek(vm, 1));
 
-            tableAddAll(vm, &AS_CLASS(trait)->methods, &klass->methods);
+            tableAddAll(vm, &AS_CLASS(trait)->publicMethods, &klass->publicMethods);
             pop(vm); // pop the trait
 
             DISPATCH();
@@ -1738,8 +2038,11 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(CLOSE_FILE): {
-            ObjFile *file = AS_FILE(peek(vm, 0));
-            fclose(file->file);
+            uint8_t slot = READ_BYTE();
+            Value file = frame->slots[slot];
+            ObjFile *fileObject = AS_FILE(file);
+            fclose(fileObject->file);
+
             DISPATCH();
         }
     }
@@ -1749,6 +2052,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_OP_FUNCTION
 #undef STORE_FRAME
 #undef RUNTIME_ERROR
 

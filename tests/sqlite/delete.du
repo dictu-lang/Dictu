@@ -1,5 +1,5 @@
 /**
- * update.du
+ * delete.du
  *
  * Testing Sqlite.connect() and Sqlite.execute()
  *

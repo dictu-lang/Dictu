@@ -178,6 +178,17 @@ myList.pop(0); // 1
 print(myList); // [2]
 ```
 
+### list.reverse()
+
+To reverse a list we use `.reverse()`, this will reverse a list *in-place* (modifying the list) rather than generating a new list.
+
+```cs
+const myList = [1, 2, 3, 4];
+myList.reverse();
+
+print(myList); // [4, 3, 2, 1]
+```
+
 ### Copying lists
 #### list.copy()
 
@@ -222,13 +233,25 @@ list1.sort();
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
 
+### list.forEach(func)
+
+To run a function on every element in a list we use `.forEach`. The callback function
+passed to `.forEach` expects one parameter which will be the current value.
+
+```cs
+const myList = [1, 2, 3, 4, 5];
+
+myList.forEach(def (value) => {
+    print("Val: {}".format(value));
+});
+```
+
 ### list.map(func)
 
-To run a function on every element in a list we use `.map`. Map expects a single parameter which is a callback
-function which will be ran and the return value will be saved to a list. The callback itself also expects one
+Similar to `.foreach`, `.map` will run a function for each element within the list, however
+the difference is that `.map` returns a new list of values generated from the callback function.
+Map expects a single parameter which is a callback. The callback itself also expects one
 parameter which is the current item in the list.
-
-Note: `.map()` returns a new list.
 
 ```cs
 print([1, 2, 3, 4, 5].map(def (x) => x * 2)); // [2, 4, 6, 8, 10]
@@ -260,4 +283,16 @@ By default the initial value for `.reduce()` is 0, however we can change this to
 
 ```cs
 print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
+```
+
+### list.find(func)
+
+To find a single item within a list we use `.find()`. Find will search through each item in the list and as soon as the
+callback returns a truthy value, the item that satisfied the callback is returned, if none of the items satisfy the callback
+function then `nil` is returned.
+
+Note: The first item to satisfy the callback is returned.
+
+```cs
+print([1, 2, 3].find(def (item) => item == 2)); // 2
 ```
