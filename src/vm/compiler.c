@@ -2093,11 +2093,7 @@ static void withStatement(Compiler *compiler) {
     compiler->withBlock = false;
 }
 
-static void returnStatement(Compiler *compiler) {
-    if (compiler->type == TYPE_TOP_LEVEL) {
-        error(compiler->parser, "Cannot return from top-level code.");
-    }
-
+static void checkForFileHandle(Compiler *compiler) {
     if (compiler->withBlock) {
         Token token = syntheticToken("file");
         int local = resolveLocal(compiler, &token, true);
@@ -2106,8 +2102,15 @@ static void returnStatement(Compiler *compiler) {
             emitBytes(compiler, OP_CLOSE_FILE, local);
         }
     }
+}
+
+static void returnStatement(Compiler *compiler) {
+    if (compiler->type == TYPE_TOP_LEVEL) {
+        error(compiler->parser, "Cannot return from top-level code.");
+    }
 
     if (match(compiler, TOKEN_SEMICOLON)) {
+        checkForFileHandle(compiler);
         emitReturn(compiler);
     } else {
         if (compiler->type == TYPE_INITIALIZER) {
@@ -2116,6 +2119,8 @@ static void returnStatement(Compiler *compiler) {
 
         expression(compiler);
         consume(compiler, TOKEN_SEMICOLON, "Expect ';' after return value.");
+
+        checkForFileHandle(compiler);
         emitByte(compiler, OP_RETURN);
     }
 }
