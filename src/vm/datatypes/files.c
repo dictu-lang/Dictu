@@ -63,13 +63,7 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
     // Calculate file size
     fseek(file->file, 0L, SEEK_END);
     size_t fileSize = ftell(file->file);
-    rewind(file->file);
-
-    // Reset cursor position
-    if (currentPosition < fileSize) {
-        fileSize -= currentPosition;
-        fseek(file->file, currentPosition, SEEK_SET);
-    }
+    fseek(file->file, currentPosition, SEEK_SET);
 
     char *buffer = ALLOCATE(vm, char, fileSize + 1);
     if (buffer == NULL) {

@@ -268,12 +268,16 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_END_CLASS", offset);
         case OP_METHOD:
             return constantInstruction("OP_METHOD", chunk, offset);
+        case OP_ENUM:
+            return constantInstruction("OP_ENUM", chunk, offset);
+        case OP_SET_ENUM_VALUE:
+            return constantInstruction("OP_SET_ENUM_VALUE", chunk, offset);
         case OP_USE:
             return constantInstruction("OP_USE", chunk, offset);
         case OP_OPEN_FILE:
             return constantInstruction("OP_OPEN_FILE", chunk, offset);
         case OP_CLOSE_FILE:
-            return simpleInstruction("OP_CLOSE_FILE", offset);
+            return constantInstruction("OP_CLOSE_FILE", chunk, offset);
         case OP_BREAK:
             return simpleInstruction("OP_BREAK", offset);
         default:

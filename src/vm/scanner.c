@@ -175,7 +175,15 @@ static TokenType identifierType(Scanner *scanner) {
         case 'd':
             return checkKeyword(scanner, 1, 2, "ef", TOKEN_DEF);
         case 'e':
-            return checkKeyword(scanner, 1, 3, "lse", TOKEN_ELSE);
+            if (scanner->current - scanner->start > 1) {
+                switch (scanner->start[1]) {
+                    case 'l':
+                        return checkKeyword(scanner, 2, 2, "se", TOKEN_ELSE);
+                    case 'n':
+                        return checkKeyword(scanner, 2, 2, "um", TOKEN_ENUM);
+                }
+            }
+            break;
         case 'f':
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
