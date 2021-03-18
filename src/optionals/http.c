@@ -269,7 +269,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        timeout = (long) AS_NUMBER(args[2]);
+        timeout = (long) AS_NUMBER(args[3]);
         argCount--;
     }
 
