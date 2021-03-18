@@ -18,13 +18,22 @@ assert(response["headers"].len() > 0);
 
 // HTTPS
 result = HTTP.get("https://httpbin.org/get");
-
 assert(result.success());
 response = result.unwrap();
 
 assert(response["statusCode"] == 200);
 assert(response["content"].contains("headers"));
 assert(response["headers"].len() > 0);
+
+// Headers
+result = HTTP.get("https://httpbin.org/get", ["Header: test"]);
+assert(result.success());
+response = result.unwrap();
+
+assert(response["statusCode"] == 200);
+assert(response["content"].contains("headers"));
+assert(response["headers"].len() > 0);
+assert(response["headers"].contains('"Test": "header"'));
 
 response = HTTP.get("https://BAD_URL.test_for_error");
 assert(response.success() == false);

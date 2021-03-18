@@ -274,28 +274,24 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (argCount == 3) {
-        if (IS_DICT(args[2])) {
-            postValuesDict = AS_DICT(args[2]);
-            argCount--;
-        } else if (IS_STRING(args[2])) {
-            postValueString = AS_STRING(args[2]);
-            argCount--;
-        } else {
-            printValue(args[2]);
-            printf("\n");
-
-            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
-            return EMPTY_VAL;
-        }
-    }
-
-    if (argCount == 2) {
-        if (!IS_LIST(args[1])) {
+        if (!IS_LIST(args[2])) {
             runtimeError(vm, "Headers passed to post() must be a list.");
             return EMPTY_VAL;
         }
 
-        headers = AS_LIST(args[1]);
+        headers = AS_LIST(args[2]);
+        argCount--;
+    }
+
+    if (argCount == 2) {
+        if (IS_DICT(args[1])) {
+            postValuesDict = AS_DICT(args[1]);
+        } else if (IS_STRING(args[1])) {
+            postValueString = AS_STRING(args[1]);
+        } else {
+            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
+            return EMPTY_VAL;
+        }
     }
 
     if (!IS_STRING(args[0])) {
