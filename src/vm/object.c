@@ -263,11 +263,11 @@ char *listToString(Value value) {
             elementSize = strlen(element);
         }
 
-        if (elementSize > (size - listStringLength - 3)) {
-            if (elementSize > size * 2) {
-                size += elementSize * 2 + 3;
+        if (elementSize > (size - listStringLength - 6)) {
+            if (elementSize > size) {
+                size = size + elementSize * 2 + 6;
             } else {
-                size = size * 2 + 3;
+                size = size * 2 + 6;
             }
 
             char *newB = realloc(listString, sizeof(char) * size);
