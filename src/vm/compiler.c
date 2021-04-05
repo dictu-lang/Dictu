@@ -2431,7 +2431,10 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
 
     ObjFunction *function = endCompiler(&compiler);
 
-    freeTable(vm, &vm->constants);
+    // If we're in the repl we need the constants to live for the entirety of the execution
+    if (!vm->repl) {
+        freeTable(vm, &vm->constants);
+    }
 
     // If there was a compile error, the code is not valid, so don't
     // create a function.

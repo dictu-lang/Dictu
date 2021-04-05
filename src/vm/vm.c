@@ -135,6 +135,10 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
 }
 
 void dictuFreeVM(DictuVM *vm) {
+    if (vm->repl) {
+        freeTable(vm, &vm->constants);
+    }
+
     freeTable(vm, &vm->modules);
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
