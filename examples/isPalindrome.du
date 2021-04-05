@@ -1,12 +1,12 @@
 def isPalindrome(arg) {
-  var len = arg.len();
-  for (var i = 0; i < len/2; i += 1) {
-    if (arg[i] != arg[len - 1 - i]) { 
-        return false; 
+    const len = arg.len();
+    for (var i = 0; i < len / 2; i += 1) {
+        if (arg[i] != arg[len - 1 - i]) {
+            return false;
+        }
+
     }
-    
-  }
-  return true;
+    return true;
 }
 
 print(isPalindrome("aba")); // true

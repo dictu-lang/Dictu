@@ -57,11 +57,10 @@ Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/
 
 ## Example program
 ```js
-var userInput;
-var guess = 10;
+const guess = 10;
 
 while {
-    userInput = input("Input your guess: ").toNumber().unwrap();
+    const userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;

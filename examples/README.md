@@ -13,11 +13,8 @@ class Person {
     // Use the trait and inherit the methods
     use PrintNameTrait;
 
-    // Class constructor
-    init(name, age) {
-        this.name = name;
-        this.age = age;
-    }
+    // Class constructor, set name and age as public instance variables
+    init(var name, var age) {}
 
     // Define a new method
     printAge() {
@@ -30,11 +27,8 @@ class Car {
     // Use the trait and inherit the methods
     use PrintNameTrait;
 
-    // Class constructor
-    init(name, model) {
-        this.name = name;
-        this.model = model;
-    }
+    // Class constructor, set name and model as public instance variables
+    init(var name, var model) {}
 
     // Define a new method
     printModel() {
@@ -43,7 +37,7 @@ class Car {
 }
 
 // Instantiate a new Person object
-var jason = Person("Jason", 500);
+const jason = Person("Jason", 500);
 
 // Call the method defined in the trait
 jason.printName();
@@ -52,7 +46,7 @@ jason.printName();
 jason.printAge();
 
 // Instantiate a new Car object
-var cayman = Car("Cayman", "Porsche");
+const cayman = Car("Cayman", "Porsche");
 
 // Call the method defined in the trait
 cayman.printName();
@@ -85,7 +79,7 @@ if (amount > 0) {
 ## FizzBuzz
 
 ```js
-for (var i = 1; i < 101; ++i) {
+for (var i = 1; i < 101; i += 1) {
     if (i % 15 == 0) {
         print("FizzBuzz");
     } else if (i % 3 == 0) {
@@ -101,11 +95,10 @@ for (var i = 1; i < 101; ++i) {
 ## Guessing Game
 
 ```js
-var guess = 10;
+const guess = 10;
 
 while {
-    var userInput = input("Input your guess: ").toNumber();
-    print(userInput);
+    const userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;
