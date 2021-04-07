@@ -1,0 +1,16 @@
+/**
+ * isDie.du
+ *
+ * Testing Path.isDir()
+ *
+ * Returns true if the given string is a path to a directory, else false. (Linux only) 
+ */
+import Path;
+
+if (System.platform != "windows") {
+  assert(Path.isDir("/usr/bin") == true);
+  assert(Path.isDir("/home/") == true);
+}
+
+assert(Path.isDir("tests") == true);
+assert(Path.isDir("tests/runTests.du") == false);

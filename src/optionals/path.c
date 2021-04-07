@@ -135,12 +135,12 @@ static Value existsNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "isdir() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "isDir() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isdir() argument must be a string");
+        runtimeError(vm, "isDir() argument must be a string");
         return EMPTY_VAL;
     }
 
@@ -155,9 +155,9 @@ static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
 
 }
 
-static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
+static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "listdir() takes 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "listDir() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -166,7 +166,7 @@ static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
         path = ".";
     } else {
         if (!IS_STRING(args[0])) {
-            runtimeError(vm, "listdir() argument must be a string");
+            runtimeError(vm, "listDir() argument must be a string");
             return EMPTY_VAL;
         }
         path = AS_CSTRING(args[0]);
@@ -179,7 +179,7 @@ static Value listdirNative(DictuVM *vm, int argCount, Value *args) {
     int length = strlen(path) + 4;
     char *searchPath = ALLOCATE(vm, char, length);
     if (searchPath == NULL) {
-        runtimeError(vm, "Memory error on listdir()!");
+        runtimeError(vm, "Memory error on listDir()!");
         return EMPTY_VAL;
     }
     strcpy(searchPath, path);
@@ -250,8 +250,8 @@ ObjModule *createPathModule(DictuVM *vm) {
     defineNative(vm, &module->values, "extname", extnameNative);
     defineNative(vm, &module->values, "dirname", dirnameNative);
     defineNative(vm, &module->values, "exists", existsNative);
-    defineNative(vm, &module->values, "isdir", isdirNative);
-    defineNative(vm, &module->values, "listdir", listdirNative);
+    defineNative(vm, &module->values, "isDir", isdirNative);
+    defineNative(vm, &module->values, "listDir", listDirNative);
 
     /**
      * Define Path properties

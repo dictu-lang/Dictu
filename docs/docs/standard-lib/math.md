@@ -46,8 +46,8 @@ Math.min([1, 2, 3]); // 1
 Return the largest number within the iterable
 
 ```cs
-Math.min(1, 2, 3); // 3
-Math.min([1, 2, 3]); // 3
+Math.max(1, 2, 3); // 3
+Math.max([1, 2, 3]); // 3
 ```
 
 ### Math.average(iterable)
