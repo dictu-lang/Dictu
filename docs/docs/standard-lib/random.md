@@ -27,7 +27,7 @@ import Random;
 
 ### Random.random()
 
-Return a random float between 0 and 1.
+Return a random decimal between 0 and 1.
 
 ```cs
 Random.random(); // 0.314
@@ -36,7 +36,7 @@ Random.random(); // 0.271
 
 ### Random.range(number: lowest, number: highest)
 
-Returns a random integer between the lowest and highest inputs.
+Returns a random integer between the lowest and highest inputs where both are inclusive.
 
 ```cs
 Random.range(1, 5); // 2
@@ -44,7 +44,7 @@ Random.range(1, 5); // 4
 Random.range(0, 2); // 1
 ```
 
-### Random.select(iterable)
+### Random.select(list)
 
 Returns a value randomly selected from the list.
 

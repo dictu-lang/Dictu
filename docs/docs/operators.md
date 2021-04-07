@@ -5,6 +5,16 @@ nav_order: 6
 ---
 
 # Operators
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+## Operators
 
 | Operator     | Description                                                    | Example                    |
 |:-------------|:---------------------------------------------------------------|:---------------------------|
@@ -30,7 +40,7 @@ nav_order: 6
 | ?            | Ternary operator - See below                                   | true ? 'value' : 'other' |
 | ?.           | Optional chaining - See [classes](/docs/classes/#optional-chaining) | object?.someMethod()     |
 
-## Ternary Operator
+### Ternary Operator
 
 The ternary operator is an operator which takes 3 operands and returns either the second or third depending on whether the first operand is truthy. 
 
@@ -41,3 +51,23 @@ print(value); // 'true!'
 var otherValue = 0 ? 'true!' : 'false!';
 print(otherValue); // 'false!'
 ```
+
+## Precedence
+
+Precedence table from highest to lowest, with all operators having a left-to-right associativity. 
+
+| Operators |
+| . () []   |
+| ?.        |
+| ! -       |
+| \*\*      |
+| * /       |
+| \+ \-     |
+| &         |
+| ^         |
+| \|        |
+| < > <= >= |
+| == !=     |
+| and       |
+| or        |
+| \=        |

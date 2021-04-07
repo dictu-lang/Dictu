@@ -17,13 +17,13 @@ Dictu is a simple, dynamically typed programming language.
 import HTTP;
 import JSON;
 
-var response = HTTP.get("https://api.coindesk.com/v1/bpi/currentprice.json");
-if (response.success()) {
-    var data = JSON.parse(response.unwrap()["content"]).unwrap();
-    print("${} per BTC".format(data["bpi"]["USD"]["rate"])); // $10,577.70 per BTC
-} else {
-    print(response.unwrapError());
-}
+HTTP.get("https://api.coindesk.com/v1/bpi/currentprice.json").match(
+    def (response) => {
+        const data = JSON.parse(response["content"]).unwrap();
+        print("${} per BTC".format(data["bpi"]["USD"]["rate"])); // $10,577.70 per BTC
+    },
+    def (error) => print(error)
+);
 ```
 
 Dictu is a very small, simple, and dynamically typed programming language inspired by a [book by Robert Nystrom](http://www.craftinginterpreters.com/contents.html). Dictu builds upon the concepts within the book and adds more features to the language.
