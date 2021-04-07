@@ -33,7 +33,7 @@ import Path;
 
 ### Path.basename(string)
 
-Returns the basename of string.
+Returns the basename of the path.
 
 ```cs
 Path.basename("/usr/bin"); // 'bin'
@@ -41,7 +41,7 @@ Path.basename("/usr/bin"); // 'bin'
 
 ### Path.dirname(string)
 
-Returns the directory name of string.
+Returns the directory name of the path.
 
 ```cs
 Path.dirname("/usr/bin"); // '/usr'
@@ -49,7 +49,7 @@ Path.dirname("/usr/bin"); // '/usr'
 
 ### Path.extname(string)
 
-Returns the extension portion of string, including the dot.
+Returns the extension portion of the path, including the dot.
 
 ```cs
 Path.extname("/tmp/t.ext"); // '.ext'
@@ -58,7 +58,7 @@ Path.extname("/tmp/t");     // ''
 
 ### Path.isAbsolute(string)
 
-Returns true if string is an absolute path or false otherwise.
+Returns true if path is absolute, false otherwise.
 
 ```cs
 Path.isAbsolute("/usr"); // true
@@ -83,22 +83,22 @@ Returns a boolean whether a file exists at a given path.
 Path.exists("some/path/to/a/file.du"); // true
 ```
 
-### Path.isdir(string)
+### Path.isDir(string)
 
 Checks whether a given path points to a directory or not. 
 
-**Note:** This is not available on windows systems yet.
+**Note:** This is not available on windows systems.
 
 ```cs
-Path.isdir("/usr/bin/"); //true
+Path.isDir("/usr/bin/"); //true
 ```
 
-### Path.listdir(string)
+### Path.listDir(string)
 
 Returns a list of strings containing the contents of the input path.
 
 **Note:** This function does not guarantee any ordering of the returned list.
 
 ```js
-Path.listdir("/"); // ["bin", "dev", "home", "lib", ...]
+Path.listDir("/"); // ["bin", "dev", "home", "lib", ...]
 ```

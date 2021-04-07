@@ -150,6 +150,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
+    compiler->withBlock = false;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -1434,6 +1435,7 @@ ParseRule rules[] = {
         {super_,   NULL,      PREC_NONE},               // TOKEN_SUPER
         {arrow,    NULL,      PREC_NONE},               // TOKEN_DEF
         {NULL,     NULL,      PREC_NONE},               // TOKEN_AS
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_ENUM
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
@@ -1586,7 +1588,7 @@ static void parseClassBody(Compiler *compiler) {
             consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-            consume(compiler, TOKEN_EQUAL, "Expect '=' after expression.");
+            consume(compiler, TOKEN_EQUAL, "Expect '=' after class variable identifier.");
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
@@ -1714,6 +1716,33 @@ static void traitDeclaration(Compiler *compiler) {
     endClassCompiler(compiler, &classCompiler);
 }
 
+static void enumDeclaration(Compiler *compiler) {
+    consume(compiler, TOKEN_IDENTIFIER, "Expect enum name.");
+
+    uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
+    declareVariable(compiler, &compiler->parser->previous);
+
+    emitBytes(compiler, OP_ENUM, nameConstant);
+
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
+
+    do {
+        if (check(compiler, TOKEN_RIGHT_BRACE)) {
+            error(compiler->parser, "Trailing comma in enum declaration");
+        }
+
+        consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");
+        uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+
+        consume(compiler, TOKEN_EQUAL, "Expect '=' after enum value identifier.");
+        expression(compiler);
+        emitBytes(compiler, OP_SET_ENUM_VALUE, name);
+    } while (match(compiler, TOKEN_COMMA));
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
+    defineVariable(compiler, nameConstant, false);
+}
+
 static void funDeclaration(Compiler *compiler) {
     uint8_t global = parseVariable(compiler, "Expect function name.", false);
     function(compiler, TYPE_FUNCTION, ACCESS_PUBLIC);
@@ -1817,7 +1846,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_IMPORT_END:
         case OP_USE:
         case OP_OPEN_FILE:
-        case OP_CLOSE_FILE:
         case OP_BREAK:
         case OP_BITWISE_AND:
         case OP_BITWISE_XOR:
@@ -1850,6 +1878,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_IMPORT:
         case OP_NEW_LIST:
         case OP_NEW_DICT:
+        case OP_CLOSE_FILE:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
@@ -2040,14 +2069,17 @@ static void ifStatement(Compiler *compiler) {
 }
 
 static void withStatement(Compiler *compiler) {
+    compiler->withBlock = true;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
     expression(compiler);
     consume(compiler, TOKEN_COMMA, "Expect comma");
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after 'with'.");
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before with body.");
 
     beginScope(compiler);
 
+    int fileIndex = compiler->localCount;
     Local *local = &compiler->locals[compiler->localCount++];
     local->depth = compiler->scopeDepth;
     local->isUpvalue = false;
@@ -2055,9 +2087,21 @@ static void withStatement(Compiler *compiler) {
     local->constant = true;
 
     emitByte(compiler, OP_OPEN_FILE);
-    statement(compiler);
-    emitByte(compiler, OP_CLOSE_FILE);
+    block(compiler);
+    emitBytes(compiler, OP_CLOSE_FILE, fileIndex);
     endScope(compiler);
+    compiler->withBlock = false;
+}
+
+static void checkForFileHandle(Compiler *compiler) {
+    if (compiler->withBlock) {
+        Token token = syntheticToken("file");
+        int local = resolveLocal(compiler, &token, true);
+
+        if (local != -1) {
+            emitBytes(compiler, OP_CLOSE_FILE, local);
+        }
+    }
 }
 
 static void returnStatement(Compiler *compiler) {
@@ -2066,6 +2110,7 @@ static void returnStatement(Compiler *compiler) {
     }
 
     if (match(compiler, TOKEN_SEMICOLON)) {
+        checkForFileHandle(compiler);
         emitReturn(compiler);
     } else {
         if (compiler->type == TYPE_INITIALIZER) {
@@ -2074,6 +2119,8 @@ static void returnStatement(Compiler *compiler) {
 
         expression(compiler);
         consume(compiler, TOKEN_SEMICOLON, "Expect ';' after return value.");
+
+        checkForFileHandle(compiler);
         emitByte(compiler, OP_RETURN);
     }
 }
@@ -2287,6 +2334,8 @@ static void declaration(Compiler *compiler) {
         varDeclaration(compiler, false);
     } else if (match(compiler, TOKEN_CONST)) {
         varDeclaration(compiler, true);
+    } else if (match(compiler, TOKEN_ENUM)) {
+        enumDeclaration(compiler);
     } else {
         statement(compiler);
     }
@@ -2382,7 +2431,10 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
 
     ObjFunction *function = endCompiler(&compiler);
 
-    freeTable(vm, &vm->constants);
+    // If we're in the repl we need the constants to live for the entirety of the execution
+    if (!vm->repl) {
+        freeTable(vm, &vm->constants);
+    }
 
     // If there was a compile error, the code is not valid, so don't
     // create a function.

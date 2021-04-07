@@ -173,8 +173,8 @@ Set current working directory of the Dictu process.
 Returns a Result type and on success will unwrap nil.
 
 ```cs
-if (System.setCWD('/') == -1) {
-  print ("failed to change directory");
+if (!System.setCWD('/').success()) {
+    print("failed to change directory");
 }
 ```
 

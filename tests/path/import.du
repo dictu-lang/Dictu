@@ -10,5 +10,5 @@ import "extname.du";
 import "isAbsolute.du";
 import "realpath.du";
 import "exists.du";
-import "isdir.du";
-import "listdir.du";
+import "isDir.du";
+import "listDir.du";

@@ -178,6 +178,17 @@ myList.pop(0); // 1
 print(myList); // [2]
 ```
 
+### list.reverse()
+
+To reverse a list we use `.reverse()`, this will reverse a list *in-place* (modifying the list) rather than generating a new list.
+
+```cs
+const myList = [1, 2, 3, 4];
+myList.reverse();
+
+print(myList); // [4, 3, 2, 1]
+```
+
 ### Copying lists
 #### list.copy()
 
@@ -272,4 +283,16 @@ By default the initial value for `.reduce()` is 0, however we can change this to
 
 ```cs
 print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
+```
+
+### list.find(func)
+
+To find a single item within a list we use `.find()`. Find will search through each item in the list and as soon as the
+callback returns a truthy value, the item that satisfied the callback is returned, if none of the items satisfy the callback
+function then `nil` is returned.
+
+Note: The first item to satisfy the callback is returned.
+
+```cs
+print([1, 2, 3].find(def (item) => item == 2)); // 2
 ```

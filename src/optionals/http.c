@@ -98,6 +98,25 @@ static char *dictToPostArgs(ObjDict *dict) {
     return ret;
 }
 
+static bool setRequestHeaders(DictuVM *vm, struct curl_slist *list, CURL *curl, ObjList *headers) {
+    if (headers->values.count == 0) {
+        return true;
+    }
+
+    for (int i = 0; i < headers->values.count; ++i) {
+        if (!IS_STRING(headers->values.values[i])) {
+            runtimeError(vm, "Headers list must only contain strings");
+            return false;
+        }
+
+        list = curl_slist_append(list, AS_CSTRING(headers->values.values[i]));
+    }
+
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+
+    return true;
+}
+
 static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
@@ -143,20 +162,31 @@ static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
 }
 
 static Value get(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "get() takes 1 or 2 arguments (%d given).", argCount);
+    if (argCount < 0 || argCount > 3) {
+        runtimeError(vm, "get() takes between 1 and 3 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     long timeout = 20;
+    ObjList *headers = NULL;
 
-    if (argCount == 2) {
-        if (!IS_NUMBER(args[1])) {
+    if (argCount == 3) {
+        if (!IS_NUMBER(args[2])) {
             runtimeError(vm, "Timeout passed to get() must be a number.");
             return EMPTY_VAL;
         }
 
-        timeout = AS_NUMBER(args[1]);
+        timeout = AS_NUMBER(args[2]);
+        argCount--;
+    }
+
+    if (argCount == 2) {
+        if (!IS_LIST(args[1])) {
+            runtimeError(vm, "Headers passed to get() must be a list.");
+            return EMPTY_VAL;
+        }
+
+        headers = AS_LIST(args[1]);
     }
 
     if (!IS_STRING(args[0])) {
@@ -175,6 +205,15 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
         createResponse(vm, &response);
         char *url = AS_CSTRING(args[0]);
 
+        struct curl_slist *list = NULL;
+
+        if (headers) {
+            if (!setRequestHeaders(vm, list, curl, headers)) {
+                curl_slist_free_all(list);
+                return EMPTY_VAL;
+            }
+        }
+
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
         curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
@@ -185,6 +224,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
+
+        if (headers) {
+            curl_slist_free_all(list);
+        }
 
         /* Check for errors */
         if (curlResponse != CURLE_OK) {
@@ -210,34 +253,45 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value post(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1 && argCount != 2 && argCount != 3) {
-        runtimeError(vm, "post() takes between 1 and 3 arguments (%d given).", argCount);
+    if (argCount < 1 || argCount > 4) {
+        runtimeError(vm, "post() takes between 1 and 4 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     long timeout = 20;
-    ObjDict *dict = NULL;
+    ObjDict *postValuesDict = NULL;
+    ObjString *postValueString = NULL;
+    ObjList *headers = NULL;
 
-    if (argCount == 3) {
-        if (!IS_NUMBER(args[2])) {
+    if (argCount == 4) {
+        if (!IS_NUMBER(args[3])) {
             runtimeError(vm, "Timeout passed to post() must be a number.");
             return EMPTY_VAL;
         }
 
-        if (!IS_DICT(args[1])) {
-            runtimeError(vm, "Post values passed to post() must be a dictionary.");
+        timeout = (long) AS_NUMBER(args[3]);
+        argCount--;
+    }
+
+    if (argCount == 3) {
+        if (!IS_LIST(args[2])) {
+            runtimeError(vm, "Headers passed to post() must be a list.");
             return EMPTY_VAL;
         }
 
-        timeout = (long) AS_NUMBER(args[2]);
-        dict = AS_DICT(args[1]);
-    } else if (argCount == 2) {
-        if (!IS_DICT(args[1])) {
-            runtimeError(vm, "Post values passed to post() must be a dictionary.");
+        headers = AS_LIST(args[2]);
+        argCount--;
+    }
+
+    if (argCount == 2) {
+        if (IS_DICT(args[1])) {
+            postValuesDict = AS_DICT(args[1]);
+        } else if (IS_STRING(args[1])) {
+            postValueString = AS_STRING(args[1]);
+        } else {
+            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
             return EMPTY_VAL;
         }
-
-        dict = AS_DICT(args[1]);
     }
 
     if (!IS_STRING(args[0])) {
@@ -257,8 +311,19 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[0]);
         char *postValue = "";
 
-        if (dict != NULL) {
-            postValue = dictToPostArgs(dict);
+        struct curl_slist *list = NULL;
+
+        if (headers) {
+            if (!setRequestHeaders(vm, list, curl, headers)) {
+                curl_slist_free_all(list);
+                return EMPTY_VAL;
+            }
+        }
+
+        if (postValuesDict != NULL) {
+            postValue = dictToPostArgs(postValuesDict);
+        } else if (postValueString != NULL) {
+            postValue = postValueString->chars;
         }
 
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -273,7 +338,11 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
 
-        if (dict != NULL) {
+        if (headers) {
+            curl_slist_free_all(list);
+        }
+
+        if (postValuesDict != NULL) {
             free(postValue);
         }
 

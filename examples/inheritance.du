@@ -24,8 +24,8 @@ class Cat < Animal {
 }
 
 // Initialize child class
-var dog = Dog();
-var cat = Cat();
+const dog = Dog();
+const cat = Cat();
 
 // Inherited methods/behaviour from parent class - Animal
 dog.eating();

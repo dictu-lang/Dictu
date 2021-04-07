@@ -1,7 +1,7 @@
-var guess = 10;
+const guess = 10;
 
 while {
-    var userInput = input("Input your guess: ").toNumber().unwrap();
+    const userInput = input("Input your guess: ").toNumber().unwrap();
     if (userInput == guess) {
         print("Well done!");
         break;

@@ -135,6 +135,10 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
 }
 
 void dictuFreeVM(DictuVM *vm) {
+    if (vm->repl) {
+        freeTable(vm, &vm->constants);
+    }
+
     freeTable(vm, &vm->modules);
     freeTable(vm, &vm->globals);
     freeTable(vm, &vm->constants);
@@ -555,6 +559,18 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
+            case OBJ_ENUM: {
+                ObjEnum *enumObj = AS_ENUM(receiver);
+
+                Value value;
+                if (tableGet(&enumObj->values, name, &value)) {
+                    return callValue(vm, value, argCount);
+                }
+
+                runtimeError(vm, "'%s' enum has no property '%s'.", enumObj->name->chars, name->chars);
+                return false;
+            }
+
             default:
                 break;
         }
@@ -947,70 +963,98 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(GET_PROPERTY): {
-            if (IS_INSTANCE(peek(vm, 0))) {
-                ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&instance->publicFields, name, &value)) {
-                    pop(vm); // Instance.
-                    push(vm, value);
-                    DISPATCH();
-                }
+            Value receiver = peek(vm, 0);
 
-                if (bindMethod(vm, instance->klass, name)) {
-                    DISPATCH();
-                }
+            if (!IS_OBJ(receiver)) {
+                RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+            }
 
-                // Check class for properties
-                ObjClass *klass = instance->klass;
-
-                while (klass != NULL) {
-                    if (tableGet(&klass->publicProperties, name, &value)) {
+            switch (getObjType(receiver)) {
+                case OBJ_INSTANCE: {
+                    ObjInstance *instance = AS_INSTANCE(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&instance->publicFields, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
                     }
 
-                    klass = klass->superclass;
+                    if (bindMethod(vm, instance->klass, name)) {
+                        DISPATCH();
+                    }
+
+                    // Check class for properties
+                    ObjClass *klass = instance->klass;
+
+                    while (klass != NULL) {
+                        if (tableGet(&klass->publicProperties, name, &value)) {
+                            pop(vm); // Instance.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
+                        klass = klass->superclass;
+                    }
+
+                    if (tableGet(&instance->privateFields, name, &value)) {
+                        RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    }
+
+                    RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
                 }
 
-                if (tableGet(&instance->privateFields, name, &value)) {
-                    RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
-                }
-
-                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
-            } else if (IS_MODULE(peek(vm, 0))) {
-                ObjModule *module = AS_MODULE(peek(vm, 0));
-                ObjString *name = READ_STRING();
-                Value value;
-                if (tableGet(&module->values, name, &value)) {
-                    pop(vm); // Module.
-                    push(vm, value);
-                    DISPATCH();
-                }
-
-                RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
-            } else if (IS_CLASS(peek(vm, 0))) {
-                ObjClass *klass = AS_CLASS(peek(vm, 0));
-                // Used to keep a reference to the class for the runtime error below
-                ObjClass *klassStore = klass;
-                ObjString *name = READ_STRING();
-
-                Value value;
-                while (klass != NULL) {
-                    if (tableGet(&klass->publicProperties, name, &value)) {
-                        pop(vm); // Class.
+                case OBJ_MODULE: {
+                    ObjModule *module = AS_MODULE(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&module->values, name, &value)) {
+                        pop(vm); // Module.
                         push(vm, value);
                         DISPATCH();
                     }
 
-                    klass = klass->superclass;
+                    RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
                 }
 
-                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
-            }
+                case OBJ_CLASS: {
+                    ObjClass *klass = AS_CLASS(receiver);
+                    // Used to keep a reference to the class for the runtime error below
+                    ObjClass *klassStore = klass;
+                    ObjString *name = READ_STRING();
 
-            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+                    Value value;
+                    while (klass != NULL) {
+                        if (tableGet(&klass->publicProperties, name, &value)) {
+                            pop(vm); // Class.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
+                        klass = klass->superclass;
+                    }
+
+                    RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
+                }
+
+                case OBJ_ENUM: {
+                    ObjEnum *enumObj = AS_ENUM(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+
+                    if (tableGet(&enumObj->values, name, &value)) {
+                        pop(vm); // Enum.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("'%s' enum has no property: '%s'.", enumObj->name->chars, name->chars);
+                }
+
+                default: {
+                    RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+                }
+            }
         }
 
         CASE_CODE(GET_PRIVATE_PROPERTY): {
@@ -1938,6 +1982,21 @@ static DictuInterpretResult run(DictuVM *vm) {
             defineMethod(vm, READ_STRING());
             DISPATCH();
 
+        CASE_CODE(ENUM): {
+            ObjEnum *enumObj = newEnum(vm, READ_STRING());
+            push(vm, OBJ_VAL(enumObj));
+            DISPATCH();
+        }
+
+        CASE_CODE(SET_ENUM_VALUE): {
+            Value value = peek(vm, 0);
+            ObjEnum *enumObj = AS_ENUM(peek(vm, 1));
+
+            tableSet(vm, &enumObj->values, READ_STRING(), value);
+            pop(vm);
+            DISPATCH();
+        }
+
         CASE_CODE(USE): {
             Value trait = peek(vm, 0);
             if (!IS_TRAIT(trait)) {
@@ -1983,8 +2042,11 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(CLOSE_FILE): {
-            ObjFile *file = AS_FILE(peek(vm, 0));
-            fclose(file->file);
+            uint8_t slot = READ_BYTE();
+            Value file = frame->slots[slot];
+            ObjFile *fileObject = AS_FILE(file);
+            fclose(fileObject->file);
+
             DISPATCH();
         }
     }

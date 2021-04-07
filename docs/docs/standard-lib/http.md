@@ -24,19 +24,20 @@ To make use of the HTTP module an import is required.
 import HTTP;
 ```
 
-### HTTP.get(string, number: timeout -> optional)
+### HTTP.get(string, list: headers -> optional, number: timeout -> optional)
 
 Sends a HTTP GET request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a dictionary upon success.
 
 ```cs
 HTTP.get("https://httpbin.org/get");
-HTTP.get("https://httpbin.org/get", 1);
+HTTP.get("https://httpbin.org/get", ["Content-Type: application/json"]);
+HTTP.get("https://httpbin.org/get", ["Content-Type: application/json"], 1);
 
 {"content": "...", "headers": ["...", "..."], "statusCode": 200}
 ```
 
-### HTTP.post(string, dictionary: postArgs -> optional, number: timeout -> optional)
+### HTTP.post(string, dictionary: postArgs -> optional, list: headers -> optional, number: timeout -> optional)
 
 Sends a HTTP POST request to a given URL.Timeout is given in seconds.
 Returns a Result and unwraps to a dictionary upon success.
@@ -44,12 +45,13 @@ Returns a Result and unwraps to a dictionary upon success.
 ```cs
 HTTP.post("https://httpbin.org/post");
 HTTP.post("https://httpbin.org/post", {"test": 10});
-HTTP.post("https://httpbin.org/post", {"test": 10}, 1);
+HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/json"]);
+HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/json"], 1);
 ```
 
 ### Response
 
-Both HTTP.get() and HTTP.post() return a dictionary, or nil on error.
+Both HTTP.get() and HTTP.post() return a Result that unwraps a dictionary on success, or nil on error.
 The dictionary returned has 3 keys, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
