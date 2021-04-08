@@ -23,9 +23,9 @@ nav_order: 3
 | Boolean | `true`, `false` | Fun fact: Boolean data types are named after George Boole. |
 | List | `[1, 2, ‘hi’, true, nil]` | Lists can contain any data type or combination of data types. |
 | Dictionary | `{"key1": 10, 2: "two", true: "true", nil: "nil"}` | Dictionaries have key-value pairs, like a dictionary (Word: Definition). Keys must be an immutable data type (strings, numbers, nil or boolean). Values can be any data type. |
-| Set | `set("1", 1, "1")` | Sets are unordered collections of immutable, unique values. You can create a set with the `set()` function. |
-| Nil | nil | Used to signify no value (much like null in other languages) |
-| Result | Success, Error | See [Error Handling section.](/docs/error-handling) |
+| Set | `set("1", 1, nil)` | Sets are unordered collections of immutable, unique values. You can create a set with the `set()` function. |
+| Nil | `nil` | Used to signify no value (much like null in other languages) |
+| Result | `Success`, `Error` | See [Error Handling section.](/docs/error-handling) |
 
 ## Declaring a variable
 
