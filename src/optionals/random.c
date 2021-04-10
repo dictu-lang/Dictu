@@ -1,10 +1,8 @@
 #include "random.h"
 
-static Value randomRandom(DictuVM *vm, int argCount, Value *args)
-{
+static Value randomRandom(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
-    if (argCount > 0)
-    {
+    if (argCount > 0) {
         runtimeError(vm, "random() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
@@ -15,16 +13,13 @@ static Value randomRandom(DictuVM *vm, int argCount, Value *args)
     return NUMBER_VAL(random_double);
 }
 
-static Value randomRange(DictuVM *vm, int argCount, Value *args)
-{
-    if (argCount != 2)
-    {
+static Value randomRange(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
         runtimeError(vm, "range() takes 2 arguments (%0d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1]))
-    {
+    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
         runtimeError(vm, "range() arguments must be numbers");
         return EMPTY_VAL;
     }
@@ -35,16 +30,13 @@ static Value randomRange(DictuVM *vm, int argCount, Value *args)
     return NUMBER_VAL(random_val);
 }
 
-static Value randomSelect(DictuVM *vm, int argCount, Value *args)
-{
-    if (argCount == 0)
-    {
-        runtimeError(vm, "select() takes one argument (%0d provided)", argCount);
+static Value randomSelect(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "select() takes one argument (%d provided)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_LIST(args[0]))
-    {
+    if (!IS_LIST(args[0])) {
         runtimeError(vm, "select() argument must be a list");
         return EMPTY_VAL;
     }
@@ -53,22 +45,11 @@ static Value randomSelect(DictuVM *vm, int argCount, Value *args)
     argCount = list->values.count;
     args = list->values.values;
 
-    for (int i = 0; i < argCount; ++i)
-    {
-        Value value = args[i];
-        if (!IS_NUMBER(value))
-        {
-            runtimeError(vm, "A non-number value passed to select()");
-            return EMPTY_VAL;
-        }
-    }
-
     int index = rand() % argCount;
     return args[index];
 }
 
-ObjModule *createRandomModule(DictuVM *vm)
-{
+ObjModule *createRandomModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
