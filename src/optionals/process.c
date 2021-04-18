@@ -174,7 +174,9 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
     arguments[argList->values.count] = NULL;
 
     int fd[2];
-    pipe(fd);
+    if (pipe(fd) != 0) {
+        ERROR_RESULT;
+    }
     pid_t pid = fork();
     if (pid == 0) {
         close(fd[0]);
