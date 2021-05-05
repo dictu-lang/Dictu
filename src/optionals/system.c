@@ -313,6 +313,39 @@ void initPlatform(DictuVM *vm, Table *table) {
 #endif
 }
 
+void setVersion(DictuVM *vm, Table *table) {
+    ObjDict *versionDict = newDict(vm);
+    push(vm, OBJ_VAL(versionDict));
+
+    ObjString *major = copyString(vm, "major", 5);
+    push(vm, OBJ_VAL(major));
+    ObjString *majorVersion = copyString(vm, DICTU_MAJOR_VERSION, strlen(DICTU_MAJOR_VERSION));
+    push(vm, OBJ_VAL(majorVersion));
+    dictSet(vm, versionDict, OBJ_VAL(major), OBJ_VAL(majorVersion));
+    pop(vm);
+    pop(vm);
+
+    ObjString *minor = copyString(vm, "minor", 5);
+    push(vm, OBJ_VAL(minor));
+    ObjString *minorVersion = copyString(vm, DICTU_MINOR_VERSION, strlen(DICTU_MINOR_VERSION));
+    push(vm, OBJ_VAL(minorVersion));
+    dictSet(vm, versionDict, OBJ_VAL(minor), OBJ_VAL(minorVersion));
+    pop(vm);
+    pop(vm);
+
+    ObjString *patch = copyString(vm, "patch", 5);
+    push(vm, OBJ_VAL(patch));
+    ObjString *patchVersion = copyString(vm, DICTU_PATCH_VERSION, strlen(DICTU_PATCH_VERSION));
+    push(vm, OBJ_VAL(patchVersion));
+    dictSet(vm, versionDict, OBJ_VAL(patch), OBJ_VAL(patchVersion));
+    pop(vm);
+    pop(vm);
+
+    defineNativeProperty(vm, table, "version", OBJ_VAL(versionDict));
+
+    pop(vm);
+}
+
 void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
@@ -353,6 +386,7 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     }
 
     initPlatform(vm, &module->values);
+    setVersion(vm, &module->values);
 
     defineNativeProperty(vm, &module->values, "S_IRWXU", NUMBER_VAL(448));
     defineNativeProperty(vm, &module->values, "S_IRUSR", NUMBER_VAL(256));

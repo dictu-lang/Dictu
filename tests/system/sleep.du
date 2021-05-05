@@ -1,10 +1,10 @@
 /**
-* sleep.du
-*
-* Testing the System.sleep() function
-*
-* sleep() pauses execution for a given amount of seconds
-*/
+ * sleep.du
+ *
+ * Testing the System.sleep() function
+ *
+ * sleep() pauses execution for a given amount of seconds
+ */
 
 var start = System.time();
 
