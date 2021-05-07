@@ -739,11 +739,11 @@ static DictuInterpretResult run(DictuVM *vm) {
           }                                                                                               \
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
-          type a = AS_NUMBER(pop(vm));                                                                    \
-          push(vm, valueType(a op b));                                                                    \
+          type a = AS_NUMBER(peek(vm, 0));                                                                \
+          vm->stackTop[-1] = valueType(a op b);                                                           \
         } while (false)
 
-    #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                                \
+    #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                 \
         do {                                                                                              \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
               int firstValLength = 0;                                                                     \
@@ -759,8 +759,8 @@ static DictuInterpretResult run(DictuVM *vm) {
           }                                                                                               \
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
-          type a = AS_NUMBER(pop(vm));                                                                    \
-          push(vm, valueType(func(a, b)));                                                                \
+          type a = AS_NUMBER(peek(vm, 0));                                                                \
+          vm->stackTop[-1] = valueType(func(a, b));                                                       \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
