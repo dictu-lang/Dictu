@@ -14,8 +14,8 @@ struct TextAttr
 };
 
 static size_t
-log_fmt_parse(const size_t dst_size, char dst[dst_size],
-              const size_t src_size, const char src[src_size])
+log_fmt_parse(const size_t dst_size, char *dst,
+              const size_t src_size, const char *src)
 {
     size_t log_fmt_size = 0;
 
@@ -31,6 +31,23 @@ log_fmt_parse(const size_t dst_size, char dst[dst_size],
 
             const size_t end = --src_i;
 
+#ifdef _WIN32
+            static const struct TextAttr attrs[] = {
+                { "reset",     ""  },
+                { "bold",      ""  },
+                { "dim",       ""  },
+                { "italic",    ""  },
+                { "underline", ""  },
+                { "black",     ""  },
+                { "red",       ""  },
+                { "green",     ""  },
+                { "yellow",    ""  },
+                { "blue",      ""  },
+                { "magenta",   ""  },
+                { "cyan",      ""  },
+                { "white",     ""  }
+            };
+#else // _WIN32
             static const struct TextAttr attrs[] = {
                 { "reset",     "\033[0m"  },
                 { "bold",      "\033[1m"  },
@@ -46,6 +63,7 @@ log_fmt_parse(const size_t dst_size, char dst[dst_size],
                 { "cyan",      "\033[36m" },
                 { "white",     "\033[37m" }
             };
+#endif // _WIN32
 
             for (size_t i = 0; i < (sizeof(attrs) / sizeof(*(attrs))); i++)
             {
@@ -111,14 +129,14 @@ vlog(const enum LogType type, const char *fmt, va_list args, const bool newline)
 
     static const struct TextAttr prefix[] = {
         [LOG_NONE]    = { "",            ""                          },
-        [LOG_INFO]    = { "info",        "{white}%s:{reset} "        },
-        [LOG_NOTE]    = { "note",        "{dim}%s: "                 },
+        [LOG_INFO]    = { "Info",        "{white}%s:{reset} "        },
+        [LOG_NOTE]    = { "Note",        "{dim}%s: "                 },
         [LOG_PAD]     = { "",            ""                          },
         [LOG_DEBUG]   = { "DEBUG",       "{bold}{white}%s:{reset} "  },
-        [LOG_SUCCESS] = { "success",     "(bold}{green}%s:{reset} "  },
-        [LOG_WARNING] = { "warning",     "{bold}{yellow}%s:{reset} " },
-        [LOG_ERROR]   = { "error",       "{bold}{red}%s:{reset} "    },
-        [LOG_FATAL]   = { "fatal error", "{bold}{red}%s:{reset} "    },
+        [LOG_SUCCESS] = { "Success",     "(bold}{green}%s:{reset} "  },
+        [LOG_WARNING] = { "Warning",     "{bold}{yellow}%s:{reset} " },
+        [LOG_ERROR]   = { "Error",       "{bold}{red}%s:{reset} "    },
+        [LOG_FATAL]   = { "Fatal Error", "{bold}{red}%s:{reset} "    },
         [LOG_BUG]     = { "BUG",         "{bold}{red}%s:{reset} "    }
     };
 
