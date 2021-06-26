@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "error_lib/error.h"
 #include "../optionals/optionals.h"
 
 #ifdef DEBUG_PRINT_CODE
@@ -22,17 +23,22 @@ static void errorAt(Parser *parser, Token *token, const char *message) {
     if (parser->panicMode) return;
     parser->panicMode = true;
 
-    fprintf(stderr, "[%s line %d] Error", parser->module->name->chars, token->line);
+    log_error("File '%s', {bold}line %d{reset}", parser->module->name->chars, token->line);
 
-    if (token->type == TOKEN_EOF) {
-        fprintf(stderr, " at end");
-    } else if (token->type == TOKEN_ERROR) {
-        // Nothing.
-    } else {
-        fprintf(stderr, " at '%.*s'", token->length, token->start);
+    switch (token->type) {
+        case TOKEN_EOF:
+            log_padln("Error at end: %s", message);
+            break;
+        case TOKEN_ERROR:
+            log_padln("Error: %s", message);
+            break;
+        default:
+            log_padln("%zu %s %.*s", token->line, "|", token->length, token->start);
+            log_padln("%s", message);
+            break;
     }
 
-    fprintf(stderr, ": %s\n", message);
+    fputc('\n', stderr);
     parser->hadError = true;
 }
 
