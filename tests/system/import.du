@@ -4,6 +4,7 @@
  * General import file for all the System methods
  */
 
+import "version.du";
 import "sleep.du";
 import "getCWD.du";
 import "setCWD.du";

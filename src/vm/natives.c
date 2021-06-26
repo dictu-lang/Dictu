@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "natives.h"
 #include "vm.h"
+#include "../optionals/optionals.h"
 
 // Native functions
 static Value typeNative(DictuVM *vm, int argCount, Value *args) {
@@ -125,8 +126,15 @@ static Value isDefinedNative(DictuVM *vm, int argCount, Value *args) {
     ObjString *string = AS_STRING(args[0]);
 
     Value value;
-    if (tableGet(&vm->globals, string, &value))
+    CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    if (tableGet(&frame->closure->function->module->values, string, &value))
        return TRUE_VAL;
+
+    if (tableGet(&vm->globals, string, &value))
+        return TRUE_VAL;
+
+    if (findBuiltinModule(string->chars, string->length) != -1)
+        return TRUE_VAL;
 
     return FALSE_VAL;
 }

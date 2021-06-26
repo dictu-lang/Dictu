@@ -7,14 +7,14 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends build-essential \
 	&& apt-get update \
-	&& apt-get install -y --no-install-recommends cmake libcurl4-gnutls-dev \
+	&& apt-get install -y --reinstall ca-certificates \
+	&& apt-get install -y --no-install-recommends git cmake libcurl4-gnutls-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY CMakeLists.txt .
-COPY src ./src/
-COPY tests ./tests/
+RUN git clone https://github.com/dictu-lang/Dictu.git
 
-RUN cmake -DCMAKE_BUILD_TYPE=Release -B build \
+RUN cd Dictu \
+    && cmake -DCMAKE_BUILD_TYPE=Release -B build \
     && cmake --build ./build \
     && ./dictu tests/runTests.du \
 	&& cp dictu /usr/bin/ \

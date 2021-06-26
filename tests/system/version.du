@@ -1,0 +1,14 @@
+/**
+ * version.du
+ *
+ * Testing the System.version attribute
+ *
+ * version is a dictionary denoting the Dictu version.
+ */
+
+assert(type(System.version) == "dict");
+assert(System.version.len() == 3);
+
+assert(type(System.version["major"]) == "string");
+assert(type(System.version["minor"]) == "string");
+assert(type(System.version["patch"]) == "string");
