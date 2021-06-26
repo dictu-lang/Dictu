@@ -11,6 +11,7 @@
 #include "memory.h"
 #include "vm.h"
 #include "util.h"
+#include "error_lib/error.h"
 #include "datatypes/number.h"
 #include "datatypes/bool.h"
 #include "datatypes/nil.h"
@@ -41,20 +42,20 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
         // -1 because the IP is sitting on the next instruction to be
         // executed.
         size_t instruction = frame->ip - function->chunk.code - 1;
-        fprintf(stderr, "[line %d] in ",
-                function->chunk.lines[instruction]);
 
         if (function->name == NULL) {
-            fprintf(stderr, "%s: ", function->module->name->chars);
+            log_error("File '%s', {bold}line %d{reset}", function->module->name->chars, function->chunk.lines[instruction]);
             i = -1;
         } else {
-            fprintf(stderr, "%s() [%s]: ", function->name->chars, function->module->name->chars);
+            log_error("Function '%s' in '%s', {bold}line %d{reset}", function->name->chars, function->module->name->chars, function->chunk.lines[instruction]);
         }
+
+        log_pad("");
 
         va_list args;
         va_start(args, format);
         vfprintf(stderr, format, args);
-        fputs("\n", stderr);
+        fputs("\n\n", stderr);
         va_end(args);
     }
 
@@ -723,19 +724,22 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
+    #define UNSUPPORTED_OPERAND_TYPE_ERROR(op)                                                      \
+        int firstValLength = 0;                                                                     \
+        int secondValLength = 0;                                                                    \
+        char *firstVal = valueTypeToString(vm, peek(vm, 1), &firstValLength);                       \
+        char *secondVal = valueTypeToString(vm, peek(vm, 0), &secondValLength);                     \
+                                                                                                    \
+        STORE_FRAME;                                                                                \
+        runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
+        FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
+        FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
+        return INTERPRET_RUNTIME_ERROR;                                                             \
+
     #define BINARY_OP(valueType, op, type)                                                                \
         do {                                                                                              \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
-              int firstValLength = 0;                                                                     \
-              int secondValLength = 0;                                                                    \
-              char *firstVal = valueTypeToString(vm, peek(vm, 1), &firstValLength);                       \
-              char *secondVal = valueTypeToString(vm, peek(vm, 0), &secondValLength);                     \
-                                                                                                          \
-              STORE_FRAME;                                                                                \
-              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
-              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
-              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
-              return INTERPRET_RUNTIME_ERROR;                                                             \
+              UNSUPPORTED_OPERAND_TYPE_ERROR(op)                                                          \
           }                                                                                               \
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
@@ -746,16 +750,7 @@ static DictuInterpretResult run(DictuVM *vm) {
     #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                 \
         do {                                                                                              \
           if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) {                                       \
-              int firstValLength = 0;                                                                     \
-              int secondValLength = 0;                                                                    \
-              char *firstVal = valueTypeToString(vm, peek(vm, 0), &firstValLength);                       \
-              char *secondVal = valueTypeToString(vm, peek(vm, 1), &secondValLength);                     \
-                                                                                                          \
-              STORE_FRAME;                                                                                \
-              runtimeError(vm, "Unsupported operand types for "#op": '%s', '%s'", firstVal, secondVal);   \
-              FREE_ARRAY(vm, char, firstVal, firstValLength + 1);                                         \
-              FREE_ARRAY(vm, char, secondVal, secondValLength + 1);                                       \
-              return INTERPRET_RUNTIME_ERROR;                                                             \
+              UNSUPPORTED_OPERAND_TYPE_ERROR(op)                                                          \
           }                                                                                               \
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
@@ -1309,7 +1304,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 push(vm, OBJ_VAL(finalList));
             } else {
-                RUNTIME_ERROR("Unsupported operand types for +: %s, %s", valueToString(peek(vm, 0)), valueToString(peek(vm, 1)));
+                UNSUPPORTED_OPERAND_TYPE_ERROR(+);
             }
             DISPATCH();
         }
