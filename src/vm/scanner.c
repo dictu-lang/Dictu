@@ -243,7 +243,7 @@ static TokenType identifierType(Scanner *scanner) {
                     case 'u':
                         return checkKeyword(scanner, 2, 3, "per", TOKEN_SUPER);
 		    case 'w':
-                        return checkKeyword(scanner, 1, 4, "itch", TOKEN_SWITCH);
+                        return checkKeyword(scanner, 2, 4, "itch", TOKEN_SWITCH);
                 }
             }
             break;
