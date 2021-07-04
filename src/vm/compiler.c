@@ -2080,13 +2080,13 @@ static void matchStatement(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before match body.");
     consume(compiler, TOKEN_CASE, "Expect atleast one 'case' block.");
-      do{
-      expression(compiler);
-      int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
-      consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
-      statement(compiler);
-      patchJump(compiler,compareJump);
-      }while(match(compiler, TOKEN_CASE)); 
+    do {
+        expression(compiler);
+        int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
+        consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
+        statement(compiler);
+        patchJump(compiler, compareJump);
+    } while(match(compiler, TOKEN_CASE)); 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  matchbody.");
     emitByte(compiler, OP_POP); // expression.    
 }
