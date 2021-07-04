@@ -1363,7 +1363,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(COMPARE_JUMP):{
             uint16_t offset = READ_SHORT();
             Value a=pop(vm);
-            if (!valuesEqual(peek(vm,0), a) ip += offset;
+            if (!valuesEqual(peek(vm,0), a)) ip += offset;
             DISPATCH();
        }
         CASE_CODE(JUMP_IF_FALSE): {
