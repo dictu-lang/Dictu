@@ -876,7 +876,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             frame->slots[slot] = peek(vm, 0);
             DISPATCH();
         }
-
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
@@ -1361,7 +1360,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             ip += offset;
             DISPATCH();
         }
-
+        CASE_CODE(COMPARE_JUMP):{
+            uint16_t offset = READ_SHORT();
+            Value a=pop(vm);
+            if (isFalsey(BOOL_VAL(valuesEqual(peek(vm,0), a)))) ip += offset;
+            DISPATCH();
+       }
         CASE_CODE(JUMP_IF_FALSE): {
             uint16_t offset = READ_SHORT();
             if (isFalsey(peek(vm, 0))) ip += offset;

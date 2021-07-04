@@ -1445,7 +1445,8 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_IF
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
-        {NULL,     or_,       PREC_OR},                 // TOKEN_OR
+        {NULL,     or_,       PREC_OR},                 // TOKEN_OR               
+        {NULL,	   NULL,      PREC_NONE},               //TOKEN_MATCH 
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CONST
         {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
@@ -2049,7 +2050,6 @@ static void continueStatement(Compiler *compiler) {
     // Jump to top of current innermost loop.
     emitLoop(compiler, compiler->loop->start);
 }
-
 static void ifStatement(Compiler *compiler) {
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
     expression(compiler);
@@ -2073,7 +2073,22 @@ static void ifStatement(Compiler *compiler) {
 
     patchJump(compiler, endJump);
 }
-
+static void matchStatement(Compiler *compiler) {
+    consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'match'.");
+    expression(compiler);
+    consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before match body.");
+    consume(compiler, TOKEN_CASE, "Expect atleast one 'case' block.");
+      do{
+      expression(compiler);
+      int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
+      consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
+      statement(compiler);
+      patchJump(compiler,compareJump);
+      }while(match(compiler, TOKEN_CASE)); 
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  matchbody.");
+    emitByte(compiler, OP_POP); // expression.    
+}
 static void withStatement(Compiler *compiler) {
     compiler->withBlock = true;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
@@ -2311,6 +2326,7 @@ static void synchronize(Parser *parser) {
             case TOKEN_CONST:
             case TOKEN_FOR:
             case TOKEN_IF:
+            case TOKEN_MATCH:
             case TOKEN_WHILE:
             case TOKEN_BREAK:
             case TOKEN_RETURN:
@@ -2354,6 +2370,8 @@ static void statement(Compiler *compiler) {
         forStatement(compiler);
     } else if (match(compiler, TOKEN_IF)) {
         ifStatement(compiler);
+    } else if (match(compiler, TOKEN_MATCH)) {
+        matchStatement(compiler);
     } else if (match(compiler, TOKEN_RETURN)) {
         returnStatement(compiler);
     } else if (match(compiler, TOKEN_WITH)) {

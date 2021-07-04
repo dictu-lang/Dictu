@@ -155,6 +155,8 @@ static TokenType identifierType(Scanner *scanner) {
         case 'c':
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
+                    case 'a':
+			return checkKeyword(scanner, 2, 2, "se", TOKEN_CASE);
                     case 'l':
                         return checkKeyword(scanner, 2, 3, "ass", TOKEN_CLASS);
                     case 'o': {
@@ -216,6 +218,8 @@ static TokenType identifierType(Scanner *scanner) {
                 }
             }
             break;
+        case 'm':
+            return checkKeyword(scanner, 1, 4, "atch", TOKEN_MATCH);
         case 'o':
             return checkKeyword(scanner, 1, 1, "r", TOKEN_OR);
         case 'p':
