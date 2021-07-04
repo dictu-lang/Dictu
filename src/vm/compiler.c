@@ -1446,7 +1446,8 @@ ParseRule rules[] = {
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
         {NULL,     or_,       PREC_OR},                 // TOKEN_OR               
-        {NULL,	   NULL,      PREC_NONE},               //TOKEN_MATCH 
+        {NULL,	   NULL,      PREC_NONE},               // TOKEN_MATCH 
+        {NULL,	   NULL,      PREC_NONE},               // TOKEN_CASE
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CONST
         {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
