@@ -2091,20 +2091,30 @@ static void switchStatement(Compiler *compiler) {
         statement(compiler);
         caseEnds[caseCount++] = emitJump(compiler,OP_JUMP);
         patchJump(compiler, compareJump);
+
+        if (caseCount > 255) {
+            errorAtCurrent(compiler->parser, "Switch statement can not have more than 256 case blocks");
+        }
+
     } while(match(compiler, TOKEN_CASE));
-    if(match(compiler,TOKEN_DEFAULT)){
+
+    if (match(compiler,TOKEN_DEFAULT)){
         emitByte(compiler, OP_POP); // expression.
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
         statement(compiler);
     }
-    if(match(compiler,TOKEN_CASE)){
-        error(compiler->parser, "Unexcepted case after default");
+
+    if (match(compiler,TOKEN_CASE)){
+        error(compiler->parser, "Unexpected case after default");
     }
-    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body."); 
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body.");
+
     for (int i = 0; i < caseCount; i++) {
-    	patchJump(compiler,caseEnds[i]);
+    	patchJump(compiler, caseEnds[i]);
     } 
 }
+
 static void withStatement(Compiler *compiler) {
     compiler->withBlock = true;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
