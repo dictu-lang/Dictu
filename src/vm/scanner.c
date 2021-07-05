@@ -45,7 +45,6 @@ static char peekNext(Scanner *scanner) {
 static bool match(Scanner *scanner, char expected) {
     if (isAtEnd(scanner)) return false;
     if (*scanner->current != expected) return false;
-
     scanner->current++;
     return true;
 }
@@ -56,7 +55,6 @@ static Token makeToken(Scanner *scanner, TokenType type) {
     token.start = scanner->start;
     token.length = (int) (scanner->current - scanner->start);
     token.line = scanner->line;
-
     return token;
 }
 
@@ -175,6 +173,12 @@ static TokenType identifierType(Scanner *scanner) {
             }
             break;
         case 'd':
+               if (scanner->current - scanner->start > 3) {
+                            switch (scanner->start[3]) {
+                                case 'a':
+                                    return checkKeyword(scanner, 4, 3, "ult", TOKEN_DEFAULT);
+                            }
+               }
             return checkKeyword(scanner, 1, 2, "ef", TOKEN_DEF);
         case 'e':
             if (scanner->current - scanner->start > 1) {
@@ -436,8 +440,6 @@ Token scanToken(Scanner *scanner) {
                 return makeToken(scanner, TOKEN_QUESTION_DOT);
             }
             return makeToken(scanner, TOKEN_QUESTION);
-        case '$':
-            return makeToken(scanner, TOKEN_DOLLER);
         case '<':
             return makeToken(scanner, match(scanner, '=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
         case '>':

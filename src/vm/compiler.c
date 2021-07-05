@@ -1401,7 +1401,6 @@ ParseRule rules[] = {
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
         {NULL,     ternary,   PREC_ASSIGNMENT},         // TOKEN_QUESTION
-        {NULL,	   NULL,      PREC_NONE},               //TOKEN_DOLLER
         {NULL,     chain,     PREC_CHAIN},              // TOKEN_QUESTION_DOT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
@@ -1449,6 +1448,7 @@ ParseRule rules[] = {
         {NULL,     or_,       PREC_OR},                 // TOKEN_OR               
         {NULL,	   NULL,      PREC_NONE},               // TOKEN_SWITCH 
         {NULL,	   NULL,      PREC_NONE},               // TOKEN_CASE
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_DEFUALT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CONST
         {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
@@ -2077,6 +2077,8 @@ static void ifStatement(Compiler *compiler) {
     patchJump(compiler, endJump);
 }
 static void switchStatement(Compiler *compiler) {
+    int caseEnds[256];
+    int caseCount = 0;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'switch'.");
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
@@ -2087,14 +2089,21 @@ static void switchStatement(Compiler *compiler) {
         int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
         statement(compiler);
+        caseEnds[caseCount++] = emitJump(compiler,OP_JUMP);
         patchJump(compiler, compareJump);
     } while(match(compiler, TOKEN_CASE));
-    if(match(compiler,TOKEN_DOLLER)){
+    if(match(compiler,TOKEN_DEFAULT)){
         emitByte(compiler, OP_POP); // expression.
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
         statement(compiler);
     }
-    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body.");  
+    if(match(compiler,TOKEN_CASE)){
+        error(compiler->parser, "Unexcepted case after default");
+    }
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body."); 
+    for (int i = 0; i < caseCount; i++) {
+    	patchJump(compiler,caseEnds[i]);
+    } 
 }
 static void withStatement(Compiler *compiler) {
     compiler->withBlock = true;
