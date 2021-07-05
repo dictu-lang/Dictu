@@ -1400,8 +1400,9 @@ ParseRule rules[] = {
         {NULL,     dot,       PREC_CALL},               // TOKEN_DOT
         {unary,    binary,    PREC_TERM},               // TOKEN_MINUS
         {NULL,     binary,    PREC_TERM},               // TOKEN_PLUS
-        {NULL,     ternary,   PREC_ASSIGNMENT},               // TOKEN_QUESTION
+        {NULL,     ternary,   PREC_ASSIGNMENT},         // TOKEN_QUESTION
         {NULL,     chain,   PREC_CHAIN},              // TOKEN_QUESTION_DOT
+         {NULL,	   NULL,      PREC_NONE},               //TOKEN_DOLLER
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PLUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MINUS_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_MULTIPLY_EQUALS
@@ -2087,9 +2088,13 @@ static void switchStatement(Compiler *compiler) {
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
         statement(compiler);
         patchJump(compiler, compareJump);
-    } while(match(compiler, TOKEN_CASE)); 
-    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body.");
-    emitByte(compiler, OP_POP); // expression.    
+    } while(match(compiler, TOKEN_CASE));
+    if(match(compiler,TOKEN_DOLLER)){
+        emitByte(compiler, OP_POP); // expression.
+        consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
+        statement(compiler);
+    }
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body.");  
 }
 static void withStatement(Compiler *compiler) {
     compiler->withBlock = true;

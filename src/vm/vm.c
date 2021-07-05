@@ -1364,6 +1364,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             uint16_t offset = READ_SHORT();
             Value a=pop(vm);
             if (!valuesEqual(peek(vm,0), a)) ip += offset;
+	    else pop(vm);// switch expression.  
             DISPATCH();
        }
         CASE_CODE(JUMP_IF_FALSE): {
