@@ -102,6 +102,7 @@ typedef struct Compiler {
 
     int scopeDepth;
     bool withBlock;
+    ObjDict *annotations;
 } Compiler;
 
 typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);

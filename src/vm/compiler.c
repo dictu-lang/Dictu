@@ -157,6 +157,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->class = NULL;
     compiler->loop = NULL;
     compiler->withBlock = false;
+    compiler->annotations = NULL;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -1586,6 +1587,12 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
 static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     freeTable(compiler->parser->vm, &classCompiler->privateVariables);
     compiler->class = compiler->class->enclosing;
+
+    if (compiler->annotations != NULL) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->annotations));
+        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
+        compiler->annotations = NULL;
+    }
 }
 
 static void parseClassBody(Compiler *compiler) {
@@ -1620,6 +1627,20 @@ static void parseClassBody(Compiler *compiler) {
             method(compiler, false, NULL);
         }
     }
+}
+
+static void parseAttributes(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    compiler->annotations = newDict(vm);
+
+    do {
+        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+        Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
+                                                  compiler->parser->previous.length));
+        push(vm, annotationName);
+        dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+        pop(vm);
+    } while (match(compiler, TOKEN_AT));
 }
 
 static void classDeclaration(Compiler *compiler) {
@@ -1659,8 +1680,8 @@ static void classDeclaration(Compiler *compiler) {
         emitByte(compiler, OP_END_CLASS);
     }
 
-    defineVariable(compiler, nameConstant, false);
     endClassCompiler(compiler, &classCompiler);
+    defineVariable(compiler, nameConstant, false);
 }
 
 static void abstractClassDeclaration(Compiler *compiler) {
@@ -2332,7 +2353,15 @@ static void synchronize(Parser *parser) {
 static void declaration(Compiler *compiler) {
     if (match(compiler, TOKEN_CLASS)) {
         classDeclaration(compiler);
-    } else if (match(compiler, TOKEN_TRAIT)) {
+        if (compiler->parser->panicMode) synchronize(compiler->parser);
+        return;
+    }
+
+    if (compiler->annotations != NULL) {
+        errorAtCurrent(compiler->parser, "Annotations can only be applied to classes");
+    }
+
+    if (match(compiler, TOKEN_TRAIT)) {
         traitDeclaration(compiler);
     } else if (match(compiler, TOKEN_ABSTRACT)) {
         abstractClassDeclaration(compiler);
@@ -2344,6 +2373,8 @@ static void declaration(Compiler *compiler) {
         varDeclaration(compiler, true);
     } else if (match(compiler, TOKEN_ENUM)) {
         enumDeclaration(compiler);
+    } else if (match(compiler, TOKEN_AT)) {
+        parseAttributes(compiler);
     } else {
         statement(compiler);
     }
@@ -2461,6 +2492,7 @@ void grayCompilerRoots(DictuVM *vm) {
             classCompiler = classCompiler->enclosing;
         }
 
+        grayObject(vm, (Obj *) compiler->annotations);
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
