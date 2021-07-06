@@ -17,7 +17,7 @@
 #include "datatypes/nil.h"
 #include "datatypes/strings.h"
 #include "datatypes/lists/lists.h"
-#include "datatypes/dicts.h"
+#include "datatypes/dicts/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
 #include "datatypes/class.h"
@@ -501,7 +501,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_DICT: {
                 Value value;
                 if (tableGet(&vm->dictMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "Dict has no method %s().", name->chars);
