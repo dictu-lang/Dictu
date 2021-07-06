@@ -63,6 +63,7 @@ typedef struct ClassCompiler {
     bool staticMethod;
     bool abstractClass;
     Table privateVariables;
+    ObjDict *annotations;
 } ClassCompiler;
 
 typedef struct Loop {

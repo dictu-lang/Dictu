@@ -359,6 +359,8 @@ Token scanToken(Scanner *scanner) {
     if (isDigit(c)) return hexNumber(scanner);
 
     switch (c) {
+        case '@':
+            return makeToken(scanner, TOKEN_AT);
         case '(':
             return makeToken(scanner, TOKEN_LEFT_PAREN);
         case ')':

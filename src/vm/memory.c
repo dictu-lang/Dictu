@@ -93,6 +93,7 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *bound = (ObjBoundMethod *) object;
             grayValue(vm, bound->receiver);
+            grayValue(vm, bound->annotations);
             grayObject(vm, (Obj *) bound->method);
             break;
         }
@@ -194,6 +195,8 @@ void freeObject(DictuVM *vm, Obj *object) {
         }
 
         case OBJ_BOUND_METHOD: {
+            // if (!IS_NIL())
+
             FREE(vm, ObjBoundMethod, object);
             break;
         }

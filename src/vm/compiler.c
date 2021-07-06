@@ -1412,6 +1412,7 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,    PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,    PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AT
         {NULL,     binary,    PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,    PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,    PREC_BITWISE_OR},         // TOKEN_PIPE
@@ -1577,6 +1578,7 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
+    classCompiler->annotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
 }
@@ -2454,6 +2456,7 @@ void grayCompilerRoots(DictuVM *vm) {
         ClassCompiler *classCompiler = vm->compiler->class;
 
         while (classCompiler != NULL) {
+            grayObject(vm, (Obj *) classCompiler->annotations);
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
         }

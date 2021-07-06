@@ -241,6 +241,7 @@ typedef struct {
     Obj obj;
     Value receiver;
     ObjClosure *method;
+    Value annotations;
 } ObjBoundMethod;
 
 ObjModule *newModule(DictuVM *vm, ObjString *name);
