@@ -1,5 +1,5 @@
 #define DICTU_DICT_SOURCE "/**\n" \
-" * This file contains all the methods for Lists written in Dictu that\n" \
+" * This file contains all the methods for Dicts written in Dictu that\n" \
 " * are unable to be written in C due to re-enterability issues.\n" \
 " *\n" \
 " * We should always strive to write methods in C where possible.\n" \
