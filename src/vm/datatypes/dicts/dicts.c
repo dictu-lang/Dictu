@@ -1,5 +1,15 @@
 #include "dicts.h"
 
+/*
+ * Note: We should try to implement everything we can in C
+ *       rather than in the host language as C will always
+ *       be faster than Dictu, and there will be extra work
+ *       at startup running the Dictu code, however compromises
+ *       must be made due to the fact the VM is not re-enterable
+ */
+
+#include "dict-source.h"
+
 static Value toStringDict(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
@@ -156,4 +166,14 @@ void declareDictMethods(DictuVM *vm) {
     defineNative(vm, &vm->dictMethods, "copy", copyDictShallow);
     defineNative(vm, &vm->dictMethods, "deepCopy", copyDictDeep);
     defineNative(vm, &vm->dictMethods, "toBool", boolNative); // Defined in util
+
+    dictuInterpret(vm, "Dict", DICTU_DICT_SOURCE);
+
+    Value Dict;
+    tableGet(&vm->modules, copyString(vm, "Dict", 4), &Dict);
+
+    ObjModule *DictModule = AS_MODULE(Dict);
+    push(vm, Dict);
+    tableAddAll(vm, &DictModule->values, &vm->dictMethods);
+    pop(vm);
 }
