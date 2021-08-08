@@ -131,3 +131,16 @@ var myDict = {"key": {"test": 10}};
 var myDict1 = myDict.copy(); // Shallow copy
 var myDict2 = myDict.deepCopy(); // Deep copy
 ```
+
+### dict.forEach(func)
+
+To run a function on every element in a dictionary we use `.forEach`. The callback function
+passed to `.forEach` expects two parameters which will be the key-value pair of the dictionary.
+
+```cs
+const myDict = {"key": 1, "key1": 2};
+
+myDict.forEach(def (key, value) => {
+    print("Key: {} Value: {}".format(key, value));
+});
+```

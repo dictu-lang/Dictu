@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "copy.h"
-#include "../util.h"
+#include "../copy.h"
+#include "../../util.h"
 
 void declareDictMethods(DictuVM *vm);
 

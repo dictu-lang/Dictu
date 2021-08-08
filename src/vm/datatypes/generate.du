@@ -27,6 +27,7 @@ def generate(filename) {
 
 var files = [
     'lists/list',
+    'dicts/dict',
     'result/result'
 ];
 
