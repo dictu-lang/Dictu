@@ -920,7 +920,7 @@ static void grouping(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-static void number(Compiler *compiler, bool canAssign) {
+static Value parseNumber(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     // We allocate the whole range for the worst case.
@@ -942,10 +942,14 @@ static void number(Compiler *compiler, bool canAssign) {
 
     // Parse the string.
     double value = strtod(buffer, NULL);
-    emitConstant(compiler, NUMBER_VAL(value));
-
     // Free the malloc'd buffer.
     FREE_ARRAY(compiler->parser->vm, char, buffer, compiler->parser->previous.length + 1);
+
+    return NUMBER_VAL(value);
+}
+
+static void number(Compiler *compiler, bool canAssign) {
+    emitConstant(compiler, parseNumber(compiler, canAssign));
 }
 
 static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
@@ -976,7 +980,7 @@ static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-int parseString(char *string, int length) {
+int parseEscapeSequences(char *string, int length) {
     for (int i = 0; i < length - 1; i++) {
         if (string[i] == '\\') {
             switch (string[i + 1]) {
@@ -1030,7 +1034,7 @@ static void rString(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_STRING, "Expected string after r delimiter");
 }
 
-static void string(Compiler *compiler, bool canAssign) {
+static Value parseString(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     Parser *parser = compiler->parser;
@@ -1039,7 +1043,7 @@ static void string(Compiler *compiler, bool canAssign) {
     char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
     memcpy(string, parser->previous.start + 1, stringLength);
-    int length = parseString(string, stringLength);
+    int length = parseEscapeSequences(string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
     if (length != stringLength) {
@@ -1047,7 +1051,11 @@ static void string(Compiler *compiler, bool canAssign) {
     }
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
+    return OBJ_VAL(takeString(parser->vm, string, length));
+}
+
+static void string(Compiler *compiler, bool canAssign) {
+    emitConstant(compiler, parseString(compiler, canAssign));
 }
 
 static void list(Compiler *compiler, bool canAssign) {
@@ -1595,6 +1603,55 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     }
 }
 
+static bool checkLiteralToken(Compiler *compiler) {
+    return check(compiler, TOKEN_STRING) || check(compiler, TOKEN_NUMBER) ||
+        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
+}
+
+static void parseClassAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    compiler->annotations = newDict(vm);
+
+    do {
+        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+        Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
+                                                  compiler->parser->previous.length));
+        push(vm, annotationName);
+
+        if (match(compiler, TOKEN_LEFT_PAREN)) {
+            if (!checkLiteralToken(compiler)) {
+                errorAtCurrent(compiler->parser,
+                               "Annotations can only have literal values of type string, bool, number or nil.");
+                return;
+            }
+
+            if (match(compiler, TOKEN_STRING)) {
+                Value string = parseString(compiler, false);
+                push(vm, string);
+                dictSet(vm, compiler->annotations, annotationName, string);
+                pop(vm);
+            } else if (match(compiler, TOKEN_NUMBER)) {
+                Value number = parseNumber(compiler, false);
+                dictSet(vm, compiler->annotations, annotationName, number);
+            } else if (match(compiler, TOKEN_TRUE)) {
+                dictSet(vm, compiler->annotations, annotationName, TRUE_VAL);
+            } else if (match(compiler, TOKEN_FALSE)) {
+                dictSet(vm, compiler->annotations, annotationName, FALSE_VAL);
+            } else if (match(compiler, TOKEN_NIL)) {
+                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            } else {
+                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            }
+
+            consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after annotation value.");
+        } else {
+            dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+        }
+
+        pop(vm);
+    } while (match(compiler, TOKEN_AT));
+}
+
 static void parseClassBody(Compiler *compiler) {
     while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
         if (match(compiler, TOKEN_USE)) {
@@ -1608,39 +1665,27 @@ static void parseClassBody(Compiler *compiler) {
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
-        } else if (match(compiler, TOKEN_PRIVATE)) {
-            if (match(compiler, TOKEN_IDENTIFIER)) {
-                if (check(compiler, TOKEN_SEMICOLON)) {
-                    uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
-                    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
-                    tableSet(compiler->parser->vm, &compiler->class->privateVariables,
-                             AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
+        } else {
+            if (match(compiler, TOKEN_PRIVATE)) {
+                if (match(compiler, TOKEN_IDENTIFIER)) {
+                    if (check(compiler, TOKEN_SEMICOLON)) {
+                        uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+                        consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
+                        tableSet(compiler->parser->vm, &compiler->class->privateVariables,
+                                 AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
+                        continue;
+                    }
+
+                    method(compiler, true, &compiler->parser->previous);
                     continue;
                 }
 
-                method(compiler, true, &compiler->parser->previous);
-                continue;
+                method(compiler, true, NULL);
+            } else {
+                method(compiler, false, NULL);
             }
-
-            method(compiler, true, NULL);
-        } else {
-            method(compiler, false, NULL);
         }
     }
-}
-
-static void parseAttributes(Compiler *compiler) {
-    DictuVM *vm = compiler->parser->vm;
-    compiler->annotations = newDict(vm);
-
-    do {
-        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
-        Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
-                                                  compiler->parser->previous.length));
-        push(vm, annotationName);
-        dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
-        pop(vm);
-    } while (match(compiler, TOKEN_AT));
 }
 
 static void classDeclaration(Compiler *compiler) {
@@ -2374,7 +2419,7 @@ static void declaration(Compiler *compiler) {
     } else if (match(compiler, TOKEN_ENUM)) {
         enumDeclaration(compiler);
     } else if (match(compiler, TOKEN_AT)) {
-        parseAttributes(compiler);
+        parseClassAnnotations(compiler);
     } else {
         statement(compiler);
     }

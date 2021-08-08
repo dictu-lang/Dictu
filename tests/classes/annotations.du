@@ -1,0 +1,25 @@
+/**
+ * annotations.du
+ *
+ * Testing class annotations
+ */
+
+@EmptyAnnotation
+@TrueAnnotation(true)
+@FalseAnnotation(false)
+@NumberAnnotation(10)
+@DecimalNumberAnnotation(10.5)
+@NilAnnotation(nil)
+class Test {
+
+}
+
+assert(Test.annotations.len() == 6);
+assert(Test.annotations['EmptyAnnotation'] == nil);
+assert(Test.annotations['TrueAnnotation'] == true);
+assert(Test.annotations['FalseAnnotation'] == false);
+assert(Test.annotations['NumberAnnotation'] == 10);
+assert(Test.annotations['DecimalNumberAnnotation'] == 10.5);
+assert(Test.annotations['NilAnnotation'] == nil);
+
+

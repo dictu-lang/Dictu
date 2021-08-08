@@ -1052,19 +1052,6 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("'%s' enum has no property: '%s'.", enumObj->name->chars, name->chars);
                 }
 
-                case OBJ_BOUND_METHOD: {
-                    ObjBoundMethod *methodObj = AS_BOUND_METHOD(receiver);
-                    ObjString *name = READ_STRING();
-
-                    if (strcmp(name->chars, "annotations") == 0) {
-                        pop(vm); // Method
-                        push(vm, methodObj->annotations);
-                        DISPATCH();
-                    }
-
-                    RUNTIME_ERROR("'%s' bound method has no property: '%s'.", methodObj->method->function->name->chars, name->chars);
-                }
-
                 default: {
                     RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
                 }
