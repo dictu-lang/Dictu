@@ -1031,7 +1031,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     if (strcmp(name->chars, "annotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, OBJ_VAL(klassStore->annotations));
+                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
                         DISPATCH();
                     }
 

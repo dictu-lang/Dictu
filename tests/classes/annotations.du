@@ -4,6 +4,10 @@
  * Testing class annotations
  */
 
+class NoAnnotations {}
+
+assert(NoAnnotations.annotations == nil);
+
 @EmptyAnnotation
 @TrueAnnotation(true)
 @FalseAnnotation(false)
