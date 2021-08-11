@@ -98,6 +98,22 @@ static Value printNative(DictuVM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+static Value printErrorNative(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(vm);
+
+    if (argCount == 0) {
+        fprintf(stderr, "\n");
+        return NIL_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        printValueError(args[i]);
+        fprintf(stderr, "\n");
+    }
+
+    return NIL_VAL;
+}
+
 static Value assertNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "assert() takes 1 argument (%d given)", argCount);
@@ -170,6 +186,7 @@ void defineAllNatives(DictuVM *vm) {
             "type",
             "set",
             "print",
+            "printError",
             "assert",
             "isDefined",
             "Success",
@@ -181,6 +198,7 @@ void defineAllNatives(DictuVM *vm) {
             typeNative,
             setNative,
             printNative,
+            printErrorNative,
             assertNative,
             isDefinedNative,
             generateSuccessResult,
