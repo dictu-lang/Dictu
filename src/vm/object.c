@@ -56,7 +56,6 @@ ObjBoundMethod *newBoundMethod(DictuVM *vm, Value receiver, ObjClosure *method) 
 
     bound->receiver = receiver;
     bound->method = method;
-    bound->annotations = NIL_VAL;
     return bound;
 }
 
