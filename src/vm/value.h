@@ -107,4 +107,6 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length);
 
 void printValue(Value value);
 
+void printValueError(Value value);
+
 #endif

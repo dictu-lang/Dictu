@@ -35,6 +35,16 @@ print("test"); // "test"
 print(10, "test", nil, true); // 10, "test", nil, true
 ```
 
+### printError(...values...)
+
+Prints a given list of values to stderr.
+
+```cs
+printError(10); // 10
+printError("test"); // "test"
+printError(10, "test", nil, true); // 10, "test", nil, true
+```
+
 ### input(string: prompt -> optional)
 
 Gathers user input from stdin and returns the value as a string. `input()` has an optional prompt which will be shown to
