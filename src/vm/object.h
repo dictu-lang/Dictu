@@ -221,6 +221,7 @@ typedef struct sObjClass {
     Table privateMethods;
     Table abstractMethods;
     Table publicProperties;
+    ObjDict *annotations;
     ClassType type;
 } ObjClass;
 

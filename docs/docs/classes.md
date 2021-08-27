@@ -562,3 +562,46 @@ testObj.isInstance(AnotherTest); // false
 anotherTestObj.isInstance(AnotherTest); // true
 anotherTestObj.isInstance(Test); // true
 ```
+
+## Annotations
+
+Annotations are metadata that are applied to classes that by themselves have no impact.
+They, however, can provide user defined changes at runtime to given classes.
+
+```cs
+@Annotation
+class AnnotatedClass {
+
+}
+```
+
+Annotations are accessed via the `.annotations` property available on all classes. If annotations
+are preset a dictionary is returned, otherwise the `.annotations` property is `nil`.
+
+```cs
+print(AnnotatedClass.annotations); // {"Annotation": nil}
+```
+
+Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
+
+```
+@Annotation("Some extra value!")
+class AnnotatedClass {
+
+}
+
+print(AnnotatedClass.annotations); // {"Annotation": "Some extra value!"}
+```
+
+Multiple annotations can be supplied to classes.
+
+```cs
+@Annotation
+@AnotherAnnotation(10)
+@SomeOtherAnnotation
+class AnnotatedClass {
+
+}
+```
+
+**Note**: Annotations are not available on methods.
