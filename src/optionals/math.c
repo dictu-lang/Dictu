@@ -267,6 +267,46 @@ static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(result);
 }
 
+long long lcm(long long a, long long b) {
+    return (a * b) / gcd(a, b);
+}
+
+static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    if (argCount < 2) {
+        runtimeError(vm, "lcm() requires 2 or more argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i)
+        if (!IS_NUMBER(args[i])) {
+            runtimeError(vm, "A non-number value passed to lcm() as argument #%d", i);
+            return EMPTY_VAL;
+        }
+
+    double as_doubles[argCount];
+    for (int i = 0; i < argCount; ++i) {
+        as_doubles[i] = AS_NUMBER(args[i]);
+        if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
+            runtimeError(vm, "A non-discrete number (%f) passed to lcm() as argument #%d", as_doubles[i], i);
+            return EMPTY_VAL;
+        }
+    }
+
+    long long as_longlongs[argCount];
+    for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
+
+    long long result = as_longlongs[0];
+    for (int i = 1; i < argCount; ++i) result = lcm(result, as_longlongs[i]);
+
+    return NUMBER_VAL(result);
+}
+
 ObjModule *createMathsModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
@@ -289,7 +329,7 @@ ObjModule *createMathsModule(DictuVM *vm) {
     defineNative(vm, &module->values, "cos", cosNative);
     defineNative(vm, &module->values, "tan", tanNative);
     defineNative(vm, &module->values, "gcd", gcdNative);
-    // defineNative(vm, &module->values, "lcm", lcmNative);
+    defineNative(vm, &module->values, "lcm", lcmNative);
 
     /**
      * Define Math properties
