@@ -2,7 +2,7 @@
 
 <!-- Make sure to follow each step so that your PR is explained and easy to read !-->
 
-<!-- It may take from your time, but think that collaborators and contributors will get your changes in a good way !-->
+<!-- This will allow maintainers and other potential contributors to understand the changes being carried out !-->
 
 <!--- Thanks for considering that !-->
 
@@ -28,11 +28,11 @@
 
 ### Type of change :
 
-<!-- You should choice 1 option -->
+<!-- Please select relevant options -->
 
 <!-- add a x in [ ] if true !-->
 
-<!-- Delete options that aren't revelant!-->
+<!-- Delete options that aren't relevant!-->
 
 
 - [ ] Bug fix
