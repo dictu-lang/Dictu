@@ -221,6 +221,46 @@ static Value tanNative(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(tan(AS_NUMBER(args[0])));
 }
 
+static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "gcd() takes 2 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "A non-number value passed to gcd() as the first argument");
+        return EMPTY_VAL;
+    }
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm, "A non-number value passed to gcd() as the second argument");
+        return EMPTY_VAL;
+    }
+
+    double fa = AS_NUMBER(args[0]);
+    double fb = AS_NUMBER(args[1]);
+
+    if (fabs(round(fa) - fa) > FLOAT_TOLERANCE) {
+        runtimeError(vm, "A non-discrete number (%f) passed to gcd() as the first argument", fa);
+        return EMPTY_VAL;
+    }
+    if (fabs(round(fb) - fb) > FLOAT_TOLERANCE) {
+        runtimeError(vm, "A non-discrete number (%f) passed to gcd() as the second argument", fa);
+        return EMPTY_VAL;
+    }
+
+    long long a = round(fa);
+    long long b = round(fb);
+
+    long long r;
+    while (b > 0) {
+        r = a % b;
+        a = b;
+        b = r;
+    }
+
+    return NUMBER_VAL(a);
+}
+
 ObjModule *createMathsModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
@@ -242,6 +282,8 @@ ObjModule *createMathsModule(DictuVM *vm) {
     defineNative(vm, &module->values, "sin", sinNative);
     defineNative(vm, &module->values, "cos", cosNative);
     defineNative(vm, &module->values, "tan", tanNative);
+    defineNative(vm, &module->values, "gcd", gcdNative);
+    // defineNative(vm, &module->values, "lcm", lcmNative);
 
     /**
      * Define Math properties
