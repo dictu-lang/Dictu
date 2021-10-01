@@ -232,20 +232,27 @@ static long long gcd(long long a, long long b) {
 }
 
 static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "gcd() requires 2 or more arguments (%d given).";
+    char* nonNumberError = "gcd() argument at index %d is not a number";
+    char* notWholeError = "gcd() argument (%f) at index %d is not a whole number";
+
     if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to gcd() must have 2 or more elements (%d given).";
+        nonNumberError = "The element at index %d of the list passed to gcd() is not a number";
+        notWholeError = "The element (%f) at index %d of the list passed to gcd() is not a whole number";
         ObjList *list = AS_LIST(args[0]);
         argCount = list->values.count;
         args = list->values.values;
     }
 
     if (argCount < 2) {
-        runtimeError(vm, "gcd() requires 2 or more argument (%d given).", argCount);
+        runtimeError(vm, argCountError, argCount);
         return EMPTY_VAL;
     }
 
     for (int i = 0; i < argCount; ++i)
         if (!IS_NUMBER(args[i])) {
-            runtimeError(vm, "A non-number value passed to gcd() as argument #%d", i);
+            runtimeError(vm, nonNumberError, i);
             return EMPTY_VAL;
         }
 
@@ -253,7 +260,7 @@ static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
-            runtimeError(vm, "A non-discrete number (%f) passed to gcd() as argument #%d", as_doubles[i], i);
+            runtimeError(vm, notWholeError, as_doubles[i], i);
             return EMPTY_VAL;
         }
     }
@@ -272,20 +279,27 @@ long long lcm(long long a, long long b) {
 }
 
 static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "lcm() requires 2 or more arguments (%d given).";
+    char* nonNumberError = "lcm() argument at index %d is not a number";
+    char* notWholeError = "lcm() argument (%f) at index %d is not a whole number";
+
     if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to lcm() must have 2 or more elements (%d given).";
+        nonNumberError = "The element at index %d of the list passed to lcm() is not a number";
+        notWholeError = "The element (%f) at index %d of the list passed to lcm() is not a whole number";
         ObjList *list = AS_LIST(args[0]);
         argCount = list->values.count;
         args = list->values.values;
     }
 
     if (argCount < 2) {
-        runtimeError(vm, "lcm() requires 2 or more argument (%d given).", argCount);
+        runtimeError(vm, argCountError, argCount);
         return EMPTY_VAL;
     }
 
     for (int i = 0; i < argCount; ++i)
         if (!IS_NUMBER(args[i])) {
-            runtimeError(vm, "A non-number value passed to lcm() as argument #%d", i);
+            runtimeError(vm, nonNumberError, i);
             return EMPTY_VAL;
         }
 
@@ -293,7 +307,7 @@ static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
-            runtimeError(vm, "A non-discrete number (%f) passed to lcm() as argument #%d", as_doubles[i], i);
+            runtimeError(vm, notWholeError, as_doubles[i], i);
             return EMPTY_VAL;
         }
     }
