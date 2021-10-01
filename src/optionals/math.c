@@ -232,6 +232,12 @@ static long long gcd(long long a, long long b) {
 }
 
 static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount == 1 && IS_LIST(args[0])) {
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
     if (argCount < 2) {
         runtimeError(vm, "gcd() requires 2 or more argument (%d given).", argCount);
         return EMPTY_VAL;
