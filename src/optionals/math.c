@@ -221,44 +221,44 @@ static Value tanNative(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(tan(AS_NUMBER(args[0])));
 }
 
-static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 2) {
-        runtimeError(vm, "gcd() takes 2 argument (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to gcd() as the first argument");
-        return EMPTY_VAL;
-    }
-    if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "A non-number value passed to gcd() as the second argument");
-        return EMPTY_VAL;
-    }
-
-    double fa = AS_NUMBER(args[0]);
-    double fb = AS_NUMBER(args[1]);
-
-    if (fabs(round(fa) - fa) > FLOAT_TOLERANCE) {
-        runtimeError(vm, "A non-discrete number (%f) passed to gcd() as the first argument", fa);
-        return EMPTY_VAL;
-    }
-    if (fabs(round(fb) - fb) > FLOAT_TOLERANCE) {
-        runtimeError(vm, "A non-discrete number (%f) passed to gcd() as the second argument", fa);
-        return EMPTY_VAL;
-    }
-
-    long long a = round(fa);
-    long long b = round(fb);
-
+static long long gcd(long long a, long long b) {
     long long r;
     while (b > 0) {
         r = a % b;
         a = b;
         b = r;
     }
+    return a;
+}
 
-    return NUMBER_VAL(a);
+static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount < 2) {
+        runtimeError(vm, "gcd() requires 2 or more argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i)
+        if (!IS_NUMBER(args[i])) {
+            runtimeError(vm, "A non-number value passed to gcd() as argument #%d", i);
+            return EMPTY_VAL;
+        }
+
+    double as_doubles[argCount];
+    for (int i = 0; i < argCount; ++i) {
+        as_doubles[i] = AS_NUMBER(args[i]);
+        if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
+            runtimeError(vm, "A non-discrete number (%f) passed to gcd() as argument #%d", as_doubles[i], i);
+            return EMPTY_VAL;
+        }
+    }
+
+    long long as_longlongs[argCount];
+    for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
+
+    long long result = as_longlongs[0];
+    for (int i = 1; i < argCount; ++i) result = gcd(result, as_longlongs[i]);
+
+    return NUMBER_VAL(result);
 }
 
 ObjModule *createMathsModule(DictuVM *vm) {
