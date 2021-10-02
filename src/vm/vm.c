@@ -684,6 +684,7 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
     // Inherit methods.
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
+        tableAddAll(vm, &superclass->publicProperties, &klass->publicProperties);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
     }
 }
@@ -989,17 +990,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    // Check class for properties
-                    ObjClass *klass = instance->klass;
-
-                    while (klass != NULL) {
-                        if (tableGet(&klass->publicProperties, name, &value)) {
-                            pop(vm); // Instance.
-                            push(vm, value);
-                            DISPATCH();
-                        }
-
-                        klass = klass->superclass;
+                    if (tableGet(&instance->klass->publicProperties, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
                     }
 
                     if (tableGet(&instance->privateFields, name, &value)) {
@@ -1143,16 +1137,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 DISPATCH();
             }
 
-            // Check class for properties
-            ObjClass *klass = instance->klass;
-
-            while (klass != NULL) {
-                if (tableGet(&klass->publicProperties, name, &value)) {
-                    push(vm, value);
-                    DISPATCH();
-                }
-
-                klass = klass->superclass;
+            if (tableGet(&instance->klass->publicProperties, name, &value)) {
+                pop(vm); // Instance.
+                push(vm, value);
+                DISPATCH();
             }
 
             if (tableGet(&instance->privateFields, name, &value)) {

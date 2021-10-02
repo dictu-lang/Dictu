@@ -5,6 +5,8 @@
  */
 
 class Base {
+    var classVar = 10;
+
     init() {
         this.x = 100;
     }
@@ -25,4 +27,5 @@ class Testing < Base {
 
 assert(Test().func() == 10);
 assert(Testing().value == 10);
+assert(Testing().classVar == 10);
 assert(Testing().newFunc() == 10);
