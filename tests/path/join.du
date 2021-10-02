@@ -7,15 +7,29 @@
  */
 import Path;
 
-assert(Path.join('/tmp', 'abcd', 'efg') == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
-assert(Path.join(['/tmp', 'abcd', 'efg']) == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
+var result;
+var expected = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
 
-var a, b;
+// Test basic join with varargs
+result = Path.join('/tmp', 'abcd', 'efg');
+assert(result == expected);
 
-a = Path.join('/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator);
-b = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
-assert(a == b);
+// Test basic join with list
+result = Path.join(['/tmp', 'abcd', 'efg']);
+assert(result == expected);
 
-a = Path.join(['/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator]);
-b = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
-assert(a == b);
+// Test join with trailing directory separators with varargs
+result = Path.join('/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator);
+assert(result == expected);
+
+// Test join with trailing directory separators with list
+result = Path.join(['/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator]);
+assert(result == expected);
+
+// Test join with leading and trailing directory separators with varargs
+result = Path.join('/tmp' + Path.dirSeparator, Path.dirSeparator + 'abcd' + Path.dirSeparator, Path.dirSeparator + 'efg' + Path.dirSeparator);
+assert(result == expected);
+
+// Test join with leading and trailing directory separators with list
+result = Path.join(['/tmp' + Path.dirSeparator, Path.dirSeparator + 'abcd' + Path.dirSeparator, Path.dirSeparator + 'efg' + Path.dirSeparator]);
+assert(result == expected);

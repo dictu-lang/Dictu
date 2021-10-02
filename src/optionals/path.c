@@ -262,15 +262,20 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     size_t resultSize = abs(argCount - 1); // abs is needed here because of a clang bug
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
-        resultSize += part->length - (part->chars[part->length-1] == DIR_SEPARATOR);
+        resultSize += part->length;
+        resultSize -= i && part->chars[0] == DIR_SEPARATOR;
+        resultSize -= part->chars[part->length-1] == DIR_SEPARATOR;
     }
 
     char* str = ALLOCATE(vm, char, resultSize + 1);
     char* dest = str;
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
+        // Skip leading DIR_SEPARATOR on everything but the first part.
+        // e.g. `join('/tmp', '/abc')` returns '/tmp/abc' instead of '/tmp//abc'
+        int start = i && part->chars[0] == DIR_SEPARATOR;
         // Append the part string to the end of dest
-        for (int j = 0; j < part->length; ++j) *dest++ = part->chars[j];
+        for (int j = start; j < part->length; ++j) *dest++ = part->chars[j];
         // Append a DIR_SEPARATOR if necessary
         if (part->chars[part->length-1] != DIR_SEPARATOR) *dest++ = DIR_SEPARATOR;
     }
