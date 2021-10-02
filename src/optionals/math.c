@@ -221,6 +221,112 @@ static Value tanNative(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(tan(AS_NUMBER(args[0])));
 }
 
+static long long gcd(long long a, long long b) {
+    long long r;
+    while (b > 0) {
+        r = a % b;
+        a = b;
+        b = r;
+    }
+    return a;
+}
+
+static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "gcd() requires 2 or more arguments (%d given).";
+    char* nonNumberError = "gcd() argument at index %d is not a number";
+    char* notWholeError = "gcd() argument (%f) at index %d is not a whole number";
+
+    if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to gcd() must have 2 or more elements (%d given).";
+        nonNumberError = "The element at index %d of the list passed to gcd() is not a number";
+        notWholeError = "The element (%f) at index %d of the list passed to gcd() is not a whole number";
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    if (argCount < 2) {
+        runtimeError(vm, argCountError, argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i)
+        if (!IS_NUMBER(args[i])) {
+            runtimeError(vm, nonNumberError, i);
+            return EMPTY_VAL;
+        }
+
+    double* as_doubles = ALLOCATE(vm, double, argCount);
+    for (int i = 0; i < argCount; ++i) {
+        as_doubles[i] = AS_NUMBER(args[i]);
+        if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
+            runtimeError(vm, notWholeError, as_doubles[i], i);
+            FREE_ARRAY(vm, double, as_doubles, argCount);
+            return EMPTY_VAL;
+        }
+    }
+
+    long long* as_longlongs = ALLOCATE(vm, long long, argCount);
+    for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
+
+    long long result = as_longlongs[0];
+    for (int i = 1; i < argCount; ++i) result = gcd(result, as_longlongs[i]);
+
+    FREE_ARRAY(vm, double, as_doubles, argCount);
+    FREE_ARRAY(vm, long long, as_longlongs, argCount);
+    return NUMBER_VAL(result);
+}
+
+long long lcm(long long a, long long b) {
+    return (a * b) / gcd(a, b);
+}
+
+static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "lcm() requires 2 or more arguments (%d given).";
+    char* nonNumberError = "lcm() argument at index %d is not a number";
+    char* notWholeError = "lcm() argument (%f) at index %d is not a whole number";
+
+    if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to lcm() must have 2 or more elements (%d given).";
+        nonNumberError = "The element at index %d of the list passed to lcm() is not a number";
+        notWholeError = "The element (%f) at index %d of the list passed to lcm() is not a whole number";
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    if (argCount < 2) {
+        runtimeError(vm, argCountError, argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i)
+        if (!IS_NUMBER(args[i])) {
+            runtimeError(vm, nonNumberError, i);
+            return EMPTY_VAL;
+        }
+
+    double* as_doubles = ALLOCATE(vm, double, argCount);
+    for (int i = 0; i < argCount; ++i) {
+        as_doubles[i] = AS_NUMBER(args[i]);
+        if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
+            runtimeError(vm, notWholeError, as_doubles[i], i);
+            FREE_ARRAY(vm, double, as_doubles, argCount);
+            return EMPTY_VAL;
+        }
+    }
+
+    long long* as_longlongs = ALLOCATE(vm, long long, argCount);
+    for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
+
+    long long result = as_longlongs[0];
+    for (int i = 1; i < argCount; ++i) result = lcm(result, as_longlongs[i]);
+
+    FREE_ARRAY(vm, double, as_doubles, argCount);
+    FREE_ARRAY(vm, long long, as_longlongs, argCount);
+    return NUMBER_VAL(result);
+}
+
 ObjModule *createMathsModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
@@ -242,6 +348,8 @@ ObjModule *createMathsModule(DictuVM *vm) {
     defineNative(vm, &module->values, "sin", sinNative);
     defineNative(vm, &module->values, "cos", cosNative);
     defineNative(vm, &module->values, "tan", tanNative);
+    defineNative(vm, &module->values, "gcd", gcdNative);
+    defineNative(vm, &module->values, "lcm", lcmNative);
 
     /**
      * Define Math properties

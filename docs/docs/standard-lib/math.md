@@ -143,3 +143,21 @@ Returns the tan value of a given number in radian
 Math.tan(1); // 1.5574
 Math.tan(50); // -0.2719
 ```
+
+### Math.gcd(iterable)
+
+Return the greatest common divisor of the numbers within the iterable
+
+```cs
+Math.gcd(32, 24, 12); // 4
+Math.gcd([32, 24, 12]); // 4
+```
+
+### Math.lcm(iterable)
+
+Return the least common multiple of the numbers within the iterable
+
+```cs
+Math.lcm(32, 24, 12); // 96
+Math.lcm([32, 24, 12]); // 96
+```

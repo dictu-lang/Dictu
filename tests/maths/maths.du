@@ -34,6 +34,10 @@ assert(Math.sin(1) < 0.845);
 assert(Math.cos(0) == 1);
 assert(Math.tan(1) > 1.5);
 assert(Math.tan(1) < 1.6);
+assert(Math.gcd(32, 24, 12) == 4);
+assert(Math.gcd([32, 24, 12]) == 4);
+assert(Math.lcm(32, 24, 12) == 96);
+assert(Math.lcm([32, 24, 12]) == 96);
 
 assert(Math.PI == 3.14159265358979);
 assert(Math.e == 2.71828182845905);
