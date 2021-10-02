@@ -256,21 +256,24 @@ static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-    double as_doubles[argCount];
+    double* as_doubles = (double*)malloc(argCount * sizeof(double));
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
             runtimeError(vm, notWholeError, as_doubles[i], i);
+            free(as_doubles);
             return EMPTY_VAL;
         }
     }
 
-    long long as_longlongs[argCount];
+    long long* as_longlongs = (long long*)malloc(argCount * sizeof(long long));
     for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
 
     long long result = as_longlongs[0];
     for (int i = 1; i < argCount; ++i) result = gcd(result, as_longlongs[i]);
 
+    free(as_doubles);
+    free(as_longlongs);
     return NUMBER_VAL(result);
 }
 
@@ -303,21 +306,24 @@ static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-    double as_doubles[argCount];
+    double* as_doubles = (double*)malloc(argCount * sizeof(double));
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
             runtimeError(vm, notWholeError, as_doubles[i], i);
+            free(as_doubles);
             return EMPTY_VAL;
         }
     }
 
-    long long as_longlongs[argCount];
+    long long* as_longlongs = (long long*)malloc(argCount * sizeof(long long));
     for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
 
     long long result = as_longlongs[0];
     for (int i = 1; i < argCount; ++i) result = lcm(result, as_longlongs[i]);
 
+    free(as_doubles);
+    free(as_longlongs);
     return NUMBER_VAL(result);
 }
 
