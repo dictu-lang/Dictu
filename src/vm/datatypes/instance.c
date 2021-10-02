@@ -65,6 +65,14 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
         return value;
     }
 
+    if (tableGet(&instance->klass->publicMethods, AS_STRING(key), &value)) {
+        return value;
+    }
+
+    if (tableGet(&instance->klass->publicProperties, AS_STRING(key), &value)) {
+        return value;
+    }
+
     return defaultValue;
 }
 

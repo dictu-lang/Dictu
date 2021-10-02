@@ -1,0 +1,31 @@
+/**
+ * getAttributes.du
+ *
+ * Testing the obj.getAttribute() method
+ *
+ */
+
+class Test {
+    var x = 10;
+
+    init(private priv = 10, var pub = 20) {
+        this.prop = 30;
+    }
+
+    private privMethod() {}
+
+    publicMethod() {}
+}
+
+assert(Test().getAttribute("x") == 10);
+assert(Test().getAttribute("x", nil) == 10);
+assert(Test().getAttribute("priv") == nil);
+assert(Test().getAttribute("priv", 10) == 10);
+assert(Test().getAttribute("privMethod") == nil);
+assert(Test().getAttribute("privMethod", 10) == 10);
+assert(Test().getAttribute("pub") == 20);
+assert(Test().getAttribute("pub", nil) == 20);
+assert(Test().getAttribute("prop") == 30);
+assert(Test().getAttribute("prop", nil) == 30);
+assert(type(Test().getAttribute("publicMethod") == "function"));
+assert(type(Test().getAttribute("publicMethod", nil) == "function"));
