@@ -257,22 +257,22 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
+    ObjString* part;
     // resultSize = # of dir separators that will be used + length of each string arg
-    size_t resultSize = abs(argCount - 1); // abs is needed her because of a clang bug
-    for (int i = 0; i < argCount; ++i) resultSize += AS_STRING(args[i])->length;
-    // It's possible for resultSize to be too large if the strings already end with the dir
-    // separator, but having likely at most a few bytes of unused memory in the resulting string
-    // object's char array should be fine.
+    size_t resultSize = abs(argCount - 1); // abs is needed here because of a clang bug
+    for (int i = 0; i < argCount; ++i) {
+        part = AS_STRING(args[i]);
+        resultSize += part->length - (part->chars[part->length-1] == DIR_SEPARATOR);
+    }
 
-    char* str = ALLOCATE(vm, char, resultSize);
+    char* str = ALLOCATE(vm, char, resultSize + 1);
     char* dest = str;
     for (int i = 0; i < argCount; ++i) {
-        ObjString* src = AS_STRING(args[i]);
-        // Append the src string to the end of dest
-        for (int j = 0; j < src->length; ++j) *dest++ = src->chars[j];
+        part = AS_STRING(args[i]);
+        // Append the part string to the end of dest
+        for (int j = 0; j < part->length; ++j) *dest++ = part->chars[j];
         // Append a DIR_SEPARATOR if necessary
-        if (src->chars[src->length-1] == DIR_SEPARATOR) --resultSize;
-        else *dest++ = DIR_SEPARATOR;
+        if (part->chars[part->length-1] != DIR_SEPARATOR) *dest++ = DIR_SEPARATOR;
     }
 
     return OBJ_VAL(takeString(vm, str, resultSize));
