@@ -256,7 +256,7 @@ static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-    double* as_doubles = malloc(sizeof *as_doubles * argCount);
+    double* as_doubles = ALLOCATE(vm, double, argCount);
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
@@ -266,7 +266,7 @@ static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
-    long long* as_longlongs = malloc(sizeof *as_longlongs * argCount);
+    long long* as_longlongs = ALLOCATE(vm, long long, argCount);
     for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
 
     long long result = as_longlongs[0];
@@ -306,7 +306,7 @@ static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-    double* as_doubles = malloc(sizeof *as_doubles * argCount);
+    double* as_doubles = ALLOCATE(vm, double, argCount);
     for (int i = 0; i < argCount; ++i) {
         as_doubles[i] = AS_NUMBER(args[i]);
         if (fabs(round(as_doubles[i]) - as_doubles[i]) > FLOAT_TOLERANCE) {
@@ -316,7 +316,7 @@ static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
         }
     }
 
-    long long* as_longlongs = malloc(sizeof *as_longlongs * argCount);
+    long long* as_longlongs = ALLOCATE(vm, long long, argCount);
     for (int i = 0; i < argCount; ++i) as_longlongs[i] = round(as_doubles[i]);
 
     long long result = as_longlongs[0];
