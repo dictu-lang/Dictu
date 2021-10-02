@@ -10,5 +10,12 @@ import Path;
 assert(Path.join('/tmp', 'abcd', 'efg') == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
 assert(Path.join(['/tmp', 'abcd', 'efg']) == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
 
-assert(Path.join('/tmp/', 'abcd/', 'efg/') == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
-assert(Path.join(['/tmp/', 'abcd/', 'efg/']) == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
+var a, b;
+
+a = Path.join('/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator);
+b = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
+assert(a == b);
+
+a = Path.join(['/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator]);
+b = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
+assert(a == b);

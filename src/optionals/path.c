@@ -262,7 +262,7 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     size_t resultSize = abs(argCount - 1); // abs is needed here because of a clang bug
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
-        resultSize += part->length - (int)(part->chars[part->length-1] == DIR_SEPARATOR);
+        resultSize += part->length - (part->chars[part->length-1] == DIR_SEPARATOR);
     }
 
     char* str = ALLOCATE(vm, char, resultSize + 1);
