@@ -264,7 +264,7 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     // separator, but having likely at most a few bytes of unused memory in the resulting string
     // object's char array should be fine.
 
-    char* str = calloc(resultSize, sizeof *str);
+    char* str = ALLOCATE(vm, char, resultSize);
     char* dest = str;
     for (int i = 0; i < argCount; ++i) {
         ObjString* src = AS_STRING(args[i]);
