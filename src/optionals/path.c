@@ -259,10 +259,10 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
 
     ObjString* part;
     // resultSize = # of dir separators that will be used + length of each string arg
-    size_t resultSize = abs(argCount - 1); // abs is needed her because of a clang bug
+    size_t resultSize = abs(argCount - 1); // abs is needed here because of a clang bug
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
-        resultSize += part->length - (part->chars[part->length-1] == DIR_SEPARATOR);
+        resultSize += part->length - (int)(part->chars[part->length-1] == DIR_SEPARATOR);
     }
 
     char* str = ALLOCATE(vm, char, resultSize + 1);
