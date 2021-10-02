@@ -467,7 +467,7 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
 
 static Value titleString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "lower() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "title() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
