@@ -102,3 +102,15 @@ Returns a list of strings containing the contents of the input path.
 ```js
 Path.listDir("/"); // ["bin", "dev", "home", "lib", ...]
 ```
+
+### Path.join(iterable)
+
+Returns the provided string arguments joined using the directory separator.
+
+**Note:** A trailing directory separator is ignored from each argument
+
+```js
+Path.join('/tmp', 'abcd', 'efg') == '/tmp/abcd/efg';
+Path.join(['/tmp', 'abcd', 'efg']) == '/tmp/abcd/efg';
+Path.join('/tmp/', 'abcd/', 'efg/') == '/tmp/abcd/efg';
+```

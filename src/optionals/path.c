@@ -233,6 +233,51 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(dir_contents);
 }
 
+static Value joinNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "join() requires 1 or more arguments (%d given).";
+    char* nonStringError = "join() argument at index %d is not a string";
+
+    if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to join() must have 1 or more elements (%d given).";
+        nonStringError = "The element at index %d of the list passed to join() is not a string";
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    if (argCount == 0) {
+        runtimeError(vm, argCountError, argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        if (!IS_STRING(args[i])) {
+            runtimeError(vm, nonStringError, i);
+            return EMPTY_VAL;
+        }
+    }
+
+    // resultSize = # of dir separators that will be used + length of each string arg
+    size_t resultSize = abs(argCount - 1); // abs is needed her because of a clang bug
+    for (int i = 0; i < argCount; ++i) resultSize += AS_STRING(args[i])->length;
+    // It's possible for resultSize to be too large if the strings already end with the dir
+    // separator, but having likely at most a few bytes of unused memory in the resulting string
+    // object's char array should be fine.
+
+    char* str = ALLOCATE(vm, char, resultSize);
+    char* dest = str;
+    for (int i = 0; i < argCount; ++i) {
+        ObjString* src = AS_STRING(args[i]);
+        // Append the src string to the end of dest
+        for (int j = 0; j < src->length; ++j) *dest++ = src->chars[j];
+        // Append a DIR_SEPARATOR if necessary
+        if (src->chars[src->length-1] == DIR_SEPARATOR) --resultSize;
+        else *dest++ = DIR_SEPARATOR;
+    }
+
+    return OBJ_VAL(takeString(vm, str, resultSize));
+}
+
 ObjModule *createPathModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
@@ -252,6 +297,7 @@ ObjModule *createPathModule(DictuVM *vm) {
     defineNative(vm, &module->values, "exists", existsNative);
     defineNative(vm, &module->values, "isDir", isdirNative);
     defineNative(vm, &module->values, "listDir", listDirNative);
+    defineNative(vm, &module->values, "join", joinNative);
 
     /**
      * Define Path properties

@@ -1,0 +1,14 @@
+/**
+ * join.du
+ *
+ * Testing Path.join()
+ *
+ * Joins the path component strings using the directory separator.
+ */
+import Path;
+
+assert(Path.join('/tmp', 'abcd', 'efg') == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
+assert(Path.join(['/tmp', 'abcd', 'efg']) == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
+
+assert(Path.join('/tmp/', 'abcd/', 'efg/') == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
+assert(Path.join(['/tmp/', 'abcd/', 'efg/']) == '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg');
