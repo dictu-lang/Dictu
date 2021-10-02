@@ -69,8 +69,15 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
         return value;
     }
 
-    if (tableGet(&instance->klass->publicProperties, AS_STRING(key), &value)) {
-        return value;
+    // Check class for properties
+    ObjClass *klass = instance->klass;
+
+    while (klass != NULL) {
+        if (tableGet(&klass->publicProperties, AS_STRING(key), &value)) {
+            return value;
+        }
+
+        klass = klass->superclass;
     }
 
     return defaultValue;

@@ -29,3 +29,20 @@ assert(Test().getAttribute("prop") == 30);
 assert(Test().getAttribute("prop", nil) == 30);
 assert(type(Test().getAttribute("publicMethod") == "function"));
 assert(type(Test().getAttribute("publicMethod", nil) == "function"));
+
+class Inherit < Test {
+
+}
+
+assert(Inherit().getAttribute("x") == 10);
+assert(Inherit().getAttribute("x", nil) == 10);
+assert(Inherit().getAttribute("priv") == nil);
+assert(Inherit().getAttribute("priv", 10) == 10);
+assert(Inherit().getAttribute("privMethod") == nil);
+assert(Inherit().getAttribute("privMethod", 10) == 10);
+assert(Inherit().getAttribute("pub") == 20);
+assert(Inherit().getAttribute("pub", nil) == 20);
+assert(Inherit().getAttribute("prop") == 30);
+assert(Inherit().getAttribute("prop", nil) == 30);
+assert(type(Inherit().getAttribute("publicMethod") == "function"));
+assert(type(Inherit().getAttribute("publicMethod", nil) == "function"));
