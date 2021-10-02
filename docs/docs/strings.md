@@ -242,3 +242,13 @@ Returns the number of occurrences of a given substring within another string.
 "This documentation".count("Good jokes"); // 0
 "Sooooooooooome characters".count("o"); // 11
 ```
+
+### string.title()
+
+Returns a title cased version of string with first letter of each word capitalized.
+
+```cs
+"dictu language".title(); // Dictu Language
+"this documentation".title(); // This Documentation
+"once upon a time".title(); // Once Upon A Time
+```

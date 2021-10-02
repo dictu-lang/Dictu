@@ -1,0 +1,15 @@
+/**
+ * title.du
+ *
+ * Testing the str.title() method
+ *
+ * .title() method returns a string with first letter of each word capitalized; a title cased string.
+ */
+
+assert("title".title() == "Title");
+assert("dictu language".title() == "Dictu Language");
+assert("DiCtU".title() == "Dictu");
+assert("12345".title() == "12345");
+assert("12Dictu45".title() == "12dictu45");
+assert("!@£$%^&*".title() == "!@£$%^&*");
+assert("once upon a time".title()== "Once Upon A Time");
