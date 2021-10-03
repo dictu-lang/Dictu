@@ -1,7 +1,5 @@
 /**
  * File for the CI/CD pipeline to run all the examples.
- *
- * Note: Doesn't run guessing game as it requires user input
  */
 
 import "design-patterns/builder.du";
