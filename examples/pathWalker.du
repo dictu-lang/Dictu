@@ -35,11 +35,25 @@ class Walker {
         return [current, dirs, files];
     }
 
+    // Convenience method to perform a full traversal. Be careful with this, as it can infinitely
+    // loop if there are cycles in the file system (e.g. with symbolic links), and consume a large
+    // amount of time and memory.
+    exhaust() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (!x) break;
+            results.push(x);
+        }
+        return results;
+    }
 }
 
-// Traverse the file system starting from the current directory. Prune every directory named 'docs'
+var dictuDir = Path.join(Path.dirname(__file__), '..');
+
+// Traverse the file system starting from the project directory. Prune every directory named 'docs'
 // from the tree.
-var walker = Walker('.', ['docs']);
+var walker = Walker(dictuDir, ['docs']);
 
 while {
     var tmp = walker.next();
@@ -58,3 +72,7 @@ while {
         if (dirnames.contains(prune[j]))
             dirnames.remove(prune[j]);
 }
+
+
+print('Example using `Walker.exhaust`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaust());
