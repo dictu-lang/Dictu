@@ -263,21 +263,50 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
         resultSize += part->length;
-        resultSize -= i && part->chars[0] == DIR_SEPARATOR;
-        resultSize -= part->chars[part->length-1] == DIR_SEPARATOR;
+        // Account for leading DIR_SEPARATOR chars to be removed
+        for (int j = 0; j < part->length; ++j) {
+            if (part->chars[j] == DIR_SEPARATOR) --resultSize;
+            else break;
+        }
+        // Account for trailing DIR_SEPARATOR chars to be removed
+        for (int j = part->length - 1; j >= 0; --j) {
+            if (part->chars[j] == DIR_SEPARATOR) --resultSize;
+            else break;
+        }
     }
+    // Account for leading/trailing DIR_SEPARATOR on the first/last part respectively
+    part = AS_STRING(args[0]);
+    resultSize += part->chars[0] == DIR_SEPARATOR;
+    part = AS_STRING(args[argCount - 1]);
+    resultSize += part->chars[part->length - 1] == DIR_SEPARATOR;
 
     char* str = ALLOCATE(vm, char, resultSize + 1);
     char* dest = str;
     for (int i = 0; i < argCount; ++i) {
         part = AS_STRING(args[i]);
-        // Skip leading DIR_SEPARATOR on everything but the first part.
-        // e.g. `join('/tmp', '/abc')` returns '/tmp/abc' instead of '/tmp//abc'
-        int start = i && part->chars[0] == DIR_SEPARATOR;
+
+        // Skip leading DIR_SEPARATOR characters on everything except for one on the first part,
+        // and trailing DIR_SEPARATOR characters on everything except for one on the last part.
+        // e.g. `join('///tmp///', '/abc///')` returns '/tmp/abc' instead of '///tmp////abc///'
+        int start = 0;
+        while (part->chars[start++] == DIR_SEPARATOR);
+        int end = part->length - 1;
+        while (part->chars[end--] == DIR_SEPARATOR);
+
+        bool lastIteration = i == argCount - 1;
+
+        // Check if the first part starts with a DIR_SEPARATOR so that we can preserve it
+        bool firstLeadingDirSep = !i && part->chars[0] == DIR_SEPARATOR;
+
+        // Check if the last part ends with a DIR_SEPARATOR so that we can preserve it
+        bool lastTrailingDirSep = lastIteration && part->chars[part->length - 1] == DIR_SEPARATOR;
+
         // Append the part string to the end of dest
-        for (int j = start; j < part->length; ++j) *dest++ = part->chars[j];
+        for (int j = start - 1 - firstLeadingDirSep; j <= end + 1 + lastTrailingDirSep; ++j)
+            *dest++ = part->chars[j];
+
         // Append a DIR_SEPARATOR if necessary
-        if (part->chars[part->length-1] != DIR_SEPARATOR) *dest++ = DIR_SEPARATOR;
+        if (!lastIteration && part->chars[end + 1] != DIR_SEPARATOR) *dest++ = DIR_SEPARATOR;
     }
 
     return OBJ_VAL(takeString(vm, str, resultSize));
