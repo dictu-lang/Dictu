@@ -1,4 +1,14 @@
-var amount = input("Enter a number: ").toNumber().unwrap();
+var amount;
+
+/**
+ * This is to handle the case where the script is ran headless in the CI/CD pipeline.
+ */
+if (System.argv[0] == __file__) {
+    amount = input("Enter a number: ").toNumber().unwrap();
+} else {
+    amount = 8;
+}
+
 var num = 1;
 
 if (amount > 0) {
