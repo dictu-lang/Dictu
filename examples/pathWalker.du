@@ -35,15 +35,46 @@ class Walker {
         return [current, dirs, files];
     }
 
-    // Convenience method to perform a full traversal. Be careful with this, as it can infinitely
-    // loop if there are cycles in the file system (e.g. with symbolic links), and consume a large
-    // amount of time and memory.
+    // Convenience methods to perform full traversals. Be careful with these, as they can
+    // infinitely loop if there are cycles in the file system (e.g. with symbolic links), and
+    // consume a large amount of time and memory.
+
     exhaust() {
         var results = [];
         while {
             var x = this.next();
             if (!x) break;
             results.push(x);
+        }
+        return results;
+    }
+
+    exhaustDirs() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (!x) break;
+            results.push(x[0]);
+        }
+        return results;
+    }
+
+    exhaustFiles() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (!x) break;
+            results.extend(x[2].map(def (file) => Path.join(x[0], file)));
+        }
+        return results;
+    }
+
+    exhaustAll() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (!x) break;
+            [1, 2].forEach(def (i) => results.extend(x[i].map(def (y) => Path.join(x[0], y))));
         }
         return results;
     }
@@ -74,5 +105,18 @@ while {
 }
 
 
+print();
 print('Example using `Walker.exhaust`:');
 print(Walker(Path.join(dictuDir, '.github'), []).exhaust());
+
+print();
+print('Example using `Walker.exhaustDirs`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustDirs());
+
+print();
+print('Example using `Walker.exhaustFiles`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustFiles());
+
+print();
+print('Example using `Walker.exhaustAll`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustAll());
