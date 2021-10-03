@@ -1,0 +1,51 @@
+import Path;
+
+class Walker {
+    private prev;  // The previous dirpath, to be joined to the values in toAdd
+    private toAdd; // Directories to be added to the stack, unless pruned by the user
+    private stack; // Directories to be traversed later on
+
+    init(root='.') {
+        this.prev = nil;
+        this.stack = [root];
+        this.toAdd = [];
+    }
+
+    next() {
+        this.stack.extend(this.toAdd.map(def (x) => Path.join(this.prev, x)));
+
+        if (!this.stack.len()) return nil;
+
+        var current = this.stack.pop();
+        var dirList = Path.listDir(current);
+        var files = [];
+        var dirs = [];
+
+        for (var i = 0; i < dirList.len(); i += 1) {
+            var list = Path.isDir(Path.join(current, dirList[i])) ? dirs : files;
+            list.push(dirList[i]);
+        }
+
+        this.toAdd = dirs; // Edits made to dirs by the user will affect what is added to the stack
+
+        this.prev = current;
+        return [current, dirs, files];
+    }
+
+}
+
+var walker = Walker();
+
+while {
+    var tmp = walker.next();
+    if (!tmp) break;
+    var [dirpath, dirnames, filenames] = tmp;
+
+    print([dirpath, dirnames, filenames]);
+    print();
+
+    var prune = ['.git'];
+    for (var j = 0; j < prune.len(); j += 1)
+        if (dirnames.contains(prune[j]))
+            dirnames.remove(prune[j]);
+}
