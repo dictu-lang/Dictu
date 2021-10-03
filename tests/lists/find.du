@@ -11,3 +11,7 @@ const myList = [1, 2, 3, 4, 5];
 
 assert(myList.find(def (item) => item == 3) == 3);
 assert(myList.find(def (item) => item == 10) == nil);
+assert(myList.find(def (item) => item % 2 == 0) == 2);
+assert(myList.find(def (item) => item % 2 == 0, 2) == 4);
+assert(myList.find(def (item) => item % 2 == 0, 2, 3) == nil);
+assert(myList.find(def (item) => item % 2 == 0, 5) == nil);
