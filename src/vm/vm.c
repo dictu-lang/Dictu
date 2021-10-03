@@ -861,12 +861,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POP_REPL): {
-            Value v = pop(vm);
+            Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
                 printValue(v);
                 printf("\n");
             }
+            pop(vm);
             DISPATCH();
         }
 
