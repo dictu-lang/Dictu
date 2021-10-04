@@ -5,6 +5,7 @@
  *
  * version is a dictionary denoting the Dictu version.
  */
+import System;
 
 assert(type(System.version) == "dict");
 assert(System.version.len() == 3);

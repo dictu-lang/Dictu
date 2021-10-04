@@ -5,6 +5,7 @@
  *
  * sleep() pauses execution for a given amount of seconds
  */
+import System;
 
 var start = System.time();
 

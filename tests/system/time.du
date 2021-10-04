@@ -5,6 +5,7 @@
  *
  * time() returns a UNIX timestamp.
  */
+import System;
 
 // Time is also tested within sleep.du
 

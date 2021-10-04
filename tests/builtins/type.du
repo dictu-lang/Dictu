@@ -5,6 +5,7 @@
 *
 * type() returns the type of a value as a string
 */
+import System;
 
 assert(type(nil) == "nil");
 assert(type(true) == "bool");
