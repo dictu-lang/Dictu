@@ -157,6 +157,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->class = NULL;
     compiler->loop = NULL;
     compiler->withBlock = false;
+    compiler->annotations = NULL;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -919,7 +920,7 @@ static void grouping(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 }
 
-static void number(Compiler *compiler, bool canAssign) {
+static Value parseNumber(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     // We allocate the whole range for the worst case.
@@ -941,10 +942,14 @@ static void number(Compiler *compiler, bool canAssign) {
 
     // Parse the string.
     double value = strtod(buffer, NULL);
-    emitConstant(compiler, NUMBER_VAL(value));
-
     // Free the malloc'd buffer.
     FREE_ARRAY(compiler->parser->vm, char, buffer, compiler->parser->previous.length + 1);
+
+    return NUMBER_VAL(value);
+}
+
+static void number(Compiler *compiler, bool canAssign) {
+    emitConstant(compiler, parseNumber(compiler, canAssign));
 }
 
 static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
@@ -975,7 +980,7 @@ static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-int parseString(char *string, int length) {
+int parseEscapeSequences(char *string, int length) {
     for (int i = 0; i < length - 1; i++) {
         if (string[i] == '\\') {
             switch (string[i + 1]) {
@@ -1029,7 +1034,7 @@ static void rString(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_STRING, "Expected string after r delimiter");
 }
 
-static void string(Compiler *compiler, bool canAssign) {
+static Value parseString(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
     Parser *parser = compiler->parser;
@@ -1038,7 +1043,7 @@ static void string(Compiler *compiler, bool canAssign) {
     char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
     memcpy(string, parser->previous.start + 1, stringLength);
-    int length = parseString(string, stringLength);
+    int length = parseEscapeSequences(string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
     if (length != stringLength) {
@@ -1046,7 +1051,11 @@ static void string(Compiler *compiler, bool canAssign) {
     }
     string[length] = '\0';
 
-    emitConstant(compiler, OBJ_VAL(takeString(parser->vm, string, length)));
+    return OBJ_VAL(takeString(parser->vm, string, length));
+}
+
+static void string(Compiler *compiler, bool canAssign) {
+    emitConstant(compiler, parseString(compiler, canAssign));
 }
 
 static void list(Compiler *compiler, bool canAssign) {
@@ -1412,6 +1421,7 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_FACTOR},             // TOKEN_STAR
         {NULL,     binary,    PREC_INDICES},            // TOKEN_STAR_STAR
         {NULL,     binary,    PREC_FACTOR},             // TOKEN_PERCENT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_AT
         {NULL,     binary,    PREC_BITWISE_AND},        // TOKEN_AMPERSAND
         {NULL,     binary,    PREC_BITWISE_XOR},        // TOKEN_CARET
         {NULL,     binary,    PREC_BITWISE_OR},         // TOKEN_PIPE
@@ -1577,6 +1587,7 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
+    classCompiler->annotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
 }
@@ -1584,6 +1595,61 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
 static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     freeTable(compiler->parser->vm, &classCompiler->privateVariables);
     compiler->class = compiler->class->enclosing;
+
+    if (compiler->annotations != NULL) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->annotations));
+        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
+        compiler->annotations = NULL;
+    }
+}
+
+static bool checkLiteralToken(Compiler *compiler) {
+    return check(compiler, TOKEN_STRING) || check(compiler, TOKEN_NUMBER) ||
+        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
+}
+
+static void parseClassAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    compiler->annotations = newDict(vm);
+
+    do {
+        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+        Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
+                                                  compiler->parser->previous.length));
+        push(vm, annotationName);
+
+        if (match(compiler, TOKEN_LEFT_PAREN)) {
+            if (!checkLiteralToken(compiler)) {
+                errorAtCurrent(compiler->parser,
+                               "Annotations can only have literal values of type string, bool, number or nil.");
+                return;
+            }
+
+            if (match(compiler, TOKEN_STRING)) {
+                Value string = parseString(compiler, false);
+                push(vm, string);
+                dictSet(vm, compiler->annotations, annotationName, string);
+                pop(vm);
+            } else if (match(compiler, TOKEN_NUMBER)) {
+                Value number = parseNumber(compiler, false);
+                dictSet(vm, compiler->annotations, annotationName, number);
+            } else if (match(compiler, TOKEN_TRUE)) {
+                dictSet(vm, compiler->annotations, annotationName, TRUE_VAL);
+            } else if (match(compiler, TOKEN_FALSE)) {
+                dictSet(vm, compiler->annotations, annotationName, FALSE_VAL);
+            } else if (match(compiler, TOKEN_NIL)) {
+                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            } else {
+                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            }
+
+            consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after annotation value.");
+        } else {
+            dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+        }
+
+        pop(vm);
+    } while (match(compiler, TOKEN_AT));
 }
 
 static void parseClassBody(Compiler *compiler) {
@@ -1599,23 +1665,25 @@ static void parseClassBody(Compiler *compiler) {
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
-        } else if (match(compiler, TOKEN_PRIVATE)) {
-            if (match(compiler, TOKEN_IDENTIFIER)) {
-                if (check(compiler, TOKEN_SEMICOLON)) {
-                    uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
-                    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
-                    tableSet(compiler->parser->vm, &compiler->class->privateVariables,
-                             AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
+        } else {
+            if (match(compiler, TOKEN_PRIVATE)) {
+                if (match(compiler, TOKEN_IDENTIFIER)) {
+                    if (check(compiler, TOKEN_SEMICOLON)) {
+                        uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+                        consume(compiler, TOKEN_SEMICOLON, "Expect ';' after private variable declaration.");
+                        tableSet(compiler->parser->vm, &compiler->class->privateVariables,
+                                 AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
+                        continue;
+                    }
+
+                    method(compiler, true, &compiler->parser->previous);
                     continue;
                 }
 
-                method(compiler, true, &compiler->parser->previous);
-                continue;
+                method(compiler, true, NULL);
+            } else {
+                method(compiler, false, NULL);
             }
-
-            method(compiler, true, NULL);
-        } else {
-            method(compiler, false, NULL);
         }
     }
 }
@@ -1657,8 +1725,8 @@ static void classDeclaration(Compiler *compiler) {
         emitByte(compiler, OP_END_CLASS);
     }
 
-    defineVariable(compiler, nameConstant, false);
     endClassCompiler(compiler, &classCompiler);
+    defineVariable(compiler, nameConstant, false);
 }
 
 static void abstractClassDeclaration(Compiler *compiler) {
@@ -2330,7 +2398,15 @@ static void synchronize(Parser *parser) {
 static void declaration(Compiler *compiler) {
     if (match(compiler, TOKEN_CLASS)) {
         classDeclaration(compiler);
-    } else if (match(compiler, TOKEN_TRAIT)) {
+        if (compiler->parser->panicMode) synchronize(compiler->parser);
+        return;
+    }
+
+    if (compiler->annotations != NULL) {
+        errorAtCurrent(compiler->parser, "Annotations can only be applied to classes");
+    }
+
+    if (match(compiler, TOKEN_TRAIT)) {
         traitDeclaration(compiler);
     } else if (match(compiler, TOKEN_ABSTRACT)) {
         abstractClassDeclaration(compiler);
@@ -2342,6 +2418,8 @@ static void declaration(Compiler *compiler) {
         varDeclaration(compiler, true);
     } else if (match(compiler, TOKEN_ENUM)) {
         enumDeclaration(compiler);
+    } else if (match(compiler, TOKEN_AT)) {
+        parseClassAnnotations(compiler);
     } else {
         statement(compiler);
     }
@@ -2454,10 +2532,12 @@ void grayCompilerRoots(DictuVM *vm) {
         ClassCompiler *classCompiler = vm->compiler->class;
 
         while (classCompiler != NULL) {
+            grayObject(vm, (Obj *) classCompiler->annotations);
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
         }
 
+        grayObject(vm, (Obj *) compiler->annotations);
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;

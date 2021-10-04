@@ -465,6 +465,34 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(count);
 }
 
+static Value titleString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "title() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+
+    bool convertNext=true;
+
+    for (int i = 0; string->chars[i]; i++) {
+        if(string->chars[i]==' '){
+            convertNext=true;
+        }
+        else if(convertNext){
+            temp[i] = toupper(string->chars[i]);
+            convertNext=false;
+            continue;
+        }
+        temp[i] = tolower(string->chars[i]);
+    }
+
+    temp[string->length] = '\0';
+
+    return OBJ_VAL(takeString(vm, temp, string->length));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -482,4 +510,5 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "strip", stripString);
     defineNative(vm, &vm->stringMethods, "count", countString);
     defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
+    defineNative(vm, &vm->stringMethods, "title", titleString);
 }

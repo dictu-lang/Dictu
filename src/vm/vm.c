@@ -861,12 +861,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POP_REPL): {
-            Value v = pop(vm);
+            Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
                 printValue(v);
                 printf("\n");
             }
+            pop(vm);
             DISPATCH();
         }
 
@@ -1037,6 +1038,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                         }
 
                         klass = klass->superclass;
+                    }
+
+                    if (strcmp(name->chars, "annotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
+                        DISPATCH();
                     }
 
                     RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
@@ -1963,6 +1970,15 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_CLASS_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            klass->annotations = dict;
+
             DISPATCH();
         }
 

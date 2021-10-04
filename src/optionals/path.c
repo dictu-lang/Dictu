@@ -233,6 +233,85 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(dir_contents);
 }
 
+static Value joinNative(DictuVM *vm, int argCount, Value *args) {
+    char* argCountError = "join() requires 1 or more arguments (%d given).";
+    char* nonStringError = "join() argument at index %d is not a string";
+
+    if (argCount == 1 && IS_LIST(args[0])) {
+        argCountError = "List passed to join() must have 1 or more elements (%d given).";
+        nonStringError = "The element at index %d of the list passed to join() is not a string";
+        ObjList *list = AS_LIST(args[0]);
+        argCount = list->values.count;
+        args = list->values.values;
+    }
+
+    if (argCount == 0) {
+        runtimeError(vm, argCountError, argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        if (!IS_STRING(args[i])) {
+            runtimeError(vm, nonStringError, i);
+            return EMPTY_VAL;
+        }
+    }
+
+    ObjString* part;
+    // resultSize = # of dir separators that will be used + length of each string arg
+    size_t resultSize = abs(argCount - 1); // abs is needed here because of a clang bug
+    for (int i = 0; i < argCount; ++i) {
+        part = AS_STRING(args[i]);
+        resultSize += part->length;
+        // Account for leading DIR_SEPARATOR chars to be removed
+        for (int j = 0; j < part->length; ++j) {
+            if (part->chars[j] == DIR_SEPARATOR) --resultSize;
+            else break;
+        }
+        // Account for trailing DIR_SEPARATOR chars to be removed
+        for (int j = part->length - 1; j >= 0; --j) {
+            if (part->chars[j] == DIR_SEPARATOR) --resultSize;
+            else break;
+        }
+    }
+    // Account for leading/trailing DIR_SEPARATOR on the first/last part respectively
+    part = AS_STRING(args[0]);
+    resultSize += part->chars[0] == DIR_SEPARATOR;
+    part = AS_STRING(args[argCount - 1]);
+    resultSize += part->chars[part->length - 1] == DIR_SEPARATOR;
+
+    char* str = ALLOCATE(vm, char, resultSize + 1);
+    char* dest = str;
+    for (int i = 0; i < argCount; ++i) {
+        part = AS_STRING(args[i]);
+
+        // Skip leading DIR_SEPARATOR characters on everything except for one on the first part,
+        // and trailing DIR_SEPARATOR characters on everything except for one on the last part.
+        // e.g. `join('///tmp///', '/abc///')` returns '/tmp/abc' instead of '///tmp////abc///'
+        int start = 0;
+        while (part->chars[start++] == DIR_SEPARATOR);
+        int end = part->length - 1;
+        while (part->chars[end--] == DIR_SEPARATOR);
+
+        bool lastIteration = i == argCount - 1;
+
+        // Check if the first part starts with a DIR_SEPARATOR so that we can preserve it
+        bool firstLeadingDirSep = !i && part->chars[0] == DIR_SEPARATOR;
+
+        // Check if the last part ends with a DIR_SEPARATOR so that we can preserve it
+        bool lastTrailingDirSep = lastIteration && part->chars[part->length - 1] == DIR_SEPARATOR;
+
+        // Append the part string to the end of dest
+        for (int j = start - 1 - firstLeadingDirSep; j <= end + 1 + lastTrailingDirSep; ++j)
+            *dest++ = part->chars[j];
+
+        // Append a DIR_SEPARATOR if necessary
+        if (!lastIteration && part->chars[end + 1] != DIR_SEPARATOR) *dest++ = DIR_SEPARATOR;
+    }
+
+    return OBJ_VAL(takeString(vm, str, resultSize));
+}
+
 ObjModule *createPathModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
@@ -252,6 +331,7 @@ ObjModule *createPathModule(DictuVM *vm) {
     defineNative(vm, &module->values, "exists", existsNative);
     defineNative(vm, &module->values, "isDir", isdirNative);
     defineNative(vm, &module->values, "listDir", listDirNative);
+    defineNative(vm, &module->values, "join", joinNative);
 
     /**
      * Define Path properties

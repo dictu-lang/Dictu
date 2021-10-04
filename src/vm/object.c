@@ -68,6 +68,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
     initTable(&klass->publicProperties);
+    klass->annotations = NULL;
     return klass;
 }
 
@@ -616,8 +617,9 @@ char *objectToString(Value value) {
 
         case OBJ_STRING: {
             ObjString *stringObj = AS_STRING(value);
-            char *string = malloc(sizeof(char) * stringObj->length + 3);
-            snprintf(string, stringObj->length + 3, "'%s'", stringObj->chars);
+            char *string = malloc(sizeof(char) * stringObj->length + 1);
+            memcpy(string, stringObj->chars, stringObj->length);
+            string[stringObj->length] = '\0';
             return string;
         }
 

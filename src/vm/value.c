@@ -455,6 +455,12 @@ void printValue(Value value) {
     free(output);
 }
 
+void printValueError(Value value) {
+    char *output = valueToString(value);
+    fprintf(stderr, "%s", output);
+    free(output);
+}
+
 static bool listComparison(Value a, Value b) {
     ObjList *list = AS_LIST(a);
     ObjList *listB = AS_LIST(b);
