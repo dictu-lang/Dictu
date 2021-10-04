@@ -325,14 +325,14 @@ static Value isSysPathNative(DictuVM *vm, int argCount, Value *args) {
 
     char *path = AS_CSTRING(args[0]);
 
-   struct stat buffer;
+    struct stat buffer;
     lstat(path, &buffer);
 
-   if (S_ISLNK(buffer.st_mode))
-   {
-       return TRUE_VAL;
+    if (S_ISLNK(buffer.st_mode))
+    {
+        return TRUE_VAL;
     }
-      
+        
     return FALSE_VAL;
 }
 
