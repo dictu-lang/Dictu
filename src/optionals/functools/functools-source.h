@@ -1,0 +1,1 @@
+#define DICTU_FUNCTOOLS_SOURCE "def test() {print(10);}"

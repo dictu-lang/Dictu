@@ -221,7 +221,7 @@ static Value stringify(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, OBJ_VAL(string));
 }
 
-ObjModule *createJSONModule(DictuVM *vm) {
+Value createJSONModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "JSON", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -236,5 +236,5 @@ ObjModule *createJSONModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

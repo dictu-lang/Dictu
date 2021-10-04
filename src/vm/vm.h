@@ -63,4 +63,6 @@ Value pop(DictuVM *vm);
 
 bool isFalsey(Value value);
 
+ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source);
+
 #endif

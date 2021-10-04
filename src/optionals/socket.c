@@ -321,7 +321,7 @@ void cleanupSockets(void) {
 }
 #endif
 
-ObjModule *createSocketModule(DictuVM *vm) {
+Value createSocketModule(DictuVM *vm) {
     #ifdef _WIN32
     #include "windowsapi.h"
 
@@ -352,5 +352,5 @@ ObjModule *createSocketModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

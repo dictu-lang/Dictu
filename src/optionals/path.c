@@ -312,7 +312,7 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, str, resultSize));
 }
 
-ObjModule *createPathModule(DictuVM *vm) {
+Value createPathModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Path", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -343,5 +343,5 @@ ObjModule *createPathModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

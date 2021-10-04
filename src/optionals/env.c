@@ -63,7 +63,7 @@ static Value set(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
-ObjModule *createEnvModule(DictuVM *vm) {
+Value createEnvModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Env", 3);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -78,5 +78,5 @@ ObjModule *createEnvModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

@@ -7,6 +7,6 @@
 #include "hashlib/hmac.h"
 #include "hashlib/bcrypt/bcrypt.h"
 
-ObjModule *createHashlibModule(DictuVM *vm);
+Value createHashlibModule(DictuVM *vm);
 
 #endif //dictu_hashlib_h

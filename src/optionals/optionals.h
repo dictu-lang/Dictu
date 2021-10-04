@@ -16,16 +16,18 @@
 #include "hashlib.h"
 #include "sqlite.h"
 #include "process.h"
+#include "functools/functools.h"
 
-typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
+typedef Value (*BuiltinModule)(DictuVM *vm);
 
 typedef struct {
     char *name;
     BuiltinModule module;
+    bool dictuSource;
 } BuiltinModules;
 
-ObjModule *importBuiltinModule(DictuVM *vm, int index);
+Value importBuiltinModule(DictuVM *vm, int index);
 
-int findBuiltinModule(char *name, int length);
+int findBuiltinModule(char *name, int length, bool *dictuSource);
 
 #endif //dictu_optionals_h

@@ -185,6 +185,24 @@ Value peek(DictuVM *vm, int distance) {
     return vm->stackTop[-1 - distance];
 }
 
+ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
+    ObjString *pathObj = copyString(vm, name, strlen(name));
+    push(vm, OBJ_VAL(pathObj));
+    printf("%s\n", name);
+    ObjModule *module = newModule(vm, pathObj);
+    pop(vm);
+    push(vm, OBJ_VAL(module));
+    ObjFunction *function = compile(vm, module, source);
+    pop(vm);
+
+    // if (function == NULL) return INTERPRET_COMPILE_ERROR;
+    push(vm, OBJ_VAL(function));
+    ObjClosure *closure = newClosure(vm, function);
+    pop(vm);
+
+    return closure;
+}
+
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
         runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
@@ -1458,17 +1476,26 @@ static DictuInterpretResult run(DictuVM *vm) {
             // If we have imported this module already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 push(vm, moduleVal);
+                vm->lastModule = AS_MODULE(moduleVal);
                 DISPATCH();
             }
 
-            ObjModule *module = importBuiltinModule(vm, index);
+            Value module = importBuiltinModule(vm, index);
+            push(vm, module);
 
-            push(vm, OBJ_VAL(module));
+            if (IS_CLOSURE(module)) {
+                frame->ip = ip;
+                call(vm, AS_CLOSURE(module), 0);
+                frame = &vm->frames[vm->frameCount - 1];
+                ip = frame->ip;
+
+                tableGet(&vm->modules, fileName, &moduleVal);
+            }
+
             DISPATCH();
         }
 
         CASE_CODE(IMPORT_BUILTIN_VARIABLE): {
-            int index = READ_BYTE();
             ObjString *fileName = READ_STRING();
             int varCount = READ_BYTE();
 
@@ -1478,7 +1505,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 module = AS_MODULE(moduleVal);
             } else {
-                module = importBuiltinModule(vm, index);
+                RUNTIME_ERROR("ERROR!!");
             }
 
             for (int i = 0; i < varCount; i++) {
