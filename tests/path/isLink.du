@@ -1,0 +1,10 @@
+/**
+ * isLink.du
+ *
+ * Testing Path.isLink()
+ *
+ * Returns a boolean based on whether a string is syslink or not.
+ */
+import Path;
+assert(Path.isLink("linktofile") == true);
+assert(Path.isLink("notlinktofile") == false);

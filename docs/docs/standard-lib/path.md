@@ -115,12 +115,12 @@ Path.join(['/tmp', 'abcd', 'efg']) == '/tmp/abcd/efg';
 Path.join('/tmp/', 'abcd/', 'efg/') == '/tmp/abcd/efg';
 ```
 
-### Path.isSysPath(string)
+### Path.isLink(string)
 
 Checks whether a given path string is a syslink or not. 
 
 **Note:** This is not available on windows systems.
 
 ```cs
-Path.isSysPath("syslinkindirectory"); //true
+Path.isLink("syslinkindirectory"); //true
 ```

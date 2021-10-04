@@ -312,14 +312,14 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, str, resultSize));
 }
 
-static Value isSysPathNative(DictuVM *vm, int argCount, Value *args) {
+static Value isLinkNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "isSysPath() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "isLink() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isSysPath() argument must be a string");
+        runtimeError(vm, "isLink() argument must be a string");
         return EMPTY_VAL;
     }
 
@@ -357,7 +357,7 @@ ObjModule *createPathModule(DictuVM *vm) {
     defineNative(vm, &module->values, "isDir", isdirNative);
     defineNative(vm, &module->values, "listDir", listDirNative);
     defineNative(vm, &module->values, "join", joinNative);
-    defineNative(vm, &module->values, "isSysPath", isSysPathNative);
+    defineNative(vm, &module->values, "isLink", isLinkNative);
 
     /**
      * Define Path properties
