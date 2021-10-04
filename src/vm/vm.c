@@ -188,7 +188,6 @@ Value peek(DictuVM *vm, int distance) {
 ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
     ObjString *pathObj = copyString(vm, name, strlen(name));
     push(vm, OBJ_VAL(pathObj));
-    printf("%s\n", name);
     ObjModule *module = newModule(vm, pathObj);
     pop(vm);
     push(vm, OBJ_VAL(module));
@@ -1489,9 +1488,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 frame = &vm->frames[vm->frameCount - 1];
                 ip = frame->ip;
 
-                tableGet(&vm->modules, fileName, &moduleVal);
+                tableGet(&vm->modules, fileName, &module);
             }
 
+            vm->lastModule = AS_MODULE(module);
             DISPATCH();
         }
 
