@@ -62,7 +62,7 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
+DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     DictuVM *vm = malloc(sizeof(*vm));
 
     if (vm == NULL) {
@@ -85,6 +85,8 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
     vm->lastModule = NULL;
+    vm->argc = argc;
+    vm->argv = argv;
     initTable(&vm->modules);
     initTable(&vm->globals);
     initTable(&vm->constants);
@@ -125,7 +127,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
      * Native classes which are not required to be
      * imported. For imported modules see optionals.c
      */
-    createSystemModule(vm, argc, argv);
     createCModule(vm);
 
     if (vm->repl) {
