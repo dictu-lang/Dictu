@@ -1,0 +1,17 @@
+/**
+ * find.du
+ *
+ * Testing the list.findIndex() method
+ *
+ * .findIndex() runs a user defined function on each element in the list and returns the index of the item in the
+ * list that satisfies the callback
+ */
+
+const myList = [1, 2, 3, 4, 5];
+
+assert(myList.findIndex(def (item) => item == 3) == 2);
+assert(myList.findIndex(def (item) => item == 10) == nil);
+assert(myList.findIndex(def (item) => item % 2 == 0) == 1);
+assert(myList.findIndex(def (item) => item % 2 == 0, 2) == 3);
+assert(myList.findIndex(def (item) => item % 2 == 0, 2, 3) == nil);
+assert(myList.findIndex(def (item) => item % 2 == 0, 5) == nil);

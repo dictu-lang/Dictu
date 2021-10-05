@@ -43,10 +43,18 @@
 "    }\n" \
 "}\n" \
 "\n" \
-"def find(list, func) {\n" \
-"    for (var i = 0; i < list.len(); i += 1) {\n" \
+"def find(list, func, start=0, end=list.len()) {\n" \
+"    for (var i = start; i < end; i += 1) {\n" \
 "        if (func(list[i])) {\n" \
 "            return list[i];\n" \
+"        }\n" \
+"    }\n" \
+"}\n" \
+"\n" \
+"def findIndex(list, func, start=0, end=list.len()) {\n" \
+"    for (var i = start; i < end; i += 1) {\n" \
+"        if (func(list[i])) {\n" \
+"            return i;\n" \
 "        }\n" \
 "    }\n" \
 "}\n" \
