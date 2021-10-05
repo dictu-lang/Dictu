@@ -17,6 +17,8 @@ Documentation for Dictu can be found [here](https://dictu-lang.com/)
 
 ## Example programs
 ```js
+import System;
+
 const guess = 10;
 
 while {
