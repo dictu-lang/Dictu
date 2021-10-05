@@ -62,7 +62,7 @@ var amount = input("Enter a number: ").toNumber();
 var num = 1;
 
 if (amount > 0) {
-    for (var i = 1; i < amount + 1; ++i) {
+    for (var i = 1; i < amount + 1; i += 1) {
         num *= i;
     }
 
