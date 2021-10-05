@@ -16,7 +16,7 @@ void *reallocate(DictuVM *vm, void *previous, size_t oldSize, size_t newSize) {
     vm->bytesAllocated += newSize - oldSize;
 
 #ifdef DEBUG_TRACE_MEM
-    printf("Total memory usage: %zu\nNew allocation: %zu\nOld allocation: %zu\n\n", vm->bytesAllocated, newSize, oldSize);
+    printf("Total bytes allocated: %zu\nNew allocation: %zu\nOld allocation: %zu\n\n", vm->bytesAllocated, newSize, oldSize);
 #endif
 
     if (newSize > oldSize) {
