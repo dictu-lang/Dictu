@@ -8,12 +8,11 @@ abstract class UnitTest {
         'skipped': 0
     };
 
-    init(private onlyFailures = false) {}
+    init(private onlyFailures = false, private exitOnFailure = false) {}
 
     filterMethods() {
         return this.methods().filter(def (method) => {
             if (method.startsWith('test') and !method.endsWith('Provider') and !method.endsWith('_skipped')) {
-
                 return method;
             }
 
@@ -34,6 +33,7 @@ abstract class UnitTest {
     run() {
         const methods = this.filterMethods();
 
+        // TODO: This needs fixing
         print(__file__);
         methods.forEach(def (method) => {
             print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));
@@ -79,6 +79,10 @@ abstract class UnitTest {
             this.results['failed'] += 1;
 
             print('{}{}'.format(UnitTest.ASSERTION_PADDING, errorMsg));
+
+            if (this.exitOnFailure) {
+                System.exit(1);
+            }
         }
     }
 
@@ -95,10 +99,20 @@ abstract class UnitTest {
     }
 
     assertSuccess(value) {
+        if (type(value) != 'result') {
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            return;
+        }
 
+        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value));
     }
 
     assertError(value) {
+        if (type(value) != 'result') {
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            return;
+        }
 
+        this.printResult(!value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));
     }
 }

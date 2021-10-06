@@ -194,7 +194,7 @@ ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
     ObjFunction *function = compile(vm, module, source);
     pop(vm);
 
-    // if (function == NULL) return INTERPRET_COMPILE_ERROR;
+    if (function == NULL) return NULL;
     push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
@@ -1480,6 +1480,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
 
             Value module = importBuiltinModule(vm, index);
+
+            if (IS_EMPTY(module)) {
+                return INTERPRET_COMPILE_ERROR;
+            }
+
             push(vm, module);
 
             if (IS_CLOSURE(module)) {

@@ -8,12 +8,11 @@
 "        'skipped': 0\n" \
 "    };\n" \
 "\n" \
-"    init(private onlyFailures = false) {}\n" \
+"    init(private onlyFailures = false, private exitOnFailure = false) {}\n" \
 "\n" \
 "    filterMethods() {\n" \
 "        return this.methods().filter(def (method) => {\n" \
 "            if (method.startsWith('test') and !method.endsWith('Provider') and !method.endsWith('_skipped')) {\n" \
-"\n" \
 "                return method;\n" \
 "            }\n" \
 "\n" \
@@ -34,6 +33,7 @@
 "    run() {\n" \
 "        const methods = this.filterMethods();\n" \
 "\n" \
+"        // TODO: This needs fixing\n" \
 "        print(__file__);\n" \
 "        methods.forEach(def (method) => {\n" \
 "            print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));\n" \
@@ -79,6 +79,10 @@
 "            this.results['failed'] += 1;\n" \
 "\n" \
 "            print('{}{}'.format(UnitTest.ASSERTION_PADDING, errorMsg));\n" \
+"\n" \
+"            if (this.exitOnFailure) {\n" \
+"                System.exit(1);\n" \
+"            }\n" \
 "        }\n" \
 "    }\n" \
 "\n" \
@@ -95,11 +99,21 @@
 "    }\n" \
 "\n" \
 "    assertSuccess(value) {\n" \
+"        if (type(value) != 'result') {\n" \
+"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));\n" \
+"            return;\n" \
+"        }\n" \
 "\n" \
+"        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value));\n" \
 "    }\n" \
 "\n" \
 "    assertError(value) {\n" \
+"        if (type(value) != 'result') {\n" \
+"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));\n" \
+"            return;\n" \
+"        }\n" \
 "\n" \
+"        this.printResult(!value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));\n" \
 "    }\n" \
 "}\n" \
 
