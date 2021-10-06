@@ -16,7 +16,7 @@
 #include "hashlib.h"
 #include "sqlite.h"
 #include "process.h"
-#include "functools/functools.h"
+#include "unittest/unittest.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);
 

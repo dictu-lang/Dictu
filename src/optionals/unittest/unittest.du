@@ -1,0 +1,104 @@
+abstract class UnitTest {
+    var METHOD_NAME_PADDING = '    ';
+    var RESULTS_PADDING     = '    ';
+    var ASSERTION_PADDING   = '         ';
+    var results = {
+        'passed': 0,
+        'failed': 0,
+        'skipped': 0
+    };
+
+    init(private onlyFailures = false) {}
+
+    filterMethods() {
+        return this.methods().filter(def (method) => {
+            if (method.startsWith('test') and !method.endsWith('Provider') and !method.endsWith('_skipped')) {
+
+                return method;
+            }
+
+            if (method.endsWith('_skipped')) {
+                this.results['skipped'] += 1;
+            }
+        });
+    }
+
+    setUp() {
+
+    }
+
+    tearDown() {
+
+    }
+
+    run() {
+        const methods = this.filterMethods();
+
+        print(__file__);
+        methods.forEach(def (method) => {
+            print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));
+            this.setUp();
+
+            const providerMethodName = '{}Provider'.format(method);
+
+            if (this.hasAttribute(providerMethodName)) {
+                const testValue = this.getAttribute(providerMethodName)();
+
+                if (type(testValue) == 'list') {
+                    testValue.forEach(def (val) => {
+                        this.getAttribute(method)(val);
+                    });
+                } else {
+                    this.getAttribute(method)(testValue);
+                }
+            } else {
+                this.getAttribute(method)();
+            }
+
+
+            this.tearDown();
+        });
+        print('\nResults:\n{}- {} assertion(s) were successful.\n{}- {} assertion(s) were failures.\n{}- {} method(s) were skipped.\n'.format(
+            UnitTest.RESULTS_PADDING,
+            this.results['passed'],
+            UnitTest.RESULTS_PADDING,
+            this.results['failed'],
+            UnitTest.RESULTS_PADDING,
+            this.results['skipped']
+        ));
+    }
+
+    printResult(success, errorMsg) {
+        if (success) {
+            this.results['passed'] += 1;
+
+            if (!this.onlyFailures) {
+                print('{}Success.'.format(UnitTest.ASSERTION_PADDING));
+            }
+        } else {
+            this.results['failed'] += 1;
+
+            print('{}{}'.format(UnitTest.ASSERTION_PADDING, errorMsg));
+        }
+    }
+
+    assertEquals(value, expected) {
+        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));
+    }
+
+    assertTruthy(value) {
+        this.printResult(value, 'Failure: {} is not Truthy.'.format(value));
+    }
+
+    assertFalsey(value) {
+        this.printResult(!value, 'Failure: {} is not Falsey.'.format(value));
+    }
+
+    assertSuccess(value) {
+
+    }
+
+    assertError(value) {
+
+    }
+}

@@ -3,6 +3,6 @@
 
 #include "../optionals.h"
 
-Value createFuncToolsModule(DictuVM *vm);
+Value createUnitTestModule(DictuVM *vm);
 
 #endif //DICTU_API_FUNCTOOLS_H
