@@ -20,3 +20,4 @@ import "optionalChaining.du";
 import "private.du";
 import "annotations.du";
 import "getAttributes.du";
+import "methods.du";
