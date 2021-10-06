@@ -354,7 +354,7 @@ Value createMathsModule(DictuVM *vm) {
     /**
      * Define Math properties
      */
-    defineNativeProperty(vm, &module->values, "PI", NUMBER_VAL(3.14159265358979));
+    defineNativeProperty(vm, &module->values, "pi", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
     pop(vm);
     pop(vm);

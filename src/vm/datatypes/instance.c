@@ -36,6 +36,21 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
         return TRUE_VAL;
     }
 
+    if (tableGet(&instance->klass->publicMethods, AS_STRING(value), &value)) {
+        return TRUE_VAL;
+    }
+
+    // Check class for properties
+    ObjClass *klass = instance->klass;
+
+    while (klass != NULL) {
+        if (tableGet(&klass->publicProperties, AS_STRING(value), &value)) {
+            return TRUE_VAL;
+        }
+
+        klass = klass->superclass;
+    }
+
     return FALSE_VAL;
 }
 
@@ -66,7 +81,9 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (tableGet(&instance->klass->publicMethods, AS_STRING(key), &value)) {
-        return value;
+        ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(value));
+
+        return OBJ_VAL(bound);
     }
 
     // Check class for properties
@@ -154,6 +171,29 @@ static Value copyDeep(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(instance);
 }
 
+static Value methods(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "methods() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjInstance *instance = AS_INSTANCE(args[0]);
+
+    ObjList *list = newList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 0; i < instance->klass->publicMethods.capacityMask; ++i) {
+        if (instance->klass->publicMethods.entries[i].key == NULL) {
+            continue;
+        }
+
+        writeValueArray(vm, &list->values, OBJ_VAL(instance->klass->publicMethods.entries[i].key));
+    }
+    pop(vm);
+
+    return OBJ_VAL(list);
+}
+
 void declareInstanceMethods(DictuVM *vm) {
     defineNative(vm, &vm->instanceMethods, "toString", toString);
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
@@ -162,4 +202,5 @@ void declareInstanceMethods(DictuVM *vm) {
     defineNative(vm, &vm->instanceMethods, "isInstance", isInstance);
     defineNative(vm, &vm->instanceMethods, "copy", copyShallow);
     defineNative(vm, &vm->instanceMethods, "deepCopy", copyDeep);
+    defineNative(vm, &vm->instanceMethods, "methods", methods);
 }

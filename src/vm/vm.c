@@ -162,9 +162,9 @@ void dictuFreeVM(DictuVM *vm) {
 
 #if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
 #ifdef __MINGW32__
-    printf("Total memory usage: %lu\n", (unsigned long)vm->bytesAllocated);
+    printf("Total bytes lost: %lu\n", (unsigned long)vm->bytesAllocated);
 #else
-    printf("Total memory usage: %zu\n", vm->bytesAllocated);
+    printf("Total bytes lost: %zu\n", vm->bytesAllocated);
 #endif
 #endif
 
