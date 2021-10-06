@@ -66,7 +66,9 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (tableGet(&instance->klass->publicMethods, AS_STRING(key), &value)) {
-        return value;
+        ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(value));
+
+        return OBJ_VAL(bound);
     }
 
     // Check class for properties
