@@ -153,7 +153,7 @@ To merge with another dictionary. This operation will produce a new object. If a
 const dictOne = {"key": 1, "key1": 2, "key2": 3};
 const dictTwo = {"key3": 4,"key1":0};
 
-const mergedDict=dictOne.merge(dictTwo);
+const mergedDict = dictOne.merge(dictTwo);
 
 mergedDict; //{"key2": 3, "key": 1, "key3": 4, "key1": 2}
 ```
