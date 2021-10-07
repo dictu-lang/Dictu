@@ -12,25 +12,17 @@
 
 
 
-#
-
-### Context of the change :
-
-<!-- Why is this change required ? !-->
-
-
- 
 <!-- Link the issue below if you are resolving an issue !-->
 
 Resolves: 
  
 #
 
-### Type of change :
+### Type of change:
 
 <!-- Please select relevant options -->
 
-<!-- add a x in [ ] if true !-->
+<!-- Add an x in [ ] if true !-->
 
 <!-- Delete options that aren't relevant!-->
 
@@ -42,6 +34,13 @@ Resolves:
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 
 #
+
+### Housekeeping
+
+<!-- If adding a new test file, remember to include it in the relevant import file -->
+- [ ] Tests have been updated to reflect the changes done within this PR (if applicable).
+
+- [ ] Documentation has been updated to reflect the changes done within this PR (if applicable).
 
 ### Preview (Screenshots) :
 
