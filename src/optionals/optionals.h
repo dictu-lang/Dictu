@@ -16,6 +16,7 @@
 #include "hashlib.h"
 #include "sqlite.h"
 #include "process.h"
+#include "inspect.h"
 
 typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
 

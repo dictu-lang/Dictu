@@ -24,6 +24,7 @@ import "sockets/import.du";
 import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
+import "inspect/import.du";
 
 if (isDefined("HTTP")) {
   import "http/import.du";
