@@ -48,6 +48,8 @@ struct _vm {
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
+    int argc;
+    char **argv;
 };
 
 #define OK     0

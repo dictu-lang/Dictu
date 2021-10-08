@@ -13,6 +13,7 @@ BuiltinModules modules[] = {
         {"Sqlite", &createSqliteModule, false},
         {"Process", &createProcessModule, false},
         {"UnitTest", &createUnitTestModule, true},
+        {"Inspect", &createInspectModule, false},
 #ifndef DISABLE_HTTP
         {"HTTP", &createHTTPModule, false},
 #endif

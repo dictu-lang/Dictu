@@ -4,6 +4,7 @@
 * Testing __file__
 */
 import Path;
+import System;
 
 assert(Path.basename(__file__) == "__file__.du");
 if (System.platform == "windows") {

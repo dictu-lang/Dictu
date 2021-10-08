@@ -6,6 +6,7 @@
  * run() executes a new process and does wait for a return.
  */
 import Process;
+import System;
 
 if (System.platform == "windows") {
     assert(Process.run(["cmd.exe", "/c", "dir"]).success());

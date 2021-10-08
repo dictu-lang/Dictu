@@ -6,6 +6,7 @@
  * Returns true if the given string is a path to a directory, else false. (Linux only) 
  */
 import Path;
+import System;
 
 if (System.platform != "windows") {
   assert(Path.isDir("/usr/bin") == true);

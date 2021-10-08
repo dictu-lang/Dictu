@@ -1,0 +1,24 @@
+/**
+ * merge.du
+ *
+ * Testing the dict.merge() method
+ *
+ * .merge() To merge with another dictionary. This operation will produce a new object. If another dictionary contains a key that exists in invoking one, the invoking dictionary's key will be taken..
+ */
+
+const dictOne = {"key": 1, "key1": 2, "key2": 3};
+const dictTwo = {"key3": 4,"key1":0};
+
+const mergedDict=dictOne.merge(dictTwo);
+
+assert(mergedDict.keys().len() == 4);
+
+assert(mergedDict.exists("key"));
+assert(mergedDict.exists("key1"));
+assert(mergedDict.exists("key2"));
+assert(mergedDict.exists("key3"));
+
+assert(mergedDict["key"] ==1);
+assert(mergedDict["key1"]==2);
+assert(mergedDict["key2"]==3);
+assert(mergedDict["key3"]==4);
