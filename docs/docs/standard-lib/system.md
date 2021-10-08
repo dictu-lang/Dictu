@@ -17,6 +17,11 @@ parent: Standard Library
 ---
 
 ## System
+To make use of the System module an import is required.
+
+```js
+import System;
+```
 
 ### Constants
 

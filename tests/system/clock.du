@@ -5,6 +5,7 @@
  *
  * clock() returns number of clock ticks since the start of the program, useful for benchmarks.
  */
+import System;
 
 assert(type(System.clock()) == 'number');
 assert(System.clock() > 0);

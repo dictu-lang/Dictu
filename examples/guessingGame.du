@@ -1,4 +1,5 @@
 import Random;
+import System;
 
 const guess = 10;
 var maxGuesses = 5;

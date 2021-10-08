@@ -6,6 +6,7 @@
  * getpid(), getppid(), getuid(), geteuid(), getgid(), getegid() all return information
  * about the running process.
  */
+import System;
 
 if (System.platform != "windows") {
     assert(type(System.getpid()) == "number");
