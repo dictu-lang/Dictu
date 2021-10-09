@@ -299,7 +299,7 @@ print([1, 2, 3].find(def (item) => item == 2)); // 2
 
 ### list.limit(size)
 
-To return a list with limited size. if the size is less than 0 , it will return empty list, and if the limit is more than size, then entire list will be return.
+To return a list with limited size. If the size is less than 0 , it will return empty list, and if the size is more than list's length, then entire list will be return.
 
 ```cs
 var list = [1, 2, 3, 4, 5];

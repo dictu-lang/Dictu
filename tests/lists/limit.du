@@ -3,7 +3,7 @@
  *
  * Testing the list.limit() method
  *
- * .limit() will return a list with limited size. if the size is less than 0 , it will return empty list, and if the limit is more than size, then entire list will be return.
+ * .limit() will return a list with limited size. If the size is less than 0 , it will return empty list, and if the size is more than list's length, then entire list will be return.
  */
 
 
