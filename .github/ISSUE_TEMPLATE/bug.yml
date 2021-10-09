@@ -1,6 +1,6 @@
 name: Bug Report
 description: Create a bug-report to help us address errors and bugs.
-title: "🐛 [BUG] BUG TITLE HERE"
+title: "[BUG]"
 labels: [bug]
 body:
 - type: checkboxes
@@ -46,7 +46,7 @@ body:
 ---
 name: Bug Report
 about: Create a bug-report to help us address errors and bugs.
-title: '🐛 BUG: BUG TITLE HERE'
+title: 'BUG'
 labels: "bug"
 
 ---

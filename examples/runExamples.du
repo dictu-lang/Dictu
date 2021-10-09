@@ -1,0 +1,19 @@
+/**
+ * File for the CI/CD pipeline to run all the examples.
+ */
+
+import "design-patterns/builder.du";
+import "design-patterns/chain-of-responsibility.du";
+import "design-patterns/factoryMethod.du";
+import "design-patterns/observer.du";
+import "binarySearchTree.du";
+import "bubbleSort.du";
+import "classes.du";
+import "factorial.du";
+import "fibonacci.du";
+import "fizzBuzz.du";
+import "guessingGame.du";
+import "inheritance.du";
+import "isPalindrome.du";
+import "factorial.du";
+import "pathWalker.du";

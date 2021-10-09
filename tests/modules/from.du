@@ -25,7 +25,7 @@ assert(parse("10").unwrap() == 10);
     assert(parse("10").unwrap() == 10);
 
     {
-        from Math import PI;
-        assert(PI == 3.14159265358979);
+        from Math import pi;
+        assert(pi == 3.14159265358979);
     }
 }

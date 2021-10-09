@@ -1,7 +1,21 @@
+import Random;
+import System;
+
 const guess = 10;
+var maxGuesses = 5;
 
 while {
-    const userInput = input("Input your guess: ").toNumber().unwrap();
+    var userInput;
+
+    /**
+     * This is to handle the case where the script is ran headless in the CI/CD pipeline.
+     */
+    if (System.argv[0] == __file__) {
+        userInput = input("Input your guess: ").toNumber().unwrap();
+    } else {
+        userInput = Random.range(7, 12);
+        print("Automated guess: {}".format(userInput));
+    }
     if (userInput == guess) {
         print("Well done!");
         break;
@@ -12,4 +26,10 @@ while {
     }
 
     System.sleep(1);
+    maxGuesses -= 1;
+
+    if (maxGuesses <= 0) {
+        print("You ran out of guesses, the answer was {}!".format(guess));
+        break;
+    }
 }

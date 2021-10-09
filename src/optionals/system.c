@@ -281,7 +281,7 @@ static Value exitNative(DictuVM *vm, int argCount, Value *args) {
     return EMPTY_VAL; /* satisfy the tcc compiler */
 }
 
-void initArgv(DictuVM *vm, Table *table, int argc, char *argv[]) {
+void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
@@ -346,7 +346,7 @@ void setVersion(DictuVM *vm, Table *table) {
     pop(vm);
 }
 
-void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
+ObjModule *createSystemModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -382,7 +382,7 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
      */
     if (!vm->repl) {
         // Set argv variable
-        initArgv(vm, &module->values, argc, argv);
+        initArgv(vm, &module->values, vm->argc, vm->argv);
     }
 
     initPlatform(vm, &module->values);
@@ -409,7 +409,8 @@ void createSystemModule(DictuVM *vm, int argc, char *argv[]) {
     defineNativeProperty(vm, &module->values, "R_OK", NUMBER_VAL(R_OK));
 #endif
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
+
+    return module;
 }

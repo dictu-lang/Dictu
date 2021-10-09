@@ -6,6 +6,7 @@
  * mkdir() creates a new directory with the given permissions
  * rmdir() removes a directory
  */
+import System;
 
 var
   S_IRWXU = System.S_IRWXU,

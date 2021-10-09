@@ -43,10 +43,17 @@ def forEach(list, func) {
     }
 }
 
-def find(list, func) {
-    for (var i = 0; i < list.len(); i += 1) {
+def find(list, func, start=0, end=list.len()) {
+    for (var i = start; i < end; i += 1) {
         if (func(list[i])) {
             return list[i];
+        }
+    }
+}
+def findIndex(list, func, start=0, end=list.len()) {
+    for (var i = start; i < end; i += 1) {
+        if (func(list[i])) {
+            return i;
         }
     }
 }

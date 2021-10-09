@@ -285,16 +285,32 @@ By default the initial value for `.reduce()` is 0, however we can change this to
 print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
 ```
 
-### list.find(func)
+### list.find(func, number: start -> optional, number: end -> optional)
 
 To find a single item within a list we use `.find()`. Find will search through each item in the list and as soon as the
 callback returns a truthy value, the item that satisfied the callback is returned, if none of the items satisfy the callback
-function then `nil` is returned.
+function then `nil` is returned. The optional start and end parameters change the points at which the list will be searched.
 
 Note: The first item to satisfy the callback is returned.
 
 ```cs
 print([1, 2, 3].find(def (item) => item == 2)); // 2
+print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2)); // 4
+print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2, 3)); // nil
+```
+
+### list.findIndex(func, number: start -> optional, number: end -> optional)
+
+To find a single item within a list we use `.findIndex()`. Find will search through each item in the list and as soon as the
+callback returns a truthy value, the index at which the item that satisfied the callback is returned, if none of the items satisfy the callback
+function then `nil` is returned. The optional start and end parameters change the points at which the list will be searched.
+
+Note: The first item to satisfy the callback is returned.
+
+```cs
+print([1, 2, 3].findIndex(def (item) => item == 2)); // 1
+print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2)); // 3
+print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2, 3)); // nil
 ```
 
 ### list.limit(size)

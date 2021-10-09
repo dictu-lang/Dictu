@@ -29,7 +29,7 @@ import Math;
 
 | Constant     | Description                                            |
 |--------------|--------------------------------------------------------|
-| Math.PI      | The mathematical constant: 3.14159265358979            |
+| Math.pi      | The mathematical constant: 3.14159265358979            |
 | Math.e       | The mathematical constant: 2.71828182845905            |
 
 ### Math.min(iterable)
@@ -142,4 +142,22 @@ Returns the tan value of a given number in radian
 ```cs
 Math.tan(1); // 1.5574
 Math.tan(50); // -0.2719
+```
+
+### Math.gcd(iterable)
+
+Return the greatest common divisor of the numbers within the iterable
+
+```cs
+Math.gcd(32, 24, 12); // 4
+Math.gcd([32, 24, 12]); // 4
+```
+
+### Math.lcm(iterable)
+
+Return the least common multiple of the numbers within the iterable
+
+```cs
+Math.lcm(32, 24, 12); // 96
+Math.lcm([32, 24, 12]); // 96
 ```

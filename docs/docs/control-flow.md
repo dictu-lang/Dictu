@@ -49,7 +49,7 @@ if (x == 6) {
 var i = 0;
 while (i < 10) {
     print(i);
-    ++i;
+    i += 1;
 }
 ```
 
@@ -68,7 +68,7 @@ while {
 
 ```cs
 // For loop
-for (var i = 0; i < 10; ++i) {
+for (var i = 0; i < 10; i += 1) {
     print(i);
 }
 ```
@@ -79,7 +79,7 @@ Continue allows execution of a loop to restart prematurely.
 
 ```cs
 // For loop
-for (var i = 0; i < 10; ++i) {
+for (var i = 0; i < 10; i += 1) {
     if (i % 2 == 0)
         continue; // Skip all even numbers
 
@@ -93,7 +93,7 @@ Break allows execution of a loop to stop prematurely.
 
 ```cs
 // For loop
-for (var i = 0; i < 10; ++i) {
+for (var i = 0; i < 10; i += 1) {
     if (i > 5)
         break; // Exit the loop here
 
