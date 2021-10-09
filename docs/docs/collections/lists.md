@@ -296,3 +296,15 @@ Note: The first item to satisfy the callback is returned.
 ```cs
 print([1, 2, 3].find(def (item) => item == 2)); // 2
 ```
+
+### list.limit(size)
+
+To return a list with limited size. if the size is less than 0 , it will return empty list, and if the limit is more than size, then entire list will be return.
+
+```cs
+var list = [1, 2, 3, 4, 5];
+
+print(list.limit(2)); // [1, 2]
+print(list.limit(-1)); // []
+print(list.limit(100)); // [1, 2, 3, 4, 5]
+```

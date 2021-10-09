@@ -50,3 +50,17 @@ def find(list, func) {
         }
     }
 }
+
+def limit(list, size) {
+    const temp = [];
+
+    if(list.len()<=size){
+        size = list.len();
+    }
+
+    for (var i = 0; i < size; i += 1) {
+        temp.push(list[i]);
+    }
+
+    return temp;
+}

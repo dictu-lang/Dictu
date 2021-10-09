@@ -25,3 +25,4 @@ import "reduce.du";
 import "forEach.du";
 import "find.du";
 import "reverse.du";
+import "limit.du";

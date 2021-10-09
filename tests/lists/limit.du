@@ -1,0 +1,16 @@
+/**
+ * limit.du
+ *
+ * Testing the list.limit() method
+ *
+ * .limit() will return a list with limited size. if the size is less than 0 , it will return empty list, and if the limit is more than size, then entire list will be return.
+ */
+
+
+
+var x = [1, 2, 3, 4, 5, 6];
+
+assert(x.limit(2) == [1,2]);
+assert(x.limit(-1) == []);
+assert(x.limit(100) == [1,2,3,4,5,6]);
+assert(x.limit(0)  == []);

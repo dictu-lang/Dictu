@@ -50,4 +50,17 @@
 "        }\n" \
 "    }\n" \
 "}\n" \
+"def limit(list, size) {\n"\
+"    const temp = [];\n"\
+"\n"\
+"    if(list.len()<=size){\n"\
+"        size = list.len();\n"\
+"    }\n"\
+"\n"\
+"    for (var i = 0; i < size; i += 1) {\n"\
+"           temp.push(list[i]);\n"\
+"    }\n"\
+"\n"\
+"    return temp;\n"\
+"}\n"\
 
