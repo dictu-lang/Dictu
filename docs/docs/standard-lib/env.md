@@ -45,7 +45,7 @@ Env.set("key", nil); // Remove env var
 Env.set("key", 10); // set() arguments must be a string or nil.
 ```
 
-### Env.getOrDefault(string)
+### Env.getOrDefault(string,defaultValue)
 
 Get an environment variable , if the variable not exists then take default value. `.getOrDefault()` will return a string if a valid environment variable is found otherwise returns default value that is passed one.
 
