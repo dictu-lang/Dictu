@@ -3,6 +3,6 @@
 
 #include "optionals.h"
 
-ObjModule *createInspectModule(DictuVM *vm);
+Value createInspectModule(DictuVM *vm);
 
 #endif //dictu_inspect_h

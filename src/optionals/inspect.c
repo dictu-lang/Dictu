@@ -34,7 +34,7 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(function->chunk.lines[instruction]);
 }
 
-ObjModule *createInspectModule(DictuVM *vm) {
+Value createInspectModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Inspect", 7);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -48,5 +48,5 @@ ObjModule *createInspectModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

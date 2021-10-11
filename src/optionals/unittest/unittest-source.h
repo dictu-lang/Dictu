@@ -1,4 +1,6 @@
-#define DICTU_UNITTEST_SOURCE "abstract class UnitTest {\n" \
+#define DICTU_UNITTEST_SOURCE "import Inspect;\n" \
+"\n" \
+"abstract class UnitTest {\n" \
 "    var METHOD_NAME_PADDING = '    ';\n" \
 "    var RESULTS_PADDING     = '    ';\n" \
 "    var ASSERTION_PADDING   = '         ';\n" \
@@ -78,7 +80,7 @@
 "        } else {\n" \
 "            this.results['failed'] += 1;\n" \
 "\n" \
-"            print('{}{}'.format(UnitTest.ASSERTION_PADDING, errorMsg));\n" \
+"            print('{}Line: {} - {}'.format(UnitTest.ASSERTION_PADDING, Inspect.getLine(2), errorMsg));\n" \
 "\n" \
 "            if (this.exitOnFailure) {\n" \
 "                System.exit(1);\n" \
