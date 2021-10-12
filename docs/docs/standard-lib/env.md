@@ -28,7 +28,7 @@ import Env;
 
 Get an environment variable. `.get()` will return a string if a valid environment variable is found otherwise nil.
 
-If default value is passed, then it will return that incase environment variable not found.
+If default value is passed that will be returned if the specified environment variable could not be found.
 
 ```cs
 Env.get("bad key!"); // nil
