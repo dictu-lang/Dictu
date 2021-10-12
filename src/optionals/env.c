@@ -28,7 +28,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     
     char *value = getenv(AS_CSTRING(args[0]));
 
-    if(argCount == 2){
+    if (argCount == 2) {
         if (!IS_STRING(args[1])) {
             runtimeError(vm, "get() arguments must be a string.");
             return EMPTY_VAL;
