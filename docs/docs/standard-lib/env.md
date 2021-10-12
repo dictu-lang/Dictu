@@ -24,7 +24,7 @@ To make use of the Env module an import is required.
 import Env;
 ```
 
-### Env.get(string,string: defaultValue -> optional)
+### Env.get(string, string: defaultValue -> optional)
 
 Get an environment variable. `.get()` will return a string if a valid environment variable is found otherwise nil.
 
