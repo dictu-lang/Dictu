@@ -33,7 +33,7 @@ If default value is passed that will be returned if the specified environment va
 ```cs
 Env.get("bad key!"); // nil
 Env.get("valid key"); // "value"
-Env.get("bad key!","default value!!!"); //"default value!!!"
+Env.get("bad key!", "default value!!!"); // "default value!!!"
 ```
 
 ### Env.set(string, value)
