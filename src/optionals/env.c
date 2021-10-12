@@ -16,17 +16,30 @@ int setenv(const char *name, const char *value, int overwrite) {
 #endif
 
 static Value get(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "get() takes 1 argument (%d given).", argCount);
+    if (argCount != 1 && argCount != 2 ) {
+        runtimeError(vm, "get() takes either 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "get() argument must be a string.");
+        runtimeError(vm, "get() arguments must be a string.");
         return EMPTY_VAL;
     }
-
+    
     char *value = getenv(AS_CSTRING(args[0]));
+
+    if (argCount == 2) {
+        if (!IS_STRING(args[1])) {
+            runtimeError(vm, "get() arguments must be a string.");
+            return EMPTY_VAL;
+        }
+
+        if (value != NULL) {
+            return OBJ_VAL(copyString(vm, value, strlen(value)));
+        }
+
+        return args[1];
+    }
 
     if (value != NULL) {
         return OBJ_VAL(copyString(vm, value, strlen(value)));
