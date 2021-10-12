@@ -38,8 +38,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
             return OBJ_VAL(copyString(vm, value, strlen(value)));
         }
 
-        char *defaultValue = AS_CSTRING(args[1]);
-        return OBJ_VAL(copyString(vm, defaultValue, strlen(defaultValue)));
+        return args[1];
     }
 
     if (value != NULL) {
