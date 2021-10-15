@@ -13,4 +13,4 @@ import "exists.du";
 import "isDir.du";
 import "join.du";
 import "listDir.du";
-import "isLink.du"
+import "isLink.du";
