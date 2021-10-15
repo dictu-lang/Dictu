@@ -6,7 +6,9 @@
  * Returns a boolean based on whether a string is syslink or not.
  */
 import Path;
+import System;
+
 if (System.platform != "windows") {
-assert(Path.isLink("linktofile") == true);
-assert(Path.isLink("notlinktofile") == false);
+    assert(Path.isLink("linktofile") == true);
+    assert(Path.isLink("notlinktofile") == false);
 }
