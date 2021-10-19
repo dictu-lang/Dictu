@@ -12,3 +12,11 @@ def match(result, successCallback, errorCallback) {
 
     return errorCallback(result.unwrapError());
 }
+
+def matchWrap(result, successCallback, errorCallback) {
+    if (result.success()) {
+        return Success(successCallback(result.unwrap()));
+    }
+
+    return Error(errorCallback(result.unwrapError()));
+}
