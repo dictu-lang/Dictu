@@ -346,7 +346,7 @@ void setVersion(DictuVM *vm, Table *table) {
     pop(vm);
 }
 
-ObjModule *createSystemModule(DictuVM *vm) {
+Value createSystemModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -412,5 +412,5 @@ ObjModule *createSystemModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

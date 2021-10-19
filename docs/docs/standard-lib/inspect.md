@@ -34,3 +34,19 @@ frame count an error is raised.
 Inspect.getLine(); // 1
 Inspect.getLine(1000); // Optional argument passed to getLine() exceeds the frame count.
 ```
+
+### Inspect.getFrameCount()
+
+This gives you the current frame count of the VM at the point of calling.
+
+Note: This is 0-based.
+
+```cs
+Inspect.getFrameCount(); // 0
+
+def test() {
+    print(Inspect.getFrameCount());
+}
+
+test(); // 1
+```
