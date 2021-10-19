@@ -4,6 +4,16 @@
  * Testing enums
  */
 
+enum MyEnum {
+    a,
+    b,
+    c
+}
+
+assert(MyEnum.a == 0);
+assert(MyEnum.b == 1);
+assert(MyEnum.c == 2);
+
 enum Test {
     a = 1,
     b = 2,
@@ -13,6 +23,18 @@ enum Test {
 assert(Test.a == 1);
 assert(Test.b == 2);
 assert(Test.c == 3);
+
+enum AnotherTest {
+    a,
+    b = "test",
+    c = 30,
+    d
+}
+
+assert(AnotherTest.a == 0);
+assert(AnotherTest.b == "test");
+assert(AnotherTest.c == 30);
+assert(AnotherTest.d == 3);
 
 const func = def () => 10;
 
