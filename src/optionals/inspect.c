@@ -34,6 +34,18 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(function->chunk.lines[instruction]);
 }
 
+static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 0) {
+        runtimeError(vm, "getFrameCount() takes takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    // -1 as it's pointing to the next frame
+    return NUMBER_VAL(vm->frameCount - 1);
+}
+
 Value createInspectModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Inspect", 7);
     push(vm, OBJ_VAL(name));
@@ -44,6 +56,7 @@ Value createInspectModule(DictuVM *vm) {
      * Define Inspect methods
      */
     defineNative(vm, &module->values, "getLine", getLine);
+    defineNative(vm, &module->values, "getFrameCount", getFrameCount);
 
     pop(vm);
     pop(vm);
