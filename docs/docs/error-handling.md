@@ -105,3 +105,21 @@ var number = "number".toNumber().match(
 
 print(number);
 ```
+
+### .matchWrap(func: success, func: error)
+
+`.matchWrap` is exactly the same as `.wrap` however, the value returned from either callback
+function is implicitly wrapped back up into a Result object. This allows us to easily deal
+with the error at a different call site and avoids the necessity for explicit wrapping.
+
+```cs
+var response = HTTP.get("https://some/endpoint").matchWrap(
+    def (data) => JSON.parse(data).unwrap(),
+    def (error) => error
+);
+
+print(response); // <Result Suc>
+```
+
+In the above example we can handle the case that we need to do some data transformation, however, we
+also need to ensure that a Result object is returned in case we hit the error callback.
