@@ -5,4 +5,5 @@
  */
 
 import "getLine.du";
+import "getFile.du";
 import "getFrameCount.du";

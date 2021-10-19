@@ -35,8 +35,7 @@ abstract class UnitTest {
     run() {
         const methods = this.filterMethods();
 
-        // TODO: This needs fixing
-        print(__file__);
+        print(Inspect.getFile(1));
         methods.forEach(def (method) => {
             print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));
             this.setUp();

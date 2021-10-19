@@ -35,8 +35,7 @@
 "    run() {\n" \
 "        const methods = this.filterMethods();\n" \
 "\n" \
-"        // TODO: This needs fixing\n" \
-"        print(__file__);\n" \
+"        print(Inspect.getFile(1));\n" \
 "        methods.forEach(def (method) => {\n" \
 "            print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));\n" \
 "            this.setUp();\n" \

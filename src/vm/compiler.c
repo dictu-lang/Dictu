@@ -2219,6 +2219,8 @@ static void importStatement(Compiler *compiler) {
             emitByte(compiler, OP_IMPORT_VARIABLE);
             defineVariable(compiler, importName, false);
         }
+
+        emitByte(compiler, OP_IMPORT_END);
     } else {
         consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
@@ -2227,9 +2229,9 @@ static void importStatement(Compiler *compiler) {
         bool dictuSource = false;
 
         int index = findBuiltinModule(
-                (char *) compiler->parser->previous.start,
-                compiler->parser->previous.length - compiler->parser->current.length,
-                &dictuSource
+            (char *) compiler->parser->previous.start,
+            compiler->parser->previous.length - compiler->parser->current.length,
+            &dictuSource
         );
 
         if (index == -1) {
@@ -2248,7 +2250,6 @@ static void importStatement(Compiler *compiler) {
     }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
-    emitByte(compiler, OP_IMPORT_END);
 }
 
 static void fromImportStatement(Compiler *compiler) {

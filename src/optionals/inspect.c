@@ -34,6 +34,39 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(function->chunk.lines[instruction]);
 }
 
+static Value getFile(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0 && argCount != 1) {
+        runtimeError(vm, "getFile() takes takes 0 or 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    int count = 0;
+
+    if (argCount == 1) {
+        if (!IS_NUMBER(args[0])) {
+            runtimeError(vm, "Optional argument passed to getFile() must be a number.");
+            return EMPTY_VAL;
+        }
+
+        count = AS_NUMBER(args[0]);
+
+        if (count < 0) {
+            runtimeError(vm, "Optional argument passed to getFile() must be 0 or more.");
+            return EMPTY_VAL;
+        }
+
+        if (count > vm->frameCount - 1) {
+            runtimeError(vm, "Optional argument passed to getFile() exceeds the frame count.");
+            return EMPTY_VAL;
+        }
+    }
+
+    CallFrame *frame = &vm->frames[vm->frameCount - 1 - count];
+    ObjFunction *function = frame->closure->function;
+
+    return OBJ_VAL(function->module->name);
+}
+
 static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -56,6 +89,7 @@ Value createInspectModule(DictuVM *vm) {
      * Define Inspect methods
      */
     defineNative(vm, &module->values, "getLine", getLine);
+    defineNative(vm, &module->values, "getFile", getFile);
     defineNative(vm, &module->values, "getFrameCount", getFrameCount);
 
     pop(vm);
