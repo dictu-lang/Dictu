@@ -117,6 +117,12 @@ ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     instance->klass = klass;
     initTable(&instance->publicFields);
     initTable(&instance->privateFields);
+
+    ObjString *classString = copyString(vm, "_class", 6);
+    push(vm, OBJ_VAL(classString));
+    tableSet(vm, &instance->publicFields, classString, OBJ_VAL(klass));
+    pop(vm);
+
     return instance;
 }
 
