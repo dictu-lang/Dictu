@@ -1,4 +1,5 @@
 import Inspect;
+import System;
 
 abstract class UnitTest {
     var METHOD_NAME_PADDING = '    ';
@@ -10,7 +11,7 @@ abstract class UnitTest {
         'skipped': 0
     };
 
-    init(private onlyFailures = false, private exitOnFailure = false) {}
+    init(var onlyFailures = false, var exitOnFailure = false) {}
 
     filterMethods() {
         return this.methods().filter(def (method) => {
@@ -38,7 +39,6 @@ abstract class UnitTest {
         print(Inspect.getFile(1));
         methods.forEach(def (method) => {
             print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));
-            this.setUp();
 
             const providerMethodName = '{}Provider'.format(method);
 
@@ -47,17 +47,20 @@ abstract class UnitTest {
 
                 if (type(testValue) == 'list') {
                     testValue.forEach(def (val) => {
+                        this.setUp();
                         this.getAttribute(method)(val);
+                        this.tearDown();
                     });
                 } else {
+                    this.setUp();
                     this.getAttribute(method)(testValue);
+                    this.tearDown();
                 }
             } else {
+                this.setUp();
                 this.getAttribute(method)();
+                this.tearDown();
             }
-
-
-            this.tearDown();
         });
         print('\nResults:\n{}- {} assertion(s) were successful.\n{}- {} assertion(s) were failures.\n{}- {} method(s) were skipped.\n'.format(
             UnitTest.RESULTS_PADDING,
@@ -67,6 +70,10 @@ abstract class UnitTest {
             UnitTest.RESULTS_PADDING,
             this.results['skipped']
         ));
+
+        if (this.results['failed'] > 0) {
+            System.exit(1);
+        }
     }
 
     printResult(success, errorMsg) {

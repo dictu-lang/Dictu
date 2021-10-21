@@ -1,4 +1,5 @@
 #define DICTU_UNITTEST_SOURCE "import Inspect;\n" \
+"import System;\n" \
 "\n" \
 "abstract class UnitTest {\n" \
 "    var METHOD_NAME_PADDING = '    ';\n" \
@@ -10,7 +11,7 @@
 "        'skipped': 0\n" \
 "    };\n" \
 "\n" \
-"    init(private onlyFailures = false, private exitOnFailure = false) {}\n" \
+"    init(var onlyFailures = false, var exitOnFailure = false) {}\n" \
 "\n" \
 "    filterMethods() {\n" \
 "        return this.methods().filter(def (method) => {\n" \
@@ -38,7 +39,6 @@
 "        print(Inspect.getFile(1));\n" \
 "        methods.forEach(def (method) => {\n" \
 "            print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));\n" \
-"            this.setUp();\n" \
 "\n" \
 "            const providerMethodName = '{}Provider'.format(method);\n" \
 "\n" \
@@ -47,17 +47,20 @@
 "\n" \
 "                if (type(testValue) == 'list') {\n" \
 "                    testValue.forEach(def (val) => {\n" \
+"                        this.setUp();\n" \
 "                        this.getAttribute(method)(val);\n" \
+"                        this.tearDown();\n" \
 "                    });\n" \
 "                } else {\n" \
+"                    this.setUp();\n" \
 "                    this.getAttribute(method)(testValue);\n" \
+"                    this.tearDown();\n" \
 "                }\n" \
 "            } else {\n" \
+"                this.setUp();\n" \
 "                this.getAttribute(method)();\n" \
+"                this.tearDown();\n" \
 "            }\n" \
-"\n" \
-"\n" \
-"            this.tearDown();\n" \
 "        });\n" \
 "        print('\nResults:\n{}- {} assertion(s) were successful.\n{}- {} assertion(s) were failures.\n{}- {} method(s) were skipped.\n'.format(\n" \
 "            UnitTest.RESULTS_PADDING,\n" \
@@ -67,6 +70,10 @@
 "            UnitTest.RESULTS_PADDING,\n" \
 "            this.results['skipped']\n" \
 "        ));\n" \
+"\n" \
+"        if (this.results['failed'] > 0) {\n" \
+"            System.exit(1);\n" \
+"        }\n" \
 "    }\n" \
 "\n" \
 "    printResult(success, errorMsg) {\n" \
