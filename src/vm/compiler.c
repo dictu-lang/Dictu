@@ -1973,8 +1973,13 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_CLASS:
         case OP_SUBCLASS:
         case OP_IMPORT_BUILTIN:
-        case OP_IMPORT_BUILTIN_VARIABLE:
             return 2;
+
+        case OP_IMPORT_BUILTIN_VARIABLE: {
+            int argCount = code[ip + 2];
+
+            return 2 + argCount;
+        }
 
         case OP_CLOSURE: {
             int constant = code[ip + 1];
