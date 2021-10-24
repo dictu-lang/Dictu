@@ -31,7 +31,6 @@ assert(Math.max(1,0.5,-1,0) == 1);
 
 assert(Math.average(1, 2, 3) == 2);
 assert(Math.average([1, 2, 3]) == 2);
-// assert(Math.average(1, 6, 1.2, -19, -98) == -21.76);
 
 assert(Math.sum(1, 2, 3) == 6);
 assert(Math.sum([1, 2, 3]) == 6);
