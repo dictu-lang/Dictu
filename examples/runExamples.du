@@ -16,3 +16,4 @@ import "guessingGame.du";
 import "inheritance.du";
 import "isPalindrome.du";
 import "factorial.du";
+import "pathWalker.du";

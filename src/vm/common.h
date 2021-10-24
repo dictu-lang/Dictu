@@ -44,7 +44,6 @@ return newResultError(vm, buf);  \
 #define IS_DIR_SEPARATOR(c) (c == DIR_SEPARATOR)
 #endif
 
-#define NAN_TAGGING
 #define DEBUG_PRINT_CODE
 #define DEBUG_TRACE_EXECUTION
 #define DEBUG_TRACE_GC
@@ -63,7 +62,5 @@ return newResultError(vm, buf);  \
 // #define DEBUG_FINAL_MEM
 
 #define UINT8_COUNT (UINT8_MAX + 1)
-
-// typedef struct _vm DictuVM;
 
 #endif

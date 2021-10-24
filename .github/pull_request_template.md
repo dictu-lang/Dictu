@@ -10,27 +10,19 @@
 
 <!-- Explain what you have done !-->
 
-     I worked on the .....
 
-#
 
-### Context of the change :
-
-<!-- Make sure to answer to these questions !-->
-
-     - Why is this change required ?
- 
 <!-- Link the issue below if you are resolving an issue !-->
 
-- Does it solve a problem ? (please link the issue)
+Resolves: 
  
 #
 
-### Type of change :
+### Type of change:
 
 <!-- Please select relevant options -->
 
-<!-- add a x in [ ] if true !-->
+<!-- Add an x in [ ] if true !-->
 
 <!-- Delete options that aren't relevant!-->
 
@@ -43,11 +35,13 @@
 
 #
 
+### Housekeeping
+
+<!-- If adding a new test file, remember to include it in the relevant import file -->
+- [ ] Tests have been updated to reflect the changes done within this PR (if applicable).
+
+- [ ] Documentation has been updated to reflect the changes done within this PR (if applicable).
+
 ### Preview (Screenshots) :
 
-<!-- While providing screenshots, delete the text below !-->
-
-<!-- try as much as possible to explain each change in each screenshot !-->
-
-<p align="center">If it is possible, please link screenshots of your changes preview !
-</p>
+<!-- If applicable attempt to explain the screenshots !-->

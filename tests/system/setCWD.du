@@ -5,6 +5,7 @@
  *
  * setCWD() sets the current working directory
  */
+import System;
 
 var cwd = System.getCWD().unwrap();
 assert(cwd != nil);

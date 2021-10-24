@@ -5,39 +5,65 @@
  *    - min(), max(), average(), sum(), floor(), round(), ceil(), abs()
  *
  * Testing the Math constants:
- *    - PI, e
+ *    - pi, e
  *
  */
 import Math;
 
+
+assert(Math.min(1) == 1);
+assert(Math.min(1, 2) == 1);
 assert(Math.min(1, 2, 3) == 1);
 assert(Math.min([1, 2, 3]) == 1);
-assert(Math.min([3, 2, 1]) == 1);
+assert(Math.min(-1, -2, -3) == -3);
+assert(Math.min([-1, -2, -3]) == -3);
+assert(Math.min(0.1,0.2,0.3) == 0.1);
+assert(Math.min(1,0.5,-1,0) == -1);
+
+assert(Math.max(1) == 1);
+assert(Math.max(1,2) == 2);
 assert(Math.max(1, 2, 3) == 3);
 assert(Math.max([1, 2, 3]) == 3);
-assert(Math.max([3, 2, 1]) == 3);
+assert(Math.max(-1, -2, -3) == -1);
+assert(Math.max([-1, -2, -3]) == -1);
+assert(Math.max(0.1,0.2,0.3) == 0.3);
+assert(Math.max(1,0.5,-1,0) == 1);
+
 assert(Math.average(1, 2, 3) == 2);
 assert(Math.average([1, 2, 3]) == 2);
+
 assert(Math.sum(1, 2, 3) == 6);
 assert(Math.sum([1, 2, 3]) == 6);
+assert(Math.sum(1,6,1.2,-19,-98) == -108.8);
+
 assert(Math.floor(17.999) == 17);
+assert(Math.floor(-1.59) == -2);
+
 assert(Math.round(17.5) == 18);
+
 assert(Math.ceil(17.0001) == 18);
+
 assert(Math.abs(18) == 18);
 assert(Math.abs(-18) == 18);
+
 assert(Math.sqrt(25) == 5);
 assert(Math.sqrt(100) == 10);
 assert(Math.sqrt(20) == 4.47213595499958);
 assert(Math.sqrt(100_00) == 1_00);
+
 assert(Math.sin(1) > 0.84);
 assert(Math.sin(1) < 0.845);
+
 assert(Math.cos(0) == 1);
+
 assert(Math.tan(1) > 1.5);
 assert(Math.tan(1) < 1.6);
+
 assert(Math.gcd(32, 24, 12) == 4);
 assert(Math.gcd([32, 24, 12]) == 4);
+
 assert(Math.lcm(32, 24, 12) == 96);
 assert(Math.lcm([32, 24, 12]) == 96);
 
-assert(Math.PI == 3.14159265358979);
+assert(Math.pi == 3.14159265358979);
 assert(Math.e == 2.71828182845905);

@@ -5,6 +5,7 @@
  *
  * access() returns if user has the requested permissions for a file.
  */
+import System;
 
 var
   F_OK = System.F_OK,

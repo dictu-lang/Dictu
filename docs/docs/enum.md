@@ -18,17 +18,26 @@ nav_order: 10
 ## Enums
 
 Enums are a collection of constants which can be accessed via a name rather than
-an index to document intent. Unlike other languages, enums in Dictu must be assigned
-to a value when declaring the enum and no automatic value will be generated.
+an index to document intent. Unlike other languages, enums in Dictu do not generate a value
+based on the previous entry, instead if no value is assigned it will be given it's position
+within the enum, 0-based, as a value.
 
 ```cs
-enum Test {
-    a = 0,
-    b = 1,
-    c = 2
+enum MyEnum {
+    a, // 0
+    b, // 1
+    c  // 2
 }
 
-print(Test.a); // 0
+print(MyEnum.a); // 0
+
+enum Test {
+    a = 10, // 10
+    b,      // 1
+    c       // 2
+}
+
+print(Test.a); // 10
 ```
 
 Enums in Dictu also do not care about the value being stored within the enum, so

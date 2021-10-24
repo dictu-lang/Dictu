@@ -6,6 +6,7 @@
  * exec() executes a new process and does not wait for a return.
  */
 import Process;
+import System;
 
 if (System.platform == "windows") {
     assert(Process.exec(["cmd.exe", "/c", "dir"]).success());

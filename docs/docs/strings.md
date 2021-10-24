@@ -38,7 +38,7 @@ string[0]; // D
 string[-1]; // u
 string[100]; // String index out of bounds.
 
-for (var i = 0; i < x.len(); ++i) {
+for (var i = 0; i < x.len(); i += 1) {
     print(string[i]);
 }
 // D

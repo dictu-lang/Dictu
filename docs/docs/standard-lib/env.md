@@ -24,13 +24,16 @@ To make use of the Env module an import is required.
 import Env;
 ```
 
-### Env.get(string)
+### Env.get(string, string: defaultValue -> optional)
 
 Get an environment variable. `.get()` will return a string if a valid environment variable is found otherwise nil.
+
+If default value is passed that will be returned if the specified environment variable could not be found.
 
 ```cs
 Env.get("bad key!"); // nil
 Env.get("valid key"); // "value"
+Env.get("bad key!", "default value!!!"); // "default value!!!"
 ```
 
 ### Env.set(string, value)

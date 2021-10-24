@@ -4,6 +4,7 @@
  * Testing the System constants
  *
  */
+import System;
 
 /**
  * argv is a list of all parameters passed to the interpreter.

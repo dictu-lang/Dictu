@@ -6,6 +6,7 @@
  * Returns the canonicalized absolute pathname or nil on error.
  */
 import Path;
+import System;
 
 if (System.platform != "windows") {
   assert(Path.delimiter == ":");

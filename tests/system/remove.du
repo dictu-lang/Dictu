@@ -5,6 +5,7 @@
  *
  * remove() removes a file from the system
  */
+import System;
 
 if (System.platform == 'darwin') {
   var sys_test_remove_file = "sys_test_remove.";

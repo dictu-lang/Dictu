@@ -1800,6 +1800,8 @@ static void enumDeclaration(Compiler *compiler) {
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
 
+    int index = 0;
+
     do {
         if (check(compiler, TOKEN_RIGHT_BRACE)) {
             error(compiler->parser, "Trailing comma in enum declaration");
@@ -1808,9 +1810,14 @@ static void enumDeclaration(Compiler *compiler) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");
         uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-        consume(compiler, TOKEN_EQUAL, "Expect '=' after enum value identifier.");
-        expression(compiler);
+        if (match(compiler, TOKEN_EQUAL)) {
+            expression(compiler);
+        } else {
+            emitConstant(compiler, NUMBER_VAL(index));
+        }
+
         emitBytes(compiler, OP_SET_ENUM_VALUE, name);
+        index++;
     } while (match(compiler, TOKEN_COMMA));
 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");

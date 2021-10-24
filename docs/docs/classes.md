@@ -146,6 +146,28 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
+### methods
+
+Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This
+will return a list of strings, where the strings are the names of all public methods stored within a class.
+
+Note: The order of the list is not the same order the methods are defined.
+
+```cs
+class Test {
+    init() {
+
+    }
+
+    someOther() {
+
+    }
+}
+
+print(Test.methods()); // ["someOther", "init"]
+print(Test().methods()); // Works on instances too - ["someOther", "init"]
+```
+
 ## This
 
 `this` is a variable which is passed to all methods which are not marked as static. `this` is a reference to the object you are currently accessing. `this` allows you to modify instance variables of a particular object.

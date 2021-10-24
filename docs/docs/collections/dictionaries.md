@@ -144,3 +144,18 @@ myDict.forEach(def (key, value) => {
     print("Key: {} Value: {}".format(key, value));
 });
 ```
+
+### dict.merge(anotherDict)
+
+To merge two dicts together we use `.merge`. This operation will take a shallow copy of the dict the `.merge` method
+was called on and add any items from the dictionary passed into the method. If there are keys that exist in both dictionaries
+the value from the passed in dictionary is the one that will be used.
+
+```cs
+const dictOne = {"key": 1, "key1": 2, "key2": 3};
+const dictTwo = {"key3": 4,"key1":0};
+
+const mergedDict = dictOne.merge(dictTwo);
+
+mergedDict; //{"key2": 3, "key": 1, "key3": 4, "key1": 0}
+```
