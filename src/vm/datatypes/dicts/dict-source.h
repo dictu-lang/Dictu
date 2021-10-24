@@ -13,12 +13,12 @@
 "}\n" \
 "\n" \
 "def merge(dict, anotherDict) {\n" \
-"    const dictKeys = dict.keys();\n" \
-"    const newDict= anotherDict.copy();\n" \
+"    const newDict = dict.copy();\n" \
 "\n" \
-"    for (var i = 0; i < dictKeys.len(); i += 1) {\n" \
-"        newDict[dictKeys[i]]=dict[dictKeys[i]];\n" \
-"    }\n" \
+"    forEach(anotherDict, def (key, value) => {\n" \
+"       newDict[key] = value;\n" \
+"    });\n" \
+"\n" \
 "    return newDict;\n" \
 "}\n" \
 
