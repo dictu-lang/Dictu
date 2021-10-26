@@ -1697,13 +1697,12 @@ static void classDeclaration(Compiler *compiler) {
     setupClassCompiler(compiler, &classCompiler, false);
 
     if (match(compiler, TOKEN_LESS)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
+        expression(compiler);
         classCompiler.hasSuperclass = true;
 
         beginScope(compiler);
 
         // Store the superclass in a local variable named "super".
-        variable(compiler, false);
         addLocal(compiler, syntheticToken("super"));
 
         emitBytes(compiler, OP_SUBCLASS, CLASS_DEFAULT);
@@ -1730,9 +1729,9 @@ static void classDeclaration(Compiler *compiler) {
 }
 
 static void abstractClassDeclaration(Compiler *compiler) {
-    consume(compiler, TOKEN_CLASS, "Expect class keyword.");
+    consume(compiler, TOKEN_CLASS, "Expect class keyword after abstract.");
 
-    consume(compiler, TOKEN_IDENTIFIER, "Expect class name.");
+    consume(compiler, TOKEN_IDENTIFIER, "Expect class name after class keyword.");
     uint8_t nameConstant = identifierConstant(compiler, &compiler->parser->previous);
     declareVariable(compiler, &compiler->parser->previous);
 
@@ -1740,13 +1739,12 @@ static void abstractClassDeclaration(Compiler *compiler) {
     setupClassCompiler(compiler, &classCompiler, true);
 
     if (match(compiler, TOKEN_LESS)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect superclass name.");
+        expression(compiler);
         classCompiler.hasSuperclass = true;
 
         beginScope(compiler);
 
         // Store the superclass in a local variable named "super".
-        variable(compiler, false);
         addLocal(compiler, syntheticToken("super"));
 
         emitBytes(compiler, OP_SUBCLASS, CLASS_ABSTRACT);

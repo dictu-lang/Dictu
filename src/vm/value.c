@@ -542,8 +542,6 @@ static bool setComparison(Value a, Value b) {
 }
 
 bool valuesEqual(Value a, Value b) {
-#ifdef NAN_TAGGING
-
     if (IS_OBJ(a) && IS_OBJ(b)) {
         if (AS_OBJ(a)->type != AS_OBJ(b)->type) return false;
 
@@ -567,15 +565,4 @@ bool valuesEqual(Value a, Value b) {
     }
 
     return a == b;
-#else
-    if (a.type != b.type) return false;
-
-    switch (a.type) {
-      case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
-      case VAL_NIL:    return true;
-      case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
-      case VAL_OBJ:
-        return AS_OBJ(a) == AS_OBJ(b);
-    }
-#endif
 }

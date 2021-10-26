@@ -13,11 +13,11 @@ def forEach(dict, func) {
 }
 
 def merge(dict, anotherDict) {
-    const dictKeys = dict.keys();
-    const newDict= anotherDict.copy();
+    const newDict = dict.copy();
 
-    for (var i = 0; i < dictKeys.len(); i += 1) {
-        newDict[dictKeys[i]]=dict[dictKeys[i]];
-    }
+    forEach(anotherDict, def (key, value) => {
+       newDict[key] = value;
+    });
+
     return newDict;
 }
