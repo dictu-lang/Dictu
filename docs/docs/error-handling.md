@@ -39,7 +39,7 @@ print(result.unwrap()); // 10
 
 #### Error
 Creating an Error type is incredibly simple with the builtin `Error()` function.
-Only a string can be passed to Success to be wrapped.
+Only a string can be passed to Error to be wrapped.
 
 ```cs
 var result = Error("Some error happened!!");
