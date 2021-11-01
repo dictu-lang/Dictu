@@ -26,3 +26,15 @@ class Testing < Base {
 assert(Test().func() == 10);
 assert(Testing().value == 10);
 assert(Testing().newFunc() == 10);
+
+// Test inheritance works via an expression.
+const dict = {"class": Testing};
+
+class AnotherTest < dict["class"] {
+    init() {
+        super.init();
+    }
+}
+
+assert(AnotherTest().value == 10);
+assert(AnotherTest().newFunc() == 10);
