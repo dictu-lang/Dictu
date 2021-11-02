@@ -182,7 +182,7 @@ static Value methods(DictuVM *vm, int argCount, Value *args) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
-    for (int i = 0; i < instance->klass->publicMethods.capacityMask; ++i) {
+    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
         if (instance->klass->publicMethods.entries[i].key == NULL) {
             continue;
         }
