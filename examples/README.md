@@ -95,6 +95,8 @@ for (var i = 1; i < 101; i += 1) {
 ## Guessing Game
 
 ```js
+import System;
+
 const guess = 10;
 
 while {
@@ -127,6 +129,4 @@ def fibonacci(num) {
 
 print(fibonacci(10));
 ```
-
-[See here](https://github.com/Jason2605/Dictu/blob/develop/examples/recursiveFib.du)
 
