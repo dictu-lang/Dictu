@@ -368,7 +368,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, errorString);
 }
 
-ObjModule *createHTTPModule(DictuVM *vm) {
+Value createHTTPModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "HTTP", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -383,5 +383,5 @@ ObjModule *createHTTPModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

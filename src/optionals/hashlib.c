@@ -148,7 +148,7 @@ static Value verify(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL(_compare((const uint8_t *) stringA->chars, (const uint8_t *) stringB->chars, stringA->length) == 0);
 }
 
-ObjModule *createHashlibModule(DictuVM *vm) {
+Value createHashlibModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Hashlib", 7);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -166,5 +166,5 @@ ObjModule *createHashlibModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

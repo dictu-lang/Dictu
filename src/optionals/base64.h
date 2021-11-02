@@ -4,6 +4,6 @@
 #include "base64/base64Lib.h"
 #include "optionals.h"
 
-ObjModule *createBase64Module(DictuVM *vm);
+Value createBase64Module(DictuVM *vm);
 
 #endif //dictu_base64_h

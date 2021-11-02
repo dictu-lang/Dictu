@@ -32,6 +32,16 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     return offset + 3;
 }
 
+static int importFromInstruction(const char *name, Chunk *chunk,
+                               int offset) {
+    uint8_t constant = chunk->code[offset + 1];
+    uint8_t argCount = chunk->code[offset + 2];
+    printf("%-16s %4d '", name, constant);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 1 + argCount;
+}
+
 static int builtinImportInstruction(const char* name, Chunk* chunk,
                              int offset) {
     uint8_t module = chunk->code[offset + 2];
@@ -43,12 +53,12 @@ static int builtinImportInstruction(const char* name, Chunk* chunk,
 
 static int builtinFromImportInstruction(const char* name, Chunk* chunk,
                                     int offset) {
-    uint8_t module = chunk->code[offset + 2];
-    uint8_t argCount = chunk->code[offset + 3];
+    uint8_t module = chunk->code[offset + 1];
+    uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s '", name);
     printValue(chunk->constants.values[module]);
     printf("'\n");
-    return offset + 3 + argCount;
+    return offset + 2 + argCount;
 }
 
 static int classInstruction(const char* name, Chunk* chunk,
@@ -210,7 +220,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_IMPORT_VARIABLE:
             return simpleInstruction("OP_IMPORT_VARIABLE", offset);
         case OP_IMPORT_FROM:
-            return constantInstruction("OP_IMPORT_FROM", chunk, offset);
+            return importFromInstruction("OP_IMPORT_FROM", chunk, offset);
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:

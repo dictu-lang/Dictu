@@ -1,0 +1,10 @@
+/**
+ * getFile.du
+ *
+ * Testing the Inspect.getFile() method
+ */
+
+import Inspect;
+
+assert(Inspect.getFile().endsWith("getFile.du"));
+assert(Inspect.getFile(1).endsWith("import.du"));

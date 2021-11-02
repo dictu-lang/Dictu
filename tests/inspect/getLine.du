@@ -1,0 +1,24 @@
+/**
+ * getLine.du
+ *
+ * Testing the Inspect.getLine() method
+ */
+
+import Inspect;
+
+assert(Inspect.getLine() == 9);
+
+def func(framesToWalk=0, expectedLine=12) {
+    assert(Inspect.getLine(framesToWalk) == expectedLine);
+}
+
+func();
+func(1, 16);
+
+def anotherFunc(framesToWalk=0, expectedLine=12) {
+    func(framesToWalk, expectedLine);
+}
+
+anotherFunc();
+anotherFunc(1, 19);
+anotherFunc(2, 24);

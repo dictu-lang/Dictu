@@ -6,6 +6,6 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
-ObjModule *createJSONModule(DictuVM *vm);
+Value createJSONModule(DictuVM *vm);
 
 #endif //dictu_json_h
