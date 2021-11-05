@@ -6,5 +6,13 @@
  * isDefined() returns a boolean if a value is defined in the global space
  */
 
-assert(isDefined("isDefined"));
-assert(isDefined("not defined") == false);
+from UnitTest import UnitTest;
+
+class TestIsDefined < UnitTest {
+    testIsDefined() {
+        this.assertTruthy(isDefined("isDefined"));
+        this.assertFalsey(isDefined("not defined"));
+    }
+}
+
+TestIsDefined().run();

@@ -5,13 +5,14 @@
 "    var METHOD_NAME_PADDING = '    ';\n" \
 "    var RESULTS_PADDING     = '    ';\n" \
 "    var ASSERTION_PADDING   = '         ';\n" \
-"    var results = {\n" \
-"        'passed': 0,\n" \
-"        'failed': 0,\n" \
-"        'skipped': 0\n" \
-"    };\n" \
 "\n" \
-"    init(var onlyFailures = false, var exitOnFailure = false) {}\n" \
+"    init(var onlyFailures = false, var exitOnFailure = false) {\n" \
+"        this.results = {\n" \
+"            'passed': 0,\n" \
+"            'failed': 0,\n" \
+"            'skipped': 0\n" \
+"        };\n" \
+"    }\n" \
 "\n" \
 "    filterMethods() {\n" \
 "        return this.methods().filter(def (method) => {\n" \

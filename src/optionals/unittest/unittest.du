@@ -5,13 +5,14 @@ abstract class UnitTest {
     var METHOD_NAME_PADDING = '    ';
     var RESULTS_PADDING     = '    ';
     var ASSERTION_PADDING   = '         ';
-    var results = {
-        'passed': 0,
-        'failed': 0,
-        'skipped': 0
-    };
 
-    init(var onlyFailures = false, var exitOnFailure = false) {}
+    init(var onlyFailures = false, var exitOnFailure = false) {
+        this.results = {
+            'passed': 0,
+            'failed': 0,
+            'skipped': 0
+        };
+    }
 
     filterMethods() {
         return this.methods().filter(def (method) => {

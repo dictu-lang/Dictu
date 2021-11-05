@@ -4,7 +4,23 @@
  * Testing modulo
  */
 
-var x = 10;
+from UnitTest import UnitTest;
 
-assert(x % 2 == 0);
-assert(x % 3 == 1);
+class ModuloOperatorTest < UnitTest {
+    testModuloOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testModuloOperatorProvider() {
+        const x = 10;
+
+        return [
+            {"operation": 10 % 2, "expected": 0},
+            {"operation": 10 % 3, "expected": 1},
+            {"operation": x % 2, "expected": 0},
+            {"operation": x % 3, "expected": 1},
+        ];
+    }
+}
+
+ModuloOperatorTest().run();

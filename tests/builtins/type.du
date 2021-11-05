@@ -7,29 +7,48 @@
 */
 import System;
 
-assert(type(nil) == "nil");
-assert(type(true) == "bool");
-assert(type(false) == "bool");
-assert(type(10) == "number");
-assert(type("test") == "string");
-assert(type([1, 2]) == "list");
-assert(type({"hi": 10}) == "dict");
-assert(type(set(1)) == "set");
-assert(type(type) == "native");
+from UnitTest import UnitTest;
+
+const lamdba = def () => {};
 
 def testing() {}
-
-assert(type(testing) == "function");
 
 class Test {
     test() {}
 }
 
-assert(type(Test) == "class");
-assert(type(Test().test) == "method");
+class TestType < UnitTest {
+    testType(data) {
+        this.assertEquals(data["data"], data["expected"]);
+    }
 
-with("tests/builtins/type.du", "r") {
-    assert(type(file) == "file");
+    testTypeProvider() {
+        return [
+            {"data": type(nil), "expected": "nil"},
+            {"data": type(true), "expected": "bool"},
+            {"data": type(false), "expected": "bool"},
+            {"data": type(10), "expected": "number"},
+            {"data": type(-10), "expected": "number"},
+            {"data": type(10.111), "expected": "number"},
+            {"data": type(-10.111), "expected": "number"},
+            {"data": type(10_111), "expected": "number"},
+            {"data": type(-10_111), "expected": "number"},
+            {"data": type([1, 2]), "expected": "list"},
+            {"data": type({"hi": 10}), "expected": "dict"},
+            {"data": type(set(1)), "expected": "set"},
+            {"data": type(lamdba), "expected": "function"},
+            {"data": type(testing), "expected": "function"},
+            {"data": type(Test), "expected": "class"},
+            {"data": type(Test().test), "expected": "method"},
+            {"data": type(System), "expected": "module"},
+        ];
+    }
+
+    testTypeFile() {
+        with("tests/builtins/type.du", "r") {
+            this.assertEquals(type(file), "file");
+        }
+    }
 }
 
-assert(type(System) == "module");
+TestType().run();

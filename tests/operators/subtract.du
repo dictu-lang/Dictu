@@ -4,9 +4,23 @@
  * Testing subtraction
  */
 
-var x = 10;
+from UnitTest import UnitTest;
 
-assert(x - 1 == 9);
-assert(x - x == 0);
-assert(1 - x == -9);
-assert(10 - x - 10 == -10);
+class SubtractOperatorTest < UnitTest {
+    testSubtractOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testSubtractOperatorProvider() {
+        const x = 10;
+
+        return [
+            {"operation": x - 1, "expected": 9},
+            {"operation": 1 - x, "expected": -9},
+            {"operation": x - x, "expected": 0},
+            {"operation": 10 - x - 10, "expected": -10},
+        ];
+    }
+}
+
+SubtractOperatorTest().run();
