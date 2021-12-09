@@ -288,7 +288,18 @@ print(Test().someMethod()?.someOtherMethod()); // nil
 
 // If the operand is not nil the method / property must exist  
 print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
-``` 
+```
+
+### _class
+
+`_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
+useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+
+```cs
+class Test {}
+
+print(Test()._class); // <Cls Test>
+```
 
 ## Class variables
 

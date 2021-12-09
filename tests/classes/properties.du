@@ -42,3 +42,9 @@ assert(obj.getAttribute("y") == 10);
 obj.setAttribute("x", 10);
 assert(obj.hasAttribute("x"));
 assert(obj.getAttribute("x") == 10);
+
+assert(obj._class == Test);
+
+class Inherit < Test {}
+
+assert(Inherit()._class == Inherit);
