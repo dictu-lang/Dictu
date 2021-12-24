@@ -31,6 +31,13 @@ import Math;
 |--------------|--------------------------------------------------------|
 | Math.pi      | The mathematical constant: 3.14159265358979            |
 | Math.e       | The mathematical constant: 2.71828182845905            |
+| Math.phi     | The mathematical constant: 1.61803398874989            |
+| Math.sqrt2   | The mathematical constant: 1.41421356237309            |
+| Math.sqrte   | The mathematical constant: 1.61803398874989            |
+| Math.sqrtpi  | The mathematical constant: 1.77245385090551            |
+| Math.sqrtphi | The mathematical constant: 1.27201964951406            |
+| Math.ln2     | The mathematical constant: 0.69314718055994            |
+| Math.ln10    | The mathematical constant: 2.30258509299404            |
 
 ### Math.min(iterable)
 
