@@ -4,6 +4,7 @@ BuiltinModules modules[] = {
         {"Math", &createMathsModule, false},
         {"Env", &createEnvModule, false},
         {"JSON", &createJSONModule, false},
+        {"Log", &createLogModule, false},
         {"Path", &createPathModule, false},
         {"Datetime", &createDatetimeModule, false},
         {"Socket", &createSocketModule, false},
