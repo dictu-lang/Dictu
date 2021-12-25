@@ -100,6 +100,33 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     return defaultValue;
 }
 
+static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
+    if (argCount > 0) {
+        runtimeError(vm, "getAttributes() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjInstance *instance = AS_INSTANCE(args[0]);
+
+    ObjList *list = newList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
+        if (instance->publicFields.entries[i].key == NULL) {
+            continue;
+        }
+        
+        push(vm, OBJ_VAL(instance->publicFields.entries[i].key));
+        writeValueArray(vm, &list->values, OBJ_VAL(instance->publicFields.entries[i].key)); 
+
+        pop(vm);
+    }
+
+    pop(vm);
+
+    return OBJ_VAL(list);
+}
+
 static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "setAttribute() takes 2 arguments (%d given)", argCount);
@@ -198,6 +225,7 @@ void declareInstanceMethods(DictuVM *vm) {
     defineNative(vm, &vm->instanceMethods, "toString", toString);
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
+    defineNative(vm, &vm->instanceMethods, "getAttributes", getAttributes);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);
     defineNative(vm, &vm->instanceMethods, "isInstance", isInstance);
     defineNative(vm, &vm->instanceMethods, "copy", copyShallow);
