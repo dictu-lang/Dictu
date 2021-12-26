@@ -5,14 +5,6 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
-// #define LOG_PRINTLN printf("%04d/%02d/%02d %02d:%02d:%02d %s\n", \
-//         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday,        \
-//         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
-
-// #define LOG_PRINT printf("%04d/%02d/%02d %02d:%02d:%02d %s", \
-//         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday,    \
-//         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
-
 typedef struct {
     FILE *of;
     char *prefix;
@@ -52,12 +44,7 @@ static Value printLog(DictuVM *vm, int argCount, Value *args) {
 
 static Value printlnLog(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "warn() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-    
-    if (argCount != 1) {
-        runtimeError(vm, "print() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "println() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
     
@@ -202,8 +189,6 @@ static Value logObjFatal(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
@@ -222,8 +207,6 @@ static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 ObjAbstract* newLogObj(DictuVM *vm) {

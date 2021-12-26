@@ -2,15 +2,16 @@
  * log.du
  *
  * Testing the Log functions:
- *    - print(), println(), setPrefix
+ *    - print(), println(), new(), setPrefix
  *
  */
 import Log;
 
-Log.println("hello, world! print");
-Log.println("hello, world! println\n");
-
+Log.print("hello, world! print\n");
+Log.println("hello, world! println");
 
 var log = Log.new(0).unwrap();
-log.setPrefix("msg");
+assert(log != nil);
+
+log.setPrefix("PREFIX");
 log.println("output with prefix");
