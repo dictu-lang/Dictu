@@ -72,8 +72,6 @@ static Value fatalLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
     
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value fatallnLog(DictuVM *vm, int argCount, Value *args) {
@@ -90,8 +88,6 @@ static Value fatallnLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
     
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 void freeLog(DictuVM *vm, ObjAbstract *abstract) {
@@ -117,12 +113,24 @@ static Value logObjSetPrefix(DictuVM *vm, int argCount, Value *args) {
     char *prefix = AS_CSTRING(args[1]);
     
     if (strlen(prefix) == 0) {
-        return newResultSuccess(vm, OBJ_VAL(log));
+        return NIL_VAL;
     }
     
     log->prefix = strdup(prefix);
 
-    return newResultSuccess(vm, OBJ_VAL(log));
+    return NIL_VAL;
+}
+
+static Value logObjUnsetPrefix(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "unsetPrefix() takes 0 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Log *log = AS_LOG(args[0]);
+    log->prefix = strdup("");
+
+    return NIL_VAL;
 }
 
 static Value logObjPrint(DictuVM *vm, int argCount, Value *args) {
@@ -136,19 +144,19 @@ static Value logObjPrint(DictuVM *vm, int argCount, Value *args) {
     struct tm *ptm = timeNow();
     char *msg = AS_CSTRING(args[1]);
 
-    if (log->prefix != NULL) {
-        fprintf(log->of, "%04d/%02d/%02d %02d:%02d:%02d %s: %s", 
+    if (log->prefix != NULL && strlen(log->prefix) != 0) {
+        fprintf(log->of, "%04d/%02d/%02d %02d:%02d:%02d %s %s", 
             ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
             ptm->tm_hour, ptm->tm_min, ptm->tm_sec, log->prefix, msg);
 
-        return newResultSuccess(vm, NIL_VAL);
+        return NIL_VAL;
     }
 
     fprintf(log->of, "%04d/%02d/%02d %02d:%02d:%02d %s", 
         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
-    return newResultSuccess(vm, NIL_VAL);
+    return NIL_VAL;
 }
 
 static Value logObjPrintln(DictuVM *vm, int argCount, Value *args) {
@@ -162,19 +170,19 @@ static Value logObjPrintln(DictuVM *vm, int argCount, Value *args) {
     struct tm *ptm = timeNow();
     char *msg = AS_CSTRING(args[1]);
 
-    if (log->prefix != NULL) {
+    if (log->prefix != NULL && strlen(log->prefix) != 0) {
         fprintf(log->of, "%04d/%02d/%02d %02d:%02d:%02d %s %s\n", 
             ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
             ptm->tm_hour, ptm->tm_min, ptm->tm_sec, log->prefix, msg);
 
-        return newResultSuccess(vm, NIL_VAL);
+        return NIL_VAL;
     }
 
     fprintf(log->of, "%04d/%02d/%02d %02d:%02d:%02d %s\n", 
         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
-    return newResultSuccess(vm, NIL_VAL);
+    return NIL_VAL;
 }
 
 static Value logObjFatal(DictuVM *vm, int argCount, Value *args) {
@@ -193,8 +201,6 @@ static Value logObjFatal(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
@@ -213,8 +219,6 @@ static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
-
-    return newResultSuccess(vm, NIL_VAL);
 }
 
 ObjAbstract* newLogObj(DictuVM *vm) {
@@ -227,6 +231,7 @@ ObjAbstract* newLogObj(DictuVM *vm) {
      * Setup Log object methods
      */
     defineNative(vm, &abstract->values, "setPrefix", logObjSetPrefix);
+    defineNative(vm, &abstract->values, "unsetPrefix", logObjUnsetPrefix);
 
     defineNative(vm, &abstract->values, "print", logObjPrint);
     defineNative(vm, &abstract->values, "println", logObjPrintln);
@@ -248,10 +253,16 @@ static Value newLog(DictuVM *vm, int argCount, Value *args) {
     ObjAbstract *abstract = newLogObj(vm);
     Log *log = abstract->data;
 
-    if (args[0] == 0) {
-        log->of = stdout;
-    } else {
-        log->of = (FILE*)args[0];
+    int output = AS_NUMBER(args[0]);
+    switch(output) {
+        case STDOUT_FILENO:
+            log->of = stdout;
+            break;
+        case STDERR_FILENO:
+            log->of = stderr;
+            break;
+        default:
+            return newResultError(vm, "invalid output destination");
     }
 
     abstract->data = log;
@@ -265,6 +276,10 @@ Value createLogModule(DictuVM *vm) {
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
+
+    defineNativeProperty(vm, &module->values, "stdin",  NUMBER_VAL(STDIN_FILENO));
+    defineNativeProperty(vm, &module->values, "stdout",  NUMBER_VAL(STDOUT_FILENO));
+    defineNativeProperty(vm, &module->values, "stderr",  NUMBER_VAL(STDERR_FILENO));
 
     /**
      * Define Log methods
