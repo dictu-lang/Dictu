@@ -41,5 +41,5 @@ assert(number.success());
 assert(number.unwrap() == 10);
 
 var number = "test".toNumber().matchWrap(success, error);
-assert(!number.success());
+assert(not number.success());
 assert(number.unwrapError() == "Can not convert 'test' to number");

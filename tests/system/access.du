@@ -33,7 +33,7 @@ assert(System.errno == C.EACCES);
 
 import Path;
 
-if (!Path.exists ("/__NOT_EXISTANT__")) {
+if (not Path.exists ("/__NOT_EXISTANT__")) {
   assert(System.access("/NOT_EXISTANT__", F_OK) == -1);
   assert(System.errno == C.ENOENT);
 }
