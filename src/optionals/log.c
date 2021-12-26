@@ -92,9 +92,6 @@ static Value fatallnLog(DictuVM *vm, int argCount, Value *args) {
 
 void freeLog(DictuVM *vm, ObjAbstract *abstract) {
     Log *log = (Log*)abstract->data;
-    if (log->of != NULL) {
-        fclose(log->of);
-    }
     
     if (log->prefix != NULL) {
         free(log->prefix);
@@ -269,11 +266,13 @@ static Value newLog(DictuVM *vm, int argCount, Value *args) {
         default:
             return newResultError(vm, "invalid output destination");
     }
-
     abstract->data = log;
+
+    push(vm, OBJ_VAL(abstract));
+    Value success = newResultSuccess(vm, OBJ_VAL(abstract));
     pop(vm);
 
-    return newResultSuccess(vm, OBJ_VAL(abstract));
+    return success;
 }
 
 Value createLogModule(DictuVM *vm) {
