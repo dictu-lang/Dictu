@@ -14,3 +14,21 @@ assert("Dictu is great!".split(",") == ["Dictu is great!"]);
 assert("Dictu is great!".split("12345") == ["Dictu is great!"]);
 assert("Dictu is great!".split("!@£$%^") == ["Dictu is great!"]);
 assert("Dictu is great!".split("") == ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);
+
+// Test optional split amount
+assert("Dictu is great!".split(" ", -2) == ["Dictu is great!"]);
+assert("Dictu is great!".split(" ", -1) == ["Dictu is great!"]);
+assert("Dictu is great!".split(" ", 0) == ["Dictu is great!"]);
+assert("Dictu is great!".split(" ", 1) == ["Dictu", "is great!"]);
+assert("Dictu is great!".split(" ", 2) == ["Dictu", "is", "great!"]);
+assert("Dictu is great!".split(" ", 3) == ["Dictu", "is", "great!"]);
+assert("Dictu is great!".split(" ", 4) == ["Dictu", "is", "great!"]);
+
+assert("Dictu is great!".split("", -2) == ["Dictu is great!"]);
+assert("Dictu is great!".split("", -1) == ["Dictu is great!"]);
+assert("Dictu is great!".split("", 0) == ["Dictu is great!"]);
+assert("Dictu is great!".split("", 1) == ["D", "ictu is great!"]);
+assert("Dictu is great!".split("", 2) == ["D", "i", "ctu is great!"]);
+assert("Dictu is great!".split("", 3) == ["D", "i", "c", "tu is great!"]);
+assert("Dictu is great!".split("", 4) == ["D", "i", "c", "t", "u is great!"]);
+
