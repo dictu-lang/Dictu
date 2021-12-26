@@ -128,7 +128,10 @@ static Value logObjUnsetPrefix(DictuVM *vm, int argCount, Value *args) {
     }
 
     Log *log = AS_LOG(args[0]);
-    log->prefix = strdup("");
+    if (log->prefix != NULL) {
+        free(log->prefix);
+        log->prefix = NULL;
+    }
 
     return NIL_VAL;
 }
@@ -226,6 +229,8 @@ ObjAbstract* newLogObj(DictuVM *vm) {
     push(vm, OBJ_VAL(abstract));
 
     Log *log = ALLOCATE(vm, Log, 1);
+    log->of = NULL;
+    log->prefix = NULL;
 
     /**
      * Setup Log object methods
