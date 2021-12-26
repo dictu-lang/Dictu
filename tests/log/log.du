@@ -2,13 +2,15 @@
  * log.du
  *
  * Testing the Log functions:
- *    - print(), println(), fatal(), fatalln()
+ *    - print(), println()
  *
  */
 import Log;
 
-Log.fatalln("fatal error occurred");
-Log.print("log entry 1\n");
-Log.println("hello, world! warn");
-Log.println("hello, world! error");
-Log.println("hello, world! fatal");
+Log.println("hello, world! print");
+Log.println("hello, world! println\n");
+
+
+var log = Log.new(0).unwrap();
+log.setPrefix("prefix");
+log.println("blah blah blah");
