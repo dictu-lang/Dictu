@@ -72,6 +72,8 @@ static Value fatalLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
     
     exit(1);
+
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value fatallnLog(DictuVM *vm, int argCount, Value *args) {
@@ -88,6 +90,8 @@ static Value fatallnLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
     
     exit(1);
+
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 void freeLog(DictuVM *vm, ObjAbstract *abstract) {
@@ -189,6 +193,8 @@ static Value logObjFatal(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
+
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
@@ -207,6 +213,8 @@ static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
     exit(1);
+
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 ObjAbstract* newLogObj(DictuVM *vm) {
