@@ -18,7 +18,7 @@ assert(result.success());
 assert(result.unwrap() == 10);
 
 result = Error("Error!").matchWrap(success, error);
-assert(!result.success());
+assert(not result.success());
 assert(result.unwrapError() == "Error!");
 
 
