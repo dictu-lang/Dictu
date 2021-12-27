@@ -15,3 +15,6 @@ var cwd2 = System.getCWD().unwrap();
 
 assert(cwd2 != "");
 assert(cwd != cwd2);
+
+// Reset current directory
+System.chdir(cwd);
