@@ -14,9 +14,7 @@
 
 <!-- Link the issue below if you are resolving an issue !-->
 
-Resolves: 
- 
-#
+Resolves: #
 
 ### Type of change:
 
