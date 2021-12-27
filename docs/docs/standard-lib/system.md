@@ -237,14 +237,6 @@ Changes the current working directory to the given path.
 System.chdir("/usr/local/share");
 ```
 
-### System.chdir(string)
-
-Changes the current working directory to the given path.
-
-```cs
-System.chdir("/usr/local/share");
-```
-
 ### System.chmod(string, string)
 
 Set the permissions on a file or directory.
