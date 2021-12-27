@@ -26,7 +26,7 @@ import System;
 ### Constants
 
 | Constant        | Description                                                                                       |
-|-----------------|---------------------------------------------------------------------------------------------------|
+| --------------- | ------------------------------------------------------------------------------------------------- |
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
 | System.version  | Dictionary containing Dictu major, minor and patch versions.                                      |
@@ -44,10 +44,10 @@ import System;
 | System.S_IXOTH  | Execute by others.                                                                                |
 | System.S_ISUID  | Set user ID on execution.                                                                         |
 | System.S_ISGID  | Set group ID on execution.                                                                        |
-| System.F_OK     | Test for existence.
-| System.X_OK     | Test for execute permission.
-| System.W_OK     | Test for write permission.
-| System.R_OK     | Test for read permission.
+| System.F_OK     | Test for existence.                                                                               |
+| System.X_OK     | Test for execute permission.                                                                      |
+| System.W_OK     | Test for write permission.                                                                        |
+| System.R_OK     | Test for read permission.                                                                         |
 
 ### System.mkdir(string, number: mode -> optional)
 
@@ -227,4 +227,36 @@ System.exit(10);
 Shell
 ```bash
 $ echo $?; // 10
+```
+
+### System.chdir(string)
+
+Changes the current working directory to the given path.
+
+```cs
+System.chdir("/usr/local/share");
+```
+
+### System.chdir(string)
+
+Changes the current working directory to the given path.
+
+```cs
+System.chdir("/usr/local/share");
+```
+
+### System.chmod(string, string)
+
+Set the permissions on a file or directory.
+
+```cs
+System.chmod("/usr/local/share", "755");
+```
+
+### System.chown(string, number, number)
+
+Set the ownership of a file or directory with the given path, uid, and gid.
+
+```cs
+System.chown("/path/to/file", 0, 0);
 ```

@@ -1,0 +1,10 @@
+/**
+ * chmod.du
+ *
+ * Testing the System.chmod() function
+ *
+ * chmod().
+ */
+import System;
+
+System.chmod();
