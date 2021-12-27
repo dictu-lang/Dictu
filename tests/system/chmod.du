@@ -7,4 +7,3 @@
  */
 import System;
 
-System.chmod();
