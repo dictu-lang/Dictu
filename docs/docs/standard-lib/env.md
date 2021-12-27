@@ -52,6 +52,7 @@ Env.set("key", 10); // set() arguments must be a string or nil.
 
 To read environment variables from a file this helper method is provided.
 By default it will attempt to read `.env` unless a different path is supplied.
+Returns a Result type and on success will unwrap to nil.
 
 Note: You are able to have comments in the `.env` file via the use of `#` (both in-line and first character).
 
@@ -62,7 +63,7 @@ TESTING=100 # In-line comment
 ```
 
 ```cs
-Env.readFile();
+Env.readFile(); // <Result Suc>
 
 print(Env.get("TEST")); // 10
 print(Env.get("TESTING")); // 100
