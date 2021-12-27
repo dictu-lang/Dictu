@@ -21,14 +21,10 @@ assert(System.access("/", F_OK).success());
 assert(System.access("/", R_OK).success());
 assert(System.access("/", X_OK).success());
 assert(not System.access("/", W_OK).success());
-assert(System.access("/", W_OK).unwrapError() == 'Read-only file system');
 assert(not System.access("/", F_OK|R_OK|W_OK).success());
-assert(System.access("/", F_OK|R_OK|W_OK).unwrapError() == 'Read-only file system');
 assert(not System.access("/", F_OK|R_OK|W_OK|X_OK).success());
-assert(System.access("/", F_OK|R_OK|W_OK|X_OK).unwrapError() == 'Read-only file system');
 assert(System.access("/", F_OK|R_OK|X_OK).success());
 assert(not System.access(__file__, X_OK).success());
-assert(System.access(__file__, X_OK).unwrapError() == 'Permission denied');
 
 import Path;
 
