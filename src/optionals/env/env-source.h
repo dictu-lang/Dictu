@@ -14,8 +14,7 @@
 "            const [variable, rawValue] = line.split(SPLIT_DELIMITER, 1);\n" \
 "            // Strip out any in-line comments\n" \
 "            const value = rawValue.split(COMMENT, 1);\n" \
-"            // const result = Env.set(variable, value[0].strip());\n" \
-"            const result = Env.set(variable, 10);\n" \
+"            const result = Env.set(variable.strip(), value[0].strip());\n" \
 "\n" \
 "            if (not result.success()) {\n" \
 "                return result;\n" \
