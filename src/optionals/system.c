@@ -320,9 +320,7 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     int i = strtol(mode->chars, 0, 8);
 
     if (chmod(file->chars, i) == -1) {
-        char errMsg[1024];
-        sprintf(errMsg, "%s", strerror(errno));
-        return newResultError(vm, errMsg);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, EMPTY_VAL);
@@ -344,9 +342,7 @@ static Value chownNative(DictuVM *vm, int argCount, Value *args) {
     int gid = AS_NUMBER(args[2]);
 
     if (chown(file->chars, uid, gid) == -1) {
-        char errMsg[1024];
-        sprintf(errMsg, "%s", strerror(errno));
-        return newResultError(vm, errMsg);
+        ERROR_RESULT;
     }
 
     return newResultSuccess(vm, EMPTY_VAL);
