@@ -39,7 +39,7 @@ static Value printLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
-    return newResultSuccess(vm, NIL_VAL);
+    return NIL_VAL;
 }
 
 static Value printlnLog(DictuVM *vm, int argCount, Value *args) {
@@ -55,7 +55,7 @@ static Value printlnLog(DictuVM *vm, int argCount, Value *args) {
         ptm->tm_year+2000-100, ptm->tm_mon, ptm->tm_mday, 
         ptm->tm_hour, ptm->tm_min, ptm->tm_sec, msg);
 
-    return newResultSuccess(vm, NIL_VAL);
+    return NIL_VAL;
 }
 
 static Value fatalLog(DictuVM *vm, int argCount, Value *args) {

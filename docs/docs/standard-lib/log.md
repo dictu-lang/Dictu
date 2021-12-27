@@ -29,19 +29,19 @@ import Log;
 | Constant   | Description                                                           |
 | ---------- | --------------------------------------------------------------------- |
 | Log.stdout | The default file descriptor where a process can write output.         |
-| Log.stderr | An input stream where data is sent to and read by a program.          |
-| Log.stdin  | The default file descriptor where a process can write error messages. |
+| Log.stderr | The default file descriptor where a process can write error messages. |
+| Log.stdin  | An input stream where data is sent to and read by a program.          |
 
 ### Log.print(string)
 
 ```cs
-Log.print("something extremely interesting");
+Log.print("something extremely interesting"); 2021/11/27 11:49:14 something extremely interesting
 ```
 
 ### Log.println(string)
 
 ```cs
-Log.println("hello, world! println");
+Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
 ### Log.new(number)
