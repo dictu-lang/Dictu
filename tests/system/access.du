@@ -7,27 +7,29 @@
  */
 import System;
 
-const
-  F_OK = System.F_OK,
-  X_OK = System.X_OK,
-  W_OK = System.W_OK,
-  R_OK = System.R_OK;
+if (System.platform != "windows") {
+  const
+    F_OK = System.F_OK,
+    X_OK = System.X_OK,
+    W_OK = System.W_OK,
+    R_OK = System.R_OK;
 
-assert(F_OK == 0);
-assert(X_OK == 1);
-assert(W_OK == 2);
-assert(R_OK == 4);
-assert(System.access("/", F_OK).success());
-assert(System.access("/", R_OK).success());
-assert(System.access("/", X_OK).success());
-assert(not System.access("/", W_OK).success());
-assert(not System.access("/", F_OK|R_OK|W_OK).success());
-assert(not System.access("/", F_OK|R_OK|W_OK|X_OK).success());
-assert(System.access("/", F_OK|R_OK|X_OK).success());
-assert(not System.access(__file__, X_OK).success());
+  assert(F_OK == 0);
+  assert(X_OK == 1);
+  assert(W_OK == 2);
+  assert(R_OK == 4);
+  assert(System.access("/", F_OK).success());
+  assert(System.access("/", R_OK).success());
+  assert(System.access("/", X_OK).success());
+  assert(not System.access("/", W_OK).success());
+  assert(not System.access("/", F_OK|R_OK|W_OK).success());
+  assert(not System.access("/", F_OK|R_OK|W_OK|X_OK).success());
+  assert(System.access("/", F_OK|R_OK|X_OK).success());
+  assert(not System.access(__file__, X_OK).success());
 
-import Path;
+  import Path;
 
-if (not Path.exists ("/__NOT_EXISTANT__")) {
-  assert(not System.access("/NOT_EXISTANT__", F_OK).success());
+  if (not Path.exists ("/__NOT_EXISTANT__")) {
+    assert(not System.access("/NOT_EXISTANT__", F_OK).success());
+  }
 }
