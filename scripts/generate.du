@@ -29,7 +29,8 @@ var files = [
     'src/vm/datatypes/lists/list',
     'src/vm/datatypes/dicts/dict',
     'src/vm/datatypes/result/result',
-    'src/optionals/unittest/unittest'
+    'src/optionals/unittest/unittest',
+    'src/optionals/env/env'
 ];
 
 for (var i = 0; i < files.len(); i += 1) {

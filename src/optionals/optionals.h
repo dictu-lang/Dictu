@@ -3,7 +3,7 @@
 
 #include "../vm/util.h"
 #include "math.h"
-#include "env.h"
+#include "env/env.h"
 #include "system.h"
 #include "json.h"
 #include "http.h"

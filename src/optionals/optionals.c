@@ -2,7 +2,7 @@
 
 BuiltinModules modules[] = {
         {"Math", &createMathsModule, false},
-        {"Env", &createEnvModule, false},
+        {"Env", &createEnvModule, true},
         {"JSON", &createJSONModule, false},
         {"Path", &createPathModule, false},
         {"Datetime", &createDatetimeModule, false},
