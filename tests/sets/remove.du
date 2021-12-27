@@ -32,25 +32,25 @@ mySet.remove("dictu");
 
 assert(mySet.len() == 7);
 
-assert(!mySet.contains("dictu"));
+assert(not mySet.contains("dictu"));
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));
 
 
 mySet.remove(true);
-assert(!mySet.contains(true));
+assert(not mySet.contains(true));
 
 mySet.remove(false);
-assert(!mySet.contains(false));
+assert(not mySet.contains(false));
 
 mySet.remove(10);
-assert(!mySet.contains(10));
+assert(not mySet.contains(10));
 
 mySet.remove(10.5);
-assert(!mySet.contains(10.5));
+assert(not mySet.contains(10.5));
 
 mySet.remove(nil);
-assert(!mySet.contains(nil));
+assert(not mySet.contains(nil));
 
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));
@@ -73,25 +73,25 @@ mySet.remove("dictu");
 
 assert(mySet.len() == 7);
 
-assert(!mySet.contains("dictu"));
+assert(not mySet.contains("dictu"));
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));
 
 
 mySet.remove(true);
-assert(!mySet.contains(true));
+assert(not mySet.contains(true));
 
 mySet.remove(false);
-assert(!mySet.contains(false));
+assert(not mySet.contains(false));
 
 mySet.remove(10);
-assert(!mySet.contains(10));
+assert(not mySet.contains(10));
 
 mySet.remove(10.5);
-assert(!mySet.contains(10.5));
+assert(not mySet.contains(10.5));
 
 mySet.remove(nil);
-assert(!mySet.contains(nil));
+assert(not mySet.contains(nil));
 
 assert(mySet.contains("is"));
 assert(mySet.contains("great!"));

@@ -27,7 +27,7 @@ expectedMethods.forEach(def (method) => {
     assert(Test.methods().contains(method));
 });
 
-assert(!Test.methods().contains("somePrivateFunc"));
+assert(not Test.methods().contains("somePrivateFunc"));
 
 /**
  * Test instance
@@ -37,7 +37,7 @@ expectedMethods.forEach(def (method) => {
     assert(Test().methods().contains(method));
 });
 
-assert(!Test().methods().contains("somePrivateFunc"));
+assert(not Test().methods().contains("somePrivateFunc"));
 
 /**
  * Inheritance
@@ -61,7 +61,7 @@ expectedMethodsInheritance.forEach(def (method) => {
     assert(AnotherTest.methods().contains(method));
 });
 
-assert(!AnotherTest.methods().contains("somePrivateFunc"));
+assert(not AnotherTest.methods().contains("somePrivateFunc"));
 
 /**
  * Test instance
@@ -71,4 +71,4 @@ expectedMethodsInheritance.forEach(def (method) => {
     assert(AnotherTest().methods().contains(method));
 });
 
-assert(!AnotherTest().methods().contains("somePrivateFunc"));
+assert(not AnotherTest().methods().contains("somePrivateFunc"));

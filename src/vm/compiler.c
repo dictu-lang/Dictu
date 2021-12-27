@@ -1344,7 +1344,7 @@ static bool foldUnary(Compiler *compiler, TokenType operatorType) {
     TokenType valueToken = compiler->parser->previous.type;
 
     switch (operatorType) {
-        case TOKEN_BANG: {
+        case TOKEN_NOT: {
             if (valueToken == TOKEN_TRUE) {
                 Chunk *chunk = currentChunk(compiler);
                 chunk->code[chunk->count - 1] = OP_FALSE;
@@ -1387,7 +1387,7 @@ static void unary(Compiler *compiler, bool canAssign) {
     }
 
     switch (operatorType) {
-        case TOKEN_BANG:
+        case TOKEN_NOT:
             emitByte(compiler, OP_NOT);
             break;
         case TOKEN_MINUS:
@@ -1428,7 +1428,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_AMPERSAND_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CARET_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PIPE_EQUALS
-        {unary,    NULL,      PREC_NONE},               // TOKEN_BANG
+        {unary,    NULL,      PREC_NONE},               // TOKEN_NOT
         {NULL,     binary,    PREC_EQUALITY},           // TOKEN_BANG_EQUAL
         {NULL,     NULL,      PREC_NONE},               // TOKEN_EQUAL
         {NULL,     binary,    PREC_EQUALITY},           // TOKEN_EQUAL_EQUAL
