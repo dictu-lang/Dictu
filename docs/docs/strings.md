@@ -167,9 +167,11 @@ Returns true if a string ends with a given string.
 Returns a list of strings, split based on a given delimiter.
 Returns a list of all characters in a string if an empty string is passed as delimiter.
 
-An optional second argument can be passed which will determine the amount of times a split occurs.
+An optional second argument can be passed which will determine the amount of times a split occurs, if negative it's the same
+as not passing a value and will split by all occurrences of the delimiter.
 ```cs
 "Dictu is awesome!".split(" "); // ['Dictu', 'is', 'awesome!']
+"Dictu is awesome!".split(" ", -1); // ['Dictu', 'is', 'awesome!']
 "Dictu is awesome!".split(""); // ["D", "i", "c", "t", "u", " ", "i", "s", " ", "a", "w", "e", "s", "o", "m", "e", "!"]
 "Dictu is awesome!".split(" ", 0); // ['Dictu is awesome!']
 "Dictu is awesome!".split(" ", 1); // ['Dictu', 'is awesome!']
