@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "optionals.h"
-#include "../vm/vm.h"
+#include "../optionals.h"
+#include "../../vm/vm.h"
 
 Value createEnvModule(DictuVM *vm);
 

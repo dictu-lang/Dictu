@@ -1475,6 +1475,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             // If we have imported this module already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                vm->lastModule = AS_MODULE(moduleVal);
                 push(vm, moduleVal);
                 DISPATCH();
             }
@@ -1494,6 +1495,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ip = frame->ip;
 
                 tableGet(&vm->modules, fileName, &module);
+                vm->lastModule = AS_MODULE(module);
             }
 
             DISPATCH();
