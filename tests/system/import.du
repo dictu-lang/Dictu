@@ -15,3 +15,5 @@ import "remove.du";
 import "process.du";
 import "mkdir.du";
 import "constants.du";
+import "chmod.du";
+import "chown.du";
