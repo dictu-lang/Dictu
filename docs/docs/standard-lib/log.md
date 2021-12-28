@@ -35,13 +35,29 @@ import Log;
 ### Log.print(string)
 
 ```cs
-Log.print("something extremely interesting"); 2021/11/27 11:49:14 something extremely interesting
+Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something extremely interesting
 ```
 
 ### Log.println(string)
 
 ```cs
 Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print
+```
+
+### Log.fatal(string)
+
+Log the given output and exit the program with an exit code of 1.
+
+```cs
+Log.fatal("we've met a tragic end"); // 2021/11/27 11:49:14 we've met a tragic end
+```
+
+### Log.fatalln(string)
+
+Log the given output with a new line and exit the program with an exit code of 1.
+
+```cs
+Log.fatalln("hello, world! fatalln"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
 ### Log.new(number)
@@ -66,4 +82,20 @@ Remove the prefix on the logger. This is a noop if there was no prefix previousl
 
 ```cs
 log.unsetPrefix();
+```
+
+### log.fatal(string)
+
+Log the given output and exit the program with an exit code of 1.
+
+```cs
+log.fatal("we've met a tragic end"); // 2021/11/27 11:49:14 we've met a tragic end
+```
+
+### log.fatalln(string)
+
+Log the given output with a new line and exit the program with an exit code of 1.
+
+```cs
+log.fatalln("hello, world! fatalln"); // 2021/11/27 11:49:14 hello, world! print
 ```
