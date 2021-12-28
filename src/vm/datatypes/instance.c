@@ -108,6 +108,14 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
 
     ObjInstance *instance = AS_INSTANCE(args[0]);
 
+    ObjDict *dict = newDict(vm);
+    push(vm, OBJ_VAL(dict));
+    
+    ObjString *cv = copyString(vm, "classVariables", 14);
+    push(vm, OBJ_VAL(cv));
+    //dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(content));
+    pop(vm);
+
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
