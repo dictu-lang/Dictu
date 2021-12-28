@@ -65,7 +65,7 @@ Log.fatalln("hello, world! fatalln"); // 2021/11/27 11:49:14 hello, world! print
 Create a new instance of a logger.
 
 ```cs
-var log = Log.new(Log.stdout).unwrap();
+const log = Log.new(Log.stdout).unwrap();
 ```
 
 ### log.setPrefix(string)
@@ -82,6 +82,18 @@ Remove the prefix on the logger. This is a noop if there was no prefix previousl
 
 ```cs
 log.unsetPrefix();
+```
+
+### log.print(string)
+
+```cs
+Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something extremely interesting
+```
+
+### log.println(string)
+
+```cs
+Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
 ### log.fatal(string)
