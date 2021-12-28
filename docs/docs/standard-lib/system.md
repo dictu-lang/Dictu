@@ -229,14 +229,6 @@ Shell
 $ echo $?; // 10
 ```
 
-### System.chdir(string)
-
-Changes the current working directory to the given path.
-
-```cs
-System.chdir("/usr/local/share");
-```
-
 ### System.chmod(string, string)
 
 Set the permissions on a file or directory.
@@ -248,6 +240,8 @@ System.chmod("/usr/local/share", "755");
 ### System.chown(string, number, number)
 
 Set the ownership of a file or directory with the given path, uid, and gid.
+
+Note: This is not available on Windows systems.
 
 ```cs
 System.chown("/path/to/file", 0, 0);

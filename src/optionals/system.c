@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #define rmdir(DIRNAME) _rmdir(DIRNAME)
 #define chdir(DIRNAME) _chdir(DIRNAME)
+#define chmod(FILENAME, MODE) _chmod(FILENAME, MODE)
 #define getcwd(BUFFER, MAXLEN) _getcwd(BUFFER, MAXLEN)
 #endif
 
@@ -71,6 +72,33 @@ static Value getpidNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(getpid());
+}
+
+static Value chownNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 3) {
+        runtimeError(vm, "chown() takes 3 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "first chown() argument must be a string.");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        runtimeError(vm, "second and third chown() arguments must be numbers.");
+        return EMPTY_VAL;
+    }
+
+    ObjString *file = AS_STRING(args[0]);
+    int uid = AS_NUMBER(args[1]);
+    int gid = AS_NUMBER(args[2]);
+
+    if (chown(file->chars, uid, gid) == -1) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, EMPTY_VAL);
 }
 #endif
 
@@ -184,12 +212,12 @@ static Value removeNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "setcwd() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "setCWD() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "setcwd() argument must be a string");
+        runtimeError(vm, "setCWD() argument must be a string");
         return EMPTY_VAL;
     }
 
@@ -281,36 +309,14 @@ static Value exitNative(DictuVM *vm, int argCount, Value *args) {
     return EMPTY_VAL; /* satisfy the tcc compiler */
 }
 
-static Value chdirNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "chdir() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "chdir() argument must be a string");
-        return EMPTY_VAL;
-    }
-
-    char *dir = AS_CSTRING(args[0]);
-
-    int retval = chdir(dir);
-
-    if (retval < 0) {
-        ERROR_RESULT;
-    }
-
-    return newResultSuccess(vm, NIL_VAL);
-}
-
 static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "chmod() takes 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || (!IS_STRING(args[1]) && !IS_NIL(args[1]))) {
-        runtimeError(vm, "first chmod() argument must be a string.");
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "chmod() arguments must be strings.");
         return EMPTY_VAL;
     }
 
@@ -323,29 +329,7 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
         ERROR_RESULT;
     }
 
-    return newResultSuccess(vm, EMPTY_VAL);
-}
-
-static Value chownNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 3) {
-        runtimeError(vm, "chown() takes 3 arguments (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "first chown() argument must be a string.");
-        return EMPTY_VAL;
-    }
-
-    ObjString *file = AS_STRING(args[0]);
-    int uid = AS_NUMBER(args[1]);
-    int gid = AS_NUMBER(args[2]);
-
-    if (chown(file->chars, uid, gid) == -1) {
-        ERROR_RESULT;
-    }
-
-    return newResultSuccess(vm, EMPTY_VAL);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
@@ -429,6 +413,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "geteuid", geteuidNative);
     defineNative(vm, &module->values, "getppid", getppidNative);
     defineNative(vm, &module->values, "getpid", getpidNative);
+    defineNative(vm, &module->values, "chown", chownNative);
 #endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
@@ -443,10 +428,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "collect", collectNative);
     defineNative(vm, &module->values, "sleep", sleepNative);
     defineNative(vm, &module->values, "exit", exitNative);
-
-    defineNative(vm, &module->values, "chdir", chdirNative);
     defineNative(vm, &module->values, "chmod", chmodNative);
-    defineNative(vm, &module->values, "chown", chownNative);
 
     /**
      * Define System properties
