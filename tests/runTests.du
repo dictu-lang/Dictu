@@ -19,6 +19,7 @@ import "datetime/import.du";
 import "env/import.du";
 import "system/import.du";
 import "json/import.du";
+import "log/import.du";
 import "path/import.du";
 import "sockets/import.du";
 import "base64/import.du";
