@@ -142,7 +142,9 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        maxSplit = AS_NUMBER(args[2]);
+        if (AS_NUMBER(args[2]) >= 0) {
+            maxSplit = AS_NUMBER(args[2]);
+        }
     }
 
     char *tmp = ALLOCATE(vm, char, string->length + 1);
@@ -174,7 +176,7 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
         } else {
             tmp = NULL;
         }
-    } else if (count < maxSplit) {
+    } else if (maxSplit > 0) {
         do {
             count++;
             token = strstr(tmp, delimiter);

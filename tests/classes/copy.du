@@ -28,7 +28,7 @@ assert(objCopy.z == {1: 2});
 objCopy.y = 10;
 
 assert(objCopy.y == 10);
-assert(!obj.hasAttribute('y'));
+assert(not obj.hasAttribute('y'));
 
 obj.y = Test();
 
@@ -45,5 +45,5 @@ assert(obj.y.x == [1, 2]);
 deepCopy.i = 10;
 
 assert(deepCopy.i == 10);
-assert(!obj.hasAttribute('i'));
+assert(not obj.hasAttribute('i'));
 
