@@ -1,0 +1,60 @@
+import System;
+
+const LEFT_BRACE = "{";
+const RIGHT_BRACE = "}";
+
+// Template is a simple template rendering engine.
+class Template {
+    private tmpl;
+    private klass;
+    private rendered;
+
+    init(tmpl, klass) {
+        this.tmpl = tmpl;
+        this.klass = klass;
+    }
+
+    // render parses the given template and class and
+    // matches the fields in the class to the template
+    // fields and replaces them with the class values.
+    render() {
+        const classAttrs = this.klass.getAttributes()["properties"];
+        this.rendered = this.tmpl;
+
+        classAttrs.forEach(def(attr) => {
+            const attrVal = this.klass.getAttribute(attr);
+            const tmplField = LEFT_BRACE+attr+RIGHT_BRACE;
+
+            if (this.rendered.contains(tmplField)) {
+                if (type(attrVal) != "string") {
+                    this.rendered = this.rendered.replace(tmplField, attrVal.toString());
+                } else {
+                    this.rendered = this.rendered.replace(tmplField, attrVal);
+                }
+            }
+        });
+
+        return this.rendered;
+    }
+}
+
+// Person is a class used to hold data to be passed 
+// to the template engine.
+class Person {
+    init(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+// main
+{
+    const tmpl = "Hello {name}! You are {age} years old.";
+    const p = Person("John", 12);
+
+    const t = Template(tmpl, p);
+
+    print("{}".format(t.render()));
+
+    System.exit(0);
+}
