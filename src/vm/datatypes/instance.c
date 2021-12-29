@@ -107,11 +107,6 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjInstance *instance = AS_INSTANCE(args[0]);
-    // ObjClass *klass = instance->klass;
-
-    // if (klass->superclass != NULL) {
-    //     printf("not a inhereted...");
-    // }
 
     ObjDict *dict = newDict(vm);
     push(vm, OBJ_VAL(dict));
@@ -142,8 +137,9 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     ObjList *properties = newList(vm);
     push(vm, OBJ_VAL(properties));
     pop(vm);
-
-    for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
+    
+    for (int i = 0; i < instance->klass->publicProperties.capacityMask + 1; i++) {
+        //printf("XXX - %s\n", klass->name->chars);
         if (instance->klass->publicProperties.entries[i].key == NULL) {
             continue;
         }

@@ -30,8 +30,12 @@ class Inherit < Test {
 
 }
 
-print(Inherit.getAttributes());
-//print(Inherit().getAttributes().len());
-
-//assert(Inherit().getAttributes().len() == 3);
+assert(Inherit().getAttributes().len() == 3);
+assert(Inherit().getAttributes().exists("properties"));
+assert(Inherit().getAttributes().exists("classVariables"));
+assert(Inherit().getAttributes().exists("methods"));
+assert(Inherit().getAttributes().get("properties").len() == 0);
+assert(Inherit().getAttributes().get("classVariables").len() == 3);
+assert(Inherit().getAttributes().get("methods").len() == 2);
+assert(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
 
