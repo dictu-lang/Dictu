@@ -55,6 +55,4 @@ class Person {
     const t = Template(tmpl, p);
 
     print("{}".format(t.render()));
-
-    System.exit(0);
 }
