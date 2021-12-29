@@ -1,0 +1,9 @@
+/**
+ * import.du
+ *
+ * General import file for all the Inspect tests
+ */
+
+import "getLine.du";
+import "getFile.du";
+import "getFrameCount.du";

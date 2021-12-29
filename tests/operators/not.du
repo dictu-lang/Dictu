@@ -7,5 +7,5 @@
 assert((not true) == false);
 assert(not false);
 
-assert(!true == false);
-assert(!false);
+assert(not (true == false));
+assert(not false);

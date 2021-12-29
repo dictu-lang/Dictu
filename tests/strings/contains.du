@@ -7,9 +7,9 @@
  */
 
 assert("Dictu is great!".contains("is"));
-assert(!("Dictu is great!".contains("test")));
-assert(!("Dictu is great!".contains("12345")));
-assert(!("Dictu is great!".contains("@£$%")));
+assert(not ("Dictu is great!".contains("test")));
+assert(not ("Dictu is great!".contains("12345")));
+assert(not ("Dictu is great!".contains("@£$%")));
 assert("Dictu is great!".contains("!"));
 assert("1Dictu is great!1".contains("1"));
 assert(("1Dictu " + "is great!").contains("1"));

@@ -1,0 +1,27 @@
+def iterative_fibonacci(n) {
+    var a = 0, b = 1, c = 0;
+    for (var i = 1; i < n; i += 1) {
+        c = a;
+        a = b;
+        b = b + c;
+    }
+    return b;
+}
+
+var memoization_dict = {};
+def memoized_recursive_fibonacci(n) {
+    if (memoization_dict.exists(n)) return memoization_dict[n];
+    if (n < 2) return n;
+    var result = memoized_recursive_fibonacci(n - 2) + memoized_recursive_fibonacci(n - 1);
+    memoization_dict[n] = result;
+    return result;
+}
+
+def recursive_fibonacci(n) {
+    if (n < 2) return n;
+    return recursive_fibonacci(n - 2) + recursive_fibonacci(n - 1);
+}
+
+print('iterative_fibonacci(100) = {}'.format(iterative_fibonacci(100)));
+print('memoized_recursive_fibonacci(100) = {}'.format(memoized_recursive_fibonacci(100)));
+print('recursive_fibonacci(10) = {}'.format(recursive_fibonacci(10)));

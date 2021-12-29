@@ -12,4 +12,12 @@
 "\n" \
 "    return errorCallback(result.unwrapError());\n" \
 "}\n" \
+"\n" \
+"def matchWrap(result, successCallback, errorCallback) {\n" \
+"    if (result.success()) {\n" \
+"        return Success(successCallback(result.unwrap()));\n" \
+"    }\n" \
+"\n" \
+"    return Error(errorCallback(result.unwrapError()));\n" \
+"}\n" \
 

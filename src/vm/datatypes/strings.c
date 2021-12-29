@@ -122,8 +122,8 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value splitString(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "split() takes 1 argument (%d given)", argCount);
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "split() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -134,6 +134,18 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
     char *delimiter = AS_CSTRING(args[1]);
+    int maxSplit = string->length + 1;
+
+    if (argCount == 2) {
+        if (!AS_NUMBER(args[1])) {
+            runtimeError(vm, "Argument passed to split() must be a number");
+            return EMPTY_VAL;
+        }
+
+        if (AS_NUMBER(args[2]) >= 0) {
+            maxSplit = AS_NUMBER(args[2]);
+        }
+    }
 
     char *tmp = ALLOCATE(vm, char, string->length + 1);
     char *tmpFree = tmp;
@@ -144,9 +156,13 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
 
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
+    int count = 0;
+
     if (delimiterLength == 0) {
-        for (int tokenCount = 0; tokenCount < string->length; tokenCount++) {
-            *(tmp) = string->chars[tokenCount];
+        int tokenIndex = 0;
+        for (; tokenIndex < string->length && count < maxSplit; tokenIndex++) {
+            count++;
+            *(tmp) = string->chars[tokenIndex];
             *(tmp + 1) = '\0';
             Value str = OBJ_VAL(copyString(vm, tmp, 1));
             // Push to stack to avoid GC
@@ -154,8 +170,15 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
             writeValueArray(vm, &list->values, str);
             pop(vm);
         }
-    } else {
+
+        if (tokenIndex != string->length && count >= maxSplit) {
+            tmp = (string->chars) + tokenIndex;
+        } else {
+            tmp = NULL;
+        }
+    } else if (maxSplit > 0) {
         do {
+            count++;
             token = strstr(tmp, delimiter);
             if (token)
                 *token = '\0';
@@ -168,8 +191,22 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
             pop(vm);
 
             tmp = token + delimiterLength;
-        } while (token != NULL);
+        } while (token != NULL && count < maxSplit);
+
+        if (token == NULL) {
+            tmp = NULL;
+        }
     }
+
+    if (tmp != NULL && count >= maxSplit) {
+        Value remainingStr = OBJ_VAL(copyString(vm, tmp, strlen(tmp)));
+
+        // Push to stack to avoid GC
+        push(vm, remainingStr);
+        writeValueArray(vm, &list->values, remainingStr);
+        pop(vm);
+    }
+
     pop(vm);
 
     FREE_ARRAY(vm, char, tmpFree, string->length + 1);
@@ -465,6 +502,34 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(count);
 }
 
+static Value titleString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "title() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+
+    bool convertNext=true;
+
+    for (int i = 0; string->chars[i]; i++) {
+        if(string->chars[i]==' '){
+            convertNext=true;
+        }
+        else if(convertNext){
+            temp[i] = toupper(string->chars[i]);
+            convertNext=false;
+            continue;
+        }
+        temp[i] = tolower(string->chars[i]);
+    }
+
+    temp[string->length] = '\0';
+
+    return OBJ_VAL(takeString(vm, temp, string->length));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -482,4 +547,5 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "strip", stripString);
     defineNative(vm, &vm->stringMethods, "count", countString);
     defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
+    defineNative(vm, &vm->stringMethods, "title", titleString);
 }

@@ -238,7 +238,7 @@ ObjAbstract *newSqlite(DictuVM *vm) {
     return abstract;
 }
 
-ObjModule *createSqliteModule(DictuVM *vm) {
+Value createSqliteModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Sqlite", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -252,5 +252,5 @@ ObjModule *createSqliteModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

@@ -8,10 +8,10 @@ assert(10 == 10);
 assert(11 != 10);
 
 assert(10 >= 10);
-assert(!(10 >= 11));
+assert(not (10 >= 11));
 
 assert(9 <= 10);
-assert(!(10 <= 9));
+assert(not (10 <= 9));
 
 assert("test" == "test");
 assert("test" != "testing");

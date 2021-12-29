@@ -63,6 +63,7 @@ typedef struct ClassCompiler {
     bool staticMethod;
     bool abstractClass;
     Table privateVariables;
+    ObjDict *annotations;
 } ClassCompiler;
 
 typedef struct Loop {
@@ -101,6 +102,7 @@ typedef struct Compiler {
 
     int scopeDepth;
     bool withBlock;
+    ObjDict *annotations;
 } Compiler;
 
 typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);

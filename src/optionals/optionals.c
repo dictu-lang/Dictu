@@ -1,30 +1,36 @@
 #include "optionals.h"
 
 BuiltinModules modules[] = {
-        {"Math", &createMathsModule},
-        {"Env", &createEnvModule},
-        {"JSON", &createJSONModule},
-        {"Path", &createPathModule},
-        {"Datetime", &createDatetimeModule},
-        {"Socket", &createSocketModule},
-        {"Random", &createRandomModule},
-        {"Base64", &createBase64Module},
-        {"Hashlib", &createHashlibModule},
-        {"Sqlite", &createSqliteModule},
-        {"Process", &createProcessModule},
+        {"Math", &createMathsModule, false},
+        {"Env", &createEnvModule, true},
+        {"JSON", &createJSONModule, false},
+        {"Log", &createLogModule, false},
+        {"Path", &createPathModule, false},
+        {"Datetime", &createDatetimeModule, false},
+        {"Socket", &createSocketModule, false},
+        {"Random", &createRandomModule, false},
+        {"Base64", &createBase64Module, false},
+        {"Hashlib", &createHashlibModule, false},
+        {"Sqlite", &createSqliteModule, false},
+        {"Process", &createProcessModule, false},
+        {"System", &createSystemModule, false},
+        {"UnitTest", &createUnitTestModule, true},
+        {"Inspect", &createInspectModule, false},
 #ifndef DISABLE_HTTP
-        {"HTTP", &createHTTPModule},
+        {"HTTP", &createHTTPModule, false},
 #endif
-        {NULL, NULL}
+        {NULL, NULL, false}
 };
 
-ObjModule *importBuiltinModule(DictuVM *vm, int index) {
+Value importBuiltinModule(DictuVM *vm, int index) {
     return modules[index].module(vm);
 }
 
-int findBuiltinModule(char *name, int length) {
+int findBuiltinModule(char *name, int length, bool *dictuSource) {
     for (int i = 0; modules[i].module != NULL; ++i) {
         if (strncmp(modules[i].name, name, length) == 0) {
+            *dictuSource = modules[i].dictuSource;
+
             return i;
         }
     }

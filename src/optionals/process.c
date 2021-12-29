@@ -268,7 +268,7 @@ static Value runNative(DictuVM* vm, int argCount, Value* args) {
     return execute(vm, argList, true);
 }
 
-ObjModule* createProcessModule(DictuVM* vm) {
+Value createProcessModule(DictuVM* vm) {
     ObjString* name = copyString(vm, "Process", 7);
     push(vm, OBJ_VAL(name));
     ObjModule* module = newModule(vm, name);
@@ -287,5 +287,5 @@ ObjModule* createProcessModule(DictuVM* vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

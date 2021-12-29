@@ -17,6 +17,8 @@ Documentation for Dictu can be found [here](https://dictu-lang.com/)
 
 ## Example programs
 ```js
+import System;
+
 const guess = 10;
 
 while {
@@ -97,3 +99,10 @@ in the [DictuVSC repo](https://github.com/dictu-lang/DictuVSC).
 ## Credits
 
 This language was initially based on the very good [craftinginterpreters book](http://www.craftinginterpreters.com/contents.html), along with inspiration from [Wren](https://github.com/wren-lang/wren).
+
+<p>This project is supported by:</p>
+<p>
+  <a href="https://m.do.co/c/02bd923f5cda">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="201px">
+  </a>
+</p>

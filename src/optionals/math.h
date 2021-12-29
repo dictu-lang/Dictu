@@ -7,6 +7,8 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
-ObjModule *createMathsModule(DictuVM *vm);
+#define FLOAT_TOLERANCE 0.00001
+
+Value createMathsModule(DictuVM *vm);
 
 #endif //dictu_math_h

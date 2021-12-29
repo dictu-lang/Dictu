@@ -19,11 +19,13 @@ import "datetime/import.du";
 import "env/import.du";
 import "system/import.du";
 import "json/import.du";
+import "log/import.du";
 import "path/import.du";
 import "sockets/import.du";
 import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
+import "inspect/import.du";
 
 if (isDefined("HTTP")) {
   import "http/import.du";

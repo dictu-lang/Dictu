@@ -1,0 +1,42 @@
+/**
+ * getAttributes.du
+ *
+ * Testing the obj.getAttributes() method
+ *
+ */
+
+class Test {
+    var x = 10;
+
+    init(private priv = 10, var pub = 20) {
+        this.prop = 30;
+    }
+
+    private privMethod() {}
+
+    publicMethod() {}
+}
+
+assert(Test().getAttributes().len() == 3);
+assert(Test().getAttributes().exists("properties"));
+assert(Test().getAttributes().exists("classVariables"));
+assert(Test().getAttributes().exists("methods"));
+// 3 because of the implicit "_class" property
+assert(Test().getAttributes().get("properties").len() == 3);
+assert(Test().getAttributes().get("classVariables").len() == 1);
+assert(Test().getAttributes().get("methods").len() == 2);
+assert(Test().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
+
+class Inherit < Test {
+
+}
+
+assert(Inherit().getAttributes().len() == 3);
+assert(Inherit().getAttributes().exists("properties"));
+assert(Inherit().getAttributes().exists("classVariables"));
+assert(Inherit().getAttributes().exists("methods"));
+// 3 because of the implicit "_class" property
+assert(Inherit().getAttributes().get("properties").len() == 3);
+assert(Inherit().getAttributes().get("classVariables").len() == 1);
+assert(Inherit().getAttributes().get("methods").len() == 2);
+assert(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));

@@ -7,6 +7,6 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
-ObjModule *createRandomModule(DictuVM *vm);
+Value createRandomModule(DictuVM *vm);
 
 #endif //dictu_random_h

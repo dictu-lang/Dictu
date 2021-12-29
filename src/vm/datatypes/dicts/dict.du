@@ -1,0 +1,23 @@
+/**
+ * This file contains all the methods for Dicts written in Dictu that
+ * are unable to be written in C due to re-enterability issues.
+ *
+ * We should always strive to write methods in C where possible.
+ */
+def forEach(dict, func) {
+    const dictKeys = dict.keys();
+
+    for (var i = 0; i < dictKeys.len(); i += 1) {
+        func(dictKeys[i], dict[dictKeys[i]]);
+    }
+}
+
+def merge(dict, anotherDict) {
+    const newDict = dict.copy();
+
+    forEach(anotherDict, def (key, value) => {
+       newDict[key] = value;
+    });
+
+    return newDict;
+}

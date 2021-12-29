@@ -1,0 +1,45 @@
+/**
+* matchWrap.du
+*
+* Testing Result.matchWrap()
+*
+*/
+
+def success(result) {
+    return result;
+}
+
+def error(err) {
+    return err;
+}
+
+var result = Success(10).matchWrap(success, error);
+assert(result.success());
+assert(result.unwrap() == 10);
+
+result = Error("Error!").matchWrap(success, error);
+assert(not result.success());
+assert(result.unwrapError() == "Error!");
+
+
+assert(
+  Success([1, 2, 3]).matchWrap(
+      def (result) => result,
+      def (err) => err
+  ).unwrap() == [1, 2, 3]
+);
+
+assert(
+    Error("test").matchWrap(
+        def (result) => result,
+        def (err) => err
+    ).unwrapError() == "test"
+);
+
+var number = "10".toNumber().matchWrap(success, error);
+assert(number.success());
+assert(number.unwrap() == 10);
+
+var number = "test".toNumber().matchWrap(success, error);
+assert(not number.success());
+assert(number.unwrapError() == "Can not convert 'test' to number");

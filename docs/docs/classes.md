@@ -146,6 +146,28 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
+### methods
+
+Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This
+will return a list of strings, where the strings are the names of all public methods stored within a class.
+
+Note: The order of the list is not the same order the methods are defined.
+
+```cs
+class Test {
+    init() {
+
+    }
+
+    someOther() {
+
+    }
+}
+
+print(Test.methods()); // ["someOther", "init"]
+print(Test().methods()); // Works on instances too - ["someOther", "init"]
+```
+
 ## This
 
 `this` is a variable which is passed to all methods which are not marked as static. `this` is a reference to the object you are currently accessing. `this` allows you to modify instance variables of a particular object.
@@ -223,6 +245,21 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
+### getAttributes
+
+The `getAttributes` method returns all public attributes on the given instance of a class.
+
+```cs
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.getAttributes()); // ["x"]
+```
+
 ### setAttribute
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
@@ -266,7 +303,18 @@ print(Test().someMethod()?.someOtherMethod()); // nil
 
 // If the operand is not nil the method / property must exist  
 print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
-``` 
+```
+
+### _class
+
+`_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
+useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+
+```cs
+class Test {}
+
+print(Test()._class); // <Cls Test>
+```
 
 ## Class variables
 
@@ -562,3 +610,46 @@ testObj.isInstance(AnotherTest); // false
 anotherTestObj.isInstance(AnotherTest); // true
 anotherTestObj.isInstance(Test); // true
 ```
+
+## Annotations
+
+Annotations are metadata that are applied to classes that by themselves have no impact.
+They, however, can provide user defined changes at runtime to given classes.
+
+```cs
+@Annotation
+class AnnotatedClass {
+
+}
+```
+
+Annotations are accessed via the `.annotations` property available on all classes. If annotations
+are preset a dictionary is returned, otherwise the `.annotations` property is `nil`.
+
+```cs
+print(AnnotatedClass.annotations); // {"Annotation": nil}
+```
+
+Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
+
+```
+@Annotation("Some extra value!")
+class AnnotatedClass {
+
+}
+
+print(AnnotatedClass.annotations); // {"Annotation": "Some extra value!"}
+```
+
+Multiple annotations can be supplied to classes.
+
+```cs
+@Annotation
+@AnotherAnnotation(10)
+@SomeOtherAnnotation
+class AnnotatedClass {
+
+}
+```
+
+**Note**: Annotations are not available on methods.

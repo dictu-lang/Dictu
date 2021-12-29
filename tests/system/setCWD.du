@@ -5,6 +5,7 @@
  *
  * setCWD() sets the current working directory
  */
+import System;
 
 var cwd = System.getCWD().unwrap();
 assert(cwd != nil);
@@ -20,3 +21,6 @@ assert(System.setCWD(cwd).success() == true);
 assert(System.getCWD().unwrap() == cwd);
 assert(System.setCWD("some/directory/that/doesnt/exist").success() == false);
 assert(System.setCWD("some/directory/that/doesnt/exist").unwrapError() == "No such file or directory");
+
+// Reset
+System.setCWD(cwd);

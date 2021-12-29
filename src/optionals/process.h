@@ -7,6 +7,6 @@
 
 #include "optionals.h"
 
-ObjModule *createProcessModule(DictuVM *vm);
+Value createProcessModule(DictuVM *vm);
 
 #endif //dictu_process_h

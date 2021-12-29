@@ -18,7 +18,7 @@ parent: Standard Library
 
 ## HTTP
 
-To make use of the HTTP module an import is required.
+To make use of the HTTP module an import is required. Along with the methods described below, this module also defines constants representing all standard response codes and their associated messages, the standard set of HTTP methods, and common request headers and values.
 
 ```cs
 import HTTP;

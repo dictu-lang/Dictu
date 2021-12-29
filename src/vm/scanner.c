@@ -216,7 +216,7 @@ static TokenType identifierType(Scanner *scanner) {
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
                     case 'o':
-                        return checkKeyword(scanner, 2, 1, "t", TOKEN_BANG);
+                        return checkKeyword(scanner, 2, 1, "t", TOKEN_NOT);
                     case 'i':
                         return checkKeyword(scanner, 2, 1, "l", TOKEN_NIL);
                 }
@@ -367,6 +367,8 @@ Token scanToken(Scanner *scanner) {
     if (isDigit(c)) return hexNumber(scanner);
 
     switch (c) {
+        case '@':
+            return makeToken(scanner, TOKEN_AT);
         case '(':
             return makeToken(scanner, TOKEN_LEFT_PAREN);
         case ')':
@@ -426,7 +428,10 @@ Token scanToken(Scanner *scanner) {
         case '|':
             return makeToken(scanner, match(scanner, '=') ? TOKEN_PIPE_EQUALS : TOKEN_PIPE);
         case '!':
-            return makeToken(scanner, match(scanner, '=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+            if (match(scanner, '=')) {
+                return makeToken(scanner, TOKEN_BANG_EQUAL);
+            }
+            break;
         case '=':
             if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_EQUAL_EQUAL);

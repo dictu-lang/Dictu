@@ -17,7 +17,7 @@
 #include "datatypes/nil.h"
 #include "datatypes/strings.h"
 #include "datatypes/lists/lists.h"
-#include "datatypes/dicts.h"
+#include "datatypes/dicts/dicts.h"
 #include "datatypes/sets.h"
 #include "datatypes/files.h"
 #include "datatypes/class.h"
@@ -62,7 +62,7 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
     resetStack(vm);
 }
 
-DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
+DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     DictuVM *vm = malloc(sizeof(*vm));
 
     if (vm == NULL) {
@@ -85,6 +85,8 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
     vm->lastModule = NULL;
+    vm->argc = argc;
+    vm->argv = argv;
     initTable(&vm->modules);
     initTable(&vm->globals);
     initTable(&vm->constants);
@@ -125,7 +127,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char *argv[]) {
      * Native classes which are not required to be
      * imported. For imported modules see optionals.c
      */
-    createSystemModule(vm, argc, argv);
     createCModule(vm);
 
     if (vm->repl) {
@@ -162,9 +163,9 @@ void dictuFreeVM(DictuVM *vm) {
 
 #if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
 #ifdef __MINGW32__
-    printf("Total memory usage: %lu\n", (unsigned long)vm->bytesAllocated);
+    printf("Total bytes lost: %lu\n", (unsigned long)vm->bytesAllocated);
 #else
-    printf("Total memory usage: %zu\n", vm->bytesAllocated);
+    printf("Total bytes lost: %zu\n", vm->bytesAllocated);
 #endif
 #endif
 
@@ -183,6 +184,23 @@ Value pop(DictuVM *vm) {
 
 Value peek(DictuVM *vm, int distance) {
     return vm->stackTop[-1 - distance];
+}
+
+ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
+    ObjString *pathObj = copyString(vm, name, strlen(name));
+    push(vm, OBJ_VAL(pathObj));
+    ObjModule *module = newModule(vm, pathObj);
+    pop(vm);
+    push(vm, OBJ_VAL(module));
+    ObjFunction *function = compile(vm, module, source);
+    pop(vm);
+
+    if (function == NULL) return NULL;
+    push(vm, OBJ_VAL(function));
+    ObjClosure *closure = newClosure(vm, function);
+    pop(vm);
+
+    return closure;
 }
 
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
@@ -501,7 +519,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
             case OBJ_DICT: {
                 Value value;
                 if (tableGet(&vm->dictMethods, name, &value)) {
-                    return callNativeMethod(vm, value, argCount);
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "Dict has no method %s().", name->chars);
@@ -851,12 +879,13 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
 
         CASE_CODE(POP_REPL): {
-            Value v = pop(vm);
+            Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
                 printValue(v);
                 printf("\n");
             }
+            pop(vm);
             DISPATCH();
         }
 
@@ -1026,6 +1055,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                         }
 
                         klass = klass->superclass;
+                    }
+
+                    if (strcmp(name->chars, "annotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
+                        DISPATCH();
                     }
 
                     RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
@@ -1452,18 +1487,33 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             // If we have imported this module already, skip.
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
+                vm->lastModule = AS_MODULE(moduleVal);
                 push(vm, moduleVal);
                 DISPATCH();
             }
 
-            ObjModule *module = importBuiltinModule(vm, index);
+            Value module = importBuiltinModule(vm, index);
 
-            push(vm, OBJ_VAL(module));
+            if (IS_EMPTY(module)) {
+                return INTERPRET_COMPILE_ERROR;
+            }
+
+            push(vm, module);
+
+            if (IS_CLOSURE(module)) {
+                frame->ip = ip;
+                call(vm, AS_CLOSURE(module), 0);
+                frame = &vm->frames[vm->frameCount - 1];
+                ip = frame->ip;
+
+                tableGet(&vm->modules, fileName, &module);
+                vm->lastModule = AS_MODULE(module);
+            }
+
             DISPATCH();
         }
 
         CASE_CODE(IMPORT_BUILTIN_VARIABLE): {
-            int index = READ_BYTE();
             ObjString *fileName = READ_STRING();
             int varCount = READ_BYTE();
 
@@ -1473,7 +1523,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 module = AS_MODULE(moduleVal);
             } else {
-                module = importBuiltinModule(vm, index);
+                RUNTIME_ERROR("ERROR!!");
             }
 
             for (int i = 0; i < varCount; i++) {
@@ -1965,6 +2015,15 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_CLASS_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            klass->annotations = dict;
+
             DISPATCH();
         }
 

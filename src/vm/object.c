@@ -68,6 +68,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
     initTable(&klass->publicProperties);
+    klass->annotations = NULL;
     return klass;
 }
 
@@ -116,6 +117,14 @@ ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     instance->klass = klass;
     initTable(&instance->publicFields);
     initTable(&instance->privateFields);
+
+    push(vm, OBJ_VAL(instance));
+    ObjString *classString = copyString(vm, "_class", 6);
+    push(vm, OBJ_VAL(classString));
+    tableSet(vm, &instance->publicFields, classString, OBJ_VAL(klass));
+    pop(vm);
+    pop(vm);
+
     return instance;
 }
 
@@ -537,32 +546,32 @@ char *objectToString(Value value) {
             char *methodString;
 
             if (method->method->function->name != NULL) {
-                methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        snprintf(methodString, method->method->function->name->length + 17, "<Bound Method %s>", method->method->function->name->chars);
+                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
+                        snprintf(methodString, method->method->function->name->length + 17, "<Static Method %s>", method->method->function->name->chars);
                         break;
                     }
 
                     default: {
-                        snprintf(methodString, method->method->function->name->length + 17, "<Static Method %s>", method->method->function->name->chars);
+                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 16));
+                        snprintf(methodString, method->method->function->name->length + 16, "<Bound Method %s>", method->method->function->name->chars);
                         break;
                     }
                 }
             } else {
-                methodString = malloc(sizeof(char) * 16);
-
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
+                        methodString = malloc(sizeof(char) * 16);
                         memcpy(methodString, "<Static Method>", 15);
                         methodString[15] = '\0';
                         break;
                     }
 
                     default: {
-                        memcpy(methodString, "<Bound Method>", 15);
-                        methodString[15] = '\0';
+                        methodString = malloc(sizeof(char) * 15);
+                        memcpy(methodString, "<Bound Method>", 14);
+                        methodString[14] = '\0';
                         break;
                     }
                 }
@@ -616,8 +625,9 @@ char *objectToString(Value value) {
 
         case OBJ_STRING: {
             ObjString *stringObj = AS_STRING(value);
-            char *string = malloc(sizeof(char) * stringObj->length + 3);
-            snprintf(string, stringObj->length + 3, "'%s'", stringObj->chars);
+            char *string = malloc(sizeof(char) * stringObj->length + 1);
+            memcpy(string, stringObj->chars, stringObj->length);
+            string[stringObj->length] = '\0';
             return string;
         }
 

@@ -1,7 +1,6 @@
 var start = System.clock();
 var x = {"dictu": "is great!"};
 
-
 for (var i = 0; i < 10000; i += 1) {
     x.exists("dictu");
 }

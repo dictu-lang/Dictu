@@ -148,7 +148,7 @@ class DogHandler < BaseHandler {
 def businessLogic(handler) {
     var food = ["Nut", "Banana", "Coffee"];
 
-    for (var i = 0; i < food.len(); ++i) {
+    for (var i = 0; i < food.len(); i += 1) {
         print("Who wants a: {}".format(food[i]));
 
         var response = handler.handle(food[i]);
@@ -199,7 +199,7 @@ class Publisher {
      * Notify all subscribed observers
      */
     notify() {
-        for (var i = 0; i < this.observers.len(); ++i) {
+        for (var i = 0; i < this.observers.len(); i += 1) {
             this.observers[i].update();
         }
     }

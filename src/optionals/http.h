@@ -16,6 +16,6 @@ typedef struct response {
     long statusCode;
 } Response;
 
-ObjModule *createHTTPModule(DictuVM *vm);
+Value createHTTPModule(DictuVM *vm);
 
 #endif //dictu_http_h

@@ -48,6 +48,8 @@ struct _vm {
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
+    int argc;
+    char **argv;
 };
 
 #define OK     0
@@ -62,5 +64,7 @@ void runtimeError(DictuVM *vm, const char *format, ...);
 Value pop(DictuVM *vm);
 
 bool isFalsey(Value value);
+
+ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source);
 
 #endif

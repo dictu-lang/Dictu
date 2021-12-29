@@ -1,0 +1,122 @@
+import Path;
+
+class Walker {
+    private prev;  // The previous dirpath, to be joined to the values in toAdd
+    private toAdd; // Directories to be added to the stack, unless pruned by the user
+    private stack; // Directories to be traversed later on
+
+    init(root='.', prune=[]) {
+        this.prev = nil;
+        this.stack = [root];
+        this.toAdd = [];
+        this.prune = prune; // Public attribute; can be updated in between calls to `next`.
+    }
+
+    next() {
+        var filtered = this.toAdd.filter(def (x) => not this.prune.contains(x));
+        var joined = filtered.map(def (x) => Path.join(this.prev, x));
+        this.stack.extend(joined);
+
+        if (not this.stack.len()) return nil;
+
+        var current = this.stack.pop();
+        var dirList = Path.listDir(current);
+        var files = [];
+        var dirs = [];
+
+        for (var i = 0; i < dirList.len(); i += 1) {
+            var list = Path.isDir(Path.join(current, dirList[i])) ? dirs : files;
+            list.push(dirList[i]);
+        }
+
+        this.toAdd = dirs; // Edits made to dirs by the user will affect what is added to the stack
+
+        this.prev = current;
+        return [current, dirs, files];
+    }
+
+    // Convenience methods to perform full traversals. Be careful with these, as they can
+    // infinitely loop if there are cycles in the file system (e.g. with symbolic links), and
+    // consume a large amount of time and memory.
+
+    exhaust() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (not x) break;
+            results.push(x);
+        }
+        return results;
+    }
+
+    exhaustDirs() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (not x) break;
+            results.push(x[0]);
+        }
+        return results;
+    }
+
+    exhaustFiles() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (not x) break;
+            results.extend(x[2].map(def (file) => Path.join(x[0], file)));
+        }
+        return results;
+    }
+
+    exhaustAll() {
+        var results = [];
+        while {
+            var x = this.next();
+            if (not x) break;
+            [1, 2].forEach(def (i) => results.extend(x[i].map(def (y) => Path.join(x[0], y))));
+        }
+        return results;
+    }
+}
+
+var dictuDir = Path.join(Path.dirname(__file__), '..');
+
+// Traverse the file system starting from the project directory. Prune every directory named 'docs'
+// from the tree.
+var walker = Walker(dictuDir, ['docs']);
+
+while {
+    var tmp = walker.next();
+    if (not tmp) break;
+    var [dirpath, dirnames, filenames] = tmp;
+
+    print([dirpath, dirnames, filenames]);
+    print();
+
+    // This is another way to prune the traversal, and can also be used to expand it if you create
+    // new directories in between calls to `walker.next`. It's more flexible than providing a
+    // `prune` list when the class is instantiated, but less convenient when the flexibility is not
+    // needed. As demonstrated here, both of these methods of pruning the search can be combined.
+    var prune = ['.git'];
+    for (var j = 0; j < prune.len(); j += 1)
+        if (dirnames.contains(prune[j]))
+            dirnames.remove(prune[j]);
+}
+
+
+print();
+print('Example using `Walker.exhaust`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaust());
+
+print();
+print('Example using `Walker.exhaustDirs`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustDirs());
+
+print();
+print('Example using `Walker.exhaustFiles`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustFiles());
+
+print();
+print('Example using `Walker.exhaustAll`:');
+print(Walker(Path.join(dictuDir, '.github'), []).exhaustAll());

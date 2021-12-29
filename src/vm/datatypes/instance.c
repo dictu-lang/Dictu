@@ -36,6 +36,21 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
         return TRUE_VAL;
     }
 
+    if (tableGet(&instance->klass->publicMethods, AS_STRING(value), &value)) {
+        return TRUE_VAL;
+    }
+
+    // Check class for properties
+    ObjClass *klass = instance->klass;
+
+    while (klass != NULL) {
+        if (tableGet(&klass->publicProperties, AS_STRING(value), &value)) {
+            return TRUE_VAL;
+        }
+
+        klass = klass->superclass;
+    }
+
     return FALSE_VAL;
 }
 
@@ -65,7 +80,103 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
         return value;
     }
 
+    if (tableGet(&instance->klass->publicMethods, AS_STRING(key), &value)) {
+        ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(value));
+
+        return OBJ_VAL(bound);
+    }
+
+    // Check class for properties
+    ObjClass *klass = instance->klass;
+
+    while (klass != NULL) {
+        if (tableGet(&klass->publicProperties, AS_STRING(key), &value)) {
+            return value;
+        }
+
+        klass = klass->superclass;
+    }
+
     return defaultValue;
+}
+
+static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
+    if (argCount > 0) {
+        runtimeError(vm, "getAttributes() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjInstance *instance = AS_INSTANCE(args[0]);
+
+    ObjDict *dict = newDict(vm);
+    push(vm, OBJ_VAL(dict));
+
+    ObjList *classVariables = newList(vm);
+    push(vm, OBJ_VAL(classVariables));
+
+    ObjClass *klass = instance->klass;
+
+    // Walk the inheritance chain
+    while (klass != NULL) {
+        for (int i = 0; i < klass->publicProperties.capacityMask + 1; i++) {
+            if (klass->publicProperties.entries[i].key == NULL) {
+                continue;
+            }
+
+            writeValueArray(vm, &classVariables->values, OBJ_VAL(klass->publicProperties.entries[i].key));
+        }
+
+        klass = klass->superclass;
+    }
+
+    ObjString *cv = copyString(vm, "classVariables", 14);
+    push(vm, OBJ_VAL(cv));
+
+    dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(classVariables));
+
+    pop(vm); // "classVariables" string
+    pop(vm); // "classVariables" list
+
+    ObjList *properties = newList(vm);
+    push(vm, OBJ_VAL(properties));
+    
+    for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
+        if (instance->publicFields.entries[i].key == NULL) {
+            continue;
+        }
+
+        writeValueArray(vm, &properties->values, OBJ_VAL(instance->publicFields.entries[i].key));
+    }
+
+    ObjString *pv = copyString(vm, "properties", 10);
+    push(vm, OBJ_VAL(pv));
+
+    dictSet(vm, dict, OBJ_VAL(pv), OBJ_VAL(properties));
+
+    pop(vm); // "properties" string
+    pop(vm); // "properties" list
+
+    ObjList *methods = newList(vm);
+    push(vm, OBJ_VAL(methods));
+
+    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
+        if (instance->klass->publicMethods.entries[i].key == NULL) {
+            continue;
+        }
+
+        writeValueArray(vm, &methods->values, OBJ_VAL(instance->klass->publicMethods.entries[i].key));
+    }
+    ObjString *mv = copyString(vm, "methods", 7);
+    push(vm, OBJ_VAL(mv));
+
+    dictSet(vm, dict, OBJ_VAL(mv), OBJ_VAL(methods));
+
+    pop(vm); // "methods" string
+    pop(vm); // "methods" list
+
+    pop(vm); // dict
+
+    return OBJ_VAL(dict);
 }
 
 static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
@@ -139,12 +250,37 @@ static Value copyDeep(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(instance);
 }
 
+static Value methods(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "methods() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjInstance *instance = AS_INSTANCE(args[0]);
+
+    ObjList *list = newList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
+        if (instance->klass->publicMethods.entries[i].key == NULL) {
+            continue;
+        }
+
+        writeValueArray(vm, &list->values, OBJ_VAL(instance->klass->publicMethods.entries[i].key));
+    }
+    pop(vm);
+
+    return OBJ_VAL(list);
+}
+
 void declareInstanceMethods(DictuVM *vm) {
     defineNative(vm, &vm->instanceMethods, "toString", toString);
     defineNative(vm, &vm->instanceMethods, "hasAttribute", hasAttribute);
     defineNative(vm, &vm->instanceMethods, "getAttribute", getAttribute);
+    defineNative(vm, &vm->instanceMethods, "getAttributes", getAttributes);
     defineNative(vm, &vm->instanceMethods, "setAttribute", setAttribute);
     defineNative(vm, &vm->instanceMethods, "isInstance", isInstance);
     defineNative(vm, &vm->instanceMethods, "copy", copyShallow);
     defineNative(vm, &vm->instanceMethods, "deepCopy", copyDeep);
+    defineNative(vm, &vm->instanceMethods, "methods", methods);
 }
