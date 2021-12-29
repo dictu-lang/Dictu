@@ -113,11 +113,11 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     
     ObjString *cv = copyString(vm, "classVariables", 14);
     push(vm, OBJ_VAL(cv));
-    //dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(content));
     pop(vm);
 
-    ObjList *list = newList(vm);
-    push(vm, OBJ_VAL(list));
+    ObjList *classVariables = newList(vm);
+    push(vm, OBJ_VAL(classVariables));
+    pop(vm);
 
     for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
         if (instance->publicFields.entries[i].key == NULL) {
@@ -125,14 +125,52 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
         }
         
         push(vm, OBJ_VAL(instance->publicFields.entries[i].key));
-        writeValueArray(vm, &list->values, OBJ_VAL(instance->publicFields.entries[i].key)); 
+        writeValueArray(vm, &classVariables->values, OBJ_VAL(instance->publicFields.entries[i].key)); 
+        pop(vm);
+    }
+    dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(classVariables));
 
+    ObjString *pv = copyString(vm, "properties", 10);
+    push(vm, OBJ_VAL(pv));
+    pop(vm);
+
+    ObjList *properties = newList(vm);
+    push(vm, OBJ_VAL(properties));
+    pop(vm);
+
+    for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
+        if (instance->klass->publicProperties.entries[i].key == NULL) {
+            continue;
+        }
+        
+        push(vm, OBJ_VAL(instance->klass->publicProperties.entries[i].key));
+        writeValueArray(vm, &properties->values, OBJ_VAL(instance->klass->publicProperties.entries[i].key)); 
+        pop(vm);
+    }
+    dictSet(vm, dict, OBJ_VAL(pv), OBJ_VAL(properties));
+
+    ObjString *mv = copyString(vm, "methods", 7);
+    push(vm, OBJ_VAL(mv));
+    pop(vm);
+
+    ObjList *methods = newList(vm);
+    push(vm, OBJ_VAL(methods));
+    pop(vm);
+
+    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
+        if (instance->klass->publicMethods.entries[i].key == NULL) {
+            continue;
+        }
+
+        push(vm, OBJ_VAL(instance->klass->publicMethods.entries[i].key));
+        writeValueArray(vm, &methods->values, OBJ_VAL(instance->klass->publicMethods.entries[i].key));
         pop(vm);
     }
 
+    dictSet(vm, dict, OBJ_VAL(mv), OBJ_VAL(methods));
     pop(vm);
 
-    return OBJ_VAL(list);
+    return OBJ_VAL(dict);
 }
 
 static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
