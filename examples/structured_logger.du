@@ -34,10 +34,10 @@ class Log {
         }
         this.entry["msg"] = msg;
 
-        var j = JSON.parse(this.entry.toString());
+        const j = JSON.parse(this.entry.toString());
 
         if (this.output.len() > 1) {
-            with(this.output, "w") {
+            with(this.output, "a") {
                 file.writeLine(j.unwrap().toString());
             }
         } else {
@@ -73,7 +73,7 @@ class Log {
 
 // main
 {
-    var log = Log();
+    const log = Log();
     log.info("starting application");
 
     System.sleep(2);
