@@ -107,6 +107,11 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjInstance *instance = AS_INSTANCE(args[0]);
+    // ObjClass *klass = instance->klass;
+
+    // if (klass->superclass != NULL) {
+    //     printf("not a inhereted...");
+    // }
 
     ObjDict *dict = newDict(vm);
     push(vm, OBJ_VAL(dict));

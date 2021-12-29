@@ -18,13 +18,19 @@ class Test {
 }
 
 assert(Test().getAttributes().len() == 3);
+assert(Test().getAttributes().exists("properties"));
+assert(Test().getAttributes().exists("classVariables"));
 assert(Test().getAttributes().exists("methods"));
+assert(Test().getAttributes().get("properties").len() == 1);
+assert(Test().getAttributes().get("classVariables").len() == 3);
+assert(Test().getAttributes().get("methods").len() == 2);
+assert(Test().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
 
 class Inherit < Test {
 
 }
 
-print(Inherit().getAttributes());
+print(Inherit.getAttributes());
 //print(Inherit().getAttributes().len());
 
 //assert(Inherit().getAttributes().len() == 3);
