@@ -245,6 +245,21 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
+### getAttributes
+
+The `getAttributes` method returns all public attributes on the given instance of a class.
+
+```cs
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.getAttributes()); // ["x"]
+```
+
 ### setAttribute
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
