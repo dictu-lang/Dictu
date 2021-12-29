@@ -9,9 +9,9 @@
 assert("test".endsWith("t"));
 assert("test".endsWith("st"));
 assert("test".endsWith("test"));
-assert(!("test".endsWith("e")));
-assert(!("test".endsWith("he")));
-assert(!("test".endsWith("hello")));
-assert(!("test".endsWith("1234")));
-assert(!("test".endsWith("!@£$%")));
-assert(!("test".endsWith("123456789")));
+assert(not ("test".endsWith("e")));
+assert(not ("test".endsWith("he")));
+assert(not ("test".endsWith("hello")));
+assert(not ("test".endsWith("1234")));
+assert(not ("test".endsWith("!@£$%")));
+assert(not ("test".endsWith("123456789")));

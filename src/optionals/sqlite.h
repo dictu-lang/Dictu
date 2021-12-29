@@ -11,6 +11,6 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
-ObjModule *createSqliteModule(DictuVM *vm);
+Value createSqliteModule(DictuVM *vm);
 
 #endif //dictu_sqlite_h

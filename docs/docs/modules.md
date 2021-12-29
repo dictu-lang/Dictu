@@ -37,9 +37,9 @@ If however you wish to import something specific from the module into the curren
 accepts a single identifier or multiple separated by a comma. 
 
 ```cs
-from Math import PI;
+from Math import pi;
 
-PI; // 3.14...
+pi; // 3.14...
 
 // Import multiple things
 from JSON import parse, stringify;

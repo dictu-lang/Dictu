@@ -49,7 +49,7 @@ static Value randomSelect(DictuVM *vm, int argCount, Value *args) {
     return args[index];
 }
 
-ObjModule *createRandomModule(DictuVM *vm) {
+Value createRandomModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Random", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -67,5 +67,5 @@ ObjModule *createRandomModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

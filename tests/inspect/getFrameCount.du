@@ -1,0 +1,44 @@
+/**
+ * getFrameCount.du
+ *
+ * Testing the Inspect.getFrameCount() method
+ */
+
+import Inspect;
+
+/**
+ * This is required as the imports have increased the frame count.
+ */
+const ADDED_FRAME_COUNT = 2;
+
+assert(Inspect.getFrameCount() == 0 + ADDED_FRAME_COUNT);
+
+def test() {
+    assert(Inspect.getFrameCount() == 1 + ADDED_FRAME_COUNT);
+}
+
+test();
+
+def anotherTest() {
+    def inner() {
+        assert(Inspect.getFrameCount() == 2 + ADDED_FRAME_COUNT);
+    }
+
+    inner();
+}
+
+anotherTest();
+
+def anotherDeeperTest() {
+    def middle() {
+        def inner() {
+            assert(Inspect.getFrameCount() == 3 + ADDED_FRAME_COUNT);
+        }
+
+        inner();
+    }
+
+    middle();
+}
+
+anotherDeeperTest();

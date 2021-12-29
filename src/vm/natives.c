@@ -149,7 +149,9 @@ static Value isDefinedNative(DictuVM *vm, int argCount, Value *args) {
     if (tableGet(&vm->globals, string, &value))
         return TRUE_VAL;
 
-    if (findBuiltinModule(string->chars, string->length) != -1)
+    bool _;
+
+    if (findBuiltinModule(string->chars, string->length, &_) != -1)
         return TRUE_VAL;
 
     return FALSE_VAL;
@@ -204,7 +206,6 @@ void defineAllNatives(DictuVM *vm) {
             generateSuccessResult,
             generateErrorResult
     };
-
 
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
         defineNative(vm, &vm->globals, nativeNames[i], nativeFunctions[i]);

@@ -1344,7 +1344,7 @@ static bool foldUnary(Compiler *compiler, TokenType operatorType) {
     TokenType valueToken = compiler->parser->previous.type;
 
     switch (operatorType) {
-        case TOKEN_BANG: {
+        case TOKEN_NOT: {
             if (valueToken == TOKEN_TRUE) {
                 Chunk *chunk = currentChunk(compiler);
                 chunk->code[chunk->count - 1] = OP_FALSE;
@@ -1387,7 +1387,7 @@ static void unary(Compiler *compiler, bool canAssign) {
     }
 
     switch (operatorType) {
-        case TOKEN_BANG:
+        case TOKEN_NOT:
             emitByte(compiler, OP_NOT);
             break;
         case TOKEN_MINUS:
@@ -1428,7 +1428,7 @@ ParseRule rules[] = {
         {NULL,     NULL,      PREC_NONE},               // TOKEN_AMPERSAND_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CARET_EQUALS
         {NULL,     NULL,      PREC_NONE},               // TOKEN_PIPE_EQUALS
-        {unary,    NULL,      PREC_NONE},               // TOKEN_BANG
+        {unary,    NULL,      PREC_NONE},               // TOKEN_NOT
         {NULL,     binary,    PREC_EQUALITY},           // TOKEN_BANG_EQUAL
         {NULL,     NULL,      PREC_NONE},               // TOKEN_EQUAL
         {NULL,     binary,    PREC_EQUALITY},           // TOKEN_EQUAL_EQUAL
@@ -1973,8 +1973,11 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_IMPORT_BUILTIN:
             return 2;
 
-        case OP_IMPORT_BUILTIN_VARIABLE:
-            return 3;
+        case OP_IMPORT_BUILTIN_VARIABLE: {
+            int argCount = code[ip + 2];
+
+            return 2 + argCount;
+        }
 
         case OP_CLOSURE: {
             int constant = code[ip + 1];
@@ -2219,14 +2222,19 @@ static void importStatement(Compiler *compiler) {
             emitByte(compiler, OP_IMPORT_VARIABLE);
             defineVariable(compiler, importName, false);
         }
+
+        emitByte(compiler, OP_IMPORT_END);
     } else {
         consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
         declareVariable(compiler, &compiler->parser->previous);
 
+        bool dictuSource = false;
+
         int index = findBuiltinModule(
-                (char *) compiler->parser->previous.start,
-                compiler->parser->previous.length - compiler->parser->current.length
+            (char *) compiler->parser->previous.start,
+            compiler->parser->previous.length - compiler->parser->current.length,
+            &dictuSource
         );
 
         if (index == -1) {
@@ -2236,11 +2244,15 @@ static void importStatement(Compiler *compiler) {
         emitBytes(compiler, OP_IMPORT_BUILTIN, index);
         emitByte(compiler, importName);
 
+        if (dictuSource) {
+            emitByte(compiler, OP_POP);
+            emitByte(compiler, OP_IMPORT_VARIABLE);
+        }
+
         defineVariable(compiler, importName, false);
     }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
-    emitByte(compiler, OP_IMPORT_END);
 }
 
 static void fromImportStatement(Compiler *compiler) {
@@ -2293,9 +2305,12 @@ static void fromImportStatement(Compiler *compiler) {
         consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
 
+        bool dictuSource;
+
         int index = findBuiltinModule(
                 (char *) compiler->parser->previous.start,
-                compiler->parser->previous.length
+                compiler->parser->previous.length,
+                &dictuSource
         );
 
         consume(compiler, TOKEN_IMPORT, "Expect 'import' after identifier");
@@ -2319,7 +2334,11 @@ static void fromImportStatement(Compiler *compiler) {
             }
         } while (match(compiler, TOKEN_COMMA));
 
-        emitBytes(compiler, OP_IMPORT_BUILTIN_VARIABLE, index);
+        emitBytes(compiler, OP_IMPORT_BUILTIN, index);
+        emitByte(compiler, importName);
+        emitByte(compiler, OP_POP);
+
+        emitByte(compiler, OP_IMPORT_BUILTIN_VARIABLE);
         emitBytes(compiler, importName, varCount);
 
         for (int i = 0; i < varCount; ++i) {

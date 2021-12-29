@@ -13,11 +13,11 @@ class Walker {
     }
 
     next() {
-        var filtered = this.toAdd.filter(def (x) => !this.prune.contains(x));
+        var filtered = this.toAdd.filter(def (x) => not this.prune.contains(x));
         var joined = filtered.map(def (x) => Path.join(this.prev, x));
         this.stack.extend(joined);
 
-        if (!this.stack.len()) return nil;
+        if (not this.stack.len()) return nil;
 
         var current = this.stack.pop();
         var dirList = Path.listDir(current);
@@ -43,7 +43,7 @@ class Walker {
         var results = [];
         while {
             var x = this.next();
-            if (!x) break;
+            if (not x) break;
             results.push(x);
         }
         return results;
@@ -53,7 +53,7 @@ class Walker {
         var results = [];
         while {
             var x = this.next();
-            if (!x) break;
+            if (not x) break;
             results.push(x[0]);
         }
         return results;
@@ -63,7 +63,7 @@ class Walker {
         var results = [];
         while {
             var x = this.next();
-            if (!x) break;
+            if (not x) break;
             results.extend(x[2].map(def (file) => Path.join(x[0], file)));
         }
         return results;
@@ -73,7 +73,7 @@ class Walker {
         var results = [];
         while {
             var x = this.next();
-            if (!x) break;
+            if (not x) break;
             [1, 2].forEach(def (i) => results.extend(x[i].map(def (y) => Path.join(x[0], y))));
         }
         return results;
@@ -88,7 +88,7 @@ var walker = Walker(dictuDir, ['docs']);
 
 while {
     var tmp = walker.next();
-    if (!tmp) break;
+    if (not tmp) break;
     var [dirpath, dirnames, filenames] = tmp;
 
     print([dirpath, dirnames, filenames]);

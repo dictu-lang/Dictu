@@ -18,7 +18,7 @@ assert(result.success());
 assert(result.unwrap() == 10);
 
 result = Error("Error!").matchWrap(success, error);
-assert(!result.success());
+assert(not result.success());
 assert(result.unwrapError() == "Error!");
 
 
@@ -41,5 +41,5 @@ assert(number.success());
 assert(number.unwrap() == 10);
 
 var number = "test".toNumber().matchWrap(success, error);
-assert(!number.success());
+assert(not number.success());
 assert(number.unwrapError() == "Can not convert 'test' to number");

@@ -9,9 +9,9 @@
 assert("test".startsWith("t"));
 assert("test".startsWith("te"));
 assert("test".startsWith("test"));
-assert(!("test".startsWith("e")));
-assert(!("test".startsWith("he")));
-assert(!("test".startsWith("hello")));
-assert(!("test".startsWith("1234")));
-assert(!("test".startsWith("!@£$%")));
-assert(!("test".startsWith("123456789")));
+assert(not ("test".startsWith("e")));
+assert(not ("test".startsWith("he")));
+assert(not ("test".startsWith("hello")));
+assert(not ("test".startsWith("1234")));
+assert(not ("test".startsWith("!@£$%")));
+assert(not ("test".startsWith("123456789")));

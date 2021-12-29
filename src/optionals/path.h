@@ -15,6 +15,6 @@
 #include <dirent.h>
 #endif
 
-ObjModule *createPathModule(DictuVM *vm);
+Value createPathModule(DictuVM *vm);
 
 #endif //dictu_path_h

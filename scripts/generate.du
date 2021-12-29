@@ -2,8 +2,8 @@ import Path;
 
 /**
  * This file is used to generate the source of any datatype
- * methods that are actually written in Dictu ready to be loaded
- * by the VM on init.
+ * methods / stdlib modules that are actually written in
+ * Dictu ready to be loaded by the VM.
  */
 
 def generate(filename) {
@@ -26,9 +26,11 @@ def generate(filename) {
 }
 
 var files = [
-    'lists/list',
-    'dicts/dict',
-    'result/result'
+    'src/vm/datatypes/lists/list',
+    'src/vm/datatypes/dicts/dict',
+    'src/vm/datatypes/result/result',
+    'src/optionals/unittest/unittest',
+    'src/optionals/env/env'
 ];
 
 for (var i = 0; i < files.len(); i += 1) {
