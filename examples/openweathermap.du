@@ -26,7 +26,7 @@ class Client {
         url = url + "&units=" + this.units;
         url = url + "&lang=" + this.lang;
 
-        var res = HTTP.get(url);
+        const res = HTTP.get(url);
         return JSON.parse(res.unwrap()["content"]).unwrap();
     }
 }
@@ -34,7 +34,7 @@ class Client {
 // main
 {
     const token = Env.get("OWM_TOKEN");
-    if (token == "" or not token) {
+    if (not token) {
         print("error: OWM_TOKEN required to be set in the environment");
         System.exit(1);
     }
