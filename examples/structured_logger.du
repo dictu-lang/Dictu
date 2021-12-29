@@ -79,6 +79,4 @@ class Log {
     System.sleep(2);
 
     log.info("shutting down application", {"extra-field-1": "more data"});
-
-    System.exit(0);
 }
