@@ -38,4 +38,3 @@ assert(Inherit().getAttributes().get("properties").len() == 0);
 assert(Inherit().getAttributes().get("classVariables").len() == 3);
 assert(Inherit().getAttributes().get("methods").len() == 2);
 assert(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
-

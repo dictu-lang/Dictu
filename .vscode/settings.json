@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "*.wg": "lox",
-        "http.h": "c"
-    }
-}
