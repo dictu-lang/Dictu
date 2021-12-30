@@ -1,13 +1,9 @@
 import System;
 
-const LEFT_BRACE = "{";
-const RIGHT_BRACE = "}";
-
 // Template is a simple template rendering engine.
 class Template {
-    private tmpl;
-    private klass;
-    private rendered;
+    var LEFT_BRACE = "{";
+    var RIGHT_BRACE = "}";
 
     init(tmpl, klass) {
         this.tmpl = tmpl;
@@ -19,22 +15,26 @@ class Template {
     // fields and replaces them with the class values.
     render() {
         const classAttrs = this.klass.getAttributes()["properties"];
-        this.rendered = this.tmpl;
+        var rendered = this.tmpl;
 
         classAttrs.forEach(def(attr) => {
             const attrVal = this.klass.getAttribute(attr);
-            const tmplField = LEFT_BRACE+attr+RIGHT_BRACE;
+            const tmplField = "{}{}{}".format(
+                Template.LEFT_BRACE,
+                attr,
+                Template.RIGHT_BRACE
+            );
 
-            if (this.rendered.contains(tmplField)) {
+            if (rendered.contains(tmplField)) {
                 if (type(attrVal) != "string") {
-                    this.rendered = this.rendered.replace(tmplField, attrVal.toString());
+                    rendered = rendered.replace(tmplField, attrVal.toString());
                 } else {
-                    this.rendered = this.rendered.replace(tmplField, attrVal);
+                    rendered = rendered.replace(tmplField, attrVal);
                 }
             }
         });
 
-        return this.rendered;
+        return rendered;
     }
 }
 
@@ -54,5 +54,5 @@ class Person {
 
     const t = Template(tmpl, p);
 
-    print("{}".format(t.render()));
+    print(t.render());
 }
