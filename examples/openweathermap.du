@@ -1,0 +1,49 @@
+/**
+ * Example of how to use the HTTP module and JSON modules to interact with the 
+ * OpenWeatherMap REST API. This can serve as a base to extend with more features.
+ */
+
+import Env;
+import HTTP;
+import JSON;
+import System;
+
+const BASE_URL = "http://api.openweathermap.org/data/2.5/weather?";
+
+class Client {
+    private token;
+    
+    init(units, lang, token) {
+        this.units = units;
+        this.lang = lang;
+        this.token = token;
+    }
+
+    current(name) {
+        var url = BASE_URL;
+        url = url + "appid=" + this.token;
+        url = url + "&q=" + name;
+        url = url + "&units=" + this.units;
+        url = url + "&lang=" + this.lang;
+
+        const res = HTTP.get(url);
+        return JSON.parse(res.unwrap()["content"]).unwrap();
+    }
+}
+
+// main
+{
+    const token = Env.get("OWM_TOKEN");
+    if (not token) {
+        print("error: OWM_TOKEN required to be set in the environment");
+        System.exit(1);
+    }
+
+    const location = "Phoenix";
+
+    const client = Client("F", "en", token);
+    const current = client.current(location);
+
+    print("Current Weather Data for: {} \n\n{}\n".format(location, current));
+}
+
