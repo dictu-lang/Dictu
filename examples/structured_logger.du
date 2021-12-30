@@ -1,0 +1,82 @@
+/**
+ * Module logger provides a structured logger. The structured
+ * format is JSON. 
+ */
+
+import JSON;
+import System;
+
+/**
+ * class Log implements a simple structured logger
+ * that outputs to either stdout or a given file. 
+ */
+class Log {
+    private output;
+    
+    init(output="") {
+        this.output = "";
+        if (output.len() > 1) {
+            this.output = output;
+        }
+    }
+
+    private set_level(level) {
+        this.entry = {"level": level};
+    }
+
+    private run(msg, fields) {
+        this.entry["timestamp"] = System.time();
+
+        if (fields) {
+            fields.keys().forEach(
+                def(entry) => this.entry[entry] = fields[entry]
+            );
+        }
+        this.entry["msg"] = msg;
+
+        const j = JSON.parse(this.entry.toString());
+
+        if (this.output.len() > 1) {
+            with(this.output, "a") {
+                file.writeLine(j.unwrap().toString());
+            }
+        } else {
+            print(j.unwrap());
+        }
+    }
+
+    info(msg, fields=nil) {
+        this.set_level("info");
+        this.run(msg, fields);
+    }
+
+    warn(msg, fields=nil) {
+        this.set_level("warn");
+        this.run(msg, fields);
+    }
+
+    error(msg, fields=nil) {
+        this.set_level("error");
+        this.run(msg, fields);
+    }
+
+    debug(msg, fields=nil) {
+        this.set_level("debug");
+        this.run(msg, fields);
+    }
+
+    trace(msg, fields=nil) {
+        this.set_level("trace");
+        this.run(msg, fields);
+    }
+}
+
+// main
+{
+    const log = Log();
+    log.info("starting application");
+
+    System.sleep(2);
+
+    log.info("shutting down application", {"extra-field-1": "more data"});
+}
