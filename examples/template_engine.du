@@ -38,10 +38,7 @@ class Template {
 // Person is a class used to hold data to be passed 
 // to the template engine.
 class Person {
-    init(name, age) {
-        this.name = name;
-        this.age = age;
-    }
+    init(var name, var age) {}
 }
 
 // main
