@@ -5,10 +5,7 @@ class Template {
     var LEFT_BRACE = "{";
     var RIGHT_BRACE = "}";
 
-    init(tmpl, klass) {
-        this.tmpl = tmpl;
-        this.klass = klass;
-    }
+    init(private tmpl, private klass) {}
 
     // render parses the given template and class and
     // matches the fields in the class to the template
