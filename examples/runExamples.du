@@ -18,3 +18,4 @@ import "isPalindrome.du";
 import "factorial.du";
 import "pathWalker.du";
 import "structured_logger.du";
+import "template_engine.du";
