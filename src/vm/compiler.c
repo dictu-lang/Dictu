@@ -2162,12 +2162,20 @@ static void switchStatement(Compiler *compiler) {
     consume(compiler, TOKEN_CASE, "Expect atleast one 'case' block.");
     do {
         expression(compiler);
+        int multipleCases = 0;
+        if(match(compiler, TOKEN_COMMA)) {
+            do {
+                multipleCases++;
+                expression(compiler);
+            } while(match(compiler, TOKEN_COMMA));
+            emitConstant(compiler, NUMBER_VAL(multipleCases));
+            emitByte(compiler, OP_MULTI_CASE);
+        }
         int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
         statement(compiler);
         caseEnds[caseCount++] = emitJump(compiler,OP_JUMP);
         patchJump(compiler, compareJump);
-
         if (caseCount > 255) {
             errorAtCurrent(compiler->parser, "Switch statement can not have more than 256 case blocks");
         }

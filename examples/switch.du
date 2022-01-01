@@ -19,7 +19,7 @@ case 6:{
    print("six");
 }
 }
-//output 4
+//output four
 
 switch("five"){
 case "one":{
@@ -42,3 +42,46 @@ case "six":{
 }
 }
 //output 5
+
+switch("Nine"){
+case "one":{
+   print(1);
+}
+case "two":{
+   print(2);
+}
+case "three":{
+   print(3);
+}
+case "four":{
+   print(4);
+}
+case "five":{
+   print(5);
+}
+case "six":{
+   print(6);
+}
+default:
+   print("case not found");
+}
+//output case not found
+
+switch("five"){
+case "one":{
+   print(1);
+}
+case "two":{
+   print(2);
+}
+case "three":{
+   print(3);
+}
+case "four":{
+   print(4);
+}
+case "five", "six":{
+   print("5 or 6");
+}
+}
+//output 5 or 6

@@ -1396,10 +1396,28 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
+        CASE_CODE(MULTI_CASE):{
+            int count = AS_NUMBER(pop(vm));
+            Value switchValue = peek(vm, count+1);
+            Value caseValue=pop(vm);
+            for (int i = 0; i <=count; ++i) {
+                if (valuesEqual(switchValue, caseValue)){
+                    i++;
+                    while(i<=count) {
+                        pop(vm);
+                        i++;   
+                    }
+                    break;
+                }
+                caseValue=pop(vm);
+            }
+            push(vm,caseValue);
+            DISPATCH();
+        }
+
         CASE_CODE(COMPARE_JUMP):{
             uint16_t offset = READ_SHORT();
             Value a = pop(vm);
-
             if (!valuesEqual(peek(vm,0), a)) {
                 ip += offset;
             } else {
