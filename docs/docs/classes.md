@@ -91,18 +91,20 @@ The `var` or `private` keywords are optional on the constructor parameters, and 
 
 ```cs
 class SomeClass {
-    init(var a, b, c, var d) {
+    init(var a, b, c, var d, private e) {
         // b and c are not set as instance properties
+        // e is set as a private property
     }
 }
 
-var obj = SomeClass(10, 20, 30, 40);
-print("{} {} {} {}".format(
+var obj = SomeClass(10, 20, 30, 40, 50);
+print("{} {} {} {} {}".format(
     obj.getAttribute("a"),
     obj.getAttribute("b"),
     obj.getAttribute("c"),
-    obj.getAttribute("d")
-)); // "10 nil nil 40"
+    obj.getAttribute("d"),
+    obj.getAttribute("e")
+)); // "10 nil nil 40 nil"
 ```
 
 ## Methods
