@@ -13,6 +13,7 @@ import "copy.du";
 import "toString.du";
 import "abstract.du";
 import "classVariables.du";
+import "classConstants.du";
 import "parameters.du";
 import "isInstance.du";
 import "constructor.du";
