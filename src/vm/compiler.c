@@ -1663,8 +1663,19 @@ static void parseClassBody(Compiler *compiler) {
             consume(compiler, TOKEN_EQUAL, "Expect '=' after class variable identifier.");
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
+            emitByte(compiler, false);
 
-            consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+            consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class variable declaration.");
+        } else if (match(compiler, TOKEN_CONST)) {
+            consume(compiler, TOKEN_IDENTIFIER, "Expect class constant name.");
+            uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
+
+            consume(compiler, TOKEN_EQUAL, "Expect '=' after class constant identifier.");
+            expression(compiler);
+            emitBytes(compiler, OP_SET_CLASS_VAR, name);
+            emitByte(compiler, true);
+
+            consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class constant declaration.");
         } else {
             if (match(compiler, TOKEN_PRIVATE)) {
                 if (match(compiler, TOKEN_IDENTIFIER)) {
