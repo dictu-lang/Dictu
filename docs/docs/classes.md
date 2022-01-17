@@ -367,7 +367,7 @@ const y = SomeClass();
 print(x.classVariable); // 10
 print(y.classVariable); // 10
 
-SomeClass.classVaraible = 100; // Cannot assign to class constant 'SomeClass.classVariable'.
+SomeClass.classVariable = 100; // Cannot assign to class constant 'SomeClass.classVariable'.
 ```
 
 ## Static methods
