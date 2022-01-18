@@ -320,7 +320,7 @@ print(Test()._class); // <Cls Test>
 
 ## Class variables
 
-A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
+A class variable is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
 to the class variable, and it is also shared across all instances.
 
 ```cs
@@ -332,18 +332,42 @@ class SomeClass {
     }
 }
 
-print(SomeClass.classVaraible); // 10
+print(SomeClass.classVariable); // 10
 
-var x = SomeClass();
-var y = SomeClass();
+const x = SomeClass();
+const y = SomeClass();
 
 print(x.classVariable); // 10
 print(y.classVariable); // 10
 
-SomeClass.classVaraible = 100;
+SomeClass.classVariable = 100;
 
 print(x.classVariable); // 100
 print(y.classVariable); // 100
+```
+
+## Class Constants
+
+Exactly the same as [Class Variables](#class-variables) except that it comes with a runtime guarantee that it will not be modified.
+
+```cs
+class SomeClass {
+    const classVariable = 10; // This will be shared among all "SomeClass" instances
+
+    init() {
+        this.x = 10; // "x" is set on the instance
+    }
+}
+
+print(SomeClass.classVariable); // 10
+
+const x = SomeClass();
+const y = SomeClass();
+
+print(x.classVariable); // 10
+print(y.classVariable); // 10
+
+SomeClass.classVariable = 100; // Cannot assign to class constant 'SomeClass.classVariable'.
 ```
 
 ## Static methods

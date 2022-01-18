@@ -1,0 +1,42 @@
+/**
+ * classConstants.du
+ *
+ * Testing setting class constants
+ */
+class Test {
+    const x = 10;
+
+    init() {
+        //
+    }
+}
+
+assert(Test.x == 10);
+
+
+/**
+ * Ensure inherited classes work
+ */
+class BaseClass {
+    const x = 10;
+}
+
+class Common < BaseClass {}
+
+assert(Common.x == 10);
+assert(Common().x == 10);
+
+class AnotherClass < Common {}
+
+assert(AnotherClass.x == 10);
+assert(AnotherClass().x == 10);
+
+
+/**
+ * Test abstract classes
+ */
+abstract class AbstractClass {
+    const x = "Hello";
+}
+
+assert(AbstractClass.x == "Hello");
