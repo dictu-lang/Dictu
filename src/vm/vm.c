@@ -1011,6 +1011,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                     ObjClass *klass = instance->klass;
 
                     while (klass != NULL) {
+                        if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                            pop(vm); // Instance.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
                         if (tableGet(&klass->publicProperties, name, &value)) {
                             pop(vm); // Instance.
                             push(vm, value);
@@ -1048,6 +1054,12 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value value;
                     while (klass != NULL) {
+                        if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                            pop(vm); // Class.
+                            push(vm, value);
+                            DISPATCH();
+                        }
+
                         if (tableGet(&klass->publicProperties, name, &value)) {
                             pop(vm); // Class.
                             push(vm, value);
@@ -1111,6 +1123,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = instance->klass;
 
                 while (klass != NULL) {
+                    if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                        pop(vm); // Instance.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
                     if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
@@ -1129,6 +1147,12 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 Value value;
                 while (klass != NULL) {
+                    if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                        pop(vm); // Class.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+
                     if (tableGet(&klass->publicProperties, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
@@ -1165,6 +1189,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
+                if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
                 if (tableGet(&klass->publicProperties, name, &value)) {
                     push(vm, value);
                     DISPATCH();
@@ -1206,6 +1235,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
+                if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                    push(vm, value);
+                    DISPATCH();
+                }
+
                 if (tableGet(&klass->publicProperties, name, &value)) {
                     push(vm, value);
                     DISPATCH();
@@ -1226,8 +1260,15 @@ static DictuInterpretResult run(DictuVM *vm) {
                 push(vm, NIL_VAL);
                 DISPATCH();
             } else if (IS_CLASS(peek(vm, 1))) {
+                ObjString *key = READ_STRING();
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
-                tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
+
+                Value _;
+                if (tableGet(&klass->publicConstantProperties, key, &_)) {
+                    RUNTIME_ERROR("Cannot assign to class constant '%s.%s'.", klass->name->chars, key->chars);
+                }
+
+                tableSet(vm, &klass->publicProperties, key, peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
@@ -1253,7 +1294,14 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(SET_CLASS_VAR): {
             // No type check required as this opcode is only ever emitted when parsing a class
             ObjClass *klass = AS_CLASS(peek(vm, 1));
-            tableSet(vm, &klass->publicProperties, READ_STRING(), peek(vm, 0));
+            ObjString *key = READ_STRING();
+            bool constant = READ_BYTE();
+
+            if (constant) {
+                tableSet(vm, &klass->publicConstantProperties, key, peek(vm, 0));
+            } else {
+                tableSet(vm, &klass->publicProperties, key, peek(vm, 0));
+            }
             pop(vm);
             DISPATCH();
         }

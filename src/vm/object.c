@@ -68,6 +68,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
     initTable(&klass->publicProperties);
+    initTable(&klass->publicConstantProperties);
     klass->annotations = NULL;
     return klass;
 }
