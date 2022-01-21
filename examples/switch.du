@@ -85,3 +85,14 @@ case "five", "six":{
 }
 }
 //output 5 or 6
+
+switch (10) {
+    case 1, 2: {
+        print("1!");
+    }
+
+    case 10: {
+        print("10!");
+    }
+}
+//output 10!

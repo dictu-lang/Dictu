@@ -1447,17 +1447,17 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(MULTI_CASE):{
             int count = AS_NUMBER(pop(vm));
             Value switchValue = peek(vm, count+1);
-            Value caseValue=pop(vm);
-            for (int i = 0; i <=count; ++i) {
+            Value caseValue = pop(vm);
+            for (int i = 0; i < count; ++i) {
                 if (valuesEqual(switchValue, caseValue)){
                     i++;
-                    while(i<=count) {
+                    while(i <= count) {
                         pop(vm);
                         i++;   
                     }
                     break;
                 }
-                caseValue=pop(vm);
+                caseValue = pop(vm);
             }
             push(vm,caseValue);
             DISPATCH();
