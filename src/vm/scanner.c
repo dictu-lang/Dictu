@@ -173,12 +173,12 @@ static TokenType identifierType(Scanner *scanner) {
             }
             break;
         case 'd':
-               if (scanner->current - scanner->start > 3) {
-                            switch (scanner->start[3]) {
-                                case 'a':
-                                    return checkKeyword(scanner, 4, 3, "ult", TOKEN_DEFAULT);
-                            }
-               }
+            if (scanner->current - scanner->start > 3) {
+                switch (scanner->start[3]) {
+                    case 'a':
+                        return checkKeyword(scanner, 4, 3, "ult", TOKEN_DEFAULT);
+                }
+            }
             return checkKeyword(scanner, 1, 2, "ef", TOKEN_DEF);
         case 'e':
             if (scanner->current - scanner->start > 1) {

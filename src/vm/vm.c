@@ -905,6 +905,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             frame->slots[slot] = peek(vm, 0);
             DISPATCH();
         }
+
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
@@ -1449,7 +1450,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value switchValue = peek(vm, count + 1);
             Value caseValue = pop(vm);
             for (int i = 0; i < count; ++i) {
-                if (valuesEqual(switchValue, caseValue)){
+                if (valuesEqual(switchValue, caseValue)) {
                     i++;
                     while(i <= count) {
                         pop(vm);
