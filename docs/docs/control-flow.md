@@ -41,6 +41,62 @@ if (x == 6) {
     print("Not going to print!");
 }
 ```
+
+## Switch Statement
+
+A switch statement can be seen as a more maintainable if/else if chain. It evaluates an expression and then enters a 
+case block depending upon if the expression matches the expression of the case block.
+
+```cs
+switch (10) {
+    case 1: {
+        // 10 doesn't equal 1, so this is skipped.
+    }
+
+    case 10: {
+        // Match! This block of code is executed!
+    }
+}
+```
+
+### Default
+
+Sometimes there may be a need for a bit of code to be executed if none of the case blocks match the expression of the switch statement. This is where
+the default block comes into play.
+
+```
+switch ("string") {
+    case "nope": {
+
+    }
+
+    case "nope again!": {
+
+    }
+
+    default: {
+        // This will get executed!
+    }
+}
+```
+
+### Multi-Value Case
+
+Sometimes we need to execute a block of code based on a set of values. This is easily done by just supplying a comma separated list
+of values to the case block.
+
+```cs
+switch (10) {
+    case 1, 3, 5, 7, 9: {
+        // 10 doesn't equal any of the supplied values, this is skipped.
+    }
+
+    case 0, 2, 4, 6, 8, 10: {
+        // Match! This block of code is executed!
+    }
+}
+```
+
 ## Loops
 ### While loop
 

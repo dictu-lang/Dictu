@@ -14,6 +14,7 @@ import "classes/import.du";
 import "enum/import.du";
 import "builtins/import.du";
 import "files/import.du";
+import "switch/import.du";
 import "maths/import.du";
 import "datetime/import.du";
 import "env/import.du";
