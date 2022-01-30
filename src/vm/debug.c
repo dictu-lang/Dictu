@@ -206,7 +206,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_JUMP:
             return jumpInstruction("OP_JUMP", 1, chunk, offset);
         case OP_MULTI_CASE:
-            return simpleInstruction("OP_MULTI_CASE", offset);
+            return byteInstruction("OP_MULTI_CASE", chunk, offset);
         case OP_COMPARE_JUMP:
 	        return jumpInstruction("OP_COMPARE_JUMP", 1, chunk, offset);
         case OP_JUMP_IF_FALSE:

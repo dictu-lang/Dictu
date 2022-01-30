@@ -1972,6 +1972,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_NEW_LIST:
         case OP_NEW_DICT:
         case OP_CLOSE_FILE:
+        case OP_MULTI_CASE:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
@@ -2166,11 +2167,13 @@ static void ifStatement(Compiler *compiler) {
 static void switchStatement(Compiler *compiler) {
     int caseEnds[256];
     int caseCount = 0;
+
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'switch'.");
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before switch body.");
-    consume(compiler, TOKEN_CASE, "Expect atleast one 'case' block.");
+    consume(compiler, TOKEN_CASE, "Expect at least one 'case' block.");
+
     do {
         expression(compiler);
         int multipleCases = 0;
@@ -2179,8 +2182,7 @@ static void switchStatement(Compiler *compiler) {
                 multipleCases++;
                 expression(compiler);
             } while(match(compiler, TOKEN_COMMA));
-            emitConstant(compiler, NUMBER_VAL(multipleCases));
-            emitByte(compiler, OP_MULTI_CASE);
+            emitBytes(compiler, OP_MULTI_CASE, multipleCases);
         }
         int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
@@ -2195,7 +2197,7 @@ static void switchStatement(Compiler *compiler) {
 
     if (match(compiler,TOKEN_DEFAULT)){
         emitByte(compiler, OP_POP); // expression.
-        consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
+        consume(compiler, TOKEN_COLON, "Expect ':' after default.");
         statement(compiler);
     }
 
@@ -2203,7 +2205,7 @@ static void switchStatement(Compiler *compiler) {
         error(compiler->parser, "Unexpected case after default");
     }
 
-    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' end  switch body.");
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after switch body.");
 
     for (int i = 0; i < caseCount; i++) {
     	patchJump(compiler, caseEnds[i]);
