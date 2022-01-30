@@ -47,6 +47,8 @@ if (x == 6) {
 A switch statement can be seen as a more maintainable if/else if chain. It evaluates an expression and then enters a 
 case block depending upon if the expression matches the expression of the case block.
 
+The value supplied to a case block can be of any type and follows the same rules of equality as the `==` operator.
+
 ```cs
 switch (10) {
     case 1: {
