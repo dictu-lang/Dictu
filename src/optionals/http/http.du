@@ -1,0 +1,11 @@
+import JSON;
+
+class Response {
+    // content, headers and statusCode set via C
+    init() {}
+
+    json() {
+        return JSON.parse(this.content);
+    }
+}
+

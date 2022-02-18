@@ -17,7 +17,7 @@ BuiltinModules modules[] = {
         {"UnitTest", &createUnitTestModule, true},
         {"Inspect", &createInspectModule, false},
 #ifndef DISABLE_HTTP
-        {"HTTP", &createHTTPModule, false},
+        {"HTTP", &createHTTPModule, true},
 #endif
         {NULL, NULL, false}
 };
