@@ -617,10 +617,6 @@ Value createHTTPModule(DictuVM *vm) {
     push(vm, OBJ_VAL(closure));
 
     ObjModule *module = closure->function->module;
-//    ObjString *name = copyString(vm, "HTTP", 4);
-//    push(vm, OBJ_VAL(name));
-//    ObjModule *module = newModule(vm, name);
-//    push(vm, OBJ_VAL(module));
 
     defineNativeProperty(vm, &module->values, "METHOD_GET", OBJ_VAL(copyString(vm, HTTP_METHOD_GET, strlen(HTTP_METHOD_GET))));
     defineNativeProperty(vm, &module->values, "METHOD_POST", OBJ_VAL(copyString(vm, HTTP_METHOD_POST, strlen(HTTP_METHOD_POST))));
