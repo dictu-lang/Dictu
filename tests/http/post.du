@@ -11,20 +11,20 @@ var result = HTTP.post("http://httpbin.org/post", {"test": 10});
 assert(result.success());
 var response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["headers"].len() > 0);
-assert(response["content"].contains("origin"));
-assert(response["content"].contains('"test": "10"'));
+assert(response.statusCode == 200);
+assert(response.headers.len() > 0);
+assert(response.content.contains("origin"));
+assert(response.content.contains('"test": "10"'));
 
 // HTTPS
 result = HTTP.post("https://httpbin.org/post", {"test": 10});
 assert(result.success());
 var response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["headers"].len() > 0);
-assert(response["content"].contains("origin"));
-assert(response["content"].contains('"test": "10"'));
+assert(response.statusCode == 200);
+assert(response.headers.len() > 0);
+assert(response.content.contains("origin"));
+assert(response.content.contains('"test": "10"'));
 
 
 // HTTPS
@@ -32,11 +32,11 @@ result = HTTP.post("https://httpbin.org/post", {"test": 10}, ["Test: header"]);
 assert(result.success());
 var response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["content"].len() > 0);
-assert(response["content"].contains('"Test": "header"'));
-assert(response["content"].contains("origin"));
-assert(response["content"].contains('"test": "10"'));
+assert(response.statusCode == 200);
+assert(response.content.len() > 0);
+assert(response.content.contains('"Test": "header"'));
+assert(response.content.contains("origin"));
+assert(response.content.contains('"test": "10"'));
 
 response = HTTP.post("https://BAD_URL.test_for_error", {"test": 10}, [], 1);
 assert(response.success() == false);
