@@ -5,13 +5,19 @@
  *
  * Returns the canonicalized absolute pathname or nil on error.
  */
+from UnitTest import UnitTest;
+
 import Path;
 import System;
 
-if (System.platform != "windows") {
-  assert(Path.delimiter == ":");
-  assert(Path.dirSeparator == "/");
-  assert(Path.realpath("/usr/../usr/../usr").unwrap() == "/usr");
-  assert(Path.realpath("doesnotexist/../../").success() == false);
-  assert(Path.realpath("doesnotexist/../../").unwrapError() == "No such file or directory");
+class TestPathRealpath < UnitTest {
+    testRealpath() {
+        if (System.platform == "windows") return;
+
+        this.assertEquals(Path.realpath("/usr/../usr/../usr").unwrap(), "/usr");
+        this.assertFalsey(Path.realpath("doesnotexist/../../").success());
+        this.assertEquals(Path.realpath("doesnotexist/../../").unwrapError(), "No such file or directory");
+    }
 }
+
+TestPathRealpath().run();
