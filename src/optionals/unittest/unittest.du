@@ -5,6 +5,8 @@ abstract class UnitTest {
     var METHOD_NAME_PADDING = '    ';
     var RESULTS_PADDING     = '    ';
     var ASSERTION_PADDING   = '         ';
+    var forceOnlyFailures   = false;
+    var forceExitOnFailure  = false;
 
     init(var onlyFailures = false, var exitOnFailure = false) {
         this.results = {
@@ -81,7 +83,7 @@ abstract class UnitTest {
         if (success) {
             this.results['passed'] += 1;
 
-            if (not this.onlyFailures) {
+            if (not (this.onlyFailures or this.forceOnlyFailures)) {
                 print('{}Success.'.format(UnitTest.ASSERTION_PADDING));
             }
         } else {
@@ -89,7 +91,7 @@ abstract class UnitTest {
 
             print('{}Line: {} - {}'.format(UnitTest.ASSERTION_PADDING, Inspect.getLine(2), errorMsg));
 
-            if (this.exitOnFailure) {
+            if (this.exitOnFailure or this.forceExitOnFailure) {
                 System.exit(1);
             }
         }

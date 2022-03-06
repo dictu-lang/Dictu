@@ -5,6 +5,8 @@
 "    var METHOD_NAME_PADDING = '    ';\n" \
 "    var RESULTS_PADDING     = '    ';\n" \
 "    var ASSERTION_PADDING   = '         ';\n" \
+"    var forceOnlyFailures   = false;\n" \
+"    var forceExitOnFailure  = false;\n" \
 "\n" \
 "    init(var onlyFailures = false, var exitOnFailure = false) {\n" \
 "        this.results = {\n" \
@@ -81,7 +83,7 @@
 "        if (success) {\n" \
 "            this.results['passed'] += 1;\n" \
 "\n" \
-"            if (not this.onlyFailures) {\n" \
+"            if (not (this.onlyFailures or this.forceOnlyFailures)) {\n" \
 "                print('{}Success.'.format(UnitTest.ASSERTION_PADDING));\n" \
 "            }\n" \
 "        } else {\n" \
@@ -89,7 +91,7 @@
 "\n" \
 "            print('{}Line: {} - {}'.format(UnitTest.ASSERTION_PADDING, Inspect.getLine(2), errorMsg));\n" \
 "\n" \
-"            if (this.exitOnFailure) {\n" \
+"            if (this.exitOnFailure or this.forceExitOnFailure) {\n" \
 "                System.exit(1);\n" \
 "            }\n" \
 "        }\n" \
