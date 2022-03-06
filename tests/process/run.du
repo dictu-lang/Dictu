@@ -5,25 +5,34 @@
  *
  * run() executes a new process and does wait for a return.
  */
+from UnitTest import UnitTest;
+
 import Process;
 import System;
 
-if (System.platform == "windows") {
-    assert(Process.run(["cmd.exe", "/c", "dir"]).success());
+class TestProcessRun < UnitTest {
+    testProcessRunWindows() {
+        if (System.platform != "windows") return;
 
-    var output = Process.run(["cmd.exe", "/c", "dir"], true);
+        this.assertTruthy(Process.run(["cmd.exe", "/c", "dir"]).success());
 
-    assert(output.success());
-    assert(type(output.unwrap()) == "string");
-    assert(output.unwrap().len() > 0);
-} else {
-    assert(Process.run(["ls"]).success());
-    assert(Process.run(["ls", "-la"]).success());
+        const output = Process.run(["cmd.exe", "/c", "dir"], true);
+        this.assertTruthy(output.success());
+        this.assertEquals(type(output.unwrap()), "string");
+        this.assertTruthy(output.unwrap().len() > 0);
+    }
 
-    var output = Process.run(["ls", "-la"], true);
+    testProcessRunOtherOSs() {
+        if (System.platform == "windows") return;
 
-    print(output.unwrap());
-    assert(output.success());
-    assert(type(output.unwrap()) == "string");
-    assert(output.unwrap().len() > 0);
+        this.assertTruthy(Process.run(["ls"]).success());
+        this.assertTruthy(Process.run(["ls", "-la"]).success());
+
+        const output = Process.run(["ls", "-la"], true);
+        this.assertTruthy(output.success());
+        this.assertEquals(type(output.unwrap()), "string");
+        this.assertTruthy(output.unwrap().len() > 0);
+    }
 }
+
+TestProcessRun().run();
