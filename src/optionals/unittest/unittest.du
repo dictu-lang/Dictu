@@ -101,6 +101,18 @@ abstract class UnitTest {
         this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));
     }
 
+    assertNotEquals(value, expected) {
+        this.printResult(value == expected, 'Failure: {} is equal to {}.'.format(value, expected));
+    }
+
+    assertNil(value) {
+        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value));
+    }
+
+    assertNotNil(value) {
+        this.printResult(value != nil, 'Failure: Should not be nil.');
+    }
+
     assertTruthy(value) {
         this.printResult(value, 'Failure: {} is not Truthy.'.format(value));
     }

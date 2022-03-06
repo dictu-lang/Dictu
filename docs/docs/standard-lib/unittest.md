@@ -403,6 +403,18 @@ file.du
 
 This helper method ensures that both values passed in equal each other.
 
+### assertNotEquals(value, value)
+
+This helper method ensures that both values passed in do not equal each other.
+
+### assertNil(value)
+
+This helper method ensures that the value passed in is equal to nil.
+
+### assertNotNil(value)
+
+This helper method ensures that the value passed in is not equal to nil.
+
 ### assertTruthy(value)
 
 This helper method ensures that the value passed in would evaluate to true.
