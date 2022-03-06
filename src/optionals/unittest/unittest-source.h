@@ -101,6 +101,18 @@
 "        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));\n" \
 "    }\n" \
 "\n" \
+"    assertNotEquals(value, expected) {\n" \
+"        this.printResult(value == expected, 'Failure: {} is equal to {}.'.format(value, expected));\n" \
+"    }\n" \
+"\n" \
+"    assertNil(value) {\n" \
+"        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value));\n" \
+"    }\n" \
+"\n" \
+"    assertNotNil(value) {\n" \
+"        this.printResult(value != nil, 'Failure: Should not be nil.');\n" \
+"    }\n" \
+"\n" \
 "    assertTruthy(value) {\n" \
 "        this.printResult(value, 'Failure: {} is not Truthy.'.format(value));\n" \
 "    }\n" \
