@@ -30,7 +30,7 @@ class TernaryOperatorTest < UnitTest {
             {"operation": true ? 1 + 2 + 3 : 4 + 5 + 6, "expected": 6},
             {"operation": false ? 1 + 2 + 3 : 4 + 5 + 6, "expected": 15},
             {"operation": condition ? [1, 2] : [3, 4], "expected": [1, 2]},
-            {"operation": !condition ? [1, 2] : [3, 4], "expected": [3, 4]},
+            {"operation": not condition ? [1, 2] : [3, 4], "expected": [3, 4]},
             {"operation": nestedTernary(1), "expected": 1},
             {"operation": nestedTernary(2), "expected": 2},
             {"operation": nestedTernary(3), "expected": 3},
