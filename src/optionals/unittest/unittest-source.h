@@ -16,7 +16,7 @@
 "\n" \
 "    filterMethods() {\n" \
 "        return this.methods().filter(def (method) => {\n" \
-"            if (method.startsWith('test') and !method.endsWith('Provider') and !method.endsWith('_skipped')) {\n" \
+"            if (method.startsWith('test') and not method.endsWith('Provider') and not method.endsWith('_skipped')) {\n" \
 "                return method;\n" \
 "            }\n" \
 "\n" \
@@ -81,7 +81,7 @@
 "        if (success) {\n" \
 "            this.results['passed'] += 1;\n" \
 "\n" \
-"            if (!this.onlyFailures) {\n" \
+"            if (not this.onlyFailures) {\n" \
 "                print('{}Success.'.format(UnitTest.ASSERTION_PADDING));\n" \
 "            }\n" \
 "        } else {\n" \
@@ -104,7 +104,7 @@
 "    }\n" \
 "\n" \
 "    assertFalsey(value) {\n" \
-"        this.printResult(!value, 'Failure: {} is not Falsey.'.format(value));\n" \
+"        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value));\n" \
 "    }\n" \
 "\n" \
 "    assertSuccess(value) {\n" \
@@ -122,7 +122,7 @@
 "            return;\n" \
 "        }\n" \
 "\n" \
-"        this.printResult(!value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));\n" \
+"        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));\n" \
 "    }\n" \
 "}\n" \
 

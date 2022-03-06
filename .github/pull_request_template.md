@@ -14,8 +14,8 @@
 
 <!-- Link the issue below if you are resolving an issue !-->
 
-Resolves: 
- 
+Resolves: #
+
 #
 
 ### Type of change:
@@ -41,6 +41,8 @@ Resolves:
 - [ ] Tests have been updated to reflect the changes done within this PR (if applicable).
 
 - [ ] Documentation has been updated to reflect the changes done within this PR (if applicable).
+
+#
 
 ### Preview (Screenshots) :
 

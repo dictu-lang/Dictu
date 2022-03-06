@@ -207,7 +207,6 @@ void defineAllNatives(DictuVM *vm) {
             generateErrorResult
     };
 
-
     for (uint8_t i = 0; i < sizeof(nativeNames) / sizeof(nativeNames[0]); ++i) {
         defineNative(vm, &vm->globals, nativeNames[i], nativeFunctions[i]);
     }

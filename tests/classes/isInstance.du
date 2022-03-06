@@ -14,12 +14,12 @@ class AnotherTest < Test {}
 
 assert(AnotherTest().isInstance(Test));
 assert(AnotherTest().isInstance(AnotherTest));
-assert(!Test().isInstance(AnotherTest));
+assert(not Test().isInstance(AnotherTest));
 
 class Unrelated {}
 
-assert(!Test().isInstance(Unrelated));
-assert(!AnotherTest().isInstance(Unrelated));
+assert(not Test().isInstance(Unrelated));
+assert(not AnotherTest().isInstance(Unrelated));
 
 
 abstract class AbstractBase {}

@@ -19,12 +19,11 @@ assert(x.contains(4));
 assert(x.contains(5));
 assert(x.contains([6, 7]));
 
-// Test ! .contains()
-assert(!(x.contains(6)));
-assert(!(x.contains(7)));
-assert(!(x.contains(10)));
-assert(!(x.contains(11)));
-assert(!(x.contains(12)));
-assert(!(x.contains(13)));
-assert(!(x.contains(14)));
-
+// Test not  .contains()
+assert(not x.contains(6));
+assert(not x.contains(7));
+assert(not x.contains(10));
+assert(not x.contains(11));
+assert(not x.contains(12));
+assert(not x.contains(13));
+assert(not x.contains(14));

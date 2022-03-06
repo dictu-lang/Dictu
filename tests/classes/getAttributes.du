@@ -1,7 +1,7 @@
 /**
  * getAttributes.du
  *
- * Testing the obj.getAttribute() method
+ * Testing the obj.getAttributes() method
  *
  */
 
@@ -17,32 +17,26 @@ class Test {
     publicMethod() {}
 }
 
-assert(Test().getAttribute("x") == 10);
-assert(Test().getAttribute("x", nil) == 10);
-assert(Test().getAttribute("priv") == nil);
-assert(Test().getAttribute("priv", 10) == 10);
-assert(Test().getAttribute("privMethod") == nil);
-assert(Test().getAttribute("privMethod", 10) == 10);
-assert(Test().getAttribute("pub") == 20);
-assert(Test().getAttribute("pub", nil) == 20);
-assert(Test().getAttribute("prop") == 30);
-assert(Test().getAttribute("prop", nil) == 30);
-assert(type(Test().getAttribute("publicMethod") == "function"));
-assert(type(Test().getAttribute("publicMethod", nil) == "function"));
+assert(Test().getAttributes().len() == 3);
+assert(Test().getAttributes().exists("properties"));
+assert(Test().getAttributes().exists("classVariables"));
+assert(Test().getAttributes().exists("methods"));
+// 3 because of the implicit "_class" property
+assert(Test().getAttributes().get("properties").len() == 3);
+assert(Test().getAttributes().get("classVariables").len() == 1);
+assert(Test().getAttributes().get("methods").len() == 2);
+assert(Test().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
 
 class Inherit < Test {
 
 }
 
-assert(Inherit().getAttribute("x") == 10);
-assert(Inherit().getAttribute("x", nil) == 10);
-assert(Inherit().getAttribute("priv") == nil);
-assert(Inherit().getAttribute("priv", 10) == 10);
-assert(Inherit().getAttribute("privMethod") == nil);
-assert(Inherit().getAttribute("privMethod", 10) == 10);
-assert(Inherit().getAttribute("pub") == 20);
-assert(Inherit().getAttribute("pub", nil) == 20);
-assert(Inherit().getAttribute("prop") == 30);
-assert(Inherit().getAttribute("prop", nil) == 30);
-assert(type(Inherit().getAttribute("publicMethod") == "function"));
-assert(type(Inherit().getAttribute("publicMethod", nil) == "function"));
+assert(Inherit().getAttributes().len() == 3);
+assert(Inherit().getAttributes().exists("properties"));
+assert(Inherit().getAttributes().exists("classVariables"));
+assert(Inherit().getAttributes().exists("methods"));
+// 3 because of the implicit "_class" property
+assert(Inherit().getAttributes().get("properties").len() == 3);
+assert(Inherit().getAttributes().get("classVariables").len() == 1);
+assert(Inherit().getAttributes().get("methods").len() == 2);
+assert(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));

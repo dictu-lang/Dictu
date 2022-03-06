@@ -3,10 +3,11 @@
 
 #include "../vm/util.h"
 #include "math.h"
-#include "env.h"
+#include "env/env.h"
 #include "system.h"
 #include "json.h"
-#include "http.h"
+#include "log.h"
+#include "http/http.h"
 #include "path.h"
 #include "c.h"
 #include "datetime.h"

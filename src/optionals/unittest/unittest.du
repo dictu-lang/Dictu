@@ -16,7 +16,7 @@ abstract class UnitTest {
 
     filterMethods() {
         return this.methods().filter(def (method) => {
-            if (method.startsWith('test') and !method.endsWith('Provider') and !method.endsWith('_skipped')) {
+            if (method.startsWith('test') and not method.endsWith('Provider') and not method.endsWith('_skipped')) {
                 return method;
             }
 
@@ -81,7 +81,7 @@ abstract class UnitTest {
         if (success) {
             this.results['passed'] += 1;
 
-            if (!this.onlyFailures) {
+            if (not this.onlyFailures) {
                 print('{}Success.'.format(UnitTest.ASSERTION_PADDING));
             }
         } else {
@@ -104,7 +104,7 @@ abstract class UnitTest {
     }
 
     assertFalsey(value) {
-        this.printResult(!value, 'Failure: {} is not Falsey.'.format(value));
+        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value));
     }
 
     assertSuccess(value) {
@@ -122,6 +122,6 @@ abstract class UnitTest {
             return;
         }
 
-        this.printResult(!value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));
+        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));
     }
 }

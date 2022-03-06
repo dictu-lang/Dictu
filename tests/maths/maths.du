@@ -67,3 +67,10 @@ assert(Math.lcm([32, 24, 12]) == 96);
 
 assert(Math.pi == 3.14159265358979);
 assert(Math.e == 2.71828182845905);
+assert(Math.phi == 1.61803398874989);
+assert(Math.sqrt2 == 1.41421356237309);
+assert(Math.sqrte == 1.61803398874989);
+assert(Math.sqrtpi == 1.77245385090551);
+assert(Math.sqrtphi == 1.27201964951406);
+assert(Math.ln2 == 0.69314718055994);
+assert(Math.ln10 == 2.30258509299404);

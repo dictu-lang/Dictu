@@ -68,6 +68,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
     initTable(&klass->publicProperties);
+    initTable(&klass->publicConstantProperties);
     klass->annotations = NULL;
     return klass;
 }
@@ -117,6 +118,14 @@ ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     instance->klass = klass;
     initTable(&instance->publicFields);
     initTable(&instance->privateFields);
+
+    push(vm, OBJ_VAL(instance));
+    ObjString *classString = copyString(vm, "_class", 6);
+    push(vm, OBJ_VAL(classString));
+    tableSet(vm, &instance->publicFields, classString, OBJ_VAL(klass));
+    pop(vm);
+    pop(vm);
+
     return instance;
 }
 

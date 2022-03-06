@@ -18,7 +18,7 @@ parent: Standard Library
 
 ## HTTP
 
-To make use of the HTTP module an import is required.
+To make use of the HTTP module an import is required. Along with the methods described below, this module also defines constants representing all standard response codes and their associated messages, the standard set of HTTP methods, and common request headers and values.
 
 ```cs
 import HTTP;
@@ -27,7 +27,7 @@ import HTTP;
 ### HTTP.get(string, list: headers -> optional, number: timeout -> optional)
 
 Sends a HTTP GET request to a given URL. Timeout is given in seconds.
-Returns a Result and unwraps to a dictionary upon success.
+Returns a Result and unwraps to a Response upon success.
 
 ```cs
 HTTP.get("https://httpbin.org/get");
@@ -40,7 +40,7 @@ HTTP.get("https://httpbin.org/get", ["Content-Type: application/json"], 1);
 ### HTTP.post(string, dictionary: postArgs -> optional, list: headers -> optional, number: timeout -> optional)
 
 Sends a HTTP POST request to a given URL.Timeout is given in seconds.
-Returns a Result and unwraps to a dictionary upon success.
+Returns a Result and unwraps to a Response upon success.
 
 ```cs
 HTTP.post("https://httpbin.org/post");
@@ -51,8 +51,8 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 
 ### Response
 
-Both HTTP.get() and HTTP.post() return a Result that unwraps a dictionary on success, or nil on error.
-The dictionary returned has 3 keys, "content", "headers" and "statusCode". "content" is the actual content returned from the
+Both HTTP.get() and HTTP.post() return a Result that unwraps a Response object on success, or nil on error.
+The Response object returned has 3 public properties, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
 
@@ -60,39 +60,53 @@ Example response from [httpbin.org](https://httpbin.org)
 
 ```json
 // GET
-
-{"content": '{
-  "args": {},
+const response = HTTP.get("https://httpbin.org/get").unwrap();
+print(response.content);
+{
+  "args": {}, 
   "headers": {
-    "Accept": "*/*",
-    "Host": "httpbin.org",
-    "X-Amzn-Trace-Id": "Root=1-5e58197f-21f34d683a951fc741f169c6"
-  },
-  "origin": "...",
+    "Accept": "*/*", 
+    "Accept-Encoding": "gzip", 
+    "Host": "httpbin.org", 
+    "X-Amzn-Trace-Id": "Root=1-620ff6d1-24de015127aa59770abce026"
+  }, 
+  "origin": "...", 
   "url": "https://httpbin.org/get"
 }
-', "headers": ['HTTP/1.1 200 OK', 'Date: Thu, 27 Feb 2020 19:33:19 GMT', 'Content-Type: application/json', 'Content-Length: 220', 'Connection: keep-alive', 'Server: gunicorn/19.9.0', 'Access-Control-Allow-Origin: *', 'Access-Control-Allow-Credentials: true'], "statusCode": 200}
+print(response.headers);
+["HTTP/2 200 ", "date: Fri, 18 Feb 2022 19:43:13 GMT", "content-type: application/json", "content-length: 254", "server: gunicorn/19.9.0", "access-control-allow-origin: *", "access-control-allow-credentials: true"]
 
+print(response.statusCode);
+200
 
 // POST
-
-{"content": '{
-  "args": {},
-  "data": "",
-  "files": {},
-  "form": {
-    "test": "10"
-  },
+const response = HTTP.post("https://httpbin.org/post").unwrap();
+print(response.content);
+{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
   "headers": {
-    "Accept": "*/*",
-    "Content-Length": "8",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Host": "httpbin.org",
-    "X-Amzn-Trace-Id": "Root=1-5e5819ac-7e6a3cef0546c7606a34aa73"
-  },
-  "json": null,
-  "origin": "...",
+    "Accept": "*/*", 
+    "Accept-Encoding": "gzip", 
+    "Content-Length": "0", 
+    "Content-Type": "application/x-www-form-urlencoded", 
+    "Host": "httpbin.org", 
+    "X-Amzn-Trace-Id": "Root=1-620ff777-311a6db4398c1f5325a22f8a"
+  }, 
+  "json": null, 
+  "origin": "...", 
   "url": "https://httpbin.org/post"
 }
-', "headers": ['HTTP/1.1 200 OK', 'Date: Thu, 27 Feb 2020 19:34:04 GMT', 'Content-Type: application/json', 'Content-Length: 390', 'Connection: keep-alive', 'Server: gunicorn/19.9.0', 'Access-Control-Allow-Origin: *', 'Access-Control-Allow-Credentials: true'], "statusCode": 200}
+
+print(response.headers);
+["HTTP/2 200 ", "date: Fri, 18 Feb 2022 19:45:59 GMT", "content-type: application/json", "content-length: 404", "server: gunicorn/19.9.0", "access-control-allow-origin: *", "access-control-allow-credentials: true"]
+
+print(response.statusCode);
+200
 ```
+
+#### Response.json()
+To quickly convert the raw string contained within the Response object we can use the helper `.json` method.
+This works exactly the same as `JSON.parse()` and will return a Result object.

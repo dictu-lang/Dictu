@@ -2,8 +2,9 @@
 
 BuiltinModules modules[] = {
         {"Math", &createMathsModule, false},
-        {"Env", &createEnvModule, false},
+        {"Env", &createEnvModule, true},
         {"JSON", &createJSONModule, false},
+        {"Log", &createLogModule, false},
         {"Path", &createPathModule, false},
         {"Datetime", &createDatetimeModule, false},
         {"Socket", &createSocketModule, false},
@@ -16,7 +17,7 @@ BuiltinModules modules[] = {
         {"UnitTest", &createUnitTestModule, true},
         {"Inspect", &createInspectModule, false},
 #ifndef DISABLE_HTTP
-        {"HTTP", &createHTTPModule, false},
+        {"HTTP", &createHTTPModule, true},
 #endif
         {NULL, NULL, false}
 };
