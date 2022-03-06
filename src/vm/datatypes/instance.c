@@ -44,6 +44,10 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
     ObjClass *klass = instance->klass;
 
     while (klass != NULL) {
+        if (tableGet(&klass->publicConstantProperties, AS_STRING(value), &value)) {
+            return TRUE_VAL;
+        }
+
         if (tableGet(&klass->publicProperties, AS_STRING(value), &value)) {
             return TRUE_VAL;
         }

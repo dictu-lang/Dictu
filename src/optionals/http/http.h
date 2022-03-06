@@ -5,8 +5,8 @@
 #include <curl/curl.h>
 #endif
 
-#include "optionals.h"
-#include "../vm/vm.h"
+#include "../optionals.h"
+#include "../../vm/vm.h"
 
 typedef struct response {
     DictuVM *vm;

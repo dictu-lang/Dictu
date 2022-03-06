@@ -4,6 +4,8 @@
 
 #include "http.h"
 
+#include "http-source.h"
+
 #define HTTP_METHOD_GET     "GET"
 #define HTTP_METHOD_POST    "POST"
 #define HTTP_METHOD_PUT     "PUT"
@@ -348,7 +350,7 @@ static bool setRequestHeaders(DictuVM *vm, struct curl_slist *list, CURL *curl, 
     return true;
 }
 
-static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
+static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
     ObjString *content;
@@ -361,35 +363,41 @@ static ObjDict *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Push to stack to avoid GC
     push(vm, OBJ_VAL(content));
 
-    ObjDict *responseVal = newDict(vm);
+    Value rawModule;
+    tableGet(&vm->modules, copyString(vm, "HTTP", 4), &rawModule);
+
+    Value rawResponseClass;
+    tableGet(&AS_MODULE(rawModule)->values, copyString(vm, "Response", 8), &rawResponseClass);
+
+    ObjInstance *responseInstance = newInstance(vm, AS_CLASS(rawResponseClass));
     // Push to stack to avoid GC
-    push(vm, OBJ_VAL(responseVal));
+    push(vm, OBJ_VAL(responseInstance));
 
     ObjString *string = copyString(vm, "content", 7);
     push(vm, OBJ_VAL(string));
-    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(content));
+    tableSet(vm, &responseInstance->publicFields, string, OBJ_VAL(content));
     pop(vm);
 
     string = copyString(vm, "headers", 7);
     push(vm, OBJ_VAL(string));
-    dictSet(vm, responseVal, OBJ_VAL(string), OBJ_VAL(response.headers));
+    tableSet(vm, &responseInstance->publicFields, string, OBJ_VAL(response.headers));
     pop(vm);
 
     string = copyString(vm, "statusCode", 10);
     push(vm, OBJ_VAL(string));
-    dictSet(vm, responseVal, OBJ_VAL(string), NUMBER_VAL(response.statusCode));
+    tableSet(vm, &responseInstance->publicFields, string, NUMBER_VAL(response.statusCode));
     pop(vm);
 
-    // Pop
+    // Pop instance
     pop(vm);
-    pop(vm);
+    // Pop content
     pop(vm);
 
     /* always cleanup */
     curl_easy_cleanup(curl);
     curl_global_cleanup();
 
-    return responseVal;
+    return responseInstance;
 }
 
 static Value get(DictuVM *vm, int argCount, Value *args) {
@@ -600,10 +608,15 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
 }
 
 Value createHTTPModule(DictuVM *vm) {
-    ObjString *name = copyString(vm, "HTTP", 4);
-    push(vm, OBJ_VAL(name));
-    ObjModule *module = newModule(vm, name);
-    push(vm, OBJ_VAL(module));
+    ObjClosure *closure = compileModuleToClosure(vm, "HTTP", DICTU_HTTP_SOURCE);
+
+    if (closure == NULL) {
+        return EMPTY_VAL;
+    }
+
+    push(vm, OBJ_VAL(closure));
+
+    ObjModule *module = closure->function->module;
 
     defineNativeProperty(vm, &module->values, "METHOD_GET", OBJ_VAL(copyString(vm, HTTP_METHOD_GET, strlen(HTTP_METHOD_GET))));
     defineNativeProperty(vm, &module->values, "METHOD_POST", OBJ_VAL(copyString(vm, HTTP_METHOD_POST, strlen(HTTP_METHOD_POST))));
@@ -839,7 +852,6 @@ Value createHTTPModule(DictuVM *vm) {
     defineNative(vm, &module->values, "post", post);
 
     pop(vm);
-    pop(vm);
 
-    return OBJ_VAL(module);
+    return OBJ_VAL(closure);
 }

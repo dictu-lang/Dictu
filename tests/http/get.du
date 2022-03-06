@@ -12,28 +12,28 @@ var result = HTTP.get("http://httpbin.org/get");
 assert(result.success());
 var response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["content"].contains("headers"));
-assert(response["headers"].len() > 0);
+assert(response.statusCode == 200);
+assert(response.content.contains("headers"));
+assert(response.headers.len() > 0);
 
 // HTTPS
 result = HTTP.get("https://httpbin.org/get");
 assert(result.success());
 response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["content"].contains("headers"));
-assert(response["headers"].len() > 0);
+assert(response.statusCode == 200);
+assert(response.content.contains("headers"));
+assert(response.headers.len() > 0);
 
 // Headers
 result = HTTP.get("https://httpbin.org/get", ["Header: test"]);
 assert(result.success());
 response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["content"].contains("headers"));
-assert(response["content"].contains('"Header": "test"'));
-assert(response["headers"].len() > 0);
+assert(response.statusCode == 200);
+assert(response.content.contains("headers"));
+assert(response.content.contains('"Header": "test"'));
+assert(response.headers.len() > 0);
 
 response = HTTP.get("https://BAD_URL.test_for_error", [], 1);
 assert(response.success() == false);
@@ -44,6 +44,6 @@ result = HTTP.get("https://httpbin.org/gzip");
 assert(result.success());
 response = result.unwrap();
 
-assert(response["statusCode"] == 200);
-assert(response["content"].contains("headers"));
-assert(response["headers"].len() > 0);
+assert(response.statusCode == 200);
+assert(response.content.contains("headers"));
+assert(response.headers.len() > 0);

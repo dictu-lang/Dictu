@@ -1,0 +1,9 @@
+/**
+ * import.du
+ *
+ * General import file for the switch control flow
+ */
+
+import "variables.du";
+import "multi-case.du";
+import "data-types.du";

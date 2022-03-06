@@ -1,0 +1,67 @@
+/**
+ * variables.du
+ *
+ * Testing variables within a switch
+ */
+
+var x = 10;
+
+switch (x) {
+    case 1: {
+        x += 10;
+    }
+
+    case 5: {
+        x += 10;
+    }
+
+    case 10: {
+        x += 10;
+    }
+}
+
+assert(x == 20);
+
+// No match
+
+var x = 11;
+
+switch (x) {
+    case 1: {
+        x += 10;
+    }
+
+    case 5: {
+        x += 10;
+    }
+
+    case 5 + 5: {
+        x += 10;
+    }
+}
+
+assert(x == 11);
+
+// No match - default
+
+var x = 11;
+
+switch (x) {
+    case 1: {
+        x += 10;
+    }
+
+    case 5: {
+        x += 10;
+    }
+
+    case 10: {
+        x += 10;
+    }
+
+    default: {
+        x += 10;
+    }
+}
+
+assert(x == 21);

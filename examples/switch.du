@@ -1,0 +1,98 @@
+var a=4;
+switch(a){
+case 1:{
+   print("one");
+}
+case 2:{
+   print("two");
+}
+case 3:{
+   print("three");
+}
+case 4:{
+   print("four");
+}
+case 5:{
+   print("five");
+}
+case 6:{
+   print("six");
+}
+}
+//output four
+
+switch("five"){
+case "one":{
+   print(1);
+}
+case "two":{
+   print(2);
+}
+case "three":{
+   print(3);
+}
+case "four":{
+   print(4);
+}
+case "five":{
+   print(5);
+}
+case "six":{
+   print(6);
+}
+}
+//output 5
+
+switch("Nine"){
+case "one":{
+   print(1);
+}
+case "two":{
+   print(2);
+}
+case "three":{
+   print(3);
+}
+case "four":{
+   print(4);
+}
+case "five":{
+   print(5);
+}
+case "six":{
+   print(6);
+}
+default:
+   print("case not found");
+}
+//output case not found
+
+switch("five"){
+case "one":{
+   print(1);
+}
+case "two":{
+   print(2);
+}
+case "three":{
+   print(3);
+}
+case "four":{
+   print(4);
+}
+case "five", "six":{
+   print("5 or 6");
+}
+}
+//output 5 or 6
+
+switch (10) {
+    case 1, 2: {
+        print("1!");
+    }
+
+    case 10: {
+        print("10!");
+    }
+}
+//output 10!
