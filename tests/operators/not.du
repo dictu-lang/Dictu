@@ -10,8 +10,7 @@ class NotOperatorTest < UnitTest {
     testNotOperator() {
         this.assertTruthy((not true) == false);
         this.assertTruthy(not false);
-        this.assertTruthy(!true == false);
-        this.assertTruthy(!false);
+        this.assertTruthy(not (true == false));
     }
 }
 
