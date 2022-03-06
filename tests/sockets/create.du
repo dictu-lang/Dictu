@@ -5,11 +5,18 @@
  *
  * Returns a new socket object
  */
+from UnitTest import UnitTest;
+
 import Socket;
 
-var socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM).unwrap();
+class TestSocketCreate < UnitTest {
+    testSocketCreate() {
+        const socket = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM).unwrap();
 
-assert(socket != nil);
+        this.assertNotNil(socket);
 
-socket.close();
+        socket.close();
+    }
+}
 
+TestSocketCreate().run();

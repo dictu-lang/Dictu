@@ -4,10 +4,24 @@
  * Testing the socket modules constants
  *
  */
+from UnitTest import UnitTest;
+
 import Socket;
 
-assert(type(Socket.AF_INET) == "number");
-assert(type(Socket.SOCK_STREAM) == "number");
-assert(type(Socket.SOL_SOCKET) == "number");
-assert(type(Socket.SO_REUSEADDR) == "number");
+class TestSocketConstants < UnitTest {
+    testSocketConstantTypes(data) {
+        this.assertEquals(type(data["constant"]), data["expected"]);
+    }
+
+    testSocketConstantTypesProvider() {
+        return [
+            {"constant": Socket.AF_INET, "expected": "number"},
+            {"constant": Socket.SOCK_STREAM, "expected": "number"},
+            {"constant": Socket.SOL_SOCKET, "expected": "number"},
+            {"constant": Socket.SO_REUSEADDR, "expected": "number"},
+        ];
+    }
+}
+
+TestSocketConstants().run();
 
