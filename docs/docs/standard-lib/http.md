@@ -56,6 +56,21 @@ The Response object returned has 3 public properties, "content", "headers" and "
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
 
+#### Quick Reference Table
+##### Properties
+
+| Property   | Description                                            |
+|------------|--------------------------------------------------------|
+| content    | Raw string content returned from the HTTP request      |
+| headers    | A list of headers returned from the HTTP request       |
+| statusCode | The status code returned from the HTTP request         |
+
+##### Methods
+
+| Method     | Description                                            |
+|------------|--------------------------------------------------------|
+| json       | Convert the content property to JSON                   |
+
 Example response from [httpbin.org](https://httpbin.org)
 
 ```json
