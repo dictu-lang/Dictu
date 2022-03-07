@@ -5,57 +5,53 @@
  *
  * Tests inserting, updating and selecting from a table in SQLite
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var connection = Sqlite.connect(":memory:");
-assert(connection.success());
-connection = connection.unwrap();
+class TestSqliteUpdate < UnitTest {
+    private connection;
 
-connection.execute("CREATE TABLE test (x int)").unwrap();
-var resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
+    setUp() {
+        const connection = Sqlite.connect(":memory:");
+        this.assertTruthy(connection.success());
+        this.connection = connection.unwrap();
 
-var select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10]]);
+        // Create table
+        this.connection.execute("CREATE TABLE test (x int)").unwrap();
 
-resp = connection.execute("INSERT INTO test VALUES (?)", [
-    11
-]).unwrap();
+        // Seed Data
+        this.connection.execute("INSERT INTO test VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10)").unwrap();
+    }
 
-select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10], [11]]);
+    tearDown() {
+        this.connection.close();
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = 10").unwrap();
-assert(select == [[10]]);
+    testSingleRowUpdate() {
+        this.assertTruthy(this.connection.execute("UPDATE test SET x = x + 10 WHERE x = 10").success());
+        this.assertEquals(this.connection.execute("SELECT * FROM test WHERE x = 10").unwrap(), []);
+        this.assertEquals(this.connection.execute("SELECT * FROM test WHERE x = 20").unwrap(), [
+            [20]
+        ]);
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    10
-]).unwrap();
-assert(select == [[10]]);
+    testAllRowsUpdate() {
+        this.assertTruthy(this.connection.execute("UPDATE test SET x = x + 10").success());
+        this.assertEquals(this.connection.execute("SELECT * FROM test WHERE x <= 10").unwrap(), []);
+        this.assertEquals(this.connection.execute("SELECT * FROM test").unwrap(), [
+            [11],
+            [12],
+            [13],
+            [14],
+            [15],
+            [16],
+            [17],
+            [18],
+            [19],
+            [20],
+        ]);
+    }
+}
 
-select = connection.execute("SELECT * FROM test WHERE x = 11").unwrap();
-assert(select == [[11]]);
-
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    11
-]).unwrap();
-assert(select == [[11]]);
-
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    nil
-]).unwrap();
-assert(select == []);
-
-connection.execute("UPDATE test SET x = 20 WHERE x = 10").unwrap();
-
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    10
-]).unwrap();
-assert(select == []);
-
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    20
-]).unwrap();
-assert(select == [[20]]);
-
-connection.close();
+TestSqliteUpdate().run();
