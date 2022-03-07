@@ -12,18 +12,18 @@ import "../functions/arrow.du" as ArrowFuncModule;
  *
  * Mirrors the function calls in parameters.du
  */
-ParametersModule.test(10);
-ParametersModule.test1(5, 5);
-ParametersModule.test2(10, "hello", true);
-ParametersModule.optional();
-ParametersModule.oneOptional(10);
-ParametersModule.twoOptional(10, 20);
-ParametersModule.threeOptional(10, 20);
-ParametersModule.threeOptional(10, 20, true);
-ParametersModule.fourOptional(10, nil);
-ParametersModule.fourOptional(10, nil, true);
-ParametersModule.fourOptional(10, nil, true, 10);
-ParametersModule.largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77);
+// ParametersModule.test(10);
+// ParametersModule.test1(5, 5);
+// ParametersModule.test2(10, "hello", true);
+// ParametersModule.optional();
+// ParametersModule.oneOptional(10);
+// ParametersModule.twoOptional(10, 20);
+// ParametersModule.threeOptional(10, 20);
+// ParametersModule.threeOptional(10, 20, true);
+// ParametersModule.fourOptional(10, nil);
+// ParametersModule.fourOptional(10, nil, true);
+// ParametersModule.fourOptional(10, nil, true, 10);
+// ParametersModule.largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77);
 
 /**
  * ArrowFuncModule
@@ -34,11 +34,11 @@ ParametersModule.largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1
 assert(type(ArrowFuncModule.func) == "function");
 assert(ArrowFuncModule.func() == 10);
 
-assert(type(ArrowFuncModule.func9) == "function");
-assert(ArrowFuncModule.func9() == 30);
-assert(ArrowFuncModule.func9(10, 20) == 30);
-assert(ArrowFuncModule.func9(1.5, 2.5) == 4);
-assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
+assert(type(ArrowFuncModule.func1) == "function");
+assert(ArrowFuncModule.func1() == 30);
+assert(ArrowFuncModule.func1(10, 20) == 30);
+assert(ArrowFuncModule.func1(1.5, 2.5) == 4);
+assert(ArrowFuncModule.func1("Dictu ", "is great!") == "Dictu is great!");
 
 /**
  * Nested scope
@@ -49,11 +49,11 @@ assert(ArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
         assert(type(NestedArrowFuncModule.func) == "function");
         assert(NestedArrowFuncModule.func() == 10);
 
-        assert(type(NestedArrowFuncModule.func9) == "function");
-        assert(NestedArrowFuncModule.func9() == 30);
-        assert(NestedArrowFuncModule.func9(10, 20) == 30);
-        assert(NestedArrowFuncModule.func9(1.5, 2.5) == 4);
-        assert(NestedArrowFuncModule.func9("Dictu ", "is great!") == "Dictu is great!");
+        assert(type(NestedArrowFuncModule.func1) == "function");
+        assert(NestedArrowFuncModule.func1() == 30);
+        assert(NestedArrowFuncModule.func1(10, 20) == 30);
+        assert(NestedArrowFuncModule.func1(1.5, 2.5) == 4);
+        assert(NestedArrowFuncModule.func1("Dictu ", "is great!") == "Dictu is great!");
         {
             {
                 import JSON;
