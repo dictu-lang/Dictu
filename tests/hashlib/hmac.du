@@ -11,7 +11,7 @@ class TestHashlibHmac < UnitTest {
     testHashlibHmac() {
         const hmac = Hashlib.hmac("key!", "Dictu");
 
-        this.assertEquals(type(hmac), "string");
+        this.assertType(hmac, "string");
         this.assertEquals(hmac.len(), 64);
         this.assertEquals(hmac, "f2fe1aea78f33a2d17a225b73039d29513687c3eac82e97661225b1f20276619");
 

@@ -11,7 +11,7 @@ class TestHashlibBcrypt < UnitTest {
     testHaslibBcrypt() {
         const hash = Hashlib.bcrypt("Dictu");
 
-        this.assertEquals(type(hash), "string");
+        this.assertType(hash, "string");
         this.assertTruthy(hash.len() > 56);
 
         this.assertTruthy(Hashlib.bcryptVerify("Dictu", hash));

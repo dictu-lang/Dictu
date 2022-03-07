@@ -10,7 +10,7 @@ import Socket;
 
 class TestSocketConstants < UnitTest {
     testSocketConstantTypes(data) {
-        this.assertEquals(type(data["constant"]), data["expected"]);
+        this.assertType(data["constant"], data["expected"]);
     }
 
     testSocketConstantTypesProvider() {

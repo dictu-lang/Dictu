@@ -11,7 +11,7 @@ class TestHashlibSha256 < UnitTest {
     testHashlibSha256() {
         const hash = Hashlib.sha256("Dictu");
 
-        this.assertEquals(type(hash), "string");
+        this.assertType(hash, "string");
         this.assertEquals(hash.len(), 64);
         this.assertEquals(hash, "889bb2f43047c331bed74b1a9b309cc66adff6c6d4c3517547813ad67ba8d105");
 

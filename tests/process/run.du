@@ -18,7 +18,7 @@ class TestProcessRun < UnitTest {
 
         const output = Process.run(["cmd.exe", "/c", "dir"], true);
         this.assertTruthy(output.success());
-        this.assertEquals(type(output.unwrap()), "string");
+        this.assertType(output.unwrap(), "string");
         this.assertTruthy(output.unwrap().len() > 0);
     }
 
@@ -30,7 +30,7 @@ class TestProcessRun < UnitTest {
 
         const output = Process.run(["ls", "-la"], true);
         this.assertTruthy(output.success());
-        this.assertEquals(type(output.unwrap()), "string");
+        this.assertType(output.unwrap(), "string");
         this.assertTruthy(output.unwrap().len() > 0);
     }
 }

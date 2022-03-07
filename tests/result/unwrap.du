@@ -10,7 +10,7 @@ class TestResultUnwrap < UnitTest {
     testSuccessUnwrap() {
         const result = Success(10);
 
-        this.assertEquals(type(result), "result");
+        this.assertType(result, "result");
         this.assertTruthy(result.success());
         this.assertEquals(result.unwrap(), 10);
     }
@@ -18,7 +18,7 @@ class TestResultUnwrap < UnitTest {
     testErrorUnwrap() {
         const result = Error("Error!!!");
 
-        this.assertEquals(type(result), "result");
+        this.assertType(result, "result");
         this.assertFalsey(result.success());
         this.assertEquals(result.unwrapError(), "Error!!!");
     }

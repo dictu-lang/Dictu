@@ -9,14 +9,14 @@ class TestArrowFunctions < UnitTest {
     testImplicitReturn() {
         const func = def () => 10;
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(), 10);
     }
 
     testImplicitReturnWithParameter() {
         const func = def (a) => a;
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(100), 100);
         this.assertEquals(func("test"), "test");
         this.assertEquals(func([1, 2]), [1, 2]);
@@ -26,7 +26,7 @@ class TestArrowFunctions < UnitTest {
     testImplicitReturnWithTwoParameters() {
         const func = def (a, b) => a + b;
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(10, 20), 30);
         this.assertEquals(func(1.5, 2.5), 4);
         this.assertEquals(func("Dictu ", "is great!"), "Dictu is great!");
@@ -37,7 +37,7 @@ class TestArrowFunctions < UnitTest {
             return 10;
         };
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(), 10);
     }
 
@@ -46,7 +46,7 @@ class TestArrowFunctions < UnitTest {
             return a;
         };
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(100), 100);
         this.assertEquals(func("test"), "test");
         this.assertEquals(func([1, 2]), [1, 2]);
@@ -58,7 +58,7 @@ class TestArrowFunctions < UnitTest {
             return a + b;
         };
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(10, 20), 30);
         this.assertEquals(func(1.5, 2.5), 4);
         this.assertEquals(func("Dictu ", "is great!"), "Dictu is great!");
@@ -68,7 +68,7 @@ class TestArrowFunctions < UnitTest {
             return a;
         };
 
-        this.assertEquals(type(func1), "function");
+        this.assertType(func1, "function");
         this.assertEquals(func1(10, 20), 30);
         this.assertEquals(func1(1.5, 2.5), 4);
         this.assertEquals(func1("Dictu ", "is great!"), "Dictu is great!");
@@ -81,14 +81,14 @@ class TestArrowFunctions < UnitTest {
             return a + b;
         };
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(callback, 10, 20), 30);
     }
 
     testImplicitReturnWithOptionalParameters() {
         const func = def (a=10) => a;
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(), 10);
         this.assertEquals(func(100), 100);
     }
@@ -96,7 +96,7 @@ class TestArrowFunctions < UnitTest {
     testImplicitReturnWithTwoOptionalParameters() {
         const func = def (a=10, b=20) => a + b;
 
-        this.assertEquals(type(func), "function");
+        this.assertType(func, "function");
         this.assertEquals(func(), 30);
         this.assertEquals(func(10, 20), 30);
         this.assertEquals(func(1.5, 2.5), 4);

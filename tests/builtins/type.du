@@ -46,7 +46,7 @@ class TestType < UnitTest {
 
     testTypeFile() {
         with("tests/builtins/type.du", "r") {
-            this.assertEquals(type(file), "file");
+            this.assertType(file, "file");
         }
     }
 }
