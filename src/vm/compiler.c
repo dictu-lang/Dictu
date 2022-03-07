@@ -2284,8 +2284,6 @@ static void importStatement(Compiler *compiler) {
             emitByte(compiler, OP_IMPORT_VARIABLE);
             defineVariable(compiler, importName, false);
         }
-
-        emitByte(compiler, OP_IMPORT_END);
     } else {
         consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
@@ -2314,6 +2312,7 @@ static void importStatement(Compiler *compiler) {
         defineVariable(compiler, importName, false);
     }
 
+    emitByte(compiler, OP_IMPORT_END);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
 }
 
@@ -2361,8 +2360,6 @@ static void fromImportStatement(Compiler *compiler) {
                 defineVariable(compiler, 0, false);
             }
         }
-
-        emitByte(compiler, OP_IMPORT_END);
     } else {
         consume(compiler, TOKEN_IDENTIFIER, "Expect import identifier.");
         uint8_t importName = identifierConstant(compiler, &compiler->parser->previous);
@@ -2419,6 +2416,7 @@ static void fromImportStatement(Compiler *compiler) {
         }
     }
 
+    emitByte(compiler, OP_IMPORT_END);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after import.");
 }
 
