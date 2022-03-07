@@ -392,6 +392,8 @@ static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response) {
     pop(vm);
     // Pop content
     pop(vm);
+    // Pop headers from createResponse
+    pop(vm);
 
     /* always cleanup */
     curl_easy_cleanup(curl);
