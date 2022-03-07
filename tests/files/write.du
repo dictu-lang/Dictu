@@ -3,30 +3,41 @@
  *
  * Testing file writing with write()
  */
-var contents;
+from UnitTest import UnitTest;
 
-with("tests/files/read.txt", "r") {
-    // Save contents to reset the file
-    contents = file.read();
+class TestFileWrite < UnitTest {
+    private contents;
+
+    setUp() {
+        with("tests/files/read.txt", "r") {
+            // Save contents to reset the file
+            this.contents = file.read();
+        }
+    }
+
+    tearDown() {
+        with("tests/files/read.txt", "w") {
+            // Reset the file
+            file.write(this.contents);
+        }
+    }
+
+    testFileWrite() {
+        with("tests/files/read.txt", "w") {
+            // Save contents to reset the file
+            var count = file.write("Dictu is great!");
+            this.assertEquals(count, 15);
+            count = file.write("Dictu is great!");
+            this.assertEquals(count, 15);
+            count = file.write("Dictu is great!");
+            this.assertEquals(count, 15);
+        }
+
+        with("tests/files/read.txt", "r") {
+            // Save contents to reset the file
+            this.assertEquals(file.read(), "Dictu is great!Dictu is great!Dictu is great!");
+        }
+    }
 }
 
-with("tests/files/read.txt", "w") {
-    // Save contents to reset the file
-    var count = file.write("Dictu is great!");
-    assert(count == 15);
-    count = file.write("Dictu is great!");
-    assert(count == 15);
-    count = file.write("Dictu is great!");
-    assert(count == 15);
-}
-
-with("tests/files/read.txt", "r") {
-    // Save contents to reset the file
-    assert(file.read() == "Dictu is great!Dictu is great!Dictu is great!");
-}
-
-with("tests/files/read.txt", "w") {
-    // Reset the file
-    file.write(contents);
-}
-
+TestFileWrite().run();
