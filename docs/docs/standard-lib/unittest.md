@@ -415,6 +415,15 @@ This helper method ensures that the value passed in is equal to nil.
 
 This helper method ensures that the value passed in is not equal to nil.
 
+### assertType(value, value)
+
+This helper method checks the type of the first value is equal to the type as a string.
+
+```cs
+this.assertType("Dictu", "string");
+this.assertType(10, "number");
+```
+
 ### assertTruthy(value)
 
 This helper method ensures that the value passed in would evaluate to true.
