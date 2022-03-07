@@ -1,0 +1,20 @@
+/**
+ * Test some HTTP constants
+ */
+from UnitTest import UnitTest;
+
+import HTTP;
+
+class TestHttpConstants < UnitTest {
+    testHttpConstants(data) {
+        this.assertEquals(data["constant"], data["expected"]);
+    }
+
+    testHttpConstantsProvider() {
+        return [
+            {"constant": HTTP.STATUS_OK, "expected": 200},
+        ];
+    }
+}
+
+TestHttpConstants().run();
