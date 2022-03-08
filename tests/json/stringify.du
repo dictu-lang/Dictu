@@ -4,69 +4,89 @@
  * Testing the JSON.stringify() function
  *
  */
+from UnitTest import UnitTest;
+
 import JSON;
 
-assert(JSON.stringify(true).unwrap() == 'true');
-assert(JSON.stringify(false).unwrap() == 'false');
-assert(JSON.stringify(nil).unwrap() == 'null');
-assert(JSON.stringify(10).unwrap() == '10');
-assert(JSON.stringify(10.5).unwrap() == '10.5');
-assert(JSON.stringify("test").unwrap() == '"test"');
-assert(JSON.stringify([]).unwrap() == '[]');
-assert(JSON.stringify({}).unwrap() == '{}');
+class TestJsonStringify < UnitTest {
+    testJsonStringify(data) {
+        this.assertEquals(JSON.stringify(data["value"]).unwrap(), data["expected"]);
+    }
 
-assert(JSON.stringify([true]).unwrap() == '[true]');
-assert(JSON.stringify([false]).unwrap() == '[false]');
-assert(JSON.stringify([nil]).unwrap() == '[null]');
-assert(JSON.stringify([10]).unwrap() == '[10]');
-assert(JSON.stringify([10.5]).unwrap() == '[10.5]');
-assert(JSON.stringify(["test"]).unwrap() == '["test"]');
-assert(JSON.stringify([[]]).unwrap() == '[[]]');
-assert(JSON.stringify([{}]).unwrap() == '[{}]');
+    testJsonStringifyProvider() {
+        return [
+            {"value": true, "expected": "true"},
+            {"value": false, "expected": "false"},
+            {"value": nil, "expected": "null"},
+            {"value": 10, "expected": "10"},
+            {"value": 10.5, "expected": "10.5"},
+            {"value": "test", "expected": '"test"'},
+            {"value": [], "expected": "[]"},
+            {"value": {}, "expected": "{}"},
 
-assert(JSON.stringify({"test": true}).unwrap() == '{"test": true}');
-assert(JSON.stringify({"test": false}).unwrap() == '{"test": false}');
-assert(JSON.stringify({"test": nil}).unwrap() == '{"test": null}');
-assert(JSON.stringify({"test": 10}).unwrap() == '{"test": 10}');
-assert(JSON.stringify({"test": 10.5}).unwrap() == '{"test": 10.5}');
-assert(JSON.stringify({"test": "test"}).unwrap() == '{"test": "test"}');
-assert(JSON.stringify({"test": []}).unwrap() == '{"test": []}');
-assert(JSON.stringify({"test": {}}).unwrap() == '{"test": {}}');
-assert(JSON.stringify({10: {}}).unwrap() == '{"10": {}}');
-assert(JSON.stringify({true: false}).unwrap() == '{"true": false}');
-assert(JSON.stringify({nil: 10.5}).unwrap() == '{"null": 10.5}');
+            {"value": [true], "expected": "[true]"},
+            {"value": [false], "expected": "[false]"},
+            {"value": [nil], "expected": "[null]"},
+            {"value": [10], "expected": "[10]"},
+            {"value": [10.5], "expected": "[10.5]"},
+            {"value": ["test"], "expected": '["test"]'},
+            {"value": [[]], "expected": "[[]]"},
+            {"value": [{}], "expected": "[{}]"},
 
-assert(JSON.stringify({"test": {"test": [1, 2, 3, {"test": true}]}}).unwrap() == '{"test": {"test": [1, 2, 3, {"test": true}]}}');
+            {"value": {"test": true}, "expected": '{"test": true}'},
+            {"value": {"test": false}, "expected": '{"test": false}'},
+            {"value": {"test": nil}, "expected": '{"test": null}'},
+            {"value": {"test": 10}, "expected": '{"test": 10}'},
+            {"value": {"test": 10.5}, "expected": '{"test": 10.5}'},
+            {"value": {"test": "test"}, "expected": '{"test": "test"}'},
+            {"value": {"test": []}, "expected": '{"test": []}'},
+            {"value": {"test": {}}, "expected": '{"test": {}}'},
+            {"value": {10: {}}, "expected": '{"10": {}}'},
+            {"value": {true: false}, "expected": '{"true": false}'},
+            {"value": {nil: 10.5}, "expected": '{"null": 10.5}'},
+            {"value": {"test": {"test": [1, 2, 3, {"test": true}]}}, "expected": '{"test": {"test": [1, 2, 3, {"test": true}]}}'},
+        ];
+    }
 
+    testUnserializableObject() {
+        class JsonTestError {
+          init() {
+            this.test = 0;
+          }
+        }
 
-class JsonTestError {
-  init() {
-    this.test = 0;
-  }
+        const jsonError = JsonTestError();
+
+        this.assertFalsey(JSON.stringify(jsonError).success());
+        this.assertEquals(JSON.stringify(jsonError).unwrapError(), "Object is not serializable");
+    }
+
+    testTwoSpaceIndent() {
+        const twoSpace = '[\n' +
+            '  1,\n' +
+            '  2\n' +
+            ']';
+
+        this.assertEquals(JSON.stringify([1, 2], 2).unwrap(), twoSpace);
+    }
+
+    testThreeSpaceIndent() {
+        const threeSpace = '[\n' +
+          '   1,\n' +
+          '   2\n' +
+          ']';
+
+        this.assertEquals(JSON.stringify([1, 2], 3).unwrap(), threeSpace);
+    }
+
+    testFourSpaceIndent() {
+        var fourSpace = '[\n' +
+          '    1,\n' +
+          '    2\n' +
+          ']';
+
+        this.assertEquals(JSON.stringify([1, 2], 4).unwrap(), fourSpace);
+    }
 }
 
-var jsonError = JsonTestError();
-assert(JSON.stringify(jsonError).success() == false);
-assert(JSON.stringify(jsonError).unwrapError() == "Object is not serializable");
-
-// 2 space indent
-var twoSpace = '[\n' +
-    '  1,\n' +
-    '  2\n' +
-    ']';
-
-// 3 space indent
-var threeSpace = '[\n' +
-    '   1,\n' +
-    '   2\n' +
-    ']';
-
-// 4 space indent
-var fourSpace = '[\n' +
-    '    1,\n' +
-    '    2\n' +
-    ']';
-
-assert(JSON.stringify([1, 2], 2).unwrap() == twoSpace);
-assert(JSON.stringify([1, 2], 3).unwrap() == threeSpace);
-assert(JSON.stringify([1, 2], 4).unwrap() == fourSpace);
+TestJsonStringify().run();
