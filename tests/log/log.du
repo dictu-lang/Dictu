@@ -10,7 +10,7 @@ import Log;
 Log.print("hello, world! print\n");
 Log.println("hello, world! println");
 
-var log = Log.new(Log.stdout).unwrap();
+const log = Log.new(Log.stdout).unwrap();
 assert(log != nil);
 
 log.setPrefix(""); // noop
@@ -19,7 +19,7 @@ log.println("println output to stdout with prefix");
 log.unsetPrefix();
 log.print("print output to stdout without prefix\n");
 
-var log = Log.new(Log.stderr).unwrap();
+const log = Log.new(Log.stderr).unwrap();
 assert(log != nil);
 
 log.print("print output to stderr\n");
