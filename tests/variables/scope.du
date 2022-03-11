@@ -3,40 +3,48 @@
 *
 * Testing variable assignment within a scoped context
 */
+from UnitTest import UnitTest;
 
-// Test scope
-var x = 10;
-{
-    var x = 15;
-}
+class TestVariableScope < UnitTest {
+    testScope() {
+        var x = 10;
+        {
+            var x = 15;
+        }
 
-assert(x == 10);
+        this.assertEquals(x, 10);
+    }
 
-// Test re-declaring variable in scope
-{
-    var y = 11;
-    assert(y == 11);
-}
+    testScopeReDeclare() {
+        {
+            var y = 11;
+            this.assertEquals(y, 11);
+        }
 
-{
-    var y = 12;
-    assert(y == 12);
-}
+        {
+            var y = 12;
+            this.assertEquals(y, 12);
+        }
+    }
 
-// Test nested scope
-{
-    var x = 10;
-    {
-        assert(x == 10);
+    testNestedScope() {
+        {
+            var x = 10;
+            {
+                this.assertEquals(x, 10);
+            }
+        }
+    }
+
+    testIfStatement() {
+        var x = 10;
+
+        if (true) {
+            var x = 11;
+        }
+
+        this.assertEquals(x, 10);
     }
 }
 
-// Test if statement scope
-
-var x = 10;
-
-if (true) {
-    var x = 11;
-}
-
-assert(x == 10);
+TestVariableScope().run();

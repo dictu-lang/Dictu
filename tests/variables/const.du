@@ -1,15 +1,40 @@
-const x = 10;
+/**
+ * const.du
+ *
+ * Test assigning to a constant
+ */
+from UnitTest import UnitTest;
 
-{
-    const x = 100;
-    assert(x == 100);
+class TestConst < UnitTest {
+    testConst() {
+        const x = 10;
+
+        this.assertEquals(x, 10);
+    }
+
+    testNestedConst() {
+        const x = 10;
+        this.assertEquals(x, 10);
+
+        {
+            const x = 100;
+            this.assertEquals(x, 100);
+        }
+
+        this.assertEquals(x, 10);
+    }
+
+    testNestedConstWithVar() {
+        const x = 10;
+        this.assertEquals(x, 10);
+
+        {
+            var x = 100;
+            this.assertEquals(x, 100);
+        }
+
+        this.assertEquals(x, 10);
+    }
 }
 
-assert(x == 10);
-
-{
-    var x = 100;
-    assert(x == 100);
-}
-
-assert(x == 10);
+TestConst().run();
