@@ -5,93 +5,101 @@
  *
  * .remove() mutates the set to remove a value
  */
+from UnitTest import UnitTest;
 
-var mySet = set();
+class TestSetRemove < UnitTest {
+    testSetRemove() {
+        var mySet = set("dictu", "is", "great!", true, false, 10, 10.5, nil);
 
-mySet.add("dictu");
-mySet.add("is");
-mySet.add("great!");
-mySet.add(true);
-mySet.add(false);
-mySet.add(10);
-mySet.add(10.5);
-mySet.add(nil);
+        this.assertTruthy(mySet.contains("dictu"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
+        this.assertTruthy(mySet.contains(true));
+        this.assertTruthy(mySet.contains(false));
+        this.assertTruthy(mySet.contains(10));
+        this.assertTruthy(mySet.contains(10.5));
+        this.assertTruthy(mySet.contains(nil));
 
-assert(mySet.contains("dictu"));
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
-assert(mySet.contains(true));
-assert(mySet.contains(false));
-assert(mySet.contains(10));
-assert(mySet.contains(10.5));
-assert(mySet.contains(nil));
+        this.assertEquals(mySet.len(), 8);
 
-assert(mySet.len() == 8);
+        mySet.remove("dictu");
 
-mySet.remove("dictu");
+        this.assertEquals(mySet.len(), 7);
 
-assert(mySet.len() == 7);
-
-assert(not mySet.contains("dictu"));
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
+        this.assertFalsey(mySet.contains("dictu"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
 
 
-mySet.remove(true);
-assert(not mySet.contains(true));
+        mySet.remove(true);
+        this.assertFalsey(mySet.contains(true));
 
-mySet.remove(false);
-assert(not mySet.contains(false));
+        mySet.remove(false);
+        this.assertFalsey(mySet.contains(false));
 
-mySet.remove(10);
-assert(not mySet.contains(10));
+        mySet.remove(10);
+        this.assertFalsey(mySet.contains(10));
 
-mySet.remove(10.5);
-assert(not mySet.contains(10.5));
+        mySet.remove(10.5);
+        this.assertFalsey(mySet.contains(10.5));
 
-mySet.remove(nil);
-assert(not mySet.contains(nil));
+        mySet.remove(nil);
+        this.assertFalsey(mySet.contains(nil));
 
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
+    }
+
+    testSetRemoveAfterAdd() {
+        const mySet = set();
+
+        mySet.add("dictu");
+        mySet.add("is");
+        mySet.add("great!");
+        mySet.add(true);
+        mySet.add(false);
+        mySet.add(10);
+        mySet.add(10.5);
+        mySet.add(nil);
+
+        this.assertTruthy(mySet.contains("dictu"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
+        this.assertTruthy(mySet.contains(true));
+        this.assertTruthy(mySet.contains(false));
+        this.assertTruthy(mySet.contains(10));
+        this.assertTruthy(mySet.contains(10.5));
+        this.assertTruthy(mySet.contains(nil));
+
+        this.assertEquals(mySet.len(), 8);
+
+        mySet.remove("dictu");
+
+        this.assertEquals(mySet.len(), 7);
+
+        this.assertFalsey(mySet.contains("dictu"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
 
 
-var mySet = set("dictu", "is", "great!", true, false, 10, 10.5, nil);
+        mySet.remove(true);
+        this.assertFalsey(mySet.contains(true));
 
-assert(mySet.contains("dictu"));
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
-assert(mySet.contains(true));
-assert(mySet.contains(false));
-assert(mySet.contains(10));
-assert(mySet.contains(10.5));
-assert(mySet.contains(nil));
+        mySet.remove(false);
+        this.assertFalsey(mySet.contains(false));
 
-assert(mySet.len() == 8);
+        mySet.remove(10);
+        this.assertFalsey(mySet.contains(10));
 
-mySet.remove("dictu");
+        mySet.remove(10.5);
+        this.assertFalsey(mySet.contains(10.5));
 
-assert(mySet.len() == 7);
+        mySet.remove(nil);
+        this.assertFalsey(mySet.contains(nil));
 
-assert(not mySet.contains("dictu"));
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
+        this.assertTruthy(mySet.contains("is"));
+        this.assertTruthy(mySet.contains("great!"));
+    }
+}
 
-
-mySet.remove(true);
-assert(not mySet.contains(true));
-
-mySet.remove(false);
-assert(not mySet.contains(false));
-
-mySet.remove(10);
-assert(not mySet.contains(10));
-
-mySet.remove(10.5);
-assert(not mySet.contains(10.5));
-
-mySet.remove(nil);
-assert(not mySet.contains(nil));
-
-assert(mySet.contains("is"));
-assert(mySet.contains("great!"));
+TestSetRemove().run();

@@ -48,3 +48,6 @@ class TestVariableScope < UnitTest {
 }
 
 TestVariableScope().run();
+
+// Used in modules/variables.du
+const x = 10;

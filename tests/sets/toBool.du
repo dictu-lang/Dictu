@@ -5,21 +5,28 @@
  *
  * .toBool() returns the boolean representation of a set
  */
+from UnitTest import UnitTest;
 
-var set_a = set();
-assert(set_a.toBool() == false);
+class TestSetToBool < UnitTest {
+    testSetToBool() {
+        const set_a = set();
+        this.assertFalsey(set_a.toBool());
 
-set_a.add("one");
-assert(set_a.toBool() == true);
+        set_a.add("one");
+        this.assertTruthy(set_a.toBool());
 
-set_a.remove("one");
-assert(set_a.toBool() == false);
+        set_a.remove("one");
+        this.assertFalsey(set_a.toBool());
 
-var set_a = set(true, false);
-assert(set_a.toBool() == true);
+        const set_b = set(true, false);
+        this.assertTruthy(set_b.toBool());
 
-set_a.remove(true);
-assert(set_a.toBool() == true);
+        set_b.remove(true);
+        this.assertTruthy(set_b.toBool());
 
-set_a.remove(false);
-assert(set_a.toBool() == false);
+        set_b.remove(false);
+        this.assertFalsey(set_b.toBool());
+    }
+}
+
+TestSetToBool().run();
