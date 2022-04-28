@@ -4,12 +4,19 @@
  * Testing all supported string escape codes
  *
  */
+from UnitTest import UnitTest;
 
-assert("\n".len() == 1);
-assert("\t".len() == 1);
-assert("\v".len() == 1);
-assert("\\".len() == 1);
-assert("\"".len() == 1);
-assert("\'".len() == 1);
-assert('\''.len() == 1);
-assert('\"'.len() == 1);
+class TestStringEscapeCodes < UnitTest {
+    testStringEscapeCodes() {
+        this.assertEquals("\n".len(), 1);
+        this.assertEquals("\t".len(), 1);
+        this.assertEquals("\v".len(), 1);
+        this.assertEquals("\\".len(), 1);
+        this.assertEquals("\"".len(), 1);
+        this.assertEquals("\'".len(), 1);
+        this.assertEquals('\''.len(), 1);
+        this.assertEquals('\"'.len(), 1);
+    }
+}
+
+TestStringEscapeCodes().run();
