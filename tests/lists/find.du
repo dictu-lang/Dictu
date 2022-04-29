@@ -6,12 +6,19 @@
  * .find() runs a user defined function on each element in the list and returns the item in the
  * list that satisfies the callback
  */
+from UnitTest import UnitTest;
 
 const myList = [1, 2, 3, 4, 5];
 
-assert(myList.find(def (item) => item == 3) == 3);
-assert(myList.find(def (item) => item == 10) == nil);
-assert(myList.find(def (item) => item % 2 == 0) == 2);
-assert(myList.find(def (item) => item % 2 == 0, 2) == 4);
-assert(myList.find(def (item) => item % 2 == 0, 2, 3) == nil);
-assert(myList.find(def (item) => item % 2 == 0, 5) == nil);
+class TestListFind < UnitTest {
+    testListFind() {
+        this.assertEquals(myList.find(def (item) => item == 3), 3);
+        this.assertEquals(myList.find(def (item) => item == 10), nil);
+        this.assertEquals(myList.find(def (item) => item % 2 == 0), 2);
+        this.assertEquals(myList.find(def (item) => item % 2 == 0, 2), 4);
+        this.assertEquals(myList.find(def (item) => item % 2 == 0, 2, 3), nil);
+        this.assertEquals(myList.find(def (item) => item % 2 == 0, 5), nil);
+    }
+}
+
+TestListFind().run();

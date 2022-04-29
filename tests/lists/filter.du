@@ -6,20 +6,27 @@
  * .filter() runs a user defined function on each element in the list
  * keeping elements that evaluate to true based on the function
  */
+from UnitTest import UnitTest;
 
 def size(a) {
     return a < 10;
 }
 
-var list = [8, 9, 10, 11, 12];
+class TestListFilter < UnitTest {
+    testListFilter() {
+        const list = [8, 9, 10, 11, 12];
 
-var l = list.filter(size);
-assert(l == [8, 9]);
+        var l = list.filter(size);
+        this.assertEquals(l, [8, 9]);
 
-list.filter(size);
-// Returns a new list so old list should be unchanged
-assert(list == [8, 9, 10, 11, 12]);
+        list.filter(size);
+        // Returns a new list so old list should be unchanged
+        this.assertEquals(list, [8, 9, 10, 11, 12]);
 
-// Arrow function
-l = list.filter(def (a) => a < 10);
-assert(l == [8, 9]);
+        // Arrow function
+        l = list.filter(def (a) => a < 10);
+        this.assertEquals(l, [8, 9]);
+    }
+}
+
+TestListFilter().run();

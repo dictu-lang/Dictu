@@ -5,12 +5,19 @@
  *
  * .forEach() runs a user defined function on each element in the list.
  */
+from UnitTest import UnitTest;
 
-const myList = [1, 2, 3, 4, 5];
-var accumulator = 0;
+class TestListForEach < UnitTest {
+    testListForEach() {
+        const myList = [1, 2, 3, 4, 5];
+        var accumulator = 0;
 
-myList.forEach(def (value) => {
-    accumulator += value;
-});
+        myList.forEach(def (value) => {
+            accumulator += value;
+        });
 
-assert(accumulator == 15);
+        this.assertEquals(accumulator, 15);
+    }
+}
+
+TestListForEach().run();
