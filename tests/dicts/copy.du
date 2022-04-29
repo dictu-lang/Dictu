@@ -6,42 +6,7 @@
 * .copy() returns a shallow copy of the dictionary
 * .deepCopy() returns a deep copy of the dictionary
 */
-
-var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
-
-// First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-var myDictCopy = myDict.copy(); // shallow copy
-
-assert(myDictCopy == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-myDictCopy["key"] = 10;
-
-assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-assert(myDictCopy == {"key": 10, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-var newDict = {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
-var deepCopy = newDict.deepCopy();
-
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-assert(deepCopy == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-deepCopy["key"][1] = "test";
-
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-assert(deepCopy == {"key": [1, "test"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-deepCopy["key1"]["test"] = 20;
-
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-
-deepCopy[true] = true;
-deepCopy[false] = false;
-
-assert(newDict == {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
-assert(deepCopy == {"key": [1, "test"], "key1": {"test": 20}, true: true, false: false, nil: 10, 10: nil, 10.5: 10.5});
+from UnitTest import UnitTest;
 
 class Test {
     init() {
@@ -49,12 +14,58 @@ class Test {
     }
 }
 
-var x = Test();
+class TestDictCopy < UnitTest {
+    testDictCopy() {
+        const myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
-var dict = {"obj": x};
-var dCopyDeep = dict.deepCopy();
+        // First check the dictionary was created properly
+        this.assertEquals(myDict, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-dCopyDeep["obj"].x = 100;
+        const myDictCopy = myDict.copy(); // shallow copy
 
-assert(x.x == 10);
-assert(dCopyDeep["obj"].x == 100);
+        this.assertEquals(myDictCopy, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+        myDictCopy["key"] = 10;
+
+        this.assertEquals(myDict, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        this.assertEquals(myDictCopy, {"key": 10, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+    }
+
+    testDictDeepCopy() {
+        const newDict = {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
+        const deepCopy = newDict.deepCopy();
+
+        this.assertEquals(newDict, {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        this.assertEquals(deepCopy, {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+        deepCopy["key"][1] = "test";
+
+        this.assertEquals(newDict, {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        this.assertEquals(deepCopy, {"key": [1, "test"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+        deepCopy["key1"]["test"] = 20;
+
+        this.assertEquals(newDict, {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        this.assertEquals(deepCopy, {"key": [1, "test"], "key1": {"test": 20}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+
+        deepCopy[true] = true;
+        deepCopy[false] = false;
+
+        this.assertEquals(newDict, {"key": [1, "hey"], "key1": {"test": 10}, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        this.assertEquals(deepCopy, {"key": [1, "test"], "key1": {"test": 20}, true: true, false: false, nil: 10, 10: nil, 10.5: 10.5});
+    }
+
+    testDictDeepCopyWithObject() {
+        const x = Test();
+
+        const dict = {"obj": x};
+        const dCopyDeep = dict.deepCopy();
+
+        dCopyDeep["obj"].x = 100;
+
+        this.assertEquals(x.x, 10);
+        this.assertEquals(dCopyDeep["obj"].x, 100);
+    }
+}
+
+TestDictCopy().run();

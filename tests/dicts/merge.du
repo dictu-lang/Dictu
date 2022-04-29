@@ -5,20 +5,27 @@
  *
  * .merge() merges two dictionaries together.
  */
+from UnitTest import UnitTest;
 
-const dictOne = {"key": 1, "key1": 2, "key2": 3};
-const dictTwo = {"key3": 4,"key1": 0};
+class TestDictMerge < UnitTest {
+    testDictMerge() {
+        const dictOne = {"key": 1, "key1": 2, "key2": 3};
+        const dictTwo = {"key3": 4,"key1": 0};
 
-const mergedDict = dictOne.merge(dictTwo);
+        const mergedDict = dictOne.merge(dictTwo);
 
-assert(mergedDict.keys().len() == 4);
+        this.assertEquals(mergedDict.keys().len(), 4);
 
-assert(mergedDict.exists("key"));
-assert(mergedDict.exists("key1"));
-assert(mergedDict.exists("key2"));
-assert(mergedDict.exists("key3"));
+        this.assertTruthy(mergedDict.exists("key"));
+        this.assertTruthy(mergedDict.exists("key1"));
+        this.assertTruthy(mergedDict.exists("key2"));
+        this.assertTruthy(mergedDict.exists("key3"));
 
-assert(mergedDict["key"] == 1);
-assert(mergedDict["key1"] == 0);
-assert(mergedDict["key2"] == 3);
-assert(mergedDict["key3"] == 4);
+        this.assertEquals(mergedDict["key"], 1);
+        this.assertEquals(mergedDict["key1"], 0);
+        this.assertEquals(mergedDict["key2"], 3);
+        this.assertEquals(mergedDict["key3"], 4);
+    }
+}
+
+TestDictMerge().run();

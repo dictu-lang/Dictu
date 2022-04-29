@@ -3,44 +3,49 @@
 *
 * Testing dictionary subscripts
 */
+from UnitTest import UnitTest;
 
-var myDict = {"key": 1, "key1": true};
+class TestDictSubscript < UnitTest {
+    testDictSubscript() {
+        const myDict = {"key": 1, "key1": true};
 
-// First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true});
+        // First check the dictionary was created properly
+        this.assertEquals(myDict, {"key": 1, "key1": true});
 
-assert(myDict["key"] == 1);
-assert(myDict["key1"]);
+        this.assertEquals(myDict["key"], 1);
+        this.assertEquals(myDict["key1"], true);
 
-// Keys not found in assignment should create a new pair
-myDict["test"] = 10;
-assert(myDict == {"key": 1, "key1": true, "test": 10});
+        // Keys not found in assignment should create a new pair
+        myDict["test"] = 10;
+        this.assertEquals(myDict, {"key": 1, "key1": true, "test": 10});
 
-// Updating a value
-myDict["test"] = 100;
-assert(myDict == {"key": 1, "key1": true, "test": 100});
+        // Updating a value
+        myDict["test"] = 100;
+        this.assertEquals(myDict, {"key": 1, "key1": true, "test": 100});
 
-// Test more value types for keys
-var newDict = {"test": 1, nil: 2, true: 3, false: 4, 10: 5, 10.5: 6};
-assert(newDict["test"] == 1);
-assert(newDict[nil] == 2);
-assert(newDict[true] == 3);
-assert(newDict[false] == 4);
-assert(newDict[10] == 5);
-assert(newDict[10.5] == 6);
+        // Test more value types for keys
+        var newDict = {"test": 1, nil: 2, true: 3, false: 4, 10: 5, 10.5: 6};
+        this.assertEquals(newDict["test"], 1);
+        this.assertEquals(newDict[nil], 2);
+        this.assertEquals(newDict[true], 3);
+        this.assertEquals(newDict[false], 4);
+        this.assertEquals(newDict[10], 5);
+        this.assertEquals(newDict[10.5], 6);
 
-newDict["test"] = 10;
-newDict[nil] = 20;
-newDict[true] = 30;
-newDict[false] = 40;
-newDict[10] = 50;
-newDict[10.5] = 60;
+        newDict["test"] = 10;
+        newDict[nil] = 20;
+        newDict[true] = 30;
+        newDict[false] = 40;
+        newDict[10] = 50;
+        newDict[10.5] = 60;
 
-assert(newDict["test"] == 10);
-assert(newDict[nil] == 20);
-assert(newDict[true] == 30);
-assert(newDict[false] == 40);
-assert(newDict[10] == 50);
-assert(newDict[10.5] == 60);
+        this.assertEquals(newDict["test"], 10);
+        this.assertEquals(newDict[nil], 20);
+        this.assertEquals(newDict[true], 30);
+        this.assertEquals(newDict[false], 40);
+        this.assertEquals(newDict[10], 50);
+        this.assertEquals(newDict[10.5], 60);
+    }
+}
 
-
+TestDictSubscript().run();
