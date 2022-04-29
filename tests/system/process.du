@@ -6,14 +6,37 @@
  * getpid(), getppid(), getuid(), geteuid(), getgid(), getegid() all return information
  * about the running process.
  */
+from UnitTest import UnitTest;
+
 import System;
 
+class TestSystemProcessFunctions < UnitTest {
+    testSystemGetpid() {
+        this.assertType(System.getpid(), "number");
+    }
+
+    testSystemGetppid() {
+        this.assertType(System.getppid(), "number");
+    }
+
+    testSystemGetuid() {
+        this.assertType(System.getuid(), "number");
+    }
+
+    testSystemGeteuid() {
+        this.assertType(System.geteuid(), "number");
+    }
+
+    testSystemGetgid() {
+        this.assertType(System.getgid(), "number");
+    }
+
+    testSystemGetegid() {
+        this.assertType(System.getegid(), "number");
+    }
+}
+
 if (System.platform != "windows") {
-    assert(type(System.getpid()) == "number");
-    assert(type(System.getppid()) == "number");
-    assert(type(System.getuid()) == "number");
-    assert(type(System.geteuid()) == "number");
-    assert(type(System.getgid()) == "number");
-    assert(type(System.getegid()) == "number");
+    TestSystemProcessFunctions().run();
 }
 

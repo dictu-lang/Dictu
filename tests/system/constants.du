@@ -4,19 +4,28 @@
  * Testing the System constants
  *
  */
+from UnitTest import UnitTest;
+
 import System;
 
-/**
- * argv is a list of all parameters passed to the interpreter.
- * The first element is always the script name
- */
-assert(type(System.argv) == 'list');
-assert(System.argv.len() > 0);
-assert(System.argv[0] == "tests/runTests.du");
+class TestSystemConstants < UnitTest {
+    /**
+     * argv is a list of all parameters passed to the interpreter.
+     * The first element is always the script name
+     */
+    testSysArgv() {
+        this.assertType(System.argv, 'list');
+        this.assertTruthy(System.argv.len() > 0);
+        this.assertEquals(System.argv[0], "tests/runTests.du");
+    }
 
+    /**
+     * platform stores the current OS platform as a string
+     */
+    testSysPlatform() {
+        this.assertType(System.platform, 'string');
+        this.assertTruthy(System.platform.len() > 0);
+    }
+}
 
-/**
- * platform stores the current OS platform as a string
- */
-assert(type(System.platform) == 'string');
-assert(System.platform.len() > 0);
+TestSystemConstants().run();

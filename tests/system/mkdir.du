@@ -6,31 +6,39 @@
  * mkdir() creates a new directory with the given permissions
  * rmdir() removes a directory
  */
+from UnitTest import UnitTest;
+
 import System;
 
-var
-  S_IRWXU = System.S_IRWXU,
-  S_IRGRP = System.S_IRGRP,
-  S_IXGRP = System.S_IXGRP,
-  S_IROTH = System.S_IROTH,
-  S_IXOTH = System.S_IXOTH;
+class TestSystemMkdir < UnitTest {
+    testSystemMkdir() {
+        const
+            S_IRWXU = System.S_IRWXU,
+            S_IRGRP = System.S_IRGRP,
+            S_IXGRP = System.S_IXGRP,
+            S_IROTH = System.S_IROTH,
+            S_IXOTH = System.S_IXOTH;
 
-var PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
+        const PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
 
-var sys_test_dir = "test_dir";
+        const sys_test_dir = "test_dir";
 
-assert(System.mkdir(sys_test_dir, PERM[0755]).success() == true);
-assert(System.mkdir(sys_test_dir, PERM[0755]).success() == false);
-assert(System.mkdir(sys_test_dir, PERM[0755]).unwrapError() == "File exists");
-assert(System.rmdir(sys_test_dir).success() == true);
-assert(System.rmdir(sys_test_dir).success() == false); // Directory doesn't exist
-assert(System.rmdir(sys_test_dir).unwrapError() == "No such file or directory");
+        this.assertTruthy(System.mkdir(sys_test_dir, PERM[0755]).success());
+        this.assertFalsey(System.mkdir(sys_test_dir, PERM[0755]).success());
+        this.assertEquals(System.mkdir(sys_test_dir, PERM[0755]).unwrapError(), "File exists");
+        this.assertTruthy(System.rmdir(sys_test_dir).success());
+        this.assertFalsey(System.rmdir(sys_test_dir).success()); // Directory doesn't exist
+        this.assertEquals(System.rmdir(sys_test_dir).unwrapError(), "No such file or directory");
 
-with(sys_test_dir, "w") {
-  file.write ("test");
+        with(sys_test_dir, "w") {
+            file.write ("test");
+        }
+
+        this.assertFalsey(System.rmdir(sys_test_dir).success());
+        this.assertTruthy(System.rmdir(sys_test_dir).unwrapError() == "Not a directory" or
+            System.rmdir(sys_test_dir).unwrapError() == "Invalid argument");
+        this.assertTruthy(System.remove(sys_test_dir).success());
+    }
 }
 
-assert(System.rmdir(sys_test_dir).success() == false);
-assert(System.rmdir(sys_test_dir).unwrapError() == "Not a directory" or
-      System.rmdir(sys_test_dir).unwrapError() == "Invalid argument");
-assert(System.remove(sys_test_dir).success() == true);
+TestSystemMkdir().run();

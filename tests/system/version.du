@@ -5,11 +5,19 @@
  *
  * version is a dictionary denoting the Dictu version.
  */
+from UnitTest import UnitTest;
+
 import System;
 
-assert(type(System.version) == "dict");
-assert(System.version.len() == 3);
+class TestSystemVersion < UnitTest {
+    testSystemVersion() {
+        this.assertType(System.version, "dict");
+        this.assertEquals(System.version.len(), 3);
 
-assert(type(System.version["major"]) == "string");
-assert(type(System.version["minor"]) == "string");
-assert(type(System.version["patch"]) == "string");
+        this.assertType(System.version["major"], "string");
+        this.assertType(System.version["minor"], "string");
+        this.assertType(System.version["patch"], "string");
+    }
+}
+
+TestSystemVersion().run();

@@ -5,7 +5,15 @@
  *
  * getCWD() gets the current working directory of the process
  */
+from UnitTest import UnitTest;
+
 import System;
 
-assert(type(System.getCWD().unwrap()) == 'string');
-assert(System.getCWD().unwrap().len() > 0);
+class TestSystemGetCWD < UnitTest {
+    testGetCWD() {
+        this.assertType(System.getCWD().unwrap(), 'string');
+        this.assertTruthy(System.getCWD().unwrap().len() > 0);
+    }
+}
+
+TestSystemGetCWD().run();
