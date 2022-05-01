@@ -41,7 +41,7 @@ class TestMethods < UnitTest {
         this.assertEquals(Test.methods().len(), 3);
 
         TestMethods.EXPECTED_METHODS.forEach(def (method) => {
-            assert(Test.methods().contains(method));
+            this.assertTruthy(Test.methods().contains(method));
         });
 
         this.assertFalsey(Test.methods().contains("somePrivateFunc"));
@@ -51,7 +51,7 @@ class TestMethods < UnitTest {
         this.assertEquals(AnotherTest.methods().len(), 4);
 
         TestMethods.EXPECTED_METHODS_INHERITANCE.forEach(def (method) => {
-            assert(AnotherTest.methods().contains(method));
+            this.assertTruthy(AnotherTest.methods().contains(method));
         });
 
         this.assertFalsey(AnotherTest.methods().contains("somePrivateFunc"));
@@ -61,7 +61,7 @@ class TestMethods < UnitTest {
         this.assertEquals(Test().methods().len(), 3);
 
         TestMethods.EXPECTED_METHODS.forEach(def (method) => {
-            assert(Test().methods().contains(method));
+            this.assertTruthy(Test().methods().contains(method));
         });
 
         this.assertFalsey(Test().methods().contains("somePrivateFunc"));
@@ -71,7 +71,7 @@ class TestMethods < UnitTest {
         this.assertEquals(AnotherTest().methods().len(), 4);
 
         TestMethods.EXPECTED_METHODS_INHERITANCE.forEach(def (method) => {
-            assert(AnotherTest().methods().contains(method));
+            this.assertTruthy(AnotherTest().methods().contains(method));
         });
 
         this.assertFalsey(AnotherTest().methods().contains("somePrivateFunc"));

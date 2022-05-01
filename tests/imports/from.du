@@ -4,22 +4,33 @@
  * Testing the from import
  *
  */
+from UnitTest import UnitTest;
 
-from "class.du" import Test;
+class TestFromImports < UnitTest {
+    testFromImport() {
+        from "class.du" import Test;
 
-assert(type(Test) == 'class');
-assert(Test().x == 10);
+        this.assertType(Test, 'class');
+        this.assertEquals(Test().x, 10);
+    }
 
-from "class.du" import Test, AnotherTest;
+    testFromMultipleImport() {
+        from "class.du" import Test, AnotherTest;
 
-assert(type(Test) == 'class');
-assert(Test().x == 10);
-assert(type(AnotherTest) == 'class');
-assert(AnotherTest().y == 10);
+        this.assertType(Test, 'class');
+        this.assertEquals(Test().x, 10);
+        this.assertType(AnotherTest, 'class');
+        this.assertEquals(AnotherTest().y, 10);
+    }
 
-import "middle-import.du" as MiddleImportModule;
+    testImportAs() {
+        import "middle-import.du" as MiddleImportModule;
 
-assert(type(MiddleImportModule.Test) == 'class');
-assert(MiddleImportModule.Test().x == 10);
-assert(type(MiddleImportModule.AnotherTest) == 'class');
-assert(MiddleImportModule.AnotherTest().y == 10);
+        this.assertType(MiddleImportModule.Test, 'class');
+        this.assertEquals(MiddleImportModule.Test().x, 10);
+        this.assertType(MiddleImportModule.AnotherTest, 'class');
+        this.assertEquals(MiddleImportModule.AnotherTest().y, 10);
+    }
+}
+
+TestFromImports().run();

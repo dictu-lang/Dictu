@@ -37,10 +37,10 @@ class TestListSort < UnitTest {
         const z = [3, 3, -3, 10, -3];
 
         z.sort();
-        assert(z == [-3, -3, 3, 3, 10]);
+        this.assertEquals(z, [-3, -3, 3, 3, 10]);
 
         z.sort();
-        assert(z == [-3, -3, 3, 3, 10]);
+        this.assertEquals(z, [-3, -3, 3, 3, 10]);
     }
 }
 

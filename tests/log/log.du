@@ -5,21 +5,31 @@
  *    - print(), println(), new(), setPrefix
  *
  */
+from UnitTest import UnitTest;
+
 import Log;
 
-Log.print("hello, world! print\n");
-Log.println("hello, world! println");
+class TestLogModule < UnitTest {
+    testLogModuleStdout() {
+        Log.print("hello, world! print\n");
+        Log.println("hello, world! println");
 
-const log = Log.new(Log.stdout).unwrap();
-assert(log != nil);
+        const log = Log.new(Log.stdout).unwrap();
+        this.assertNotNil(log);
 
-log.setPrefix(""); // noop
-log.setPrefix("PREFIX");
-log.println("println output to stdout with prefix");
-log.unsetPrefix();
-log.print("print output to stdout without prefix\n");
+        log.setPrefix(""); // noop
+        log.setPrefix("PREFIX");
+        log.println("println output to stdout with prefix");
+        log.unsetPrefix();
+        log.print("print output to stdout without prefix\n");
+    }
 
-const log = Log.new(Log.stderr).unwrap();
-assert(log != nil);
+    testLogModuleStderr() {
+        const log = Log.new(Log.stderr).unwrap();
+        this.assertNotNil(log);
 
-log.print("print output to stderr\n");
+        log.print("print output to stderr\n");
+    }
+}
+
+TestLogModule().run();
