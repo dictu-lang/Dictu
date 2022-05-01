@@ -3,16 +3,25 @@
  *
  * Testing that FKs are enabled by default
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var con = Sqlite.connect(":memory:").unwrap();
+class TestSqliteFKs < UnitTest {
+    testSqliteFKs() {
+        const connection = Sqlite.connect(":memory:").unwrap();
 
-con.execute("CREATE TABLE test (col UNIQUE)").unwrap();
-con.execute("CREATE TABLE test1 (col, FOREIGN KEY(col) REFERENCES test(col))").unwrap();
+        this.assertTruthy(connection.execute("CREATE TABLE test (col UNIQUE)").success());
+        this.assertTruthy(connection.execute("CREATE TABLE test1 (col, FOREIGN KEY(col) REFERENCES test(col))").success());
 
-assert(con.execute("INSERT INTO test1(col) VALUES (1)").success() == false);
-assert(con.execute("INSERT INTO test1(col) VALUES (1)").unwrapError() == "FOREIGN KEY constraint failed");
+        this.assertFalsey(connection.execute("INSERT INTO test1(col) VALUES (1)").success());
+        this.assertEquals(connection.execute("INSERT INTO test1(col) VALUES (1)").unwrapError(), "FOREIGN KEY constraint failed");
 
-assert(con.execute("INSERT INTO test(col) VALUES (1)").success() == true);
-assert(con.execute("INSERT INTO test1(col) VALUES (1)").success() == true);
+        this.assertTruthy(connection.execute("INSERT INTO test(col) VALUES (1)").success());
+        this.assertTruthy(connection.execute("INSERT INTO test1(col) VALUES (1)").success());
+
+        connection.close();
+    }
+}
+
+TestSqliteFKs().run();

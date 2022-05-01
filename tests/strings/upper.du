@@ -5,10 +5,17 @@
  *
  * .upper() returns an uppercase version of the given string
  */
+from UnitTest import UnitTest;
 
-assert("DiCtU".upper() == "DICTU");
-assert("DICTU".upper() == "DICTU");
-assert("dictu".upper() == "DICTU");
-assert("12345".upper() == "12345");
-assert("12Dictu45".upper() == "12DICTU45");
-assert("!@£$%^&*".upper() == "!@£$%^&*");
+class TestStringUpper < UnitTest {
+    testStringUpper() {
+        this.assertEquals("DiCtU".upper(), "DICTU");
+        this.assertEquals("DICTU".upper(), "DICTU");
+        this.assertEquals("dictu".upper(), "DICTU");
+        this.assertEquals("12345".upper(), "12345");
+        this.assertEquals("12Dictu45".upper(), "12DICTU45");
+        this.assertEquals("!@£$%^&*".upper(), "!@£$%^&*");
+    }
+}
+
+TestStringUpper().run();

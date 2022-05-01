@@ -5,52 +5,53 @@
  *
  * .remove() will remove a given value from a list
  */
+from UnitTest import UnitTest;
 
-var x = [1, 1, "2", nil, true, false, [1, 2], {"test": 10}];
+class TestListRemove < UnitTest {
+    testListRemove() {
+        const x = [1, 1, "2", nil, true, false, [1, 2], {"test": 10}];
 
-// Ensure list created properly
-assert(x == [1, 1, "2", nil, true, false, [1, 2], {"test": 10}]);
-assert(x.len() == 8);
+        // Remove will remove the first element in the list with the given value, not all
+        x.remove(1);
 
-x.remove(1);
+        this.assertEquals(x, [1, "2", nil, true, false, [1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 7);
 
-// Remove will remove the first element in the list with the given value, not all
-assert(x == [1, "2", nil, true, false, [1, 2], {"test": 10}]);
-assert(x.len() == 7);
+        x.remove(1);
 
-x.remove(1);
+        this.assertEquals(x, ["2", nil, true, false, [1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 6);
 
-assert(x == ["2", nil, true, false, [1, 2], {"test": 10}]);
-assert(x.len() == 6);
+        x.remove("2");
 
-x.remove("2");
+        this.assertEquals(x, [nil, true, false, [1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 5);
 
-assert(x == [nil, true, false, [1, 2], {"test": 10}]);
-assert(x.len() == 5);
+        x.remove(nil);
 
-x.remove(nil);
+        this.assertEquals(x, [true, false, [1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 4);
 
-assert(x == [true, false, [1, 2], {"test": 10}]);
-assert(x.len() == 4);
+        x.remove(true);
 
-x.remove(true);
+        this.assertEquals(x, [false, [1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 3);
 
-assert(x == [false, [1, 2], {"test": 10}]);
-assert(x.len() == 3);
+        x.remove(false);
 
-x.remove(false);
+        this.assertEquals(x, [[1, 2], {"test": 10}]);
+        this.assertEquals(x.len(), 2);
 
-assert(x == [[1, 2], {"test": 10}]);
-assert(x.len() == 2);
+        x.remove([1, 2]);
 
-x.remove([1, 2]);
+        this.assertEquals(x, [{"test": 10}]);
+        this.assertEquals(x.len(), 1);
 
-assert(x == [{"test": 10}]);
-assert(x.len() == 1);
+        x.remove({"test": 10});
 
-x.remove({"test": 10});
+        this.assertEquals(x, []);
+        this.assertEquals(x.len(), 0);
+    }
+}
 
-assert(x == []);
-assert(x.len() == 0);
-
-
+TestListRemove().run();

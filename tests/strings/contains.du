@@ -5,11 +5,18 @@
  *
  * .contains() returns a boolean depending on whether a substring exists
  */
+from UnitTest import UnitTest;
 
-assert("Dictu is great!".contains("is"));
-assert(not ("Dictu is great!".contains("test")));
-assert(not ("Dictu is great!".contains("12345")));
-assert(not ("Dictu is great!".contains("@£$%")));
-assert("Dictu is great!".contains("!"));
-assert("1Dictu is great!1".contains("1"));
-assert(("1Dictu " + "is great!").contains("1"));
+class TestStringContains < UnitTest {
+    testStringContains() {
+        this.assertTruthy("Dictu is great!".contains("is"));
+        this.assertFalsey("Dictu is great!".contains("test"));
+        this.assertFalsey("Dictu is great!".contains("12345"));
+        this.assertFalsey("Dictu is great!".contains("@£$%"));
+        this.assertTruthy("Dictu is great!".contains("!"));
+        this.assertTruthy("1Dictu is great!1".contains("1"));
+        this.assertTruthy(("1Dictu " + "is great!").contains("1"));
+    }
+}
+
+TestStringContains().run();

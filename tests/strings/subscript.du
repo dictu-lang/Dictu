@@ -3,18 +3,25 @@
  *
  * Testing string indexing
  */
+from UnitTest import UnitTest;
 
-var string = "Dictu is great!";
-var stringList = ['D', 'i', 'c', 't', 'u', ' ', 'i', 's', ' ', 'g', 'r', 'e', 'a', 't', '!'];
+class TestStringSubscript < UnitTest {
+    testStringSubscript() {
+        const string = "Dictu is great!";
+        const stringList = ['D', 'i', 'c', 't', 'u', ' ', 'i', 's', ' ', 'g', 'r', 'e', 'a', 't', '!'];
 
-assert(string[0] == "D");
-assert(string[1] == "i");
-assert(string[2] == "c");
+        this.assertEquals(string[0], "D");
+        this.assertEquals(string[1], "i");
+        this.assertEquals(string[2], "c");
 
-assert(string[-1] == "!");
-assert(string[-2] == "t");
-assert(string[-3] == "a");
+        this.assertEquals(string[-1], "!");
+        this.assertEquals(string[-2], "t");
+        this.assertEquals(string[-3], "a");
 
-for (var i = 0; i < string.len(); i += 1) {
-    assert(string[i] == stringList[i]);
+        for (var i = 0; i < string.len(); i += 1) {
+            this.assertEquals(string[i], stringList[i]);
+        }
+    }
 }
+
+TestStringSubscript().run();

@@ -4,33 +4,47 @@
  * Testing the JSON.parse() function
  *
  */
+from UnitTest import UnitTest;
+
 import JSON;
 
-assert(JSON.parse('true').unwrap() == true);
-assert(JSON.parse('false').unwrap() == false);
-assert(JSON.parse('null').unwrap() == nil);
-assert(JSON.parse('10').unwrap() == 10);
-assert(JSON.parse('10.5').unwrap() == 10.5);
-assert(JSON.parse('"test"').unwrap() == "test");
-assert(JSON.parse('[]').unwrap() == []);
-assert(JSON.parse('{}').unwrap() == {});
+class TestJsonParse < UnitTest {
+    testJsonParse(data) {
+        this.assertEquals(JSON.parse(data["json"]).unwrap(), data["expected"]);
+    }
 
-assert(JSON.parse('[true]').unwrap() == [true]);
-assert(JSON.parse('[false]').unwrap() == [false]);
-assert(JSON.parse('[null]').unwrap() == [nil]);
-assert(JSON.parse('[10]').unwrap() == [10]);
-assert(JSON.parse('[10.5]').unwrap() == [10.5]);
-assert(JSON.parse('["test"]').unwrap() == ["test"]);
-assert(JSON.parse('[[]]').unwrap() == [[]]);
-assert(JSON.parse('[{}]').unwrap() == [{}]);
+    testJsonParseProvider() {
+        return [
+            {"json": "true", "expected": true},
+            {"json": "false", "expected": false},
+            {"json": "null", "expected": nil},
+            {"json": "10", "expected": 10},
+            {"json": "10.5", "expected": 10.5},
+            {"json": '"test"', "expected": "test"},
+            {"json": "[]", "expected": []},
+            {"json": "{}", "expected": {}},
 
-assert(JSON.parse('{"test": true}').unwrap() == {"test": true});
-assert(JSON.parse('{"test": false}').unwrap() == {"test": false});
-assert(JSON.parse('{"test": null}').unwrap() == {"test": nil});
-assert(JSON.parse('{"test": 10}').unwrap() == {"test": 10});
-assert(JSON.parse('{"test": 10.5}').unwrap() == {"test": 10.5});
-assert(JSON.parse('{"test": "test"}').unwrap() == {"test": "test"});
-assert(JSON.parse('{"test": []}').unwrap() == {"test": []});
-assert(JSON.parse('{"test": {}}').unwrap() == {"test": {}});
+            {"json": "[true]", "expected": [true]},
+            {"json": "[false]", "expected": [false]},
+            {"json": "[null]", "expected": [nil]},
+            {"json": "[10]", "expected": [10]},
+            {"json": "[10.5]", "expected": [10.5]},
+            {"json": '["test"]', "expected": ["test"]},
+            {"json": "[[]]", "expected": [[]]},
+            {"json": "[{}]", "expected": [{}]},
 
-assert(JSON.parse('{"test": {"test": [1, 2, 3, {"test": true}]}}').unwrap() == {"test": {"test": [1, 2, 3, {"test": true}]}});
+            {"json": '{"test": true}', "expected": {"test": true}},
+            {"json": '{"test": false}', "expected": {"test": false}},
+            {"json": '{"test": null}', "expected": {"test": nil}},
+            {"json": '{"test": 10}', "expected": {"test": 10}},
+            {"json": '{"test": 10.5}', "expected": {"test": 10.5}},
+            {"json": '{"test": "test"}', "expected": {"test": "test"}},
+            {"json": '{"test": []}', "expected": {"test": []}},
+            {"json": '{"test": {}}', "expected": {"test": {}}},
+
+            {"json": '{"test": {"test": [1, 2, 3, {"test": true}]}}', "expected": {"test": {"test": [1, 2, 3, {"test": true}]}}},
+        ];
+    }
+}
+
+TestJsonParse().run();

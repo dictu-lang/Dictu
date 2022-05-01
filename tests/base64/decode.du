@@ -4,8 +4,16 @@
  * Testing the Base64.decode() method
  */
 
+from UnitTest import UnitTest;
+
 import Base64;
 
-assert(Base64.decode("dGVzdA==") == "test");
-assert(Base64.decode("RGljdHU=") == "Dictu");
-assert(Base64.decode("MTIzNDU2Nzg5RGljdHUxMjM0NTY3ODk=") == "123456789Dictu123456789");
+class TestBase64Module < UnitTest {
+    testBase64Decode() {
+        this.assertEquals(Base64.decode("dGVzdA=="), "test");
+        this.assertEquals(Base64.decode("RGljdHU="), "Dictu");
+        this.assertEquals(Base64.decode("MTIzNDU2Nzg5RGljdHUxMjM0NTY3ODk="), "123456789Dictu123456789");
+    }
+}
+
+TestBase64Module().run();

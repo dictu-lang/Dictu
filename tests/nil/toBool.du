@@ -6,4 +6,17 @@
  * .toBool() returns the boolean representation of nil (always false)
  */
 
-assert(nil.toBool() == false);
+from UnitTest import UnitTest;
+
+class NilToBoolTest < UnitTest {
+    testNilToBool() {
+        this.assertFalsey(nil.toBool());
+    }
+
+    testNilVariableToBool() {
+        const testnil = nil;
+        this.assertFalsey(testnil.toBool());
+    }
+}
+
+NilToBoolTest().run();

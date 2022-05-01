@@ -5,15 +5,22 @@
  *
  * .replace() returns a new string with a given substring replaced with another
  */
+from UnitTest import UnitTest;
 
-assert("a".replace("a", "b") == "b");
-assert("aa".replace("aa", "b") == "b");
-assert("aaa".replace("aaa", "b") == "b");
-assert("aaaa".replace("aaaa", "b") == "b");
-assert("ab".replace("ab", "ab") == "ab");
-assert("abcabc".replace("abc", "b") == "bb");
-assert("hellohello".replace("hello", "Dictu!") == "Dictu!Dictu!");
-assert("test".replace("nowords", "b") == "test");
-assert("test".replace("12345", "b") == "test");
-assert("test".replace("t", "123456789123456789123456789123456789") ==
-    "123456789123456789123456789123456789es123456789123456789123456789123456789");
+class TestStringReplace < UnitTest {
+    testStringReplace() {
+        this.assertEquals("a".replace("a", "b"), "b");
+        this.assertEquals("aa".replace("aa", "b"), "b");
+        this.assertEquals("aaa".replace("aaa", "b"), "b");
+        this.assertEquals("aaaa".replace("aaaa", "b"), "b");
+        this.assertEquals("ab".replace("ab", "ab"), "ab");
+        this.assertEquals("abcabc".replace("abc", "b"), "bb");
+        this.assertEquals("hellohello".replace("hello", "Dictu!"), "Dictu!Dictu!");
+        this.assertEquals("test".replace("nowords", "b"), "test");
+        this.assertEquals("test".replace("12345", "b"), "test");
+        this.assertEquals("test".replace("t", "123456789123456789123456789123456789"),
+            "123456789123456789123456789123456789es123456789123456789123456789123456789");
+    }
+}
+
+TestStringReplace().run();

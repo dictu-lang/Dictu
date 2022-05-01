@@ -3,26 +3,36 @@
  *
  * Testing importing classes from another script works
  */
+from UnitTest import UnitTest;
 
 import "../classes/inherit.du" as ClassesModule;
 import "../classes/traits.du" as TraitModule;
 
-/**
- * ClassesModule
- *
- * Mirrors the tests in inherit.du
- */
-assert(ClassesModule.Test().func() == 10);
-assert(ClassesModule.Testing().value == 10);
-assert(ClassesModule.Testing().newFunc() == 10);
+class TestModuleImports < UnitTest {
+    /**
+     * ClassesModule
+     *
+     * Mirrors the tests in inherit.du
+     */
+    testClassesModule() {
+        this.assertEquals(ClassesModule.Test().func(), 10);
+        this.assertEquals(ClassesModule.Testing().value, 10);
+        this.assertEquals(ClassesModule.Testing().newFunc(), 10);
+    }
 
-/**
- * TraitModule
- *
- * Mirrors the tests in traits.du
- */
-var myDuplicateOverrideObject = TraitModule.MyDuplicateClassOverride("Jason");
-assert(myDuplicateOverrideObject.name == "Jason");
-assert(myDuplicateOverrideObject.hello(10) == 20);
-assert(myDuplicateOverrideObject.attribute() == "Hello Jason");
-assert(myDuplicateOverrideObject.test() == 300);
+    /**
+     * TraitModule
+     *
+     * Mirrors the tests in traits.du
+     */
+    testTraitModule() {
+        const myDuplicateOverrideObject = TraitModule.MyDuplicateClassOverride("Jason");
+
+        this.assertEquals(myDuplicateOverrideObject.name, "Jason");
+        this.assertEquals(myDuplicateOverrideObject.hello(10), 20);
+        this.assertEquals(myDuplicateOverrideObject.attribute(), "Hello Jason");
+        this.assertEquals(myDuplicateOverrideObject.test(), 300);
+    }
+}
+
+TestModuleImports().run();

@@ -4,13 +4,25 @@
  * Testing division
  */
 
-var x = 10;
+from UnitTest import UnitTest;
 
-assert(x / 10 == 1);
-assert(10 / x == 1);
-assert(x / x == 1);
-assert(x / -1 == -10);
+class DivideOperatorTest < UnitTest {
+    testDivideOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
 
-// Decimals
-assert(x / 2.5 == 4);
-assert(20 / 2.5 == 8);
+    testDivideOperatorProvider() {
+        const x = 10;
+
+        return [
+            {"operation": x / 10, "expected": 1},
+            {"operation": 10 / x, "expected": 1},
+            {"operation": x / x, "expected": 1},
+            {"operation": x / -1, "expected": -10},
+            {"operation": x / 2.5, "expected": 4},
+            {"operation": 20 / 2.5, "expected": 8},
+        ];
+    }
+}
+
+DivideOperatorTest().run();

@@ -4,10 +4,23 @@
  * Testing operator precedence
  */
 
-var x = 10;
+from UnitTest import UnitTest;
 
-assert(x + 1 * 10 / 2 == 15);
-assert(-x + 10 * 2 + 10 / 2 == 15);
-assert(x + 2 * 10 / 2 - 2 == 18);
+class OperatorPrecedenceTest < UnitTest {
+    testOperatorPrecedence(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
 
-assert(10 ^ 2 ** 2 - 2 / 2 == 9);
+    testOperatorPrecedenceProvider() {
+        const x = 10;
+
+        return [
+            {"operation": x + 1 * 10 / 2, "expected": 15},
+            {"operation": -x + 10 * 2 + 10 / 2, "expected": 15},
+            {"operation": x + 2 * 10 / 2 - 2, "expected": 18},
+            {"operation": 10 ^ 2 ** 2 - 2 / 2, "expected": 9},
+        ];
+    }
+}
+
+OperatorPrecedenceTest().run();

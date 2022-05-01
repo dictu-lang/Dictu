@@ -4,17 +4,8 @@
  * Testing ternary operator
  */
 
-// Explicit checking
-assert(true ? true : false == true);
-assert(false ? true : false == false);
 
-assert(true ? 1 + 2 + 3 : 4 + 5 + 6 == 6);
-assert(false ? 1 + 2 + 3 : 4 + 5 + 6 == 15);
-
-var condition = true;
-
-assert(condition ? [1, 2] : [3, 4] == [1, 2]);
-assert(not condition ? [1, 2] : [3, 4] == [3, 4]);
+from UnitTest import UnitTest;
 
 // Nested
 def nestedTernary(num) {
@@ -25,9 +16,29 @@ def nestedTernary(num) {
         : 5;
 }
 
-assert(nestedTernary(1) == 1);
-assert(nestedTernary(2) == 2);
-assert(nestedTernary(3) == 3);
-assert(nestedTernary(4) == 4);
-assert(nestedTernary(5) == 5);
-assert(nestedTernary(10) == 5);
+class TernaryOperatorTest < UnitTest {
+    testTernaryOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testTernaryOperatorProvider() {
+        const condition = true;
+
+        return [
+            {"operation": true ? true : false, "expected": true},
+            {"operation": false ? true : false, "expected": false},
+            {"operation": true ? 1 + 2 + 3 : 4 + 5 + 6, "expected": 6},
+            {"operation": false ? 1 + 2 + 3 : 4 + 5 + 6, "expected": 15},
+            {"operation": condition ? [1, 2] : [3, 4], "expected": [1, 2]},
+            {"operation": not condition ? [1, 2] : [3, 4], "expected": [3, 4]},
+            {"operation": nestedTernary(1), "expected": 1},
+            {"operation": nestedTernary(2), "expected": 2},
+            {"operation": nestedTernary(3), "expected": 3},
+            {"operation": nestedTernary(4), "expected": 4},
+            {"operation": nestedTernary(5), "expected": 5},
+            {"operation": nestedTernary(10), "expected": 5},
+        ];
+    }
+}
+
+TernaryOperatorTest().run();

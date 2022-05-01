@@ -4,46 +4,60 @@
  * Testing the HTTP.get() function
  *
  */
+from UnitTest import UnitTest;
+
 import HTTP;
 
-// HTTP
-var result = HTTP.get("http://httpbin.org/get");
+class TestHttpGet < UnitTest {
+    testHttpGet() {
+        var response = HTTP.get("http://httpbin.org/get");
+        this.assertTruthy(response.success());
 
-assert(result.success());
-var response = result.unwrap();
+        response = response.unwrap();
 
-assert(response.statusCode == 200);
-assert(response.content.contains("headers"));
-assert(response.headers.len() > 0);
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
 
-// HTTPS
-result = HTTP.get("https://httpbin.org/get");
-assert(result.success());
-response = result.unwrap();
+    testHttpsGet() {
+        var response = HTTP.get("https://httpbin.org/get");
+        this.assertTruthy(response.success());
 
-assert(response.statusCode == 200);
-assert(response.content.contains("headers"));
-assert(response.headers.len() > 0);
+        response = response.unwrap();
 
-// Headers
-result = HTTP.get("https://httpbin.org/get", ["Header: test"]);
-assert(result.success());
-response = result.unwrap();
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
 
-assert(response.statusCode == 200);
-assert(response.content.contains("headers"));
-assert(response.content.contains('"Header": "test"'));
-assert(response.headers.len() > 0);
+    testHttpsHeaders() {
+        var response = HTTP.get("https://httpbin.org/get", ["Header: test"]);
+        this.assertTruthy(response.success());
 
-response = HTTP.get("https://BAD_URL.test_for_error", [], 1);
-assert(response.success() == false);
+        response = response.unwrap();
 
-// GZIP
-result = HTTP.get("https://httpbin.org/gzip");
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.content.contains('"Header": "test"'));
+        this.assertTruthy(response.headers.len() > 0);
+    }
 
-assert(result.success());
-response = result.unwrap();
+    testHttpsBadURL() {
+        const response = HTTP.get("https://BAD_URL.test_for_error", [], 1);
+        this.assertFalsey(response.success());
+    }
 
-assert(response.statusCode == 200);
-assert(response.content.contains("headers"));
-assert(response.headers.len() > 0);
+    testHttpGzip() {
+        var response = HTTP.get("https://httpbin.org/gzip");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
+}
+
+TestHttpGet().run();

@@ -5,41 +5,52 @@
 *
 * .remove() mutates the dictionary to remove a key:value pair
 */
+from UnitTest import UnitTest;
 
-var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
+class TestDictRemove < UnitTest {
+    testDictRemove() {
+        const myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
-// First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        // First check the dictionary was created properly
+        this.assertEquals(myDict, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-// Test .remove()
-myDict.remove("key");
-assert(myDict == {"key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        // Test .remove()
+        myDict.remove("key");
+        this.assertEquals(myDict, {"key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-myDict.remove("key1");
-assert(myDict == {true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        myDict.remove("key1");
+        this.assertEquals(myDict, {true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-myDict.remove(true);
-assert(myDict == {false: true, nil: 10, 10: nil, 10.5: 10.5});
+        myDict.remove(true);
+        this.assertEquals(myDict, {false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-myDict.remove(false);
-assert(myDict == {nil: 10, 10: nil, 10.5: 10.5});
+        myDict.remove(false);
+        this.assertEquals(myDict, {nil: 10, 10: nil, 10.5: 10.5});
 
-myDict.remove(nil);
-assert(myDict == {10: nil, 10.5: 10.5});
+        myDict.remove(nil);
+        this.assertEquals(myDict, {10: nil, 10.5: 10.5});
 
-myDict.remove(10);
-assert(myDict == {10.5: 10.5});
+        myDict.remove(10);
+        this.assertEquals(myDict, {10.5: 10.5});
 
-myDict.remove(10.5);
-assert(myDict == {});
+        myDict.remove(10.5);
+        this.assertEquals(myDict, {});
+    }
 
-for (var i = 0; i < 10000; i += 1) {
-    myDict[i] = i;
+    testDictRemoveLooped() {
+        const myDict = {};
+        
+        for (var i = 0; i < 10000; i += 1) {
+            myDict[i] = i;
+        }
+
+        for (var i = 0; i < 10000; i += 1) {
+            myDict.remove(i);
+        }
+
+        this.assertEquals(myDict.len(), 0);
+        this.assertEquals(myDict, {});
+    }
 }
 
-for (var i = 0; i < 10000; i += 1) {
-    myDict.remove(i);
-}
-
-assert(myDict.len() == 0);
-assert(myDict == {});
+TestDictRemove().run();

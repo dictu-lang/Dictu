@@ -5,60 +5,70 @@
  *
  * .add() mutates the set to add a value
  */
+from UnitTest import UnitTest;
 
-var mySet = set();
+class TestSetAdd < UnitTest {
+    testSetAdd() {
+        const mySet = set();
 
-mySet.add("dictu");
-assert(mySet.contains("dictu"));
-assert(mySet.len() == 1);
+        mySet.add("dictu");
+        this.assertTruthy(mySet.contains("dictu"));
+        this.assertEquals(mySet.len(), 1);
 
-mySet.add("is");
-assert(mySet.contains("is"));
-assert(mySet.len() == 2);
+        mySet.add("is");
+        this.assertTruthy(mySet.contains("is"));
+        this.assertEquals(mySet.len(), 2);
 
-mySet.add("great!");
-assert(mySet.contains("great!"));
-assert(mySet.len() == 3);
+        mySet.add("great!");
+        this.assertTruthy(mySet.contains("great!"));
+        this.assertEquals(mySet.len(), 3);
+    }
 
+    testSetAddMultipleTypes() {
+        const mySet = set();
 
-var myNewSet = set();
+        mySet.add(1);
+        this.assertTruthy(mySet.contains(1));
+        this.assertEquals(mySet.len(), 1);
 
-myNewSet.add(1);
-assert(myNewSet.contains(1));
-assert(myNewSet.len() == 1);
+        mySet.add(true);
+        this.assertTruthy(mySet.contains(true));
+        this.assertEquals(mySet.len(), 2);
 
-myNewSet.add(true);
-assert(myNewSet.contains(true));
-assert(myNewSet.len() == 2);
+        mySet.add(nil);
+        this.assertTruthy(mySet.contains(nil));
+        this.assertEquals(mySet.len(), 3);
 
-myNewSet.add(nil);
-assert(myNewSet.contains(nil));
-assert(myNewSet.len() == 3);
+        mySet.add(false);
+        this.assertTruthy(mySet.contains(false));
+        this.assertEquals(mySet.len(), 4);
 
-myNewSet.add(false);
-assert(myNewSet.contains(false));
-assert(myNewSet.len() == 4);
+        mySet.add(10.5);
+        this.assertTruthy(mySet.contains(10.5));
+        this.assertEquals(mySet.len(), 5);
+    }
 
-myNewSet.add(10.5);
-assert(myNewSet.contains(10.5));
-assert(myNewSet.len() == 5);
+    testSetAddSameValue() {
+        const mySet = set();
 
-var anotherSet = set();
+        mySet.add(10);
+        mySet.add(10);
+        mySet.add(10);
+        mySet.add(10);
+        mySet.add(10);
 
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
+        this.assertEquals(mySet.len(), 1);
 
-assert(anotherSet.len() == 1);
+        const anotherSet = set(10);
 
-var anotherSet = set(10);
+        anotherSet.add(10);
+        anotherSet.add(10);
+        anotherSet.add(10);
+        anotherSet.add(10);
+        anotherSet.add(10);
 
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
-anotherSet.add(10);
+        this.assertEquals(anotherSet.len(), 1);
+    }
+}
 
-assert(anotherSet.len() == 1);
+TestSetAdd().run();

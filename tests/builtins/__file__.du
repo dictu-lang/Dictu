@@ -1,14 +1,34 @@
 /**
-* __file__.du
-*
-* Testing __file__
-*/
+ * __file__.du
+ *
+ * Testing __file__
+ */
+
+from UnitTest import UnitTest;
+
 import Path;
 import System;
 
-assert(Path.basename(__file__) == "__file__.du");
-if (System.platform == "windows") {
-    assert(Path.dirname(__file__) == System.getCWD().unwrap() + r"\tests\builtins");
-} else {
-    assert(Path.dirname(__file__) == System.getCWD().unwrap() + "/tests/builtins");
+class TestFileMagicVariable < UnitTest {
+    testFileVariable() {
+        this.assertEquals(Path.basename(__file__), "__file__.du");
+    }
+
+    testFileVariableWindows() {
+        if (System.platform != "windows") {
+            return;
+        }
+
+        this.assertEquals(Path.dirname(__file__), System.getCWD().unwrap() + r"\tests\builtins");
+    }
+
+    testFileVariableOtherOSs() {
+        if (System.platform == "windows") {
+            return;
+        }
+
+        this.assertEquals(Path.dirname(__file__), System.getCWD().unwrap() + "/tests/builtins");
+    }
 }
+
+TestFileMagicVariable().run();

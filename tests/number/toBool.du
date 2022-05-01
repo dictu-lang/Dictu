@@ -6,7 +6,21 @@
  * .toBool() returns the boolean representation of a number
  */
 
-assert(1.toBool() == true);
-assert(0.toBool() == false);
-assert(11.1.toBool() == true);
-assert(11_1.1.toBool() == true);
+from UnitTest import UnitTest;
+
+class NumberToBoolTest < UnitTest {
+    testNumberToBool(data) {
+        this.assertEquals(data["number"].toBool(), data["expected"]);
+    }
+
+    testNumberToBoolProvider() {
+        return [
+            {"number": 1, "expected": true},
+            {"number": 11.1, "expected": true},
+            {"number": 11_1.1, "expected": true},
+            {"number": 0, "expected": false},
+        ];
+    }
+}
+
+NumberToBoolTest().run();

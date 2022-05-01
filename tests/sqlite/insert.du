@@ -5,17 +5,34 @@
  *
  * Tests inserting into a table in SQLite
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var connection = Sqlite.connect(":memory:");
-assert(connection.success());
-connection = connection.unwrap();
+class TestSqliteInsert < UnitTest {
+    setUp() {
+        const connection = Sqlite.connect(":memory:");
+        this.assertTruthy(connection.success());
+        this.connection = connection.unwrap();
 
-var resp = connection.execute("CREATE TABLE test (x int)").unwrap();
-resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
-resp = connection.execute("INSERT INTO test VALUES (?)", [
-    10
-]).unwrap();
+        // Create table
+        this.connection.execute("CREATE TABLE test (x int)").unwrap();
+    }
 
-connection.close();
+    tearDown() {
+        this.connection.close();
+    }
+
+    testSqliteInsert() {
+        this.assertTruthy(this.connection.execute("INSERT INTO test VALUES (10)").success());
+        this.assertTruthy(this.connection.execute("INSERT INTO test VALUES (?)",[
+            100
+        ]).success());
+
+        this.assertEquals(this.connection.execute("SELECT COUNT(*) FROM test").unwrap(), [
+            [2]
+        ]);
+    }
+}
+
+TestSqliteInsert().run();

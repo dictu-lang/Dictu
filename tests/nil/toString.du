@@ -6,6 +6,17 @@
  * .toString() returns the string representation of nil
  */
 
-assert(nil.toString() == "nil");
-var testnil = nil;
-assert(testnil.toString() == "nil");
+from UnitTest import UnitTest;
+
+class NilToStringTest < UnitTest {
+    testNilToString() {
+        this.assertTruthy(nil.toString() == "nil");
+    }
+
+    testNilVariableToString() {
+        const testnil = nil;
+        this.assertTruthy(testnil.toString() == "nil");
+    }
+}
+
+NilToStringTest().run();

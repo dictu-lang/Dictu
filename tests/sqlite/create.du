@@ -5,22 +5,41 @@
  *
  * Tests creating a table in SQLite
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var connection = Sqlite.connect(":memory:");
+class TestSqliteCreate < UnitTest {
+    private connection;
 
-assert(connection.success());
-connection = connection.unwrap();
+    setUp() {
+        const connection = Sqlite.connect(":memory:");
+        this.assertTruthy(connection.success());
+        this.connection = connection.unwrap();
+    }
 
-connection.execute("CREATE TABLE test (x int)").unwrap();
-var resp = connection.execute("CREATE TABLE test (x int)");
+    tearDown() {
+        this.connection.close();
+    }
 
-assert(resp.success() == false);
-assert(resp.unwrapError() == "table test already exists");
+    testCreateTable() {
+        this.assertTruthy(this.connection.execute("CREATE TABLE test (x int)").success());
+    }
 
-connection.close();
+    testCreatingDuplicateTableFails() {
+        this.connection.execute("CREATE TABLE test (x int)");
+        const result = this.connection.execute("CREATE TABLE test (x int)");
 
-// Assert operations on a closed connection fail correctly
-assert(connection.execute("CREATE TABLE test1 (x int)").success() == false);
-assert(connection.execute("CREATE TABLE test1 (x int)").unwrapError() == "Database connection is closed");
+        this.assertFalsey(result.success());
+        this.assertEquals(result.unwrapError(), "table test already exists");
+    }
+
+    testOperationsOnClosedTableFail() {
+        this.connection.close();
+
+        this.assertFalsey(this.connection.execute("CREATE TABLE test1 (x int)").success());
+        this.assertEquals(this.connection.execute("CREATE TABLE test1 (x int)").unwrapError(), "Database connection is closed");
+    }
+}
+
+TestSqliteCreate().run();

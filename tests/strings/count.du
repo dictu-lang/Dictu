@@ -5,10 +5,17 @@
  *
  * .count() returns the amount of occurrences of a substring
  */
+from UnitTest import UnitTest;
 
-assert("Dictu is great!".count("D") == 1);
-assert("Dictu is great!".count("Dictu") == 1);
-assert("Dictu is great! Dictu is great!".count("Dictu is great!") == 2);
-assert("Dictu is great! Dictu is great!".count("test") == 0);
-assert("Dictu is great! Dictu is great!".count("1234") == 0);
-assert("Dictu is great! Dictu is great!".count("!") == 2);
+class TestStringCount < UnitTest {
+    testStringCount() {
+        this.assertEquals("Dictu is great!".count("D"), 1);
+        this.assertEquals("Dictu is great!".count("Dictu"), 1);
+        this.assertEquals("Dictu is great! Dictu is great!".count("Dictu is great!"), 2);
+        this.assertEquals("Dictu is great! Dictu is great!".count("test"), 0);
+        this.assertEquals("Dictu is great! Dictu is great!".count("1234"), 0);
+        this.assertEquals("Dictu is great! Dictu is great!".count("!"), 2);
+    }
+}
+
+TestStringCount().run();

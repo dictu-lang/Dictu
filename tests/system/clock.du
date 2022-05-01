@@ -5,13 +5,21 @@
  *
  * clock() returns number of clock ticks since the start of the program, useful for benchmarks.
  */
+from UnitTest import UnitTest;
+
 import System;
 
-assert(type(System.clock()) == 'number');
-assert(System.clock() > 0);
+class TestSystemClock < UnitTest {
+    testSystemClock() {
+        this.assertType(System.clock(), 'number');
+        this.assertTruthy(System.clock() > 0);
 
-var x = System.clock();
+        const x = System.clock();
 
-System.sleep(1);
+        System.sleep(1);
 
-assert(System.clock() > x);
+        this.assertTruthy(System.clock() > x);
+    }
+}
+
+TestSystemClock().run();

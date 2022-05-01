@@ -4,13 +4,27 @@
  * Testing multiplication
  */
 
-var x = 10;
+from UnitTest import UnitTest;
 
-assert(x * 10 == 100);
-assert(10 * x == 100);
-assert(x * x == 100);
-assert(-1 * x == -10);
+class MultiplicationOperatorTest < UnitTest {
+    testMultiplicationOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
 
-// Decimals
-assert(x * 2.5 == 25);
-assert(20 * 2.5 == 50);
+    testMultiplicationOperatorProvider() {
+        const x = 10;
+
+        return [
+            {"operation": 10 * 10, "expected": 100},
+            {"operation": 10 * x, "expected": 100},
+            {"operation": x * 10, "expected": 100},
+            {"operation": x * x, "expected": 100},
+            {"operation": -1 * x, "expected": -10},
+            {"operation": 10 * 2.5, "expected": 25},
+            {"operation": x * 2.5, "expected": 25},
+            {"operation": 20 * 2.5, "expected": 50},
+        ];
+    }
+}
+
+MultiplicationOperatorTest().run();

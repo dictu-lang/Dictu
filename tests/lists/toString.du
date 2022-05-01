@@ -5,10 +5,17 @@
  *
  * .toString() returns the string representation of a list
  */
+from UnitTest import UnitTest;
 
-assert(["1", 11].toString() == '["1", 11]');
-assert(["1", [11, "1"]].toString() == '["1", [11, "1"]]');
+class TestListToString < UnitTest {
+    testListToString() {
+        this.assertEquals(["1", 11].toString(), '["1", 11]');
+        this.assertEquals(["1", [11, "1"]].toString(), '["1", [11, "1"]]');
 
-var x = [1, 2.2, nil, true, false, [false, nil], {nil: true, "dict": {"test": false}}];
+        const x = [1, 2.2, nil, true, false, [false, nil], {nil: true, "dict": {"test": false}}];
 
-assert(x.toString() == '[1, 2.2, nil, true, false, [false, nil], {"dict": {"test": false}, nil: true}]');
+        this.assertEquals(x.toString(), '[1, 2.2, nil, true, false, [false, nil], {"dict": {"test": false}, nil: true}]');
+    }
+}
+
+TestListToString().run();

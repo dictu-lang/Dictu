@@ -4,15 +4,24 @@
 * Testing Result.unwrap(), Result.unwrapError() and Result.success()
 *
 */
+from UnitTest import UnitTest;
 
-var result = Success(10);
+class TestResultUnwrap < UnitTest {
+    testSuccessUnwrap() {
+        const result = Success(10);
 
-assert(type(result) == "result");
-assert(result.success() == true);
-assert(result.unwrap() == 10);
+        this.assertType(result, "result");
+        this.assertTruthy(result.success());
+        this.assertEquals(result.unwrap(), 10);
+    }
 
-result = Error("Error!!!");
+    testErrorUnwrap() {
+        const result = Error("Error!!!");
 
-assert(type(result) == "result");
-assert(result.success() == false);
-assert(result.unwrapError() == "Error!!!");
+        this.assertType(result, "result");
+        this.assertFalsey(result.success());
+        this.assertEquals(result.unwrapError(), "Error!!!");
+    }
+}
+
+TestResultUnwrap().run();

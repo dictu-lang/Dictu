@@ -5,20 +5,26 @@
  *
  * .len() returns a number based on the amount of set elements
  */
+from UnitTest import UnitTest;
 
-var mySet = set();
+class TestSetLen < UnitTest {
+    testSetLen() {
+        const mySet = set(true, false, nil);
+        this.assertEquals(mySet.len(), 3);
+    }
 
-mySet.add("dictu");
-assert(mySet.len() == 1);
+    testSetLenAdd() {
+        const mySet = set();
 
-mySet.add("is");
-assert(mySet.len() == 2);
+        mySet.add("dictu");
+        this.assertEquals(mySet.len(), 1);
 
-mySet.add("great");
-assert(mySet.len() == 3);
+        mySet.add("is");
+        this.assertEquals(mySet.len(), 2);
 
-var mySet = set(true, false, nil);
-assert(mySet.len() == 3);
+        mySet.add("great");
+        this.assertEquals(mySet.len(), 3);
+    }
+}
 
-
-
+TestSetLen().run();

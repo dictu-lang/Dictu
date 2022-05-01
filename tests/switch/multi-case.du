@@ -3,45 +3,52 @@
  *
  * Testing multicase within a switch
  */
+from UnitTest import UnitTest;
 
-var x = 10;
+class TestMultiCase < UnitTest {
+    testMultiCase() {
+        var x = 10;
 
-switch (x) {
-    case 1, 2, 3, 4: {
-        x += 10;
+        switch (x) {
+            case 1, 2, 3, 4: {
+                x += 10;
+            }
+
+            case 5, 6, 7, 8, 9: {
+                x += 10;
+            }
+
+            case 10: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 20);
     }
 
-    case 5, 6, 7, 8, 9: {
-        x += 10;
-    }
+    testMultiCaseWithDefault() {
+        var x = 10;
 
-    case 10: {
-        x += 10;
+        switch (x) {
+            case 1, 2, 3, 4: {
+                x += 10;
+            }
+
+            case 10: {
+                x += 10;
+            }
+
+            case 5, 6, 7, 8, 9: {
+                x += 10;
+            }
+
+            default: {
+                x += 100;
+            }
+        }
+
+        this.assertEquals(x, 20);
     }
 }
 
-assert(x == 20);
-
-// Default + reorder
-
-var x = 10;
-
-switch (x) {
-    case 1, 2, 3, 4: {
-        x += 10;
-    }
-
-    case 10: {
-        x += 10;
-    }
-
-    case 5, 6, 7, 8, 9: {
-        x += 10;
-    }
-
-    default: {
-        x += 100;
-    }
-}
-
-assert(x == 20);
+TestMultiCase().run();

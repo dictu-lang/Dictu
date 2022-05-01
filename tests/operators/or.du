@@ -4,7 +4,15 @@
  * Testing the or logical operator
  */
 
-assert(true or true);
-assert(false or true);
-assert(true or false);
-assert((false or false) == false);
+from UnitTest import UnitTest;
+
+class OrOperatorTest < UnitTest {
+    testOrOperator() {
+        this.assertTruthy(true or true);
+        this.assertTruthy(false or true);
+        this.assertTruthy(true or false);
+        this.assertTruthy((false or false) == false);
+    }
+}
+
+OrOperatorTest().run();

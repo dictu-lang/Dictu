@@ -4,6 +4,7 @@
  * Testing the obj.getAttribute() method
  *
  */
+from UnitTest import UnitTest;
 
 class Test {
     var x = 10;
@@ -17,32 +18,40 @@ class Test {
     publicMethod() {}
 }
 
-assert(Test().getAttribute("x") == 10);
-assert(Test().getAttribute("x", nil) == 10);
-assert(Test().getAttribute("priv") == nil);
-assert(Test().getAttribute("priv", 10) == 10);
-assert(Test().getAttribute("privMethod") == nil);
-assert(Test().getAttribute("privMethod", 10) == 10);
-assert(Test().getAttribute("pub") == 20);
-assert(Test().getAttribute("pub", nil) == 20);
-assert(Test().getAttribute("prop") == 30);
-assert(Test().getAttribute("prop", nil) == 30);
-assert(type(Test().getAttribute("publicMethod") == "function"));
-assert(type(Test().getAttribute("publicMethod", nil) == "function"));
-
 class Inherit < Test {
 
 }
 
-assert(Inherit().getAttribute("x") == 10);
-assert(Inherit().getAttribute("x", nil) == 10);
-assert(Inherit().getAttribute("priv") == nil);
-assert(Inherit().getAttribute("priv", 10) == 10);
-assert(Inherit().getAttribute("privMethod") == nil);
-assert(Inherit().getAttribute("privMethod", 10) == 10);
-assert(Inherit().getAttribute("pub") == 20);
-assert(Inherit().getAttribute("pub", nil) == 20);
-assert(Inherit().getAttribute("prop") == 30);
-assert(Inherit().getAttribute("prop", nil) == 30);
-assert(type(Inherit().getAttribute("publicMethod") == "function"));
-assert(type(Inherit().getAttribute("publicMethod", nil) == "function"));
+class TestGetAttribute < UnitTest {
+    testGetAttribute() {
+        this.assertEquals(Test().getAttribute("x"), 10);
+        this.assertEquals(Test().getAttribute("x", nil), 10);
+        this.assertEquals(Test().getAttribute("priv"), nil);
+        this.assertEquals(Test().getAttribute("priv", 10), 10);
+        this.assertEquals(Test().getAttribute("privMethod"), nil);
+        this.assertEquals(Test().getAttribute("privMethod", 10), 10);
+        this.assertEquals(Test().getAttribute("pub"), 20);
+        this.assertEquals(Test().getAttribute("pub", nil), 20);
+        this.assertEquals(Test().getAttribute("prop"), 30);
+        this.assertEquals(Test().getAttribute("prop", nil), 30);
+        this.assertType(Test().getAttribute("publicMethod"), "method");
+        this.assertType(Test().getAttribute("publicMethod", nil), "method");
+    }
+
+    testGetAttributeInherit() {
+        this.assertEquals(Inherit().getAttribute("x"), 10);
+        this.assertEquals(Inherit().getAttribute("x", nil), 10);
+        this.assertEquals(Inherit().getAttribute("priv"), nil);
+        this.assertEquals(Inherit().getAttribute("priv", 10), 10);
+        this.assertEquals(Inherit().getAttribute("privMethod"), nil);
+        this.assertEquals(Inherit().getAttribute("privMethod", 10), 10);
+        this.assertEquals(Inherit().getAttribute("pub"), 20);
+        this.assertEquals(Inherit().getAttribute("pub", nil), 20);
+        this.assertEquals(Inherit().getAttribute("prop"), 30);
+        this.assertEquals(Inherit().getAttribute("prop", nil), 30);
+        this.assertType(Inherit().getAttribute("publicMethod"), "method");
+        this.assertType(Inherit().getAttribute("publicMethod", nil), "method");
+    }
+}
+
+TestGetAttribute().run();

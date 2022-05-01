@@ -3,11 +3,18 @@
  *
  * Testing file reading with readLine()
  */
+from UnitTest import UnitTest;
 
-with("tests/files/read.txt", "r") {
-    var line;
-    while ((line = file.readLine()) != nil) {
-        // Check readline works with empty lines as well
-        assert(line == "Dictu is great!" or line == "");
+class TestFileReadline < UnitTest {
+    testFileReadline() {
+        with("tests/files/read.txt", "r") {
+            var line;
+            while ((line = file.readLine()) != nil) {
+                // Check readline works with empty lines as well
+                this.assertTruthy(line == "Dictu is great!" or line == "");
+            }
+        }
     }
 }
+
+TestFileReadline().run();

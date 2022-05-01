@@ -4,12 +4,25 @@
  * Testing exponent
  */
 
-var x = 2;
+from UnitTest import UnitTest;
 
-assert(x ** 10 == 1024);
-assert(10 ** x == 100);
-assert(x * x == 4);
-assert(-2 ** x == 4);
+class PowOperatorTest < UnitTest {
+    testPowOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
 
-// Decimals
-assert(4 * 0.5 == 2);
+    testPowOperatorProvider() {
+        const x = 2;
+
+        return [
+            {"operation": x ** 10, "expected": 1024},
+            {"operation": 10 ** x, "expected": 100},
+            {"operation": x * x, "expected": 4},
+            {"operation": -2 ** x, "expected": 4},
+            {"operation": 4 * 0.5, "expected": 2},
+            {"operation": 20 / 2.5, "expected": 8},
+        ];
+    }
+}
+
+PowOperatorTest().run();

@@ -5,8 +5,15 @@
  *
  * .toString() returns the string representation of a dict
  */
+from UnitTest import UnitTest;
 
-assert({"1": 1, 1: "1"}.toString() == '{"1": 1, 1: "1"}');
-assert({"1": {1: "1", "1": 1}, 1: "1"}.toString() == '{"1": {"1": 1, 1: "1"}, 1: "1"}');
-assert({1: 1, 2.2: 2.2, true: true, false: false, nil: nil, "test": {"test": {"test": 1}}, "test1": [1, 2, 3]}.toString() ==
-    '{false: false, 1: 1, "test": {"test": {"test": 1}}, 2.2: 2.2, true: true, nil: nil, "test1": [1, 2, 3]}');
+class TestDictToString < UnitTest {
+    testDictToString() {
+        this.assertEquals({"1": 1, 1: "1"}.toString(), '{"1": 1, 1: "1"}');
+        this.assertEquals({"1": {1: "1", "1": 1}, 1: "1"}.toString(), '{"1": {"1": 1, 1: "1"}, 1: "1"}');
+        this.assertEquals({1: 1, 2.2: 2.2, true: true, false: false, nil: nil, "test": {"test": {"test": 1}}, "test1": [1, 2, 3]}.toString(),
+            '{false: false, 1: 1, "test": {"test": {"test": 1}}, 2.2: 2.2, true: true, nil: nil, "test1": [1, 2, 3]}');
+    }
+}
+
+TestDictToString().run();

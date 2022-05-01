@@ -5,12 +5,24 @@
  *
  * exec() executes a new process and does not wait for a return.
  */
+from UnitTest import UnitTest;
+
 import Process;
 import System;
 
-if (System.platform == "windows") {
-    assert(Process.exec(["cmd.exe", "/c", "dir"]).success());
-} else {
-    assert(Process.exec(["ls"]).success());
-    assert(Process.exec(["ls", "-la"]).success());
+class TestProcessExec < UnitTest {
+    testProcessExecWindows() {
+        if (System.platform != "windows") return;
+
+        this.assertTruthy(Process.exec(["cmd.exe", "/c", "dir"]).success());
+    }
+
+    testProcessExecOtherOSs() {
+        if (System.platform == "windows") return;
+
+        this.assertTruthy(Process.exec(["ls"]).success());
+        this.assertTruthy(Process.exec(["ls", "-la"]).success());
+    }
 }
+
+TestProcessExec().run();

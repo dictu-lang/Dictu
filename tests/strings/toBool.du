@@ -5,6 +5,13 @@
  *
  * .toBool() converts a string to a boolean
  */
+from UnitTest import UnitTest;
 
-assert("10".toBool() == true);
-assert("".toBool() == false);
+class TestStringToBool < UnitTest {
+    testStringToBool() {
+        this.assertTruthy("10".toBool());
+        this.assertFalsey("".toBool());
+    }
+}
+
+TestStringToBool().run();

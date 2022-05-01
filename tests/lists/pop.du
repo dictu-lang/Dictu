@@ -5,18 +5,25 @@
  *
  * .pop() will remove an element from a list and return the value
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2, 3, 4, 5];
+class TestListPop < UnitTest {
+    testListPop() {
+        const x = [1, 2, 3, 4, 5];
 
-// First check the list was created properly
-assert(x == [1, 2, 3, 4, 5]);
+        // First check the list was created properly
+        this.assertEquals(x, [1, 2, 3, 4, 5]);
 
-// Test .pop()
-var y = x.pop();
-assert(y == 5);
-assert(x == [1, 2, 3, 4]);
+        // Test .pop()
+        var y = x.pop();
+        this.assertEquals(y, 5);
+        this.assertEquals(x, [1, 2, 3, 4]);
 
-// Test .pop(index)
-y = x.pop(0);
-assert(y == 1);
-assert(x == [2, 3, 4]);
+        // Test .pop(index)
+        y = x.pop(0);
+        this.assertEquals(y, 1);
+        this.assertEquals(x, [2, 3, 4]);
+    }
+}
+
+TestListPop().run();

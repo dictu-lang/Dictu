@@ -3,71 +3,102 @@
 *
 * Testing the parameters of a function
 */
+from UnitTest import UnitTest;
 
-def test(a) {
-    assert(a == 10);
+class TestFunctionParameters < UnitTest {
+    testFunctionParameter() {
+        def test(a) {
+            this.assertEquals(a, 10);
+        }
+
+        test(10);
+    }
+
+    testFunctionTwoParameters() {
+        def test(a, b) {
+            this.assertEquals(a + b, 30);
+        }
+
+        test(10, 20);
+    }
+
+    testFunctionThreeParameters() {
+        def test(a, b, c) {
+            this.assertEquals(a, 10);
+            this.assertEquals(b, "hello");
+            this.assertEquals(c, true);
+        }
+
+        test(10, "hello", true);
+    }
+
+    testFunctionOptionalParametersNoArguments() {
+        def test(a=nil, b=nil) {
+            this.assertNil(a);
+            this.assertNil(b);
+        }
+
+        test();
+    }
+
+    testFunctionOptionalParametersOneArgument() {
+        def test(a=nil, b=nil) {
+            this.assertEquals(a, 10);
+            this.assertNil(b);
+        }
+
+        test(10);
+    }
+
+    testFunctionOneOptionalParameter() {
+        def test(a, b=20) {
+            this.assertEquals(a, 10);
+            this.assertEquals(b, 20);
+        }
+
+        test(10);
+    }
+
+    testFunctionTwoOptionalParameters() {
+        def test(a=50, b=55) {
+            this.assertEquals(a, 10);
+            this.assertEquals(b, 20);
+        }
+
+        test(10, 20);
+    }
+
+    testFunctionThreeOptionalParameters() {
+        def test(a="test", b=false, c=true) {
+            this.assertEquals(a, 10);
+            this.assertEquals(b, 20);
+            this.assertEquals(c, true);
+        }
+
+        test(10, 20);
+        test(10, 20, true);
+    }
+
+    testFunctionFourOptionalParameters() {
+        def test(a="test", b=false, c=true, d=10) {
+            this.assertEquals(a, 10);
+            this.assertEquals(b, nil);
+            this.assertEquals(c, true);
+            this.assertEquals(d, 10);
+        }
+
+        test(10, nil);
+        test(10, nil, true);
+        test(10, nil, true, 10);
+    }
+
+    testFunctionLargeParameterCount() {
+        def largeParameters(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, a2, b2, c2, d2, e2, f2, g2, h2, i2, j2, k2, l2, m2, n2, o2, p2, q2, r2, s2, t2, u2, v2, w2, x2, y2, z2) {
+           this.assertEquals(a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p + q + r + s + t + u + v + w + x + y + z + a1 + b1 + c1 + d1 + e1 + f1 + g1 + h1 + i1 + j1 + k1 + l1 + m1 + n1 + o1 + p1 + q1 + r1 + s1 + t1 + u1 + v1 + w1 + x1 + y1 + z1 + a2 + b2 + c2 + d2 + e2 + f2 + g2 + h2 + i2 + j2 + k2 + l2 + m2 + n2 + o2 + p2 + q2 + r2 + s2 + t2 + u2 + v2 + w2 + x2 + y2 + z2, 3003);
+        }
+
+        largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77);
+    }
 }
 
-test(10);
-
-def test1(a, b) {
-    assert(a + b == 10);
-}
-
-test1(5, 5);
-
-def test2(a, b, c) {
-    assert(a == 10);
-    assert(b == "hello");
-    assert(c == true);
-}
-
-test2(10, "hello", true);
-
-
-def optional(a=nil, b=nil) {
-    assert(a == nil);
-    assert(b == nil);
-}
-
-optional();
-
-def oneOptional(a, b=20) {
-    assert(a == 10);
-    assert(b == 20);
-}
-
-oneOptional(10);
-
-def twoOptional(a=50, b=55) {
-    assert(a == 10);
-    assert(b == 20);
-}
-
-twoOptional(10, 20);
-
-def threeOptional(a="test", b=false, c=true) {
-    assert(a == 10);
-    assert(b == 20);
-    assert(c == true);
-}
-
-threeOptional(10, 20);
-threeOptional(10, 20, true);
-
-def fourOptional(a="test", b=false, c=true, d=10) {
-    assert(a == 10);
-    assert(b == nil);
-    assert(c == true);
-    assert(d == 10);
-}
-
-fourOptional(10, nil);
-fourOptional(10, nil, true);
-fourOptional(10, nil, true, 10);
-
-def largeParameters(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, a2, b2, c2, d2, e2, f2, g2, h2, i2, j2, k2, l2, m2, n2, o2, p2, q2, r2, s2, t2, u2, v2, w2, x2, y2, z2) {
-    assert(a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p + q + r + s + t + u + v + w + x + y + z + a1 + b1 + c1 + d1 + e1 + f1 + g1 + h1 + i1 + j1 + k1 + l1 + m1 + n1 + o1 + p1 + q1 + r1 + s1 + t1 + u1 + v1 + w1 + x1 + y1 + z1 + a2 + b2 + c2 + d2 + e2 + f2 + g2 + h2 + i2 + j2 + k2 + l2 + m2 + n2 + o2 + p2 + q2 + r2 + s2 + t2 + u2 + v2 + w2 + x2 + y2 + z2 == 3003);
-}
-
-largeParameters(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77);
+TestFunctionParameters().run();
