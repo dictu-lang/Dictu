@@ -221,8 +221,16 @@ static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
     exit(1);
 }
 
+char *logToString(ObjAbstract *abstract) {
+    UNUSED(abstract);
+
+    char *logString = malloc(sizeof(char) * 6);
+    snprintf(logString, 6, "<Log>");
+    return logString;
+}
+
 ObjAbstract* newLogObj(DictuVM *vm) {
-    ObjAbstract *abstract = newAbstract(vm, freeLog);
+    ObjAbstract *abstract = newAbstract(vm, freeLog, logToString);
     push(vm, OBJ_VAL(abstract));
 
     Log *log = ALLOCATE(vm, Log, 1);
