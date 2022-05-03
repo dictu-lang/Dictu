@@ -1191,8 +1191,9 @@ static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
     } else {
         arg = identifierConstant(compiler, &name);
         ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
-        Value value;
-        if (tableGet(&compiler->parser->vm->globals, string, &value)) {
+        Value _;
+        if (!tableGet(&compiler->function->module->values, string, &_) &&
+        tableGet(&compiler->parser->vm->globals, string, &_)) {
             getOp = OP_GET_GLOBAL;
             canAssign = false;
         } else {
