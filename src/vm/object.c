@@ -173,10 +173,11 @@ ObjFile *newFile(DictuVM *vm) {
     return ALLOCATE_OBJ(vm, ObjFile, OBJ_FILE);
 }
 
-ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func) {
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) {
     ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
     abstract->data = NULL;
     abstract->func = func;
+    abstract->type = type;
     initTable(&abstract->values);
 
     return abstract;
@@ -658,9 +659,10 @@ char *objectToString(Value value) {
             return upvalueString;
         }
 
-        // TODO: Think about string conversion for abstract types
         case OBJ_ABSTRACT: {
-            break;
+            ObjAbstract *abstract = AS_ABSTRACT(value);
+
+            return abstract->type(abstract);
         }
 
         case OBJ_RESULT: {
