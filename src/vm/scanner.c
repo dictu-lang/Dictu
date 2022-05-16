@@ -392,6 +392,7 @@ Token scanToken(Scanner *scanner) {
                 if (match(scanner, '.')) {
                     return makeToken(scanner, TOKEN_DOT_DOT_DOT);
                 }
+                break;
             } else {
                 return makeToken(scanner, TOKEN_DOT);
             }
