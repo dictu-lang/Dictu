@@ -388,7 +388,13 @@ Token scanToken(Scanner *scanner) {
         case ',':
             return makeToken(scanner, TOKEN_COMMA);
         case '.':
-            return makeToken(scanner, TOKEN_DOT);
+            if (match(scanner, '.')) {
+                if (match(scanner, '.')) {
+                    return makeToken(scanner, TOKEN_DOT_DOT_DOT);
+                }
+            } else {
+                return makeToken(scanner, TOKEN_DOT);
+            }
         case '/': {
             if (match(scanner, '=')) {
                 return makeToken(scanner, TOKEN_DIVIDE_EQUALS);
