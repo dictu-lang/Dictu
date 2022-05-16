@@ -804,6 +804,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
 
     if (!check(fnCompiler, TOKEN_RIGHT_PAREN)) {
         bool optional = false;
+        bool isSpreadParam = false;
         int index = 0;
         uint8_t identifiers[255];
         int indexes[255];
@@ -811,8 +812,13 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
         uint8_t privateIdentifiers[255];
         int privateIndexes[255];
         do {
+            // spread must come last
+            if (isSpreadParam) {
+                error(fnCompiler->parser, "spread parameter must be last in the parameter list");
+            }
             bool varKeyword = match(compiler, TOKEN_VAR);
             bool privateKeyword = match(compiler, TOKEN_PRIVATE);
+            isSpreadParam = match(compiler, TOKEN_DOT_DOT_DOT);
             consume(compiler, TOKEN_IDENTIFIER, "Expect parameter name.");
             uint8_t paramConstant = identifierConstant(fnCompiler, &fnCompiler->parser->previous);
             declareVariable(fnCompiler, &fnCompiler->parser->previous);
@@ -823,6 +829,12 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 indexes[fnCompiler->function->propertyCount++] = index;
             } else if (varKeyword) {
                 error(fnCompiler->parser, "var keyword in a function definition that is not a class constructor");
+            }
+            if (isSpreadParam) {
+                if (type == TYPE_INITIALIZER) {
+                    error(fnCompiler->parser, "spread parameter cannot be used in a class constructor");
+                }
+                fnCompiler->function->isVariadic = isSpreadParam;
             }
 
             if (type == TYPE_INITIALIZER && privateKeyword) {
@@ -836,6 +848,9 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             }
 
             if (match(fnCompiler, TOKEN_EQUAL)) {
+                if (isSpreadParam) {
+                    error(fnCompiler->parser, "spread parameter cannot have an optional value");
+                }
                 fnCompiler->function->arityOptional++;
                 optional = true;
                 expression(fnCompiler);
@@ -1438,6 +1453,7 @@ ParseRule rules[] = {
         {NULL,     binary,    PREC_COMPARISON},         // TOKEN_LESS_EQUAL
         {rString,  NULL,      PREC_NONE},               // TOKEN_R
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ARROW
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_DOT_DOT_DOT
         {variable, NULL,      PREC_NONE},               // TOKEN_IDENTIFIER
         {string,   NULL,      PREC_NONE},               // TOKEN_STRING
         {number,   NULL,      PREC_NONE},               // TOKEN_NUMBER
