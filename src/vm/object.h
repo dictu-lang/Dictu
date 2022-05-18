@@ -102,6 +102,7 @@ typedef struct {
 
 typedef struct {
     Obj obj;
+    int isVariadic;
     int arity;
     int arityOptional;
     int upvalueCount;

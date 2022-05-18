@@ -97,6 +97,7 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->arityOptional = 0;
+    function->isVariadic = 0;
     function->upvalueCount = 0;
     function->propertyCount = 0;
     function->propertyIndexes = NULL;
