@@ -6,32 +6,39 @@
  * .reduce() runs a user defined function on each element in the list
  * returning a single value.
  */
+from UnitTest import UnitTest;
 
 def add(accumulator, currentValue) {
     return accumulator + currentValue;
 }
 
-var list = [1, 2, 3, 4, 5];
+class TestListReduce < UnitTest {
+    testListReduce() {
+        const list = [1, 2, 3, 4, 5];
 
-var l = list.reduce(add);
-assert(l == 15);
+        var l = list.reduce(add);
+        this.assertEquals(l, 15);
 
-list.reduce(add);
-// Returns a new list so old list should be unchanged
-assert(list == [1, 2, 3, 4, 5]);
+        list.reduce(add);
+        // Returns a new list so old list should be unchanged
+        this.assertEquals(list, [1, 2, 3, 4, 5]);
 
-// Arrow function
-l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue);
-assert(l == 15);
+        // Arrow function
+        l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue);
+        this.assertEquals(l, 15);
 
-// Initial value
-l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue, 100);
-assert(l == 115);
+        // Initial value
+        l = list.reduce(def (accumulator, currentValue) => accumulator + currentValue, 100);
+        this.assertEquals(l, 115);
 
-// Strings
-var string = ["Dictu ", "is", " great!"].reduce(def (accumulator, currentValue) => accumulator + currentValue, "");
-assert(string == "Dictu is great!");
+        // Strings
+        const string = ["Dictu ", "is", " great!"].reduce(def (accumulator, currentValue) => accumulator + currentValue, "");
+        this.assertEquals(string, "Dictu is great!");
 
-// Lists
-var newList = [["Dictu "], ["is"], [" great!"]].reduce(def (accumulator, currentValue) => accumulator + currentValue, []);
-assert(newList == ["Dictu ", "is", " great!"]);
+        // Lists
+        const newList = [["Dictu "], ["is"], [" great!"]].reduce(def (accumulator, currentValue) => accumulator + currentValue, []);
+        this.assertEquals(newList, ["Dictu ", "is", " great!"]);
+    }
+}
+
+TestListReduce().run();

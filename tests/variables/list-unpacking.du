@@ -3,64 +3,66 @@
 *
 * Testing list unpacking for assignment
 */
+from UnitTest import UnitTest;
 
-var [a, b, c] = [1, 2, 3];
+class TestListUnpacking < UnitTest {
+    testListUnpacking() {
+        var [a, b, c] = [1, 2, 3];
 
-assert(a == 1);
-assert(b == 2);
-assert(c == 3);
+        this.assertEquals(a, 1);
+        this.assertEquals(b, 2);
+        this.assertEquals(c, 3);
+    }
 
-var [d, e, f] = [1 + 1, 2 + 2, 3 + 3];
+    testListUnpackingExpression() {
+        var [a, b, c] = [1 + 1, 2 + 2, 3 + 3];
 
-assert(d == 2);
-assert(e == 4);
-assert(f == 6);
+        this.assertEquals(a, 2);
+        this.assertEquals(b, 4);
+        this.assertEquals(c, 6);
+    }
 
-var list = [1, nil, true, false, "test", ["more tests", "another"], {"key": "value"}];
-
-var [x, y, z, x1, y1, z1, x2] = list;
-
-assert(x == 1);
-assert(y == nil);
-assert(z == true);
-assert(x1 == false);
-assert(y1 == "test");
-assert(z1 == ["more tests", "another"]);
-assert(x2 == {"key": "value"});
-
-// Test it wil locals
-{
-    var [x, y, z, x1, y1, z1, x2] = list;
-
-    assert(x == 1);
-    assert(y == nil);
-    assert(z == true);
-    assert(x1 == false);
-    assert(y1 == "test");
-    assert(z1 == ["more tests", "another"]);
-    assert(x2 == {"key": "value"});
-
-    // Test with completely new identifiers
-    var [x10, y10, z10, x20, y20, z20, x30] = list;
-
-    assert(x10 == 1);
-    assert(y10 == nil);
-    assert(z10 == true);
-    assert(x20 == false);
-    assert(y20 == "test");
-    assert(z20 == ["more tests", "another"]);
-    assert(x30 == {"key": "value"});
-
-    {
-        // Test nested scope just to make sure
+    testListUnpackingMixedTypes() {
+        var list = [1, nil, true, false, "test", ["more tests", "another"], {"key": "value"}];
         var [x, y, z, x1, y1, z1, x2] = list;
 
-        assert(x == 1);
-        assert(y == nil);
-        assert(z == true);
-        assert(x1 == false);
-        assert(y1 == "test");
-        assert(z1 == ["more tests", "another"]);
-        assert(x2 == {"key": "value"});
+        this.assertEquals(x, 1);
+        this.assertEquals(y, nil);
+        this.assertEquals(z, true);
+        this.assertEquals(x1, false);
+        this.assertEquals(y1, "test");
+        this.assertEquals(z1, ["more tests", "another"]);
+        this.assertEquals(x2, {"key": "value"});
+    }
+
+    testListUnpackingConst() {
+        const [a, b, c] = [1, 2, 3];
+
+        this.assertEquals(a, 1);
+        this.assertEquals(b, 2);
+        this.assertEquals(c, 3);
+    }
+
+    testListUnpackingExpressionConst() {
+        const [a, b, c] = [1 + 1, 2 + 2, 3 + 3];
+
+        this.assertEquals(a, 2);
+        this.assertEquals(b, 4);
+        this.assertEquals(c, 6);
+    }
+
+    testListUnpackingMixedTypesConst() {
+        const list = [1, nil, true, false, "test", ["more tests", "another"], {"key": "value"}];
+        const [x, y, z, x1, y1, z1, x2] = list;
+
+        this.assertEquals(x, 1);
+        this.assertEquals(y, nil);
+        this.assertEquals(z, true);
+        this.assertEquals(x1, false);
+        this.assertEquals(y1, "test");
+        this.assertEquals(z1, ["more tests", "another"]);
+        this.assertEquals(x2, {"key": "value"});
     }
 }
+
+TestListUnpacking().run();

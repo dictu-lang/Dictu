@@ -5,23 +5,32 @@
  *
  * .toNumber() converts a string to a number
  */
+from UnitTest import UnitTest;
 
-assert("10".toNumber().unwrap() == 10);
-assert("   10".toNumber().unwrap() == 10);
-assert("10.2".toNumber().unwrap() == 10.2);
-assert("10.123456".toNumber().unwrap() == 10.123456);
-assert("1000000".toNumber().unwrap() == 1000000);
+class TestStringToNumber < UnitTest {
+    testStringToNumber() {
+        this.assertEquals("10".toNumber().unwrap(), 10);
+        this.assertEquals("   10".toNumber().unwrap(), 10);
+        this.assertEquals("10.2".toNumber().unwrap(), 10.2);
+        this.assertEquals("10.123456".toNumber().unwrap(), 10.123456);
+        this.assertEquals("1000000".toNumber().unwrap(), 1000000);
+    }
 
-// Test failed parsing
-assert("10  ".toNumber().success() == false);
-assert("number".toNumber().success() == false);
-assert("10number".toNumber().success() == false);
-assert("10number10".toNumber().success() == false);
-assert("10..".toNumber().success() == false);
+    testStringToNumberFailedParse() {
+        this.assertEquals("10  ".toNumber().success(), false);
+        this.assertEquals("number".toNumber().success(), false);
+        this.assertEquals("10number".toNumber().success(), false);
+        this.assertEquals("10number10".toNumber().success(), false);
+        this.assertEquals("10..".toNumber().success(), false);
+    }
 
-// Test failure reason
-assert("10  ".toNumber().unwrapError() == "Can not convert '10  ' to number");
-assert("number".toNumber().unwrapError() == "Can not convert 'number' to number");
-assert("10number".toNumber().unwrapError() == "Can not convert '10number' to number");
-assert("10number10".toNumber().unwrapError() == "Can not convert '10number10' to number");
-assert("10..".toNumber().unwrapError() == "Can not convert '10..' to number");
+    testStringToNumberFailedParseReason() {
+        this.assertEquals("10  ".toNumber().unwrapError(), "Can not convert '10  ' to number");
+        this.assertEquals("number".toNumber().unwrapError(), "Can not convert 'number' to number");
+        this.assertEquals("10number".toNumber().unwrapError(), "Can not convert '10number' to number");
+        this.assertEquals("10number10".toNumber().unwrapError(), "Can not convert '10number10' to number");
+        this.assertEquals("10..".toNumber().unwrapError(), "Can not convert '10..' to number");
+    }
+}
+
+TestStringToNumber().run();

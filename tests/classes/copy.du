@@ -6,6 +6,7 @@
  * .copy() returns a shallow copy of the object
  * .deepCopy() returns a deep copy of the object
  */
+from UnitTest import UnitTest;
 
 class Test {
     init() {
@@ -14,36 +15,45 @@ class Test {
     }
 }
 
-var obj = Test();
+class TestClassCopy < UnitTest {
+    testShallowCopy() {
+        const obj = Test();
 
-// First check the object was created properly
-assert(obj.x == [1, 2]);
-assert(obj.z == {1: 2});
+        // First check the object was created properly
+        this.assertEquals(obj.x, [1, 2]);
+        this.assertEquals(obj.z, {1: 2});
 
-var objCopy = obj.copy(); // shallow copy
+        const objCopy = obj.copy(); // shallow copy
 
-assert(objCopy.x == [1, 2]);
-assert(objCopy.z == {1: 2});
+        this.assertEquals(objCopy.x, [1, 2]);
+        this.assertEquals(objCopy.z, {1: 2});
 
-objCopy.y = 10;
+        objCopy.y = 10;
 
-assert(objCopy.y == 10);
-assert(not obj.hasAttribute('y'));
+        this.assertEquals(objCopy.y, 10);
+        this.assertFalsey(obj.hasAttribute('y'));
+    }
 
-obj.y = Test();
+    testDeepCopy() {
+        const obj = Test();
 
-var deepCopy = obj.deepCopy();
+        obj.y = Test();
 
-assert(deepCopy.x == [1, 2]);
-assert(deepCopy.y.x == [1, 2]);
+        const deepCopy = obj.deepCopy();
 
-deepCopy.y.x.push(1);
+        this.assertEquals(deepCopy.x, [1, 2]);
+        this.assertEquals(deepCopy.y.x, [1, 2]);
 
-assert(deepCopy.y.x == [1, 2, 1]);
-assert(obj.y.x == [1, 2]);
+        deepCopy.y.x.push(1);
 
-deepCopy.i = 10;
+        this.assertEquals(deepCopy.y.x, [1, 2, 1]);
+        this.assertEquals(obj.y.x, [1, 2]);
 
-assert(deepCopy.i == 10);
-assert(not obj.hasAttribute('i'));
+        deepCopy.i = 10;
 
+        this.assertEquals(deepCopy.i, 10);
+        this.assertFalsey(obj.hasAttribute('i'));
+    }
+}
+
+TestClassCopy().run();

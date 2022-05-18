@@ -3,8 +3,14 @@
  *
  * Testing the Inspect.getFile() method
  */
+from UnitTest import UnitTest;
 
 import Inspect;
 
-assert(Inspect.getFile().endsWith("getFile.du"));
-assert(Inspect.getFile(1).endsWith("import.du"));
+class TestInspectGetFile < UnitTest {
+    testInspectGetFile() {
+        this.assertTruthy(Inspect.getFile().endsWith("getFile.du"));
+    }
+}
+
+TestInspectGetFile().run();

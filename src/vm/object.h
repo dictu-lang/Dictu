@@ -102,6 +102,7 @@ typedef struct {
 
 typedef struct {
     Obj obj;
+    int isVariadic;
     int arity;
     int arityOptional;
     int upvalueCount;
@@ -170,12 +171,14 @@ struct sObjFile {
 };
 
 typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
+typedef char* (*AbstractTypeFn)(ObjAbstract *abstract);
 
 struct sObjAbstract {
     Obj obj;
     Table values;
     void *data;
     AbstractFreeFn func;
+    AbstractTypeFn type;
 };
 
 typedef enum {
@@ -273,7 +276,7 @@ ObjSet *newSet(DictuVM *vm);
 
 ObjFile *newFile(DictuVM *vm);
 
-ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func);
+ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type);
 
 ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value);
 

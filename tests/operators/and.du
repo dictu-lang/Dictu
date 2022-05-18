@@ -4,7 +4,15 @@
  * Testing the and logical operator
  */
 
-assert(true and true);
-assert((false and true) == false);
-assert((true and false) == false);
-assert((false and false) == false);
+from UnitTest import UnitTest;
+
+class AndOperatorTest < UnitTest {
+    testAndOperator() {
+        this.assertTruthy(true and true);
+        this.assertFalsey(false and true);
+        this.assertFalsey(true and false);
+        this.assertFalsey(false and false);
+    }
+}
+
+AndOperatorTest().run();

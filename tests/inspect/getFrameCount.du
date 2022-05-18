@@ -3,42 +3,55 @@
  *
  * Testing the Inspect.getFrameCount() method
  */
+from UnitTest import UnitTest;
 
 import Inspect;
 
-/**
- * This is required as the imports have increased the frame count.
- */
-const ADDED_FRAME_COUNT = 2;
+class TestInspectGetFrameCount < UnitTest {
+    /**
+     * This is required as the imports + class / methods have increased the frame count.
+     */
+    const ADDED_FRAME_COUNT = 6;
 
-assert(Inspect.getFrameCount() == 0 + ADDED_FRAME_COUNT);
-
-def test() {
-    assert(Inspect.getFrameCount() == 1 + ADDED_FRAME_COUNT);
-}
-
-test();
-
-def anotherTest() {
-    def inner() {
-        assert(Inspect.getFrameCount() == 2 + ADDED_FRAME_COUNT);
+    testGetFrameCount() {
+        this.assertEquals(Inspect.getFrameCount(), 0 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
     }
 
-    inner();
-}
-
-anotherTest();
-
-def anotherDeeperTest() {
-    def middle() {
-        def inner() {
-            assert(Inspect.getFrameCount() == 3 + ADDED_FRAME_COUNT);
+    testGetFrameCountFunction() {
+        def test() {
+            this.assertEquals(Inspect.getFrameCount(), 1 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
         }
 
-        inner();
+        test();
     }
 
-    middle();
+    testGetFrameCountNestedFunction() {
+        def anotherTest() {
+            def inner() {
+                this.assertEquals(Inspect.getFrameCount(), 2 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+            }
+
+            inner();
+        }
+
+        anotherTest();
+    }
+
+    testGetFrameCountMultipleNestedFunction() {
+        def anotherDeeperTest() {
+            def middle() {
+                def inner() {
+                    this.assertEquals(Inspect.getFrameCount(), 3 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+                }
+
+                inner();
+            }
+
+            middle();
+        }
+
+        anotherDeeperTest();
+    }
 }
 
-anotherDeeperTest();
+TestInspectGetFrameCount().run();

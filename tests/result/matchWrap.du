@@ -5,41 +5,48 @@
 *
 */
 
-def success(result) {
-    return result;
+from UnitTest import UnitTest;
+
+class TestResultMatchWrap < UnitTest {
+    testMatchWrapSuccess() {
+        const success = Success(10).matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+    );
+
+        this.assertTruthy(success.success());
+        this.assertEquals(success.unwrap(), 10);
+    }
+
+    testMatchWrapError() {
+        const error = Error("error").matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+    );
+
+        this.assertFalsey(error.success());
+        this.assertEquals(error.unwrapError(), "error error!");
+    }
+
+    testMatchOnBuiltinSuccess() {
+        const success = "10".toNumber().matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+        );
+
+        this.assertTruthy(success.success());
+        this.assertEquals(success.unwrap(), 10);
+    }
+
+    testMatchOnBuiltinError() {
+        const error = "test".toNumber().matchWrap(
+            def (result) => result,
+            def (error) => error
+        );
+
+        this.assertFalsey(error.success());
+        this.assertEquals(error.unwrapError(), "Can not convert 'test' to number");
+    }
 }
 
-def error(err) {
-    return err;
-}
-
-var result = Success(10).matchWrap(success, error);
-assert(result.success());
-assert(result.unwrap() == 10);
-
-result = Error("Error!").matchWrap(success, error);
-assert(not result.success());
-assert(result.unwrapError() == "Error!");
-
-
-assert(
-  Success([1, 2, 3]).matchWrap(
-      def (result) => result,
-      def (err) => err
-  ).unwrap() == [1, 2, 3]
-);
-
-assert(
-    Error("test").matchWrap(
-        def (result) => result,
-        def (err) => err
-    ).unwrapError() == "test"
-);
-
-var number = "10".toNumber().matchWrap(success, error);
-assert(number.success());
-assert(number.unwrap() == 10);
-
-var number = "test".toNumber().matchWrap(success, error);
-assert(not number.success());
-assert(number.unwrapError() == "Can not convert 'test' to number");
+TestResultMatchWrap().run();

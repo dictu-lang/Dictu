@@ -3,49 +3,76 @@
  *
  * Testing class constructors. Specifically optional args and implicit instance variables
  */
+from UnitTest import UnitTest;
 
-class Test {
-    init(a, b) {
-        assert(a == 10);
-        assert(b == 20);
+class TestClassConstructor < UnitTest {
+    testClassConstructor() {
+        const assertEquals = this.assertEquals;
+
+        class Test {
+            init(a, b) {
+                assertEquals(a, 10);
+                assertEquals(b, 20);
+            }
+        }
+
+        Test(10, 20);
+    }
+
+    testClassConstructorDefault() {
+        const assertEquals = this.assertEquals;
+
+        class AnotherTest {
+            init(a, b="test") {
+                assertEquals(a, "dictu");
+                assertEquals(b, "test");
+            }
+        }
+
+        AnotherTest("dictu");
+    }
+
+    testClassConstructorProperty() {
+        const assertEquals = this.assertEquals;
+
+        class PropertyTest {
+            init(var a, var b) {}
+        }
+
+        const obj = PropertyTest("test", [1, 2]);
+
+        assertEquals(obj.a, "test");
+        assertEquals(obj.b, [1, 2]);
+    }
+
+    testClassConstructorDefaultProperty() {
+        const assertEquals = this.assertEquals;
+
+        class PropertyTest {
+            init(var a, var b) {}
+        }
+
+        const obj = PropertyTest("test", [1, 2]);
+
+        class DefaultPropertyTest {
+            init(var a = "test", var b = 10.5) {}
+        }
+
+        var newObj = DefaultPropertyTest();
+
+        assertEquals(newObj.a, "test");
+        assertEquals(newObj.b, 10.5);
+
+        newObj = DefaultPropertyTest(1000);
+
+        assertEquals(newObj.a, 1000);
+        assertEquals(newObj.b, 10.5);
+
+        newObj = DefaultPropertyTest({"test": 5}, obj);
+
+        assertEquals(newObj.a, {"test": 5});
+        assertEquals(newObj.b, obj);
     }
 }
 
-Test(10, 20);
-
-class AnotherTest {
-    init(a, b="test") {
-        assert(a == "dictu");
-        assert(b == "test");
-    }
-}
-
-AnotherTest("dictu");
-
-class PropertyTest {
-    init(var a, var b) {}
-}
-
-var obj = PropertyTest("test", [1, 2]);
-
-assert(obj.a == "test");
-assert(obj.b == [1, 2]);
-
-class DefaultPropertyTest {
-    init(var a = "test", var b = 10.5) {}
-}
-
-var newObj = DefaultPropertyTest();
-
-assert(newObj.a == "test");
-assert(newObj.b == 10.5);
-
-newObj = DefaultPropertyTest(1000);
-
-assert(newObj.a == 1000);
-assert(newObj.b == 10.5);
-
-newObj = DefaultPropertyTest({"test": 5}, obj);
-
-assert(newObj.a == {"test": 5});
-assert(newObj.b == obj);
+TestClassConstructor().run();

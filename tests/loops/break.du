@@ -3,94 +3,109 @@
 *
 * Testing break in a loop
 */
+from UnitTest import UnitTest;
 
-var x = [];
+class TestLoopBreak < UnitTest {
+    testSingleBreak() {
+        const x = [];
 
-// Single break statement
-for (var i = 0; i < 10; i += 1) {
-    if (i > 5)
-        break;
-
-    x.push(i);
-}
-
-assert(x == [0, 1, 2, 3, 4, 5]);
-
-var x = [];
-
-// Two break statements
-for (var i = 0; i < 10; i += 1) {
-    if (i > 5)
-        break;
-
-    x.push(i);
-
-    if (i > 3)
-        break;
-}
-
-assert(x == [0, 1, 2, 3, 4]);
-
-var i = 0;
-var y = [];
-
-// While loop
-while (i < 10) {
-    if (i > 5)
-        break;
-
-    y.push(i);
-    i += 1;
-}
-
-assert(y == [0, 1, 2, 3, 4, 5]);
-
-var z = [];
-
-// Nested for loop with multiple breaks
-for (var i = 0; i < 10; i += 1) {
-    for (var j = 0; j < 10; j += 1) {
-        if (j > 5)
-            break;
-
-        z.push(j);
-    }
-    if (i > 5)
-        break;
-
-    z.push(i);
-}
-
-assert(z == [0, 1, 2, 3, 4, 5, 0, 0, 1, 2, 3, 4, 5, 1, 0, 1, 2, 3, 4, 5, 2, 0, 1, 2, 3, 4, 5, 3, 0, 1, 2, 3, 4, 5, 4, 0, 1, 2, 3, 4, 5, 5, 0, 1, 2, 3, 4, 5]);
-
-var i = 0;
-var z = [];
-
-// Nested while loop with multiple breaks
-while (i < 5) {
-    var j = 0;
-
-    while (j < 5) {
-        var m = 0;
-
-        while (m < 5) {
-            if (m > 3)
+        // Single break statement
+        for (var i = 0; i < 10; i += 1) {
+            if (i > 5)
                 break;
 
-            z.push(m);
-            m += 1;
+            x.push(i);
         }
-        if (j > 3)
-            break;
 
-        z.push(j);
-        j += 1;
+        this.assertEquals(x, [0, 1, 2, 3, 4, 5]);
     }
-    if (i > 3)
-        break;
 
-    z.push(i);
-    i += 1;
+    testTwoBreaks() {
+        const x = [];
+
+        // Two break statements
+        for (var i = 0; i < 10; i += 1) {
+            if (i > 5)
+                break;
+
+            x.push(i);
+
+            if (i > 3)
+                break;
+        }
+
+        this.assertEquals(x, [0, 1, 2, 3, 4]);
+    }
+
+    testWhileLoopBreak() {
+        var i = 0;
+        const y = [];
+
+        // While loop
+        while (i < 10) {
+            if (i > 5)
+                break;
+
+            y.push(i);
+            i += 1;
+        }
+
+        this.assertEquals(y, [0, 1, 2, 3, 4, 5]);
+    }
+
+    testNestedLoop() {
+        const z = [];
+
+        // Nested for loop with multiple breaks
+        for (var i = 0; i < 10; i += 1) {
+            for (var j = 0; j < 10; j += 1) {
+                if (j > 5)
+                    break;
+
+                z.push(j);
+            }
+            if (i > 5)
+                break;
+
+            z.push(i);
+        }
+
+        this.assertEquals(z, [0, 1, 2, 3, 4, 5, 0, 0, 1, 2, 3, 4, 5, 1, 0, 1, 2, 3, 4, 5, 2, 0, 1, 2, 3, 4, 5, 3, 0, 1, 2, 3, 4, 5, 4, 0, 1, 2, 3, 4, 5, 5, 0, 1, 2, 3, 4, 5]);
+    }
+
+    testNestedWhileLoop() {
+        var i = 0;
+        const z = [];
+
+        // Nested while loop with multiple breaks
+        while (i < 5) {
+            var j = 0;
+
+            while (j < 5) {
+                var m = 0;
+
+                while (m < 5) {
+                    if (m > 3)
+                        break;
+
+                    z.push(m);
+                    m += 1;
+                }
+                if (j > 3)
+                    break;
+
+                z.push(j);
+                j += 1;
+            }
+            if (i > 3)
+                break;
+
+            z.push(i);
+            i += 1;
+        }
+
+        this.assertEquals(z, [0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 1, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 2, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3]);
+    }
 }
 
-assert(z == [0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 1, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 2, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 1, 0, 1, 2, 3, 2, 0, 1, 2, 3, 3, 0, 1, 2, 3]);
+TestLoopBreak().run();

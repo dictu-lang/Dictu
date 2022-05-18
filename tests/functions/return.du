@@ -3,16 +3,24 @@
 *
 * Testing returning from a function
 */
+from UnitTest import UnitTest;
 
-def test() {
-    return 10;
+class TestFunctionReturn < UnitTest {
+    testReturn() {
+        def test() {
+            return 10;
+        }
+
+        this.assertEquals(test(), 10);
+    }
+
+    testReturnExpression() {
+        def test() {
+            return 10 + 20 + 30;
+        }
+
+        this.assertEquals(test(), 60);
+    }
 }
 
-assert(test() == 10);
-
-def test1() {
-    // Return expression
-    return 10 + 20 + 30;
-}
-
-assert(test1() == 60);
+TestFunctionReturn().run();

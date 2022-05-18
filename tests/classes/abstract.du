@@ -3,6 +3,7 @@
  *
  * Testing creating and inheriting abstract classes
  */
+from UnitTest import UnitTest;
 
 abstract class AbstractClass {
     init() {
@@ -18,12 +19,6 @@ class Test < AbstractClass {
     }
 }
 
-var obj = Test();
-
-
-assert(obj.x == 10);
-
-
 class Testing {
     init() {
         this.y = 100;
@@ -34,7 +29,20 @@ abstract class AnotherAbstractClass < Testing {}
 
 class AnotherTestClass < AnotherAbstractClass {}
 
-obj = AnotherTestClass();
 
-assert(obj.y == 100);
 
+class TestAbstractClasses < UnitTest {
+    testAbstractClass() {
+        const obj = Test();
+
+        this.assertEquals(obj.x, 10);
+    }
+
+    testAbstractClassViaInheritance() {
+        const obj = AnotherTestClass();
+
+        this.assertEquals(obj.y, 100);
+    }
+}
+
+TestAbstractClasses().run();

@@ -3,6 +3,8 @@
  *
  * Testing setting class constants
  */
+from UnitTest import UnitTest;
+
 class Test {
     const x = 10;
 
@@ -10,9 +12,6 @@ class Test {
         //
     }
 }
-
-assert(Test.x == 10);
-
 
 /**
  * Ensure inherited classes work
@@ -23,14 +22,7 @@ class BaseClass {
 
 class Common < BaseClass {}
 
-assert(Common.x == 10);
-assert(Common().x == 10);
-
 class AnotherClass < Common {}
-
-assert(AnotherClass.x == 10);
-assert(AnotherClass().x == 10);
-
 
 /**
  * Test abstract classes
@@ -39,4 +31,22 @@ abstract class AbstractClass {
     const x = "Hello";
 }
 
-assert(AbstractClass.x == "Hello");
+class TestClassConstants < UnitTest {
+    testClassConstant() {
+        this.assertEquals(Test.x, 10);
+    }
+
+    testClassConstantInherit() {
+        this.assertEquals(Common.x, 10);
+        this.assertEquals(Common().x, 10);
+
+        this.assertEquals(AnotherClass.x, 10);
+        this.assertEquals(AnotherClass().x, 10);
+    }
+
+    testClassConstantAbstract() {
+        this.assertEquals(AbstractClass.x, "Hello");
+    }
+}
+
+TestClassConstants().run();

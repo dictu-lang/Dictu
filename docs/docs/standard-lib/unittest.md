@@ -254,6 +254,54 @@ Results:
     - 0 method(s) were skipped.
 ```
 
+#### Global
+The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
+ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+as a class variable on the UnitTest parent class.
+
+```
+from UnitTest import UnitTest;
+
+UnitTest.forceOnlyFailures = true; // Set global flag
+
+def add(a, b) {
+    return a + b;
+}
+
+class Test < UnitTest {
+    testAddFunction(data) {
+        this.assertEquals(add(data["val1"], data["val2"]), data["expected"]);
+    }
+
+    // This will not be ran as a test as it's marked as a provider
+    testAddFunctionProvider() {
+        return [
+            {"val1": 1, "val2": 2, "expected": 3},
+            {"val1": 2, "val2": 2, "expected": 4},
+            {"val1": 3, "val2": 2, "expected": 5},
+            {"val1": 4, "val2": 2, "expected": 6},
+            {"val1": 5, "val2": 2, "expected": 7},
+            // This will fail
+            {"val1": 6, "val2": 2, "expected": 9},
+        ];
+    }
+}
+
+Test().run();
+```
+
+Output:
+```
+file.du
+    testAddFunction()
+         Line: 17 - Failure: 8 is not equal to 9.
+
+Results:
+    - 5 assertion(s) were successful.
+    - 1 assertion(s) were failures.
+    - 0 method(s) were skipped.
+```
+
 ### Exit On Failure
 Sometimes we may want our test suite to stop as soon as a test fails.
 This is done very similarly to silencing passing tests.
@@ -306,10 +354,75 @@ file.du
          Line: 17 - Failure: 3 is not equal to 5.
 ```
 
+#### Global
+The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
+ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+as a class variable on the UnitTest parent class.
+
+```cs
+from UnitTest import UnitTest;
+
+UnitTest.forceExitOnFailure = true;
+
+def add(a, b) {
+    return a + b;
+}
+
+class Test < UnitTest {
+    testAddFunction(data) {
+        this.assertEquals(add(data["val1"], data["val2"]), data["expected"]);
+    }
+
+    // This will not be ran as a test as it's marked as a provider
+    testAddFunctionProvider() {
+        return [
+            // This will fail
+            {"val1": 1, "val2": 2, "expected": 5},
+            {"val1": 2, "val2": 2, "expected": 4},
+            {"val1": 3, "val2": 2, "expected": 5},
+            {"val1": 4, "val2": 2, "expected": 6},
+            {"val1": 5, "val2": 2, "expected": 7},
+            // This will fail
+            {"val1": 6, "val2": 2, "expected": 9},
+        ];
+    }
+}
+
+Test().run();
+```
+
+Output:
+```
+file.du
+    testAddFunction()
+         Line: 17 - Failure: 3 is not equal to 5.
+```
+
 ## Assertions
 ### assertEquals(value, value)
 
 This helper method ensures that both values passed in equal each other.
+
+### assertNotEquals(value, value)
+
+This helper method ensures that both values passed in do not equal each other.
+
+### assertNil(value)
+
+This helper method ensures that the value passed in is equal to nil.
+
+### assertNotNil(value)
+
+This helper method ensures that the value passed in is not equal to nil.
+
+### assertType(value, value)
+
+This helper method checks the type of the first value is equal to the type as a string.
+
+```cs
+this.assertType("Dictu", "string");
+this.assertType(10, "number");
+```
 
 ### assertTruthy(value)
 

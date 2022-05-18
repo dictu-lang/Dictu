@@ -3,28 +3,40 @@
 *
 * Testing variable assignment
 */
+from UnitTest import UnitTest;
 
-var x = 10;
-assert(x == 10);
+class TestVariableAssignment < UnitTest {
+    testAssignment() {
+        var x = 10;
+        this.assertEquals(x, 10);
+    }
 
-// New space ignored
-var test =
+    testAssignmentWithSpace() {
+        // New space ignored
+        var x =
 
-123;
+            123;
 
-assert(test == 123);
+        this.assertEquals(x, 123);
+    }
 
-// Test assignment of declared var
-x = 100;
-assert(x == 100);
+    testReAssignment() {
+        var x = 10;
+        x = 100;
 
-// Test multiple variable assignment in a single statement
+        this.assertEquals(x, 100);
+    }
 
-var a, b = 10, c, d = "test", e = [1, 2], f = {"test": 10};
+    testMultipleAssignment() {
+        var a, b = 10, c, d = "test", e = [1, 2], f = {"test": 10};
 
-assert(a == nil);
-assert(b == 10);
-assert(c == nil);
-assert(d == "test");
-assert(e == [1, 2]);
-assert(f == {"test": 10});
+        this.assertEquals(a, nil);
+        this.assertEquals(b, 10);
+        this.assertEquals(c, nil);
+        this.assertEquals(d, "test");
+        this.assertEquals(e, [1, 2]);
+        this.assertEquals(f, {"test": 10});
+    }
+}
+
+TestVariableAssignment().run();

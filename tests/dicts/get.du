@@ -5,22 +5,29 @@
 *
 * .exists() returns a boolean based on whether the given key exists
 */
+from UnitTest import UnitTest;
 
-var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
+class TestDictGet < UnitTest {
+    testDictGet() {
+        const myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
-// First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        // First check the dictionary was created properly
+        this.assertEquals(myDict, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-assert(myDict.get("key") == 1);
+        this.assertEquals(myDict.get("key"), 1);
 
-// Explicit compare to true to make the test more obvious
-assert(myDict.get("key1") == true);
+        // Explicit compare to true to make the test more obvious
+        this.assertEquals(myDict.get("key1"), true);
 
-assert(myDict.get(true) == false);
-assert(myDict.get(false) == true);
-assert(myDict.get(nil) == 10);
-assert(myDict.get(10) == nil);
-assert(myDict.get(10.5) == 10.5);
+        this.assertEquals(myDict.get(true), false);
+        this.assertEquals(myDict.get(false), true);
+        this.assertEquals(myDict.get(nil), 10);
+        this.assertEquals(myDict.get(10), nil);
+        this.assertEquals(myDict.get(10.5), 10.5);
 
-// Return a default value if key is not found
-assert(myDict.get("unknown", 10) == 10);
+        // Return a default value if key is not found
+        this.assertEquals(myDict.get("unknown", 10), 10);
+    }
+}
+
+TestDictGet().run();

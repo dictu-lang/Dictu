@@ -28,6 +28,9 @@ typedef enum {
     TOKEN_LESS, TOKEN_LESS_EQUAL,
     TOKEN_R, TOKEN_ARROW,
 
+    // three or more character tokens.
+    TOKEN_DOT_DOT_DOT,
+
     // Literals.
     TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_NUMBER,
 

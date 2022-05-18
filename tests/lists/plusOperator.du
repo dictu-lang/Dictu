@@ -5,12 +5,19 @@
  *
  * + operator joins two lists and returns a new list
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2];
-assert(x + [3, 4] == [1, 2, 3, 4]);
+class TestListPlusOperator < UnitTest {
+    testListPlusOperator() {
+        const x = [1, 2];
+        this.assertEquals(x + [3, 4], [1, 2, 3, 4]);
 
-// Check to ensure original hasn't mutated
-assert(x = [1, 2]);
+        // Check to ensure original hasn't mutated
+        this.assertEquals(x, [1, 2]);
 
-var y = x + [3, 4];
-assert(y.len() == 4);
+        const y = x + [3, 4];
+        this.assertEquals(y.len(), 4);
+    }
+}
+
+TestListPlusOperator().run();

@@ -3,13 +3,20 @@
  *
  * Testing the Hashlib.bcrypt() and Hashlib.bcryptVerify() methods
  */
+from UnitTest import UnitTest;
 
 import Hashlib;
 
-var hash = Hashlib.bcrypt("Dictu");
+class TestHashlibBcrypt < UnitTest {
+    testHaslibBcrypt() {
+        const hash = Hashlib.bcrypt("Dictu");
 
-assert(type(hash) == "string");
-assert(hash.len() >= 56);
+        this.assertType(hash, "string");
+        this.assertTruthy(hash.len() > 56);
 
-assert(Hashlib.bcryptVerify("Dictu", hash));
-assert(Hashlib.bcryptVerify("WRONG!", hash) == false);
+        this.assertTruthy(Hashlib.bcryptVerify("Dictu", hash));
+        this.assertFalsey(Hashlib.bcryptVerify("WRONG!", hash));
+    }
+}
+
+TestHashlibBcrypt().run();

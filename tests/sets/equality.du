@@ -4,10 +4,16 @@
  * Testing the set equality
  *
  */
+from UnitTest import UnitTest;
 
-assert(set() == set());
-assert(set(1) != set());
-assert(set() != set(1));
-assert(set(2) != set(1));
-assert(set(1) == set(1));
+class TestSetEquality < UnitTest {
+    testSetEquality() {
+        this.assertEquals(set(), set());
+        this.assertEquals(set(1), set(1));
+        this.assertNotEquals(set(1), set());
+        this.assertNotEquals(set(), set(1));
+        this.assertNotEquals(set(2), set(1));
+    }
+}
 
+TestSetEquality().run();

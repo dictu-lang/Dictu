@@ -204,14 +204,49 @@ ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
 }
 
 static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
-    if (argCount < closure->function->arity || argCount > closure->function->arity + closure->function->arityOptional) {
-        runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
-                     closure->function->name->chars,
-                     closure->function->arity + closure->function->arityOptional,
-                     argCount
-        );
-
-        return false;
+    if (argCount < closure->function->arity) {
+        if ((argCount + closure->function->isVariadic) == closure->function->arity) {
+            // add missing variadic param ([])
+            ObjList *list = newList(vm);
+            push(vm, OBJ_VAL(list));
+            argCount++;
+        } else {
+            runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
+                         closure->function->name->chars,
+                         closure->function->arity,
+                         argCount
+            );
+            return false;
+        }
+    } else if (argCount > closure->function->arity + closure->function->arityOptional) {
+        if (closure->function->isVariadic) {
+            int arity = closure->function->arity + closure->function->arityOptional;
+            // +1 for the variadic param itself
+            int varargs = argCount - arity + 1;
+            ObjList *list = newList(vm);
+            push(vm, OBJ_VAL(list));
+            for (int i = varargs; i > 0; i--) {
+                writeValueArray(vm, &list->values, peek(vm, i));
+            }
+            // +1 for the list pushed earlier on the stack
+            vm->stackTop -= varargs + 1;
+            push(vm, OBJ_VAL(list));
+            argCount = arity;
+        } else {
+            runtimeError(vm, "Function '%s' expected %d argument(s) but got %d.",
+                         closure->function->name->chars,
+                         closure->function->arity + closure->function->arityOptional,
+                         argCount
+            );
+            return false;
+        }
+    } else if (closure->function->isVariadic) {
+        // last argument is the variadic arg
+        ObjList *list = newList(vm);
+        push(vm, OBJ_VAL(list));
+        writeValueArray(vm, &list->values, peek(vm, 1));
+        vm->stackTop -= 2;
+        push(vm, OBJ_VAL(list));
     }
     if (vm->frameCount == vm->frameCapacity) {
         int oldCapacity = vm->frameCapacity;

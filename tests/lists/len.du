@@ -5,25 +5,32 @@
  *
  * .len() returns a number based on the amount of list elements
  */
+from UnitTest import UnitTest;
 
-assert([1].len() == 1);
-assert([1, 2].len() == 2);
-assert([1, 2, 3].len() == 3);
-assert([1, 2, [3, 4]].len() == 3);
+class TestListLen < UnitTest {
+    testListLen() {
+        this.assertEquals([1].len(), 1);
+        this.assertEquals([1, 2].len(), 2);
+        this.assertEquals([1, 2, 3].len(), 3);
+        this.assertEquals([1, 2, [3, 4]].len(), 3);
 
-var x = [];
+        const x = [];
 
-for (var i = 0; i < 1000; i += 1) {
-    assert(x.len() == i);
-    x.push(i);
+        for (var i = 0; i < 1000; i += 1) {
+            this.assertEquals(x.len(), i);
+            x.push(i);
+        }
+
+        this.assertEquals(x.len(), 1000);
+
+
+        for (var i = 1000; i > 0; i -= 1) {
+            this.assertEquals(x.len(), i);
+            x.pop();
+        }
+
+        this.assertEquals(x.len(), 0);
+    }
 }
 
-assert(x.len() == 1000);
-
-
-for (var i = 1000; i > 0; i -= 1) {
-    assert(x.len() == i);
-    x.pop();
-}
-
-assert(x.len() == 0);
+TestListLen().run();

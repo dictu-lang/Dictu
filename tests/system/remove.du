@@ -5,33 +5,49 @@
  *
  * remove() removes a file from the system
  */
+from UnitTest import UnitTest;
+
+
 import System;
 
+class TestSystemRemove < UnitTest {
+    testSystemRemove() {
+        const sys_test_remove = "sys_test_remove";
+
+        with (sys_test_remove, "w") {
+            file.write("test");
+        }
+
+        this.assertTruthy(System.remove(sys_test_remove).success());
+        this.assertTruthy(System.mkdir(sys_test_remove).success());
+
+        const remove = System.remove(sys_test_remove);
+
+        this.assertFalsey(remove.success());
+        this.assertTruthy(remove.unwrapError() == "Is a directory" or remove.unwrapError() == "Permission denied");
+        this.assertTruthy(System.rmdir(sys_test_remove).success());
+    }
+}
+
+class TestSystemRemoveDarwin < UnitTest {
+    testSystemRemove() {
+        const sys_test_remove_file = "sys_test_remove.";
+        const sys_test_remove_directory = "sys_test_remove";
+
+        with (sys_test_remove_file, "w") {
+            file.write("test");
+        }
+
+        this.assertTruthy(System.remove(sys_test_remove_file).success());
+        this.assertTruthy(System.mkdir(sys_test_remove_directory).success());
+        this.assertFalsey(System.remove(sys_test_remove_directory).success());
+        this.assertEquals(System.remove(sys_test_remove_directory).unwrapError(), "Operation not permitted");
+        this.assertTruthy(System.rmdir(sys_test_remove_directory).success());
+    }
+}
+
 if (System.platform == 'darwin') {
-  var sys_test_remove_file = "sys_test_remove.";
-  var sys_test_remove_directory = "sys_test_remove";
-
-  with (sys_test_remove_file, "w") {
-    file.write("test");
-  }
-
-  assert(System.remove(sys_test_remove_file).success() == true);
-  assert(System.mkdir(sys_test_remove_directory).success() == true);
-  assert(System.remove(sys_test_remove_directory).success() == false);
-  assert(System.remove(sys_test_remove_directory).unwrapError() == "Operation not permitted");
-  assert(System.rmdir(sys_test_remove_directory).success() == true);
-
+    TestSystemRemoveDarwin().run();
 } else {
-  var sys_test_remove = "sys_test_remove";
-
-  with (sys_test_remove, "w") {
-    file.write("test");
-  }
-
-  assert(System.remove(sys_test_remove).success() == true);
-  assert(System.mkdir(sys_test_remove).success() == true);
-  var remove = System.remove(sys_test_remove);
-  assert(remove.success() == false);
-  assert(remove.unwrapError() == "Is a directory" or remove.unwrapError() == "Permission denied");
-  assert(System.rmdir(sys_test_remove).success() == true);
+    TestSystemRemove().run();
 }

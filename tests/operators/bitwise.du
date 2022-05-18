@@ -4,17 +4,44 @@
  * Testing bitwise operators
  */
 
-// Bitwise and
-assert(10 & 2 == 2);
-assert(100 & 15 == 4);
-assert(5 & 2 != 1);
+from UnitTest import UnitTest;
 
-// Bitwise or
-assert(10 | 2 == 10);
-assert(100 | 15 == 111);
-assert(5 | 2 != 1);
+class BitwiseOperatorsTest < UnitTest {
+    testBitwiseAnd(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
 
-// Bitwise xor
-assert(10 ^ 2 == 8);
-assert(100 ^ 15 == 107);
-assert(5 ^ 2 != 1);
+    testBitwiseAndProvider() {
+        return [
+            {"operation": 10 & 2, "expected": 2},
+            {"operation": 100 & 15, "expected": 4},
+            {"operation": 5 & 2, "expected": 0},
+        ];
+    }
+
+    testBitwiseOr(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testBitwiseOrProvider() {
+        return [
+            {"operation": 10 | 2, "expected": 10},
+            {"operation": 100 | 15, "expected": 111},
+            {"operation": 5 | 2, "expected": 7},
+        ];
+    }
+
+    testBitwiseXor(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testBitwiseXorProvider() {
+        return [
+            {"operation": 10 ^ 2, "expected": 8},
+            {"operation": 100 ^ 15, "expected": 107},
+            {"operation": 5 ^ 2, "expected": 7},
+        ];
+    }
+}
+
+BitwiseOperatorsTest().run();

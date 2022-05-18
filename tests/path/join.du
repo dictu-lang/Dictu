@@ -5,49 +5,69 @@
  *
  * Joins the path component strings using the directory separator.
  */
+from UnitTest import UnitTest;
+
 import Path;
 
-var result;
-var expected1 = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg';
-var expected2 = '/tmp' + Path.dirSeparator + 'abcd' + Path.dirSeparator + 'efg' + Path.dirSeparator;
-var manyDirSeps = Path.dirSeparator + Path.dirSeparator + Path.dirSeparator + Path.dirSeparator + Path.dirSeparator;
+class TestPathJoin < UnitTest {
+    const EXPECTED = "/tmp{}abcd{}efg".format(
+        Path.dirSeparator,
+        Path.dirSeparator
+    );
 
-// Test basic join with varargs
-result = Path.join('/tmp', 'abcd', 'efg');
-assert(result == expected1);
+    const EXPECTED_TRAILING = "/tmp{}abcd{}efg{}".format(
+        Path.dirSeparator,
+        Path.dirSeparator,
+        Path.dirSeparator
+    );
 
-// Test basic join with list
-result = Path.join(['/tmp', 'abcd', 'efg' + Path.dirSeparator]);
-assert(result == expected2);
+    const MANY_SEPARATORS = "{}{}{}{}".format(
+        Path.dirSeparator,
+        Path.dirSeparator,
+        Path.dirSeparator,
+        Path.dirSeparator
+    );
 
-// Test join with trailing directory separators with varargs
-result = Path.join('/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg');
-assert(result == expected1);
+    testPathJoin() {
+        this.assertEquals(Path.join('/tmp', 'abcd', 'efg'), TestPathJoin.EXPECTED);
+        this.assertEquals(Path.join(['/tmp', 'abcd', 'efg']), TestPathJoin.EXPECTED);
+    }
 
-// Test join with trailing directory separators with list
-result = Path.join(['/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg' + Path.dirSeparator]);
-assert(result == expected2);
+    testPathJoinTrailingSlash() {
+        this.assertEquals(Path.join('/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg'), TestPathJoin.EXPECTED);
+        this.assertEquals(Path.join(['/tmp' + Path.dirSeparator, 'abcd' + Path.dirSeparator, 'efg']), TestPathJoin.EXPECTED);
+    }
 
-// Test join with leading and trailing directory separators with varargs
-result = Path.join('/tmp' + Path.dirSeparator, Path.dirSeparator + 'abcd' + Path.dirSeparator, Path.dirSeparator + 'efg');
-assert(result == expected1);
+    testPathJoinDoubleSlash() {
+        this.assertEquals(Path.join('/tmp{}{}'.format(
+            Path.dirSeparator,
+            Path.dirSeparator
+        ), 'abcd{}{}'.format(
+            Path.dirSeparator,
+            Path.dirSeparator
+        ), 'efg'), TestPathJoin.EXPECTED);
 
-// Test join with leading and trailing directory separators with list
-result = Path.join(['/tmp' + Path.dirSeparator, Path.dirSeparator + 'abcd' + Path.dirSeparator, Path.dirSeparator + 'efg' + Path.dirSeparator]);
-assert(result == expected2);
+        this.assertEquals(Path.join(['/tmp{}{}'.format(
+            Path.dirSeparator,
+            Path.dirSeparator
+        ), 'abcd{}{}'.format(
+            Path.dirSeparator,
+            Path.dirSeparator
+        ), 'efg']), TestPathJoin.EXPECTED);
+    }
 
-// Test join with many leading and trailing directory separators with varargs
-result = Path.join('/tmp' + manyDirSeps, manyDirSeps + 'abcd' + manyDirSeps, manyDirSeps + 'efg');
-assert(result == expected1);
+    testPathJoinManySlash() {
+        this.assertEquals(Path.join('/tmp' + TestPathJoin.MANY_SEPARATORS, 'abcd' + TestPathJoin.MANY_SEPARATORS, 'efg'), TestPathJoin.EXPECTED);
+        this.assertEquals(Path.join(['/tmp' + TestPathJoin.MANY_SEPARATORS, 'abcd' + TestPathJoin.MANY_SEPARATORS, 'efg']), TestPathJoin.EXPECTED);
+    }
 
-// Test join with many leading and trailing directory separators with list
-result = Path.join(['/tmp' + manyDirSeps, manyDirSeps + 'abcd' + manyDirSeps, manyDirSeps + 'efg' + manyDirSeps]);
-assert(result == expected2);
+    testPathJoinWithSlash() {
+        this.assertEquals(Path.join('/tmp', 'abcd{}efg'.format(Path.dirSeparator)), TestPathJoin.EXPECTED);
+    }
 
-// Test join with directory separators inside of part with varargs
-result = Path.join('/tmp', 'abcd' + Path.dirSeparator + 'efg');
-assert(result == expected1);
+    testPathJoinWithSlashTrailing() {
+        this.assertEquals(Path.join('/tmp', 'abcd{}efg{}'.format(Path.dirSeparator, Path.dirSeparator)), TestPathJoin.EXPECTED_TRAILING);
+    }
+}
 
-// Test join with directory separators inside of part with list
-result = Path.join(['/tmp', 'abcd' + Path.dirSeparator + 'efg' + Path.dirSeparator]);
-assert(result == expected2);
+TestPathJoin().run();

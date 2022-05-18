@@ -285,8 +285,16 @@ void freeSocket(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, SocketData, abstract->data);
 }
 
+char *socketToString(ObjAbstract *abstract) {
+    UNUSED(abstract);
+
+    char *socketString = malloc(sizeof(char) * 9);
+    snprintf(socketString, 9, "<Socket>");
+    return socketString;
+}
+
 ObjAbstract *newSocket(DictuVM *vm, int sock, int socketFamily, int socketType, int socketProtocol) {
-    ObjAbstract *abstract = newAbstract(vm, freeSocket);
+    ObjAbstract *abstract = newAbstract(vm, freeSocket, socketToString);
     push(vm, OBJ_VAL(abstract));
 
     SocketData *socket = ALLOCATE(vm, SocketData, 1);

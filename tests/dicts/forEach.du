@@ -5,23 +5,30 @@
  *
  * .forEach() loops over a dictionary
  */
+from UnitTest import UnitTest;
 
-const myDict = {"key": 1, "key1": 2, "key2": 3};
-var count = 0;
+class TestDictForEach < UnitTest {
+    testDictForEach() {
+        const myDict = {"key": 1, "key1": 2, "key2": 3};
+        var count = 0;
 
-myDict.forEach(def (key, value) => {
-   count += 1;
-   assert(type(key) == "string");
-   assert(type(value) == "number");
-});
+        myDict.forEach(def (key, value) => {
+            count += 1;
+            this.assertType(key, "string");
+            this.assertType(value, "number");
+        });
 
-assert(count == 3);
+        this.assertEquals(count, 3);
 
-const myNewDict = {1: 1, 2: 2, 3: 3};
-var sum = 0;
+        const myNewDict = {1: 1, 2: 2, 3: 3};
+        var sum = 0;
 
-myNewDict.forEach(def (key, value) => {
-    sum += key + value;
-});
+        myNewDict.forEach(def (key, value) => {
+            sum += key + value;
+        });
 
-assert(sum == 12);
+        this.assertEquals(sum, 12);
+    }
+}
+
+TestDictForEach().run();

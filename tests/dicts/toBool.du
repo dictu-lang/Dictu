@@ -5,11 +5,18 @@
  *
  * .toBool() returns the boolean representation of a dict
  */
+from UnitTest import UnitTest;
 
-var x = {};
+class TestDictToBool < UnitTest {
+    testDictToBool() {
+        const x = {};
 
-assert(x.toBool() == false);
-x["test"] = 10;
-assert(x.toBool() == true);
-x.remove("test");
-assert(x.toBool() == false);
+        this.assertFalsey(x.toBool());
+        x["test"] = 10;
+        this.assertTruthy(x.toBool());
+        x.remove("test");
+        this.assertFalsey(x.toBool());
+    }
+}
+
+TestDictToBool().run();

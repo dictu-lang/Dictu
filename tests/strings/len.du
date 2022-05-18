@@ -5,11 +5,15 @@
  *
  * .len() returns a number based on the amount of string characters
  */
+from UnitTest import UnitTest;
 
-assert(type("qwert".len()) == "number");
-assert("qwert".len() == 5);
-assert(("test" + "ing").len() == 7);
-assert("ασδφγ".len() == 10);
-assert('qwert'.len() == 5);
-assert(('test' + 'ing').len() == 7);
-assert('ασδφγ'.len() == 10);
+class TestStringLen < UnitTest {
+    testStringLen() {
+        this.assertType("qwert".len(), "number");
+        this.assertEquals("qwert".len(), 5);
+        this.assertEquals("ασδφγ".len(), 10);
+        this.assertEquals(('test' + 'ing').len(), 7);
+    }
+}
+
+TestStringLen().run();

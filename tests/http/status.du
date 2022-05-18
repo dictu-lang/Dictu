@@ -1,3 +1,0 @@
-import HTTP;
-
-assert(HTTP.STATUS_OK == 200);

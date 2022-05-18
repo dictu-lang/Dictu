@@ -5,9 +5,15 @@
  *
  * time() returns a UNIX timestamp.
  */
+from UnitTest import UnitTest;
+
 import System;
 
-// Time is also tested within sleep.du
+class TestSystemTime < UnitTest {
+    testSystemTime() {
+        this.assertType(System.time(), 'number');
+        this.assertTruthy(System.time() > 0);
+    }
+}
 
-assert(type(System.time()) == 'number');
-assert(System.time() > 0);
+TestSystemTime().run();

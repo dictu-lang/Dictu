@@ -3,23 +3,22 @@
  *
  * Testing file seeking with seek()
  */
+from UnitTest import UnitTest;
 
-var contents;
-
-with("tests/files/read.txt", "rb") {
-    contents = file.read();
+class TestFileSeek < UnitTest {
+    testFileSeek() {
+        with("tests/files/read.txt", "rb") {
+            const fileContents = file.read();
+            file.seek(0);
+            this.assertEquals(file.read(), fileContents);
+            file.seek(0, 0);
+            this.assertEquals(file.read(), fileContents);
+            file.seek(-(fileContents.len()), 1);
+            this.assertEquals(file.read(), fileContents);
+            file.seek(-(fileContents.len()), 2);
+            this.assertEquals(file.read(), fileContents);
+        }
+    }
 }
 
-assert(type(contents) == "string");
-
-with("tests/files/read.txt", "rb") {
-    var fileContents = file.read();
-    file.seek(0);
-    assert(file.read() == fileContents);
-    file.seek(0, 0);
-    assert(file.read() == fileContents);
-    file.seek(-(fileContents.len()), 1);
-    assert(file.read() == fileContents);
-    file.seek(-(fileContents.len()), 2);
-    assert(file.read() == fileContents);
-}
+TestFileSeek().run();

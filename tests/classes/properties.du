@@ -3,6 +3,7 @@
  *
  * Testing class properties
  */
+from UnitTest import UnitTest;
 
 class Test {
     init() {
@@ -14,37 +15,48 @@ class Test {
     }
 }
 
-var obj = Test();
-
-assert(obj.x == 10);
-obj.change();
-assert(obj.x == 20);
-obj.x += 10;
-assert(obj.x == 30);
-obj.x -= 10;
-assert(obj.x == 20);
-obj.x *= 10;
-assert(obj.x == 200);
-obj.x /= 10;
-assert(obj.x == 20);
-
-assert(obj.hasAttribute("x"));
-assert(not obj.hasAttribute("y"));
-
-assert(obj.getAttribute("x") == 20);
-assert(obj.getAttribute("x", 50) == 20);
-assert(obj.getAttribute("y", 50) == 50);
-
-obj.setAttribute("y", 10);
-assert(obj.hasAttribute("y"));
-assert(obj.getAttribute("y") == 10);
-
-obj.setAttribute("x", 10);
-assert(obj.hasAttribute("x"));
-assert(obj.getAttribute("x") == 10);
-
-assert(obj._class == Test);
-
 class Inherit < Test {}
 
-assert(Inherit()._class == Inherit);
+class TestClassProperties < UnitTest {
+    testClassProperties() {
+        const obj = Test();
+
+        this.assertEquals(obj.x, 10);
+        obj.change();
+        this.assertEquals(obj.x, 20);
+        obj.x += 10;
+        this.assertEquals(obj.x, 30);
+        obj.x -= 10;
+        this.assertEquals(obj.x, 20);
+        obj.x *= 10;
+        this.assertEquals(obj.x, 200);
+        obj.x /= 10;
+        this.assertEquals(obj.x, 20);
+    }
+
+    testPropertyMethods() {
+        const obj = Test();
+
+        this.assertTruthy(obj.hasAttribute("x"));
+        this.assertFalsey(obj.hasAttribute("y"));
+
+        this.assertEquals(obj.getAttribute("x"), 10);
+        this.assertEquals(obj.getAttribute("x", 50), 10);
+        this.assertEquals(obj.getAttribute("y", 50), 50);
+
+        obj.setAttribute("y", 10);
+        this.assertTruthy(obj.hasAttribute("y"));
+        this.assertEquals(obj.getAttribute("y"), 10);
+
+        obj.setAttribute("x", 10);
+        this.assertTruthy(obj.hasAttribute("x"));
+        this.assertEquals(obj.getAttribute("x"), 10);
+    }
+
+    testClassProperty() {
+        this.assertEquals(Test()._class, Test);
+        this.assertEquals(Inherit()._class, Inherit);
+    }
+}
+
+TestClassProperties().run();

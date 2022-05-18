@@ -5,22 +5,29 @@
  *
  * .len() returns a number based on the amount of dictionary elements
  */
+from UnitTest import UnitTest;
 
-assert({ 1: "one"}.len() == 1);
-assert({ 1: "one", 2: "two"}.len() == 2);
-assert({ 1: "one", 2: "two", 3: "three"}.len() == 3);
+class TestDictLen < UnitTest {
+    testDictLen() {
+        this.assertEquals({ 1: "one"}.len(), 1);
+        this.assertEquals({ 1: "one", 2: "two"}.len(), 2);
+        this.assertEquals({ 1: "one", 2: "two", 3: "three"}.len(), 3);
 
-var x = {};
-assert(x.len() == 0);
+        const x = {};
+        this.assertEquals(x.len(), 0);
 
-for (var i = 0; i < 1000; i += 1) {
-    assert(x.len() == i);
-    x[i] = i;
+        for (var i = 0; i < 1000; i += 1) {
+            this.assertEquals(x.len(), i);
+            x[i] = i;
+        }
+
+        this.assertEquals(x.len(), 1000);
+
+        for (var i = 999; i >= 0; i -= 1) {
+            x.remove(i);
+            this.assertEquals(x.len(), i);
+        }
+    }
 }
 
-assert(x.len() == 1000);
-
-for (var i = 999; i >= 0; i -= 1) {
-    x.remove(i);
-    assert(x.len() == i);
-}
+TestDictLen().run();
