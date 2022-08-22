@@ -18,6 +18,7 @@
 #include "sqlite.h"
 #include "process.h"
 #include "inspect.h"
+#include "object.h"
 #include "unittest/unittest.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);
