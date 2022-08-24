@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include "optionals.h"
-#include "../vm/vm.h"
+#include "../optionals.h"
+#include "../../vm/vm.h"
 
 Value createObjectModule(DictuVM *vm);
 
