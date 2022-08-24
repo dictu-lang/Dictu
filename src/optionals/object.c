@@ -18,10 +18,19 @@ static Value objectCreateFrom(DictuVM *vm, int argCount, Value *args) {
 
     if (tableGet(&frame->closure->function->module->values, classString, &klass) && IS_CLASS(klass)) {
         ObjInstance *instance = newInstance(vm, AS_CLASS(klass));
-        return OBJ_VAL(instance);
+        return newResultSuccess(vm, OBJ_VAL(instance));
     }
 
-    return NIL_VAL;
+    char *error = ALLOCATE(vm, char, classString->length + 26);
+    memcpy(error, classString->chars, classString->length);
+    memcpy(error + classString->length, " class could not be found", 25);
+    error[classString->length + 25] = '\0';
+
+    Value result = newResultError(vm, error);
+
+    FREE_ARRAY(vm, char, error, classString->length + 26);
+
+    return result;
 }
 
 Value createObjectModule(DictuVM *vm) {
