@@ -2012,7 +2012,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_JUMP_IF_NIL:
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
-        case OP_SUPER:
         case OP_CLASS:
         case OP_SUBCLASS:
         case OP_IMPORT_BUILTIN:
@@ -2021,6 +2020,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
         case OP_INVOKE:
         case OP_INVOKE_INTERNAL:
+        case OP_SUPER:
             return 3;
 
         case OP_IMPORT_BUILTIN_VARIABLE: {
