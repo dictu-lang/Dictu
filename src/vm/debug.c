@@ -22,14 +22,22 @@ static int constantInstruction(const char *name, Chunk *chunk,
     return offset + 2;
 }
 
+static int callInstruction(const char *name, Chunk *chunk, int offset) {
+    uint8_t argCount = chunk->code[offset + 1];
+    uint8_t unpack = chunk->code[offset + 2];
+    printf("%-16s (%d args) Unpack - %d '", name, argCount, unpack);
+    return offset + 3;
+}
+
 static int invokeInstruction(const char* name, Chunk* chunk,
                              int offset) {
     uint8_t argCount = chunk->code[offset + 1];
     uint8_t constant = chunk->code[offset + 2];
-    printf("%-16s (%d args) %4d '", name, argCount, constant);
+    uint8_t unpack = chunk->code[offset + 3];
+    printf("%-16s (%d args) %4d unpack - %d '", name, argCount, constant, unpack);
     printValue(chunk->constants.values[constant]);
     printf("'\n");
-    return offset + 3;
+    return offset + 4;
 }
 
 static int importFromInstruction(const char *name, Chunk *chunk,
@@ -242,7 +250,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_NEW_DICT:
             return byteInstruction("OP_NEW_DICT", chunk, offset);
         case OP_CALL:
-            return byteInstruction("OP_CALL", chunk, offset);
+            return callInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE_INTERNAL:
             return invokeInstruction("OP_INVOKE_INTERNAL", chunk, offset);
         case OP_INVOKE:

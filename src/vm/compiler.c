@@ -650,13 +650,8 @@ static void call(Compiler *compiler, Token previousToken, bool canAssign) {
 
     int argCount = argumentList(compiler, &unpack);
 
-    if (unpack) {
-        emitConstant(compiler, NUMBER_VAL(argCount));
-        emitByte(compiler, OP_UNPACK);
-        emitByte(compiler, OP_CALL_UNPACK);
-    } else {
-        emitBytes(compiler, OP_CALL, argCount);
-    }
+    emitBytes(compiler, OP_CALL, argCount);
+    emitByte(compiler, unpack);
 }
 
 static bool privatePropertyExists(Token name, Compiler *compiler) {
@@ -683,7 +678,10 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
         } else {
             emitBytes(compiler, OP_INVOKE, argCount);
         }
-        emitByte(compiler, name);
+
+        // printf("unpack - %d", unpack);
+
+        emitBytes(compiler, name, unpack);
         return;
     }
 
@@ -1316,16 +1314,11 @@ static void super_(Compiler *compiler, bool canAssign) {
 
     if (match(compiler, TOKEN_LEFT_PAREN)) {
         bool unpack = false;
-
         int argCount = argumentList(compiler, &unpack);
 
-        if (unpack) {
-            // TODO:
-        } else {
-            pushSuperclass(compiler);
-            emitBytes(compiler, OP_SUPER, argCount);
-            emitByte(compiler, name);
-        }
+        pushSuperclass(compiler);
+        emitBytes(compiler, OP_SUPER, argCount);
+        emitBytes(compiler, name, unpack);
     } else {
         pushSuperclass(compiler);
         emitBytes(compiler, OP_GET_SUPER, name);
@@ -2003,7 +1996,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_SET_INIT_PROPERTIES:
         case OP_SET_PRIVATE_INIT_PROPERTIES:
         case OP_GET_SUPER:
-        case OP_CALL:
         case OP_METHOD:
         case OP_IMPORT:
         case OP_NEW_LIST:
@@ -2019,13 +2011,16 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_JUMP_IF_NIL:
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
-        case OP_INVOKE:
-        case OP_INVOKE_INTERNAL:
         case OP_SUPER:
         case OP_CLASS:
         case OP_SUBCLASS:
         case OP_IMPORT_BUILTIN:
+        case OP_CALL:
             return 2;
+
+        case OP_INVOKE:
+        case OP_INVOKE_INTERNAL:
+            return 3;
 
         case OP_IMPORT_BUILTIN_VARIABLE: {
             int argCount = code[ip + 2];
