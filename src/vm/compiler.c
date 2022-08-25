@@ -433,10 +433,15 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
     }
 }
 
-static int argumentList(Compiler *compiler) {
+static int argumentList(Compiler *compiler, bool *unpack) {
     int argCount = 0;
+
     if (!check(compiler, TOKEN_RIGHT_PAREN)) {
         do {
+            if (match(compiler, TOKEN_STAR)) {
+                *unpack = true;
+            }
+
             expression(compiler);
             argCount++;
 
@@ -641,9 +646,17 @@ static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
 static void call(Compiler *compiler, Token previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
+    bool unpack = false;
 
-    int argCount = argumentList(compiler);
-    emitBytes(compiler, OP_CALL, argCount);
+    int argCount = argumentList(compiler, &unpack);
+
+    if (unpack) {
+        emitConstant(compiler, NUMBER_VAL(argCount));
+        emitByte(compiler, OP_UNPACK);
+        emitByte(compiler, OP_CALL_UNPACK);
+    } else {
+        emitBytes(compiler, OP_CALL, argCount);
+    }
 }
 
 static bool privatePropertyExists(Token name, Compiler *compiler) {
@@ -662,7 +675,9 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     Token identifier = compiler->parser->previous;
 
     if (match(compiler, TOKEN_LEFT_PAREN)) {
-        int argCount = argumentList(compiler);
+        bool unpack = false;
+
+        int argCount = argumentList(compiler, &unpack);
         if (compiler->class != NULL && (previousToken.type == TOKEN_THIS || identifiersEqual(&previousToken, &compiler->class->name))) {
             emitBytes(compiler, OP_INVOKE_INTERNAL, argCount);
         } else {
@@ -1300,11 +1315,17 @@ static void super_(Compiler *compiler, bool canAssign) {
     namedVariable(compiler, syntheticToken("this"), false);
 
     if (match(compiler, TOKEN_LEFT_PAREN)) {
-        int argCount = argumentList(compiler);
+        bool unpack = false;
 
-        pushSuperclass(compiler);
-        emitBytes(compiler, OP_SUPER, argCount);
-        emitByte(compiler, name);
+        int argCount = argumentList(compiler, &unpack);
+
+        if (unpack) {
+            // TODO:
+        } else {
+            pushSuperclass(compiler);
+            emitBytes(compiler, OP_SUPER, argCount);
+            emitByte(compiler, name);
+        }
     } else {
         pushSuperclass(compiler);
         emitBytes(compiler, OP_GET_SUPER, name);
@@ -1989,6 +2010,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_NEW_DICT:
         case OP_CLOSE_FILE:
         case OP_MULTI_CASE:
+        case OP_UNPACK:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
