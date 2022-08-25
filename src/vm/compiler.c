@@ -683,8 +683,6 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
             emitBytes(compiler, OP_INVOKE, argCount);
         }
 
-        // printf("unpack - %d", unpack);
-
         emitBytes(compiler, name, unpack);
         return;
     }
