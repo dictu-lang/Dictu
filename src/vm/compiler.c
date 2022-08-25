@@ -2002,7 +2002,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_NEW_DICT:
         case OP_CLOSE_FILE:
         case OP_MULTI_CASE:
-        case OP_UNPACK:
             return 1;
 
         case OP_DEFINE_OPTIONAL:

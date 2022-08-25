@@ -1575,19 +1575,6 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(UNPACK): {
-            int argCount = AS_NUMBER(pop(vm));
-            ObjList *list = AS_LIST(pop(vm));
-
-            for (int i = 0; i < list->values.count; ++i) {
-                push(vm, list->values.values[i]);
-            }
-
-            push(vm, NUMBER_VAL(argCount + (list->values.count - 1)));
-
-            DISPATCH();
-        }
-
         CASE_CODE(CALL_UNPACK): {
             int argCount = AS_NUMBER(pop(vm));
             frame->ip = ip;

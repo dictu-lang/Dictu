@@ -304,8 +304,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_CLOSE_FILE", chunk, offset);
         case OP_BREAK:
             return simpleInstruction("OP_BREAK", offset);
-        case OP_UNPACK:
-            return simpleInstruction("OP_UNPACK", offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
