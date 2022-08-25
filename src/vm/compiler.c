@@ -438,7 +438,7 @@ static int argumentList(Compiler *compiler, bool *unpack) {
 
     if (!check(compiler, TOKEN_RIGHT_PAREN)) {
         do {
-            if (match(compiler, TOKEN_STAR)) {
+            if (match(compiler, TOKEN_DOT_DOT_DOT)) {
                 *unpack = true;
             }
 
