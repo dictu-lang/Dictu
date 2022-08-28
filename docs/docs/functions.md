@@ -190,3 +190,20 @@ def badFunction(a=5, ...x) {
     // ...
 }
 ```
+
+### Argument Unpacking
+
+Sometimes you may have a list of values and you wish to pass them all to a function. Rather than having 
+to loop over a list within the function and pull out singular values, you can unpack this list at the call site.
+
+Note: This will work on built-ins, class constructors and methods along with functions.
+
+```
+const myList = [1, 2, 3];
+
+def printMyList(a, b, c) {
+    print(a, b, c);
+}
+
+printMyList(...myList); // 1 2 3
+```
