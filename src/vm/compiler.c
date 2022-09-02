@@ -1935,7 +1935,7 @@ static void expressionStatement(Compiler *compiler) {
 
     expression(compiler);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (compiler->parser->vm->repl && t != TOKEN_EQUAL) {
+    if (compiler->parser->vm->repl && t != TOKEN_EQUAL && compiler->type == TYPE_TOP_LEVEL) {
         emitByte(compiler, OP_POP_REPL);
     } else {
         emitByte(compiler, OP_POP);
