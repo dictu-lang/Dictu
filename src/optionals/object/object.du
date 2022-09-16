@@ -2,7 +2,7 @@ import Object;
 
 def createFrom(className, ...arguments) {
     return Object.__getClassRef(className).matchWrap(
-        def (klass) => klass(),
+        def (klass) => klass(...arguments),
         def (error) => error
     );
 }
