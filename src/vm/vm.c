@@ -33,6 +33,23 @@ static void resetStack(DictuVM *vm) {
     vm->compiler = NULL;
 }
 
+#define HANDLE_UNPACK                                                               \
+    if (unpack) {                                                                   \
+        if (!IS_LIST(peek(vm, 0))) {                                                \
+            runtimeError(vm, "Attempted to unpack a value that is not a list");     \
+            return false;                                                           \
+        }                                                                           \
+                                                                                    \
+        ObjList *list = AS_LIST(pop(vm));                                     \
+                                                                                    \
+        for (int i = 0; i < list->values.count; ++i) {                              \
+            push(vm, list->values.values[i]);                                       \
+        }                                                                           \
+                                                                                    \
+        argCount += (list->values.count - 1);                                       \
+        unpack = false;                                                             \
+    }
+
 void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
@@ -266,15 +283,7 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
 
 static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
     if (IS_OBJ(callee)) {
-        if (unpack) {
-            ObjList *list = AS_LIST(pop(vm));
-
-            for (int i = 0; i < list->values.count; ++i) {
-                push(vm, list->values.values[i]);
-            }
-
-            argCount += (list->values.count - 1);
-        }
+        HANDLE_UNPACK
 
         switch (OBJ_TYPE(callee)) {
             case OBJ_BOUND_METHOD: {
@@ -357,16 +366,7 @@ static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
 
 static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount, bool unpack) {
-    if (unpack) {
-        ObjList *list = AS_LIST(pop(vm));
-
-        for (int i = 0; i < list->values.count; ++i) {
-            push(vm, list->values.values[i]);
-        }
-
-        argCount += (list->values.count - 1);
-        unpack = false;
-    }
+    HANDLE_UNPACK
 
     // Look for the method.
     Value method;
@@ -386,16 +386,7 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
 static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
     Value receiver = peek(vm, argCount);
 
-    if (unpack) {
-        ObjList *list = AS_LIST(pop(vm));
-
-        for (int i = 0; i < list->values.count; ++i) {
-            push(vm, list->values.values[i]);
-        }
-
-        argCount += (list->values.count - 1);
-        unpack = false;
-    }
+    HANDLE_UNPACK
 
     if (IS_INSTANCE(receiver)) {
         ObjInstance *instance = AS_INSTANCE(receiver);
@@ -463,16 +454,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpa
 static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
     Value receiver = peek(vm, argCount);
 
-    if (unpack) {
-        ObjList *list = AS_LIST(pop(vm));
-
-        for (int i = 0; i < list->values.count; ++i) {
-            push(vm, list->values.values[i]);
-        }
-
-        argCount += (list->values.count - 1);
-        unpack = false;
-    }
+    HANDLE_UNPACK
 
     if (!IS_OBJ(receiver)) {
         if (IS_NUMBER(receiver)) {
@@ -1572,17 +1554,6 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
-            DISPATCH();
-        }
-
-        CASE_CODE(CALL_UNPACK): {
-            int argCount = AS_NUMBER(pop(vm));
-            frame->ip = ip;
-            if (!callValue(vm, peek(vm, argCount), argCount, false)) {
-                return INTERPRET_RUNTIME_ERROR;
-            }
-            frame = &vm->frames[vm->frameCount - 1];
-            ip = frame->ip;
             DISPATCH();
         }
 

@@ -25,7 +25,7 @@ The path name of the compilation unit.
 
 Global functions which are built into Dictu.
 
-### print(...values...)
+### print(...values)
 
 Prints a given list of values to stdout.
 
@@ -35,7 +35,7 @@ print("test"); // "test"
 print(10, "test", nil, true); // 10, "test", nil, true
 ```
 
-### printError(...values...)
+### printError(...values)
 
 Prints a given list of values to stderr.
 

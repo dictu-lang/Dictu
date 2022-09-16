@@ -1,0 +1,81 @@
+/**
+ * unpack.du
+ *
+ * Testing unpack operator
+ */
+from UnitTest import UnitTest;
+
+import Math;
+
+class UnpackOperatorTest < UnitTest {
+    testUnpackOperatorOnBuiltIn() {
+        this.assertEquals(Math.sum(...[1, 2, 3]), 6);
+    }
+
+    testUnpackOperatorOnFunction() {
+        const f = def (a, b, c) => a + b + c;
+
+        this.assertEquals(f(...[1, 2, 3]), 6);
+    }
+
+    testUnpackOperatorOnFunctionWithPositional() {
+        const f = def (a, b, c) => a + b + c;
+
+        this.assertEquals(f(1, 2, ...[3]), 6);
+        this.assertEquals(f(1, ...[2, 3]), 6);
+    }
+
+    testUnpackOperatorOnFunctionWithOptional() {
+        const f = def (a, b=10, c=20) => a + b + c;
+
+        this.assertEquals(f(...[1]), 31);
+        this.assertEquals(f(...[1, 2]), 23);
+        this.assertEquals(f(...[1, 2, 3]), 6);
+    }
+
+    testUnpackOperatorOnVariadicFunction() {
+        const f = def (...a) => a;
+
+        this.assertEquals(f(...[1, 2, 3]), [1, 2, 3]);
+    }
+
+    testUnpackOperatorOnClass() {
+        class Test {
+            init(var a, var b) {}
+        }
+
+        const obj = Test(...[1, 2]);
+
+        this.assertEquals(obj.a, 1);
+        this.assertEquals(obj.b, 2);
+    }
+
+    testUnpackOperatorOnClassWithPositional() {
+        class Test {
+            init(var a, var b) {}
+        }
+
+        const obj = Test(1, ...[2]);
+
+        this.assertEquals(obj.a, 1);
+        this.assertEquals(obj.b, 2);
+    }
+
+    testUnpackOperatorOnClassWithOptional() {
+        class Test {
+            init(var a=10, var b=20) {}
+        }
+
+        const obj = Test(...[1, 2]);
+
+        this.assertEquals(obj.a, 1);
+        this.assertEquals(obj.b, 2);
+
+        const obj1 = Test(...[1]);
+
+        this.assertEquals(obj1.a, 1);
+        this.assertEquals(obj1.b, 20);
+    }
+}
+
+UnpackOperatorTest().run();

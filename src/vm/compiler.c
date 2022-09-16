@@ -438,7 +438,11 @@ static int argumentList(Compiler *compiler, bool *unpack) {
 
     if (!check(compiler, TOKEN_RIGHT_PAREN)) {
         do {
-            if (match(compiler, TOKEN_STAR)) {
+            if (*unpack) {
+                errorAtCurrent(compiler->parser, "Value unpacking must be the last argument.");
+            }
+
+            if (match(compiler, TOKEN_DOT_DOT_DOT)) {
                 *unpack = true;
             }
 
@@ -678,8 +682,6 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
         } else {
             emitBytes(compiler, OP_INVOKE, argCount);
         }
-
-        // printf("unpack - %d", unpack);
 
         emitBytes(compiler, name, unpack);
         return;
@@ -1933,7 +1935,7 @@ static void expressionStatement(Compiler *compiler) {
 
     expression(compiler);
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
-    if (compiler->parser->vm->repl && t != TOKEN_EQUAL) {
+    if (compiler->parser->vm->repl && t != TOKEN_EQUAL && compiler->type == TYPE_TOP_LEVEL) {
         emitByte(compiler, OP_POP_REPL);
     } else {
         emitByte(compiler, OP_POP);
@@ -2010,7 +2012,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_JUMP_IF_NIL:
         case OP_JUMP_IF_FALSE:
         case OP_LOOP:
-        case OP_SUPER:
         case OP_CLASS:
         case OP_SUBCLASS:
         case OP_IMPORT_BUILTIN:
@@ -2019,6 +2020,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
         case OP_INVOKE:
         case OP_INVOKE_INTERNAL:
+        case OP_SUPER:
             return 3;
 
         case OP_IMPORT_BUILTIN_VARIABLE: {
