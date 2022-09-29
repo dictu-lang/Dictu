@@ -543,14 +543,16 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
     int count = AS_NUMBER(args[1]);
-    char *temp = ALLOCATE(vm, char, (string->length * count) + 1);
+
+    int tempLen = (string->length * count) + 1;
+    char *temp = ALLOCATE(vm, char, tempLen);
 
     strcpy(temp, string->chars);
     while (--count > 0) {
         strcat(temp, string->chars);
     }
 
-    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
+    return OBJ_VAL(takeString(vm, temp, tempLen));
 }
 
 void declareStringMethods(DictuVM *vm) {
