@@ -342,7 +342,7 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
 
     struct utsname u;
     if (uname(&u) == -1) {
-        runtimeError(vm, "");
+        runtimeError(vm, "uname() failed to retrieve information");
         return EMPTY_VAL;
     }
 
