@@ -545,7 +545,7 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
     int count = AS_NUMBER(args[1]);
     char *temp = ALLOCATE(vm, char, (string->length * count) + count);
 
-    memcpy(temp, string->chars, string->length + 1);
+    //memcpy(temp, string->chars, string->length + 1);
     strcpy(temp, string->chars);
     while (--count > 0) {
         strcat(temp, string->chars);
