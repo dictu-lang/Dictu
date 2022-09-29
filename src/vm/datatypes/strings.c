@@ -552,7 +552,7 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
         strcat(temp, string->chars);
     }
 
-    return OBJ_VAL(takeString(vm, temp, tempLen));
+    return OBJ_VAL(takeString(vm, temp, tempLen - 1));
 }
 
 void declareStringMethods(DictuVM *vm) {
