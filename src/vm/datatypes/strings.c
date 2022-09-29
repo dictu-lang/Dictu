@@ -530,6 +530,30 @@ static Value titleString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, temp, string->length));
 }
 
+static Value repeatString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "repeat() takes one argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm, "repeat() count argument must be a number");
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    int count = AS_NUMBER(args[1]);
+    char *temp = ALLOCATE(vm, char, (string->length * count) + count);
+
+    memcpy(temp, string->chars, string->length + 1);
+    strcpy(temp, string->chars);
+    while (--count > 0) {
+        strcat(temp, string->chars);
+    }
+
+    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -548,4 +572,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "count", countString);
     defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->stringMethods, "title", titleString);
+    defineNative(vm, &vm->stringMethods, "repeat", repeatString);
+
 }
