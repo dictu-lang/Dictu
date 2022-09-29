@@ -550,8 +550,6 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
         strcat(temp, string->chars);
     }
 
-    temp[strlen(temp)] = '\0';
-
     return OBJ_VAL(takeString(vm, temp, strlen(temp)));
 }
 
