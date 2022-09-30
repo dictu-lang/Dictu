@@ -12,6 +12,9 @@ import System;
 
 class TestSystemUname < UnitTest {
     testSystemUname() {
+        if (System.Platform == "windows") {
+            return;
+        }
         const uname = System.uname();
         this.assertNotNil(uname);
         this.assertType(uname, "dict");
