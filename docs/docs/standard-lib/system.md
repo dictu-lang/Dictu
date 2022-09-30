@@ -251,6 +251,8 @@ System.chown("/path/to/file", 0, 0);
 
 Returns the name and version of the system along with operating system and hardware information.
 
+Note: This is not available on Windows systems.
+
 ```cs
 System.uname();
 ```
