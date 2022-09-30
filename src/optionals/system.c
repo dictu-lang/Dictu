@@ -332,6 +332,7 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
+#ifndef _WIN32
 static Value unameNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -393,6 +394,7 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
     
     return OBJ_VAL(unameDict);
 }
+#endif
 
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
