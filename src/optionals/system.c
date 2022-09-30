@@ -100,6 +100,68 @@ static Value chownNative(DictuVM *vm, int argCount, Value *args) {
 
     return newResultSuccess(vm, EMPTY_VAL);
 }
+
+static Value unameNative(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 0) {
+        runtimeError(vm, "uname() doesn't take any arguments (%d given)).", argCount);
+        return EMPTY_VAL;
+    }
+
+    struct utsname u;
+    if (uname(&u) == -1) {
+        runtimeError(vm, "uname() failed to retrieve information");
+        return EMPTY_VAL;
+    }
+
+    ObjDict *unameDict = newDict(vm);
+    push(vm, OBJ_VAL(unameDict));
+
+    ObjString *sysname = copyString(vm, "sysname", 7);
+    push(vm, OBJ_VAL(sysname));
+    ObjString *sysnameVal = copyString(vm, u.sysname, strlen(u.sysname));
+    push(vm, OBJ_VAL(sysnameVal));
+    dictSet(vm, unameDict, OBJ_VAL(sysname), OBJ_VAL(sysnameVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *nodename = copyString(vm, "nodename", 8);
+    push(vm, OBJ_VAL(nodename));
+    ObjString *nodenameVal = copyString(vm, u.nodename, strlen(u.nodename));
+    push(vm, OBJ_VAL(nodenameVal));
+    dictSet(vm, unameDict, OBJ_VAL(nodename), OBJ_VAL(nodenameVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *machine = copyString(vm, "machine", 7);
+    push(vm, OBJ_VAL(machine));
+    ObjString *machineVal = copyString(vm, u.machine, strlen(u.machine));
+    push(vm, OBJ_VAL(machineVal));
+    dictSet(vm, unameDict, OBJ_VAL(machine), OBJ_VAL(machineVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *release = copyString(vm, "release", 7);
+    push(vm, OBJ_VAL(release));
+    ObjString *releaseVal = copyString(vm, u.release, strlen(u.release));
+    push(vm, OBJ_VAL(releaseVal));
+    dictSet(vm, unameDict, OBJ_VAL(release), OBJ_VAL(releaseVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *version = copyString(vm, "version", 7);
+    push(vm, OBJ_VAL(version));
+    ObjString *versionVal = copyString(vm, u.version, strlen(u.version));
+    push(vm, OBJ_VAL(versionVal));
+    dictSet(vm, unameDict, OBJ_VAL(version), OBJ_VAL(versionVal));
+    pop(vm);
+    pop(vm);
+
+    pop(vm);
+    
+    return OBJ_VAL(unameDict);
+}
 #endif
 
 static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
@@ -332,69 +394,6 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
-
-static Value unameNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(args);
-
-    if (argCount != 0) {
-        runtimeError(vm, "uname() doesn't take any arguments (%d given)).", argCount);
-        return EMPTY_VAL;
-    }
-
-    struct utsname u;
-    if (uname(&u) == -1) {
-        runtimeError(vm, "uname() failed to retrieve information");
-        return EMPTY_VAL;
-    }
-
-    ObjDict *unameDict = newDict(vm);
-    push(vm, OBJ_VAL(unameDict));
-
-    ObjString *sysname = copyString(vm, "sysname", 7);
-    push(vm, OBJ_VAL(sysname));
-    ObjString *sysnameVal = copyString(vm, u.sysname, strlen(u.sysname));
-    push(vm, OBJ_VAL(sysnameVal));
-    dictSet(vm, unameDict, OBJ_VAL(sysname), OBJ_VAL(sysnameVal));
-    pop(vm);
-    pop(vm);
-
-    ObjString *nodename = copyString(vm, "nodename", 8);
-    push(vm, OBJ_VAL(nodename));
-    ObjString *nodenameVal = copyString(vm, u.nodename, strlen(u.nodename));
-    push(vm, OBJ_VAL(nodenameVal));
-    dictSet(vm, unameDict, OBJ_VAL(nodename), OBJ_VAL(nodenameVal));
-    pop(vm);
-    pop(vm);
-
-    ObjString *machine = copyString(vm, "machine", 7);
-    push(vm, OBJ_VAL(machine));
-    ObjString *machineVal = copyString(vm, u.machine, strlen(u.machine));
-    push(vm, OBJ_VAL(machineVal));
-    dictSet(vm, unameDict, OBJ_VAL(machine), OBJ_VAL(machineVal));
-    pop(vm);
-    pop(vm);
-
-    ObjString *release = copyString(vm, "release", 7);
-    push(vm, OBJ_VAL(release));
-    ObjString *releaseVal = copyString(vm, u.release, strlen(u.release));
-    push(vm, OBJ_VAL(releaseVal));
-    dictSet(vm, unameDict, OBJ_VAL(release), OBJ_VAL(releaseVal));
-    pop(vm);
-    pop(vm);
-
-    ObjString *version = copyString(vm, "version", 7);
-    push(vm, OBJ_VAL(version));
-    ObjString *versionVal = copyString(vm, u.version, strlen(u.version));
-    push(vm, OBJ_VAL(versionVal));
-    dictSet(vm, unameDict, OBJ_VAL(version), OBJ_VAL(versionVal));
-    pop(vm);
-    pop(vm);
-
-    pop(vm);
-    
-    return OBJ_VAL(unameDict);
-}
-
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
@@ -477,6 +476,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "getppid", getppidNative);
     defineNative(vm, &module->values, "getpid", getpidNative);
     defineNative(vm, &module->values, "chown", chownNative);
+    defineNative(vm, &module->values, "uname", unameNative);
 #endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
@@ -492,9 +492,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "sleep", sleepNative);
     defineNative(vm, &module->values, "exit", exitNative);
     defineNative(vm, &module->values, "chmod", chmodNative);
-#ifndef _WIN32
-    defineNative(vm, &module->values, "uname", unameNative);
-#endif
+
     /**
      * Define System properties
      */
