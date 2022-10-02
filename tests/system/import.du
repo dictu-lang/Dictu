@@ -17,8 +17,5 @@ import "mkdir.du";
 import "constants.du";
 import "chmod.du";
 import "chown.du";
-<<<<<<< HEAD
 import "uname.du";
-=======
 import "mkdirTemp.du";
->>>>>>> b220b78 (add mkdirTemp to System module)
