@@ -178,10 +178,10 @@ static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
     char *tmpl = {0};
 
     if (template[0] != '\0') {
-        tmpl = malloc(strlen(template)+1);
+        tmpl = ALLOCATE(vm, char, strlen(template));
         strcpy(tmpl, template);
     } else {
-        tmpl = malloc(PATH_MAX);
+        tmpl = ALLOCATE(vm, char, PATH_MAX);
         strcpy(tmpl, "XXXXXX");
     }
 
@@ -190,7 +190,7 @@ static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
         return OBJ_VAL(copyString(vm, tmpDir, strlen(tmpDir)));
     }
 
-    return NIL_VAL;
+    return newResultSuccess(vm, NIL_VAL);
 }
 #endif
 
