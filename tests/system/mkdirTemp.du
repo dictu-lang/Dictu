@@ -24,12 +24,6 @@ class TestSystemMkdirTest < UnitTest {
                     this.assertEquals(error, "File exists");
                 }
             );
-            // if (res != nil) {
-            //     this.assertEquals(res, tempDirName);
-            //     this.assertTruthy(System.rmdir(tempDirName).success());
-            // } else {
-            //     this.assertEquals(res, nil);
-            // }
         }  
     }
 }
