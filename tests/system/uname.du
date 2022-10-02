@@ -14,7 +14,7 @@ class TestSystemUname < UnitTest {
     testSystemUname() {
         if (System.platform != "windows") {
             const uname = System.uname();
-        this.assertNotNil(uname);
+            this.assertNotNil(uname);
             this.assertType(uname, "dict");
         }
     }
