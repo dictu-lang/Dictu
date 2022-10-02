@@ -15,13 +15,21 @@ class TestSystemMkdirTest < UnitTest {
         if (System.platform != "windows") {
             const tempDirName = "test_mkdir_temp";
 
-            var res = System.mkdirTemp(tempDirName);
-            if (res != nil) {
-                this.assertEquals(res, tempDirName);
-                this.assertTruthy(System.rmdir(tempDirName).success());
-            } else {
-                this.assertEquals(res, nil);
-            }
+            var res = System.mkdirTemp(tempDirName).match(
+                def (result) => {
+                    this.assertEquals(result, tempDirName);
+                    this.assertTruthy(System.rmdir(tempDirName).success());
+                },
+                def (error) => {
+                    this.assertEquals(error, "File exists");
+                }
+            );
+            // if (res != nil) {
+            //     this.assertEquals(res, tempDirName);
+            //     this.assertTruthy(System.rmdir(tempDirName).success());
+            // } else {
+            //     this.assertEquals(res, nil);
+            // }
         }  
     }
 }
