@@ -256,3 +256,13 @@ Note: This is not available on Windows systems.
 ```cs
 System.uname();
 ```
+
+### System.mkdirTemp(string)
+
+Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
+
+Note: This is not available on Windows systems.
+
+```cs
+System.mkdirTemp("");
+```
