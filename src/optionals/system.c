@@ -186,11 +186,11 @@ static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *tmpDir = mkdtemp(tmpl);
-    if (!tmpDir) {
+    if (!tmpDir) {     
         ERROR_RESULT;    
     }
     
-    return newResultSuccess(vm, OBJ_VAL(copyString(vm, tmpDir, strlen(tmpDir))));
+    return newResultSuccess(vm, OBJ_VAL(takeString(vm, tmpDir, strlen(tmpDir))));
 }
 #endif
 
