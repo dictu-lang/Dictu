@@ -14,7 +14,10 @@ class TestSystemMkdirTest < UnitTest {
     testSystemMkdirTest() {
         if (System.platform != "windows") {
             const tempDirName = "test_mkdir_temp";
-            this.assertTruthy(System.rmdir(tempDirName).success());
+            
+            if (Path.exists(tempDirName)) {
+                this.assertTruthy(System.rmdir(tempDirName).success());
+            }
 
             var res = System.mkdirTemp(tempDirName).match(
                 def (result) => {
