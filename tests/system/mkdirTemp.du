@@ -21,7 +21,7 @@ class TestSystemMkdirTest < UnitTest {
                     this.assertTruthy(System.rmdir(tempDirName).success());
                 },
                 def (error) => {
-                    this.assertEquals(error, "File exists");
+                    this.assertEquals(error, "Invalid argument");
                 }
             );
         }  
