@@ -11,24 +11,29 @@ import Path;
 import System;
 
 class TestSystemMkdirTest < UnitTest {
-    testSystemMkdirTest() {
+    testSystemMkdir(tempDirName) {
         if (System.platform != "windows") {
-            const tempDirName = "test_mkdir_temp";
-            
             if (Path.exists(tempDirName)) {
-                this.assertTruthy(System.rmdir(tempDirName).success());
+                this.assertSuccess(System.rmdir(tempDirName));
             }
 
-            var res = System.mkdirTemp(tempDirName).match(
+            System.mkdirTemp(tempDirName).match(
                 def (result) => {
-                    this.assertEquals(result, tempDirName);
-                    this.assertTruthy(System.rmdir(tempDirName).success());
+                    this.assertEquals(result[0:-6], tempDirName[0:-6]);
+                    this.assertSuccess(System.rmdir(result));
                 },
                 def (error) => {
                     this.assertEquals(error, "Invalid argument");
                 }
             );
         }  
+    }
+
+    testSystemMkdirProvider() {
+        return [
+            'test_mkdir_temp',
+            'test_mkdir_tempXXXXXX'
+        ];
     }
 }
 

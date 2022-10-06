@@ -257,12 +257,17 @@ Note: This is not available on Windows systems.
 System.uname();
 ```
 
-### System.mkdirTemp(string)
+### System.mkdirTemp(string: directory_template -> optional)
 
 Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
+
+The directory template passed in **must** end with "XXXXXX".
+
+Returns a Result type and on success will unwrap to a the created directory name.
 
 Note: This is not available on Windows systems.
 
 ```cs
-System.mkdirTemp("");
+System.mkdirTemp().unwrap(); // "VOO16s"
+System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
 ```

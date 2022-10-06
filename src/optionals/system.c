@@ -164,33 +164,42 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount == 0) {
-        runtimeError(vm, "mkdirTemp() takes 1 argument (%d given)", argCount);
+    if (argCount > 1) {
+        runtimeError(vm, "mkdirTemp() takes 0 or 1 argument(s) (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "mkdirTemp() first argument must be a string");
-        return EMPTY_VAL;
+    char *template = "XXXXXX";
+
+    if (argCount == 1) {
+        if (!IS_STRING(args[0])) {
+            runtimeError(vm, "mkdirTemp() first argument must be a string");
+            return EMPTY_VAL;
+        }
+
+        template = AS_CSTRING(args[0]);
     }
 
-    char *template = AS_CSTRING(args[0]);
     char *tmpl = {0};
+    int size;
 
     if (template[0] != '\0') {
-        tmpl = ALLOCATE(vm, char, strlen(template)+1);
+        size = strlen(template) + 1;
+        tmpl = ALLOCATE(vm, char, size);
         strcpy(tmpl, template);
     } else {
-        tmpl = ALLOCATE(vm, char, 7);
+        size = 7;
+        tmpl = ALLOCATE(vm, char, size);
         strcpy(tmpl, "XXXXXX");
     }
 
     char *tmpDir = mkdtemp(tmpl);
-    if (!tmpDir) {     
+    if (!tmpDir) {
+        FREE_ARRAY(vm, char, tmpl, size);
         ERROR_RESULT;    
     }
-    
-    return newResultSuccess(vm, OBJ_VAL(takeString(vm, tmpDir, strlen(tmpDir))));
+
+    return newResultSuccess(vm, OBJ_VAL(takeString(vm, tmpDir, size - 1)));
 }
 #endif
 
