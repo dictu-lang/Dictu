@@ -178,10 +178,10 @@ static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
     char *tmpl = {0};
 
     if (template[0] != '\0') {
-        tmpl = ALLOCATE(vm, char, strlen(template));
+        tmpl = ALLOCATE(vm, char, strlen(template)+1);
         strcpy(tmpl, template);
     } else {
-        tmpl = ALLOCATE(vm, char, PATH_MAX);
+        tmpl = ALLOCATE(vm, char, 7);
         strcpy(tmpl, "XXXXXX");
     }
 
