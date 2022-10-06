@@ -162,6 +162,45 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
     
     return OBJ_VAL(unameDict);
 }
+
+static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "mkdirTemp() takes 0 or 1 argument(s) (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *template = "XXXXXX";
+
+    if (argCount == 1) {
+        if (!IS_STRING(args[0])) {
+            runtimeError(vm, "mkdirTemp() first argument must be a string");
+            return EMPTY_VAL;
+        }
+
+        template = AS_CSTRING(args[0]);
+    }
+
+    char *tmpl = {0};
+    int size;
+
+    if (template[0] != '\0') {
+        size = strlen(template) + 1;
+        tmpl = ALLOCATE(vm, char, size);
+        strcpy(tmpl, template);
+    } else {
+        size = 7;
+        tmpl = ALLOCATE(vm, char, size);
+        strcpy(tmpl, "XXXXXX");
+    }
+
+    char *tmpDir = mkdtemp(tmpl);
+    if (!tmpDir) {
+        FREE_ARRAY(vm, char, tmpl, size);
+        ERROR_RESULT;    
+    }
+
+    return newResultSuccess(vm, OBJ_VAL(takeString(vm, tmpDir, size - 1)));
+}
 #endif
 
 static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
@@ -477,6 +516,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "getpid", getpidNative);
     defineNative(vm, &module->values, "chown", chownNative);
     defineNative(vm, &module->values, "uname", unameNative);
+    defineNative(vm, &module->values, "mkdirTemp", mkdirTempNative);
 #endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);

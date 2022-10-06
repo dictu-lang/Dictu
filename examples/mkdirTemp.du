@@ -1,0 +1,8 @@
+import Env;
+import System;
+
+const tmpDir = Env.get("TMPDIR") + "XXXXXX";
+
+var res = System.mkdirTemp(tmpDir);
+
+print(res);
