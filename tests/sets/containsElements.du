@@ -1,0 +1,20 @@
+/**
+ * containsElements.du
+ *
+ * Testing the containsElements method
+ *
+ * .containsElements() checks if a set contains all elements in a given list
+ */
+from UnitTest import UnitTest;
+
+class TestSetContainsElements < UnitTest {
+    testcontainsElements() {
+        var set_a = set("a",1,2,3);
+        this.assertTruthy(set_a.containsElements(["a"]));
+        this.assertTruthy(set_a.containsElements([1,2,3]));
+        this.assertTruthy(set_a.containsElements(["a",2,3,1]));
+        this.assertFalsey(set_a.containsElements(["a",2,3,1,"b"]));
+    }
+}
+
+TestSetContainsElements().run();
