@@ -83,6 +83,17 @@ print(mySet.contains("Dictu!")); // true
 print(mySet.contains("Other!")); // false
 ```
 
+### set.containsAll(value)
+
+To check if a set contains all elements in a given list use `.containsAll()`
+
+```cs
+var mySet = set("one",1,2,3);;
+print(mySet.containsAll(["one",1])); // true
+print(mySet.containsAll([1,2,3])); // true
+print(mySet.containsAll(["one",1,2,3,"x"])); // false
+```
+
 ### set.remove(value)
 
 To remove a value from a set use `.remove()`.
