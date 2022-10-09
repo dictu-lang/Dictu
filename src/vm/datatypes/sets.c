@@ -70,14 +70,14 @@ static Value containsSetItem(DictuVM *vm, int argCount, Value *args) {
     return setGet(set, args[1]) ? TRUE_VAL : FALSE_VAL;
 }
 
-static Value containsElementsSet(DictuVM *vm, int argCount, Value *args) {
+static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "containsElements() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "containsAll() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if(!IS_LIST(args[1])){
-        runtimeError(vm, "containsElements() argument must be a list");
+        runtimeError(vm, "containsAll() argument must be a list");
         return EMPTY_VAL;
     }
 
@@ -99,7 +99,7 @@ void declareSetMethods(DictuVM *vm) {
     defineNative(vm, &vm->setMethods, "add", addSetItem);
     defineNative(vm, &vm->setMethods, "remove", removeSetItem);
     defineNative(vm, &vm->setMethods, "contains", containsSetItem);
-    defineNative(vm, &vm->setMethods, "containsElements", containsElementsSet);
+    defineNative(vm, &vm->setMethods, "containsAll", containsAllSet);
     defineNative(vm, &vm->setMethods, "toBool", boolNative); // Defined in util
 }
 
