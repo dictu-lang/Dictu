@@ -85,7 +85,7 @@ print(mySet.contains("Other!")); // false
 
 ### set.containsElements(value)
 
-To checks if a set contains all elements in a given list use `containsElements()`
+To check if a set contains all elements in a given list use `.containsElements()`
 
 ```cs
 var mySet = set("one",1,2,3);;
