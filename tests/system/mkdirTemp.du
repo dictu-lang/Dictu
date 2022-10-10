@@ -1,0 +1,40 @@
+/**
+ * mkdirTemp.du
+ *
+ * Testing the System.mkdirTemp function
+ *
+ * mkdirTemp makes a temporary directory.
+ */
+from UnitTest import UnitTest;
+
+import Path;
+import System;
+
+class TestSystemMkdirTest < UnitTest {
+    testSystemMkdir(tempDirName) {
+        if (System.platform != "windows") {
+            if (Path.exists(tempDirName)) {
+                this.assertSuccess(System.rmdir(tempDirName));
+            }
+
+            System.mkdirTemp(tempDirName).match(
+                def (result) => {
+                    this.assertEquals(result[0:-6], tempDirName[0:-6]);
+                    this.assertSuccess(System.rmdir(result));
+                },
+                def (error) => {
+                    this.assertEquals(error, "Invalid argument");
+                }
+            );
+        }  
+    }
+
+    testSystemMkdirProvider() {
+        return [
+            'test_mkdir_temp',
+            'test_mkdir_tempXXXXXX'
+        ];
+    }
+}
+
+TestSystemMkdirTest().run();
