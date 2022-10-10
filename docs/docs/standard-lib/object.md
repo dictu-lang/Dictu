@@ -33,7 +33,7 @@ Returns a Result and unwraps to an Object upon success.
 ```cs
 class Test {}
 
-Object.getClassRef("Test"); // <Cls Test>
+Object.getClassRef("Test").unwrap(); // <Cls Test>
 ```
 
 ### Object.createFrom(string)
@@ -45,5 +45,5 @@ Returns a Result and unwraps to an Object upon success.
 ```cs
 class Test {}
 
-Object.createFrom("Test"); // <Test instance>
+Object.createFrom("Test").unwrap(); // <Test instance>
 ```
