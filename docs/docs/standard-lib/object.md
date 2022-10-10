@@ -30,6 +30,8 @@ This method will attempt to get a class reference from the class name provided a
 
 Returns a Result and unwraps to an Object upon success.
 
+**NOTE:** This currently only works if the class is defined in the global scope
+
 ```cs
 class Test {}
 
@@ -41,6 +43,8 @@ Object.getClassRef("Test").unwrap(); // <Cls Test>
 This method will attempt to create a new object from the class name provided as a string.
 
 Returns a Result and unwraps to an Object upon success.
+
+**NOTE:** This currently only works if the class is defined in the global scope
 
 ```cs
 class Test {}
