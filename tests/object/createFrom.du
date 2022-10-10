@@ -14,7 +14,7 @@ class TestObjectCreateFrom < UnitTest {
         this.assertSuccess(Object.createFrom('Test'));
         this.assertError(Object.createFrom('Unknown'));
 
-        this.assertType(Object.createFrom('Test'), 'Test');
+        this.assertType(Object.createFrom('Test').unwrap(), 'Test');
     }
 }
 

@@ -4,3 +4,4 @@
  * General import file for all the Object module tests
  */
 
+import "createFrom.du";
