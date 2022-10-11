@@ -161,7 +161,6 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     if (parent != NULL) {
         compiler->class = parent->class;
-        compiler->loop = parent->loop;
     }
 
     compiler->type = type;
