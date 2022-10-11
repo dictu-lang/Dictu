@@ -57,6 +57,11 @@ class TestClassProperties < UnitTest {
         this.assertEquals(Test()._class, Test);
         this.assertEquals(Inherit()._class, Inherit);
     }
+
+    testClassName() {
+        this.assertEquals(Test._name, "Test");
+        this.assertEquals(Inherit._name, "Inherit");
+    }
 }
 
 TestClassProperties().run();

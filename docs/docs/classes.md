@@ -318,6 +318,16 @@ class Test {}
 print(Test()._class); // <Cls Test>
 ```
 
+### _name
+
+`_name` is a special attribute that is added to classes that returns a string representation of the class name.
+
+```cs
+class Test {}
+
+print(Test.name); // Test
+```
+
 ## Class variables
 
 A class variable is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
