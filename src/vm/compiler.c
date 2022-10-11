@@ -161,7 +161,6 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
 
     if (parent != NULL) {
         compiler->class = parent->class;
-        compiler->loop = parent->loop;
     }
 
     compiler->type = type;
@@ -2141,6 +2140,7 @@ static void forStatement(Compiler *compiler) {
 }
 
 static void breakStatement(Compiler *compiler) {
+    printf("%s\n", compiler->loop == NULL ? "null" : "no");
     if (compiler->loop == NULL) {
         error(compiler->parser, "Cannot utilise 'break' outside of a loop.");
         return;
