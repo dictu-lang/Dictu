@@ -2140,7 +2140,6 @@ static void forStatement(Compiler *compiler) {
 }
 
 static void breakStatement(Compiler *compiler) {
-    printf("%s\n", compiler->loop == NULL ? "null" : "no");
     if (compiler->loop == NULL) {
         error(compiler->parser, "Cannot utilise 'break' outside of a loop.");
         return;
