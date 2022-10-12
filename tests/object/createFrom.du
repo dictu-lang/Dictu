@@ -1,0 +1,21 @@
+/**
+ * createFrom.du
+ *
+ * Testing the Object.createFrom method
+ */
+from UnitTest import UnitTest;
+
+import Object;
+
+class Test {}
+
+class TestObjectCreateFrom < UnitTest {
+    testObjectCreateFrom() {
+        this.assertSuccess(Object.createFrom('Test'));
+        this.assertError(Object.createFrom('Unknown'));
+
+        this.assertType(Object.createFrom('Test').unwrap(), 'Test');
+    }
+}
+
+TestObjectCreateFrom().run();
