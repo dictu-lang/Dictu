@@ -78,7 +78,6 @@ static Value set(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
-#ifndef _WIN32
 static Value clearAll(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -87,21 +86,27 @@ static Value clearAll(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
+    char **env;
+#ifdef _WIN32
+    extern char **_environ;
+    env = _environ;
+#else
     extern char **environ;
-    
-    char **env = environ;
+    env = environ;
+#endif
     for (; *env; ++env) {
         char *name = strtok(*env, "=");
-
+#ifdef _WIN32
+        unsetenv(name);
+#else
         int ret = unsetenv(name);
         if (ret == -1) {
             ERROR_RESULT;
         }
     }
-
+#endif
     return newResultSuccess(vm, NIL_VAL);
 }
-#endif
 
 Value createEnvModule(DictuVM *vm) {
     ObjClosure *closure = compileModuleToClosure(vm, "Env", DICTU_ENV_SOURCE);
@@ -117,9 +122,7 @@ Value createEnvModule(DictuVM *vm) {
      */
     defineNative(vm, &closure->function->module->values, "get", get);
     defineNative(vm, &closure->function->module->values, "set", set);
-#ifndef _WIN32
     defineNative(vm, &closure->function->module->values, "clearAll", clearAll);
-#endif
     pop(vm);
 
     return OBJ_VAL(closure);
