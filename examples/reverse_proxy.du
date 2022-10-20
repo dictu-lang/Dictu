@@ -1,0 +1,103 @@
+// To test the code below, run the commmand below to setup
+// some backend servers to connect to:
+//
+// for i in $(seq 10001 10003); do 
+//     socat tcp-listen:${i},reuseaddr,fork exec:cat,nofork &
+// done
+
+import Log;
+import Random;
+import Socket;
+import System;
+
+const readBuffer = 2048;
+
+class Server {
+    init(var server, var port) {}
+}
+
+const backendServers = [
+    Server("127.0.0.1", 10001),
+    Server("127.0.0.1", 10002),
+    Server("127.0.0.1", 10003)
+];
+
+def selectServer() {
+    const i = Random.range(0, backendServers.len()-1);
+    return backendServers[i];
+}
+
+// main
+{
+    const log = Log.new(Log.stdout).unwrap();
+
+    log.println("Starting proxy server...");
+
+    var res = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+    var socket = res.unwrap();
+    
+    res = socket.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+
+    res = socket.bind("127.0.0.1", 10000);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+
+    res = socket.listen(10000);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+
+    var [client, address] = socket.accept().unwrap();
+
+    res = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+    var remote = res.unwrap();
+
+    const backendServer = selectServer();
+    res = remote.connect(backendServer.server, backendServer.port);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+
+    while {
+        res = client.recv(readBuffer);
+        if (not res.success()) {
+            log.println(res.unwrapError());
+            break;
+        }
+        var userInput = res.unwrap();
+
+        res = remote.write(userInput);
+        if (not res.success()) {
+            log.println(res.unwrapError());
+            break;
+        }
+
+        res = remote.recv(readBuffer);
+        if (not res.success()) {
+            log.println(res.unwrapError());
+            break;
+        }
+
+        res = client.write(res.unwrap());
+        if (not res.success()) {
+            log.println(res.unwrapError());
+            break;
+        }
+    }
+    remote.close();
+    socket.close();
+
+    log.println("Shutting down proxy server...");
+
+    System.exit(0);
+}
