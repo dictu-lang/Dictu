@@ -55,23 +55,20 @@ def selectServer() {
     }
 
     var [client, address] = socket.accept().unwrap();
-    var remote = nil;
+
+    res = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
+    var remote = res.unwrap();
+
+    const backendServer = selectServer();
+    res = remote.connect(backendServer.server, backendServer.port);
+    if (not res.success()) {
+        log.fatalln(res.unwrapError());
+    }
 
     while {
-        if (not remote) {
-            res = Socket.create(Socket.AF_INET, Socket.SOCK_STREAM);
-            if (not res.success()) {
-                log.fatalln(res.unwrapError());
-            }
-            remote = res.unwrap();
-
-            const backendServer = selectServer();
-            res = remote.connect(backendServer.server, backendServer.port);
-            if (not res.success()) {
-                log.fatalln(res.unwrapError());
-            }
-        }
-
         res = client.recv(readBuffer);
         if (not res.success()) {
             log.println(res.unwrapError());
