@@ -10,6 +10,16 @@ assert(a == 1);
 assert(b == 2);
 assert(c == 3);
 
+
+var o,i,g;
+
+[o,i,g]=[111,222,333];
+
+assert(o == 111);
+assert(i == 222);
+assert(g == 333);
+
+
 var [d, e, f] = [1 + 1, 2 + 2, 3 + 3];
 
 assert(d == 2);
