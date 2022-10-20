@@ -5,23 +5,30 @@
 *
 * .exists() returns a boolean based on whether the given key exists
 */
+from UnitTest import UnitTest;
 
-var myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
+class TestDictExists < UnitTest {
+    testDictExists() {
+        const myDict = {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5};
 
-// First check the dictionary was created properly
-assert(myDict == {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
+        // First check the dictionary was created properly
+        this.assertEquals(myDict, {"key": 1, "key1": true, true: false, false: true, nil: 10, 10: nil, 10.5: 10.5});
 
-// Test .exists()
-assert(myDict.exists("key"));
-assert(myDict.exists("key1"));
-assert(myDict.exists(true));
-assert(myDict.exists(false));
-assert(myDict.exists(nil));
-assert(myDict.exists(10));
-assert(myDict.exists(10.5));
-assert(!(myDict.exists("unknown")));
-assert(!(myDict.exists(100)));
-assert(!(myDict.exists(100.5)));
+        // Test .exists()
+        this.assertTruthy(myDict.exists("key"));
+        this.assertTruthy(myDict.exists("key1"));
+        this.assertTruthy(myDict.exists(true));
+        this.assertTruthy(myDict.exists(false));
+        this.assertTruthy(myDict.exists(nil));
+        this.assertTruthy(myDict.exists(10));
+        this.assertTruthy(myDict.exists(10.5));
+        this.assertFalsey(myDict.exists("unknown"));
+        this.assertFalsey(myDict.exists(100));
+        this.assertFalsey(myDict.exists(100.5));
 
-assert(!{}.exists(true));
-assert({true: true}.exists(true));
+        this.assertFalsey({}.exists(true));
+        this.assertTruthy({true: true}.exists(true));
+    }
+}
+
+TestDictExists().run();

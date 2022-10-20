@@ -5,18 +5,25 @@
  *
  * .insert() will insert a new value into a list at a given index without replacing
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2, 3, 4, 6];
+class TestListInsert < UnitTest {
+    testListInsert() {
+        const x = [1, 2, 3, 4, 6];
 
-// First check the list was created properly
-assert(x == [1, 2, 3, 4, 6]);
+        // First check the list was created properly
+        this.assertEquals(x, [1, 2, 3, 4, 6]);
 
-// Test .insert()
-x.insert(5, 4);
-assert(x == [1, 2, 3, 4, 5, 6]);
+        // Test .insert()
+        x.insert(5, 4);
+        this.assertEquals(x, [1, 2, 3, 4, 5, 6]);
 
-x.insert(7, x.len());
-assert(x == [1, 2, 3, 4, 5, 6, 7]);
+        x.insert(7, x.len());
+        this.assertEquals(x, [1, 2, 3, 4, 5, 6, 7]);
 
-x.insert(0, 0);
-assert(x == [0, 1, 2, 3, 4, 5, 6, 7]);
+        x.insert(0, 0);
+        this.assertEquals(x, [0, 1, 2, 3, 4, 5, 6, 7]);
+    }
+}
+
+TestListInsert().run();

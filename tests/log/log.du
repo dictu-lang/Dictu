@@ -1,0 +1,35 @@
+/**
+ * log.du
+ *
+ * Testing the Log functions:
+ *    - print(), println(), new(), setPrefix
+ *
+ */
+from UnitTest import UnitTest;
+
+import Log;
+
+class TestLogModule < UnitTest {
+    testLogModuleStdout() {
+        Log.print("hello, world! print\n");
+        Log.println("hello, world! println");
+
+        const log = Log.new(Log.stdout).unwrap();
+        this.assertNotNil(log);
+
+        log.setPrefix(""); // noop
+        log.setPrefix("PREFIX");
+        log.println("println output to stdout with prefix");
+        log.unsetPrefix();
+        log.print("print output to stdout without prefix\n");
+    }
+
+    testLogModuleStderr() {
+        const log = Log.new(Log.stderr).unwrap();
+        this.assertNotNil(log);
+
+        log.print("print output to stderr\n");
+    }
+}
+
+TestLogModule().run();

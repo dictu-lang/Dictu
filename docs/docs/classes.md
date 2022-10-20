@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Classes
-nav_order: 9
+nav_order: 10
 ---
 
 # Classes
@@ -91,18 +91,20 @@ The `var` or `private` keywords are optional on the constructor parameters, and 
 
 ```cs
 class SomeClass {
-    init(var a, b, c, var d) {
+    init(var a, b, c, var d, private e) {
         // b and c are not set as instance properties
+        // e is set as a private property
     }
 }
 
-var obj = SomeClass(10, 20, 30, 40);
-print("{} {} {} {}".format(
+var obj = SomeClass(10, 20, 30, 40, 50);
+print("{} {} {} {} {}".format(
     obj.getAttribute("a"),
     obj.getAttribute("b"),
     obj.getAttribute("c"),
-    obj.getAttribute("d")
-)); // "10 nil nil 40"
+    obj.getAttribute("d"),
+    obj.getAttribute("e")
+)); // "10 nil nil 40 nil"
 ```
 
 ## Methods
@@ -245,6 +247,21 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
+### getAttributes
+
+The `getAttributes` method returns all public attributes on the given instance of a class.
+
+```cs
+class Test {
+    init() {
+        this.x = 10;
+    }
+}
+
+var myObject = Test();
+print(myObject.getAttributes()); // ["x"]
+```
+
 ### setAttribute
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
@@ -288,11 +305,32 @@ print(Test().someMethod()?.someOtherMethod()); // nil
 
 // If the operand is not nil the method / property must exist  
 print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
-``` 
+```
+
+### _class
+
+`_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
+useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+
+```cs
+class Test {}
+
+print(Test()._class); // <Cls Test>
+```
+
+### _name
+
+`_name` is a special attribute that is added to classes that returns a string representation of the class name.
+
+```cs
+class Test {}
+
+print(Test.name); // Test
+```
 
 ## Class variables
 
-A class variable, is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
+A class variable is a variable that is defined on the class and not the instance. This means that all instances of the class will have access
 to the class variable, and it is also shared across all instances.
 
 ```cs
@@ -304,18 +342,42 @@ class SomeClass {
     }
 }
 
-print(SomeClass.classVaraible); // 10
+print(SomeClass.classVariable); // 10
 
-var x = SomeClass();
-var y = SomeClass();
+const x = SomeClass();
+const y = SomeClass();
 
 print(x.classVariable); // 10
 print(y.classVariable); // 10
 
-SomeClass.classVaraible = 100;
+SomeClass.classVariable = 100;
 
 print(x.classVariable); // 100
 print(y.classVariable); // 100
+```
+
+## Class Constants
+
+Exactly the same as [Class Variables](#class-variables) except that it comes with a runtime guarantee that it will not be modified.
+
+```cs
+class SomeClass {
+    const classVariable = 10; // This will be shared among all "SomeClass" instances
+
+    init() {
+        this.x = 10; // "x" is set on the instance
+    }
+}
+
+print(SomeClass.classVariable); // 10
+
+const x = SomeClass();
+const y = SomeClass();
+
+print(x.classVariable); // 10
+print(y.classVariable); // 10
+
+SomeClass.classVariable = 100; // Cannot assign to class constant 'SomeClass.classVariable'.
 ```
 
 ## Static methods

@@ -1,0 +1,20 @@
+/**
+ * containsAll.du
+ *
+ * Testing the containsAll method
+ *
+ * .containsAll() checks if a set contains all elements in a given list
+ */
+from UnitTest import UnitTest;
+
+class TestSetContainsAll < UnitTest {
+    testcontainsAll() {
+        var set_a = set("a",1,2,3);
+        this.assertTruthy(set_a.containsAll(["a"]));
+        this.assertTruthy(set_a.containsAll([1,2,3]));
+        this.assertTruthy(set_a.containsAll(["a",2,3,1]));
+        this.assertFalsey(set_a.containsAll(["a",2,3,1,"b"]));
+    }
+}
+
+TestSetContainsAll().run();

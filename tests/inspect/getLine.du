@@ -1,0 +1,39 @@
+/**
+ * getLine.du
+ *
+ * Testing the Inspect.getLine() method
+ */
+from UnitTest import UnitTest;
+
+import Inspect;
+
+class TestInspectGetLine < UnitTest {
+    testGetLine() {
+        this.assertEquals(Inspect.getLine(), 12);
+    }
+
+    testGetLineWalk() {
+        def func(framesToWalk=0, expectedLine=17) {
+            this.assertEquals(Inspect.getLine(framesToWalk), expectedLine);
+        }
+
+        func();
+        func(1, 21);
+    }
+
+    testGetLineNested() {
+        def func(framesToWalk=0, expectedLine=17) {
+            this.assertEquals(Inspect.getLine(framesToWalk), expectedLine);
+        }
+
+        def anotherFunc(framesToWalk=0, expectedLine=26) {
+            func(framesToWalk, expectedLine);
+        }
+
+        anotherFunc();
+        anotherFunc(1, 30);
+        anotherFunc(2, 35);
+    }
+}
+
+TestInspectGetLine().run();

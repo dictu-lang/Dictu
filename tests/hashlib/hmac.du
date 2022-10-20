@@ -3,14 +3,20 @@
  *
  * Testing the Hashlib.hmac() and Hashlib.verify() methods
  */
+from UnitTest import UnitTest;
 
 import Hashlib;
 
-var hash = Hashlib.hmac("key!", "Dictu");
+class TestHashlibHmac < UnitTest {
+    testHashlibHmac() {
+        const hmac = Hashlib.hmac("key!", "Dictu");
 
-assert(type(hash) == "string");
-assert(hash.len() == 64);
-assert(hash == "f2fe1aea78f33a2d17a225b73039d29513687c3eac82e97661225b1f20276619");
+        this.assertType(hmac, "string");
+        this.assertEquals(hmac.len(), 64);
+        this.assertEquals(hmac, "f2fe1aea78f33a2d17a225b73039d29513687c3eac82e97661225b1f20276619");
 
-assert(Hashlib.verify("f2fe1aea78f33a2d17a225b73039d29513687c3eac82e97661225b1f20276619", hash));
-assert(Hashlib.bcryptVerify("WRONG!", hash) == false);
+        this.assertTruthy(Hashlib.verify("f2fe1aea78f33a2d17a225b73039d29513687c3eac82e97661225b1f20276619", hmac));
+    }
+}
+
+TestHashlibHmac().run();

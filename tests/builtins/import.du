@@ -3,11 +3,7 @@
 *
 * General import file for all the builtin function tests
 */
-import Path;
 
 import "type.du";
 import "isDefined.du";
-
-assert(Path.basename(__file__) == "import.du");
 import "__file__.du";
-assert(Path.basename(__file__) == "import.du");

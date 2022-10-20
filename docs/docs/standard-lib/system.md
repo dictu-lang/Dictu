@@ -26,7 +26,7 @@ import System;
 ### Constants
 
 | Constant        | Description                                                                                       |
-|-----------------|---------------------------------------------------------------------------------------------------|
+| --------------- | ------------------------------------------------------------------------------------------------- |
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
 | System.version  | Dictionary containing Dictu major, minor and patch versions.                                      |
@@ -44,10 +44,10 @@ import System;
 | System.S_IXOTH  | Execute by others.                                                                                |
 | System.S_ISUID  | Set user ID on execution.                                                                         |
 | System.S_ISGID  | Set group ID on execution.                                                                        |
-| System.F_OK     | Test for existence.
-| System.X_OK     | Test for execute permission.
-| System.W_OK     | Test for write permission.
-| System.R_OK     | Test for read permission.
+| System.F_OK     | Test for existence.                                                                               |
+| System.X_OK     | Test for execute permission.                                                                      |
+| System.W_OK     | Test for write permission.                                                                        |
+| System.R_OK     | Test for read permission.                                                                         |
 
 ### System.mkdir(string, number: mode -> optional)
 
@@ -227,4 +227,47 @@ System.exit(10);
 Shell
 ```bash
 $ echo $?; // 10
+```
+
+### System.chmod(string, string)
+
+Set the permissions on a file or directory.
+
+```cs
+System.chmod("/usr/local/share", "755");
+```
+
+### System.chown(string, number, number)
+
+Set the ownership of a file or directory with the given path, uid, and gid.
+
+Note: This is not available on Windows systems.
+
+```cs
+System.chown("/path/to/file", 0, 0);
+```
+
+### System.uname()
+
+Returns the name and version of the system along with operating system and hardware information.
+
+Note: This is not available on Windows systems.
+
+```cs
+System.uname();
+```
+
+### System.mkdirTemp(string: directory_template -> optional)
+
+Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
+
+The directory template passed in **must** end with "XXXXXX".
+
+Returns a Result type and on success will unwrap to a the created directory name.
+
+Note: This is not available on Windows systems.
+
+```cs
+System.mkdirTemp().unwrap(); // "VOO16s"
+System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
 ```

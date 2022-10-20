@@ -5,31 +5,44 @@
  *
  * "r" parses a string literally, ignoring escape codes passed
  */
+from UnitTest import UnitTest;
 
-assert(r"test\ntest".len() == 10);
-assert(r"test\ntest"[4] == "\\");
-assert(r"test\ntest"[4] == r"\");
-assert(r"test\ntest"[5] == "n");
-assert(r"test\ntest"[5] == r"n");
-assert(r"test\ntest" == "test\\ntest");
+class TestRawStrings < UnitTest {
+    testRawStringsNewline() {
+        this.assertEquals(r"test\ntest".len(), 10);
+        this.assertEquals(r"test\ntest"[4], "\\");
+        this.assertEquals(r"test\ntest"[4], r"\");
+        this.assertEquals(r"test\ntest"[5], "n");
+        this.assertEquals(r"test\ntest"[5], r"n");
+        this.assertEquals(r"test\ntest", "test\\ntest");
+    }
 
-assert(r"test\ttest".len() == 10);
-assert(r"test\ttest"[4] == "\\");
-assert(r"test\ttest"[4] == r"\");
-assert(r"test\ttest"[5] == "t");
-assert(r"test\ttest"[5] == r"t");
-assert(r"test\ttest" == "test\\ttest");
+    testRawStringsTab() {
+        this.assertEquals(r"test\ttest".len(), 10);
+        this.assertEquals(r"test\ttest"[4], "\\");
+        this.assertEquals(r"test\ttest"[4], r"\");
+        this.assertEquals(r"test\ttest"[5], "t");
+        this.assertEquals(r"test\ttest"[5], r"t");
+        this.assertEquals(r"test\ttest", "test\\ttest");
+    }
 
-assert(r"test\vtest".len() == 10);
-assert(r"test\vtest"[4] == "\\");
-assert(r"test\vtest"[4] == r"\");
-assert(r"test\vtest"[5] == "v");
-assert(r"test\vtest"[5] == r"v");
-assert(r"test\vtest" == "test\\vtest");
+    testRawStringsVeritcalTab() {
+        this.assertEquals(r"test\vtest".len(), 10);
+        this.assertEquals(r"test\vtest"[4], "\\");
+        this.assertEquals(r"test\vtest"[4], r"\");
+        this.assertEquals(r"test\vtest"[5], "v");
+        this.assertEquals(r"test\vtest"[5], r"v");
+        this.assertEquals(r"test\vtest", "test\\vtest");
+    }
 
-assert(r"test\\test".len() == 10);
-assert(r"test\\test"[4] == "\\");
-assert(r"test\\test"[4] == r"\");
-assert(r"test\\test"[5] == "\\");
-assert(r"test\\test"[5] == r"\");
-assert(r"test\\test" == "test\\\\test");
+    testRawStringsBackslash() {
+        this.assertEquals(r"test\\test".len(), 10);
+        this.assertEquals(r"test\\test"[4], "\\");
+        this.assertEquals(r"test\\test"[4], r"\");
+        this.assertEquals(r"test\\test"[5], "\\");
+        this.assertEquals(r"test\\test"[5], r"\");
+        this.assertEquals(r"test\\test", "test\\\\test");
+    }
+}
+
+TestRawStrings().run();

@@ -4,26 +4,37 @@
  * Testing the Datetime.strftime() function
  *
  */
+from UnitTest import UnitTest;
+
 import Datetime;
 
-// 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
-assert(Datetime.strftime("%Y", 1577836800) == "2020");
-assert(Datetime.strftime("%y", 1577836800) == "20");
+class TestStrftimeDatetimeModule < UnitTest {
+    testStrftime(data) {
+        // 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
+        this.assertEquals(Datetime.strftime(data["pattern"], 1577836800), data["expected"]);
+    }
 
-assert(Datetime.strftime("%b", 1577836800) == "Jan");
-assert(Datetime.strftime("%B", 1577836800) == "January");
-assert(Datetime.strftime("%m", 1577836800) == "01");
+    testStrftimeUPattern() {
+        this.assertTruthy(Datetime.strftime("%u", 1577836800) == "3" or Datetime.strftime("%u", 1577836800) == "");
+    }
 
-assert(Datetime.strftime("%d", 1577836800) == "01");
+    testStrftimeProvider() {
+        return [
+            {"pattern": "%y", "expected": "20"},
+            {"pattern": "%Y", "expected": "2020"},
+            {"pattern": "%b", "expected": "Jan"},
+            {"pattern": "%B", "expected": "January"},
+            {"pattern": "%m", "expected": "01"},
+            {"pattern": "%d", "expected": "01"},
+            {"pattern": "%a", "expected": "Wed"},
+            {"pattern": "%A", "expected": "Wednesday"},
+            {"pattern": "%H", "expected": "00"},
+            {"pattern": "%M", "expected": "00"},
+            {"pattern": "%S", "expected": "00"},
+            {"pattern": "%Y-%m-%d %H:%M:%S", "expected": "2020-01-01 00:00:00"},
+            {"pattern": "", "expected": ""}, // catch up the case of an empty string
+        ];
+    }
+}
 
-assert(Datetime.strftime("%a", 1577836800) == "Wed");
-assert(Datetime.strftime("%A", 1577836800) == "Wednesday");
-assert(Datetime.strftime("%u", 1577836800) == "3" or Datetime.strftime("%u", 1577836800) == "");
-
-assert(Datetime.strftime("%H", 1577836800) == "00");
-assert(Datetime.strftime("%M", 1577836800) == "00");
-assert(Datetime.strftime("%S", 1577836800) == "00");
-
-assert(Datetime.strftime("%Y-%m-%d %H:%M:%S", 1577836800) == "2020-01-01 00:00:00");
-
-assert(Datetime.strftime("") == ""); // catch up the case of an empty string
+TestStrftimeDatetimeModule().run();

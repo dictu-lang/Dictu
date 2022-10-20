@@ -5,35 +5,42 @@
  *
  * access() returns if user has the requested permissions for a file.
  */
+from UnitTest import UnitTest;
+
 import System;
 
-var
-  F_OK = System.F_OK,
-  X_OK = System.X_OK,
-  W_OK = System.W_OK,
-  R_OK = System.R_OK;
+class TestSystemAccess < UnitTest {
+    testSystemAccess() {
+        const F_OK = System.F_OK,
+          X_OK = System.X_OK,
+          W_OK = System.W_OK,
+          R_OK = System.R_OK;
 
-assert(F_OK == 0);
-assert(X_OK == 1);
-assert(W_OK == 2);
-assert(R_OK == 4);
-assert(System.access("/", F_OK) == 0);
-assert(System.access("/", R_OK) == 0);
-assert(System.access("/", X_OK) == 0);
-assert(System.access("/", W_OK) == -1);
-assert(System.errno == C.EACCES);
-assert(System.access("/", F_OK|R_OK|W_OK) == -1);
-assert(System.errno == C.EACCES);
-assert(System.access("/", F_OK|R_OK|W_OK|X_OK) == -1);
-assert(System.errno == C.EACCES);
-assert(System.access("/", F_OK|R_OK|X_OK) == 0);
-assert(System.errno == 0);
-assert(System.access(__file__, X_OK) == -1);
-assert(System.errno == C.EACCES);
+        this.assertEquals(F_OK, 0);
+        this.assertEquals(X_OK, 1);
+        this.assertEquals(W_OK, 2);
+        this.assertEquals(R_OK, 4);
 
-import Path;
+        this.assertTruthy(System.access("/", F_OK).success());
+        this.assertTruthy(System.access("/", R_OK).success());
+        this.assertTruthy(System.access("/", X_OK).success());
 
-if (!Path.exists ("/__NOT_EXISTANT__")) {
-  assert(System.access("/NOT_EXISTANT__", F_OK) == -1);
-  assert(System.errno == C.ENOENT);
+        this.assertFalsey(System.access("/", W_OK).success());
+        this.assertFalsey(System.access("/", F_OK|R_OK|W_OK).success());
+        this.assertFalsey(System.access("/", F_OK|R_OK|W_OK|X_OK).success());
+
+        this.assertTruthy(System.access("/", F_OK|R_OK|X_OK).success());
+        this.assertFalsey(System.access(__file__, X_OK).success());
+
+        import Path;
+
+        if (not Path.exists("/__NOT_EXISTENT__")) {
+            this.assertFalsey(System.access("/NOT_EXISTENT__", F_OK).success());
+        }
+    }
 }
+
+if (System.platform != "windows") {
+    TestSystemAccess().run();
+}
+

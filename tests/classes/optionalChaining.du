@@ -3,16 +3,11 @@
  *
  * Testing optional chaining operator
  */
+from UnitTest import UnitTest;
 
 class Test {
     init(var x = 10, var y = nil) {}
 }
-
-// Test access works correctly
-assert(Test().x == 10);
-assert(Test()?.x == 10);
-assert(Test().y == nil);
-assert(Test()?.y == nil);
 
 class SomeClass {
     getNumber() {
@@ -29,13 +24,26 @@ class Object {
     init(var obj = SomeClass()) {}
 }
 
-var someObject = Object();
+class TestOptionalChaining < UnitTest {
+    testOptionalChaining() {
+        this.assertEquals(Test().x, 10);
+        this.assertEquals(Test()?.x, 10);
+        this.assertEquals(Test().y, nil);
+        this.assertEquals(Test()?.y, nil);
+    }
 
-assert(someObject.obj.getNumber() == 10);
-assert(someObject.obj?.getNumber() == 10);
+    testOptionalChainingMethod() {
+        const someObject = Object();
 
-someObject.obj = nil;
-assert(someObject.obj?.getNumber() == nil);
+        this.assertEquals(someObject.obj.getNumber(), 10);
+        this.assertEquals(someObject.obj?.getNumber(), 10);
 
-someObject.obj = nil;
-assert(someObject.obj?.exit() == nil);
+        someObject.obj = nil;
+        this.assertEquals(someObject.obj?.getNumber(), nil);
+
+        someObject.obj = nil;
+        this.assertEquals(someObject.obj?.exit(), nil);
+    }
+}
+
+TestOptionalChaining().run();

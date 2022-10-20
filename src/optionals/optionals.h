@@ -3,10 +3,11 @@
 
 #include "../vm/util.h"
 #include "math.h"
-#include "env.h"
+#include "env/env.h"
 #include "system.h"
 #include "json.h"
-#include "http.h"
+#include "log.h"
+#include "http/http.h"
 #include "path.h"
 #include "c.h"
 #include "datetime.h"
@@ -16,16 +17,20 @@
 #include "hashlib.h"
 #include "sqlite.h"
 #include "process.h"
+#include "inspect.h"
+#include "object/object.h"
+#include "unittest/unittest.h"
 
-typedef ObjModule *(*BuiltinModule)(DictuVM *vm);
+typedef Value (*BuiltinModule)(DictuVM *vm);
 
 typedef struct {
     char *name;
     BuiltinModule module;
+    bool dictuSource;
 } BuiltinModules;
 
-ObjModule *importBuiltinModule(DictuVM *vm, int index);
+Value importBuiltinModule(DictuVM *vm, int index);
 
-int findBuiltinModule(char *name, int length);
+int findBuiltinModule(char *name, int length, bool *dictuSource);
 
 #endif //dictu_optionals_h

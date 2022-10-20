@@ -4,6 +4,7 @@
  * General import file for all the System methods
  */
 
+import "access.du";
 import "version.du";
 import "sleep.du";
 import "getCWD.du";
@@ -14,3 +15,7 @@ import "remove.du";
 import "process.du";
 import "mkdir.du";
 import "constants.du";
+import "chmod.du";
+import "chown.du";
+import "uname.du";
+import "mkdirTemp.du";

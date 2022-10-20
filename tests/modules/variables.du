@@ -3,15 +3,22 @@
  *
  * Testing importing variables from another script works
  */
+from UnitTest import UnitTest;
 
-import "../variables/scope.du" as ScopeModule;
-assert(ScopeModule.x == 10);
+class TestImportedVariables < UnitTest {
+    testImportedVariables() {
+        import "../variables/scope.du" as ScopeModule;
+        this.assertEquals(ScopeModule.x, 10);
 
-{
-    import "../variables/scope.du" as AnotherScopeModule;
-    assert(AnotherScopeModule.x == 10);
-    {
-        import "../variables/scope.du" as MoreScopeModule;
-        assert(MoreScopeModule.x == 10);
+        {
+            import "../variables/scope.du" as AnotherScopeModule;
+            this.assertEquals(AnotherScopeModule.x, 10);
+            {
+                import "../variables/scope.du" as MoreScopeModule;
+                this.assertEquals(MoreScopeModule.x, 10);
+            }
+        }
     }
 }
+
+TestImportedVariables().run();

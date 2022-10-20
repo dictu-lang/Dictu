@@ -1,0 +1,146 @@
+import Inspect;
+import System;
+
+abstract class UnitTest {
+    var METHOD_NAME_PADDING = '    ';
+    var RESULTS_PADDING     = '    ';
+    var ASSERTION_PADDING   = '         ';
+    var forceOnlyFailures   = false;
+    var forceExitOnFailure  = false;
+
+    init(var onlyFailures = false, var exitOnFailure = false) {
+        this.results = {
+            'passed': 0,
+            'failed': 0,
+            'skipped': 0
+        };
+    }
+
+    filterMethods() {
+        return this.methods().filter(def (method) => {
+            if (method.startsWith('test') and not method.endsWith('Provider') and not method.endsWith('_skipped')) {
+                return method;
+            }
+
+            if (method.endsWith('_skipped')) {
+                this.results['skipped'] += 1;
+            }
+        });
+    }
+
+    setUp() {
+
+    }
+
+    tearDown() {
+
+    }
+
+    run() {
+        const methods = this.filterMethods();
+
+        print(Inspect.getFile(1));
+        methods.forEach(def (method) => {
+            print('{}{}()'.format(UnitTest.METHOD_NAME_PADDING, method));
+
+            const providerMethodName = '{}Provider'.format(method);
+
+            if (this.hasAttribute(providerMethodName)) {
+                const testValue = this.getAttribute(providerMethodName)();
+
+                if (type(testValue) == 'list') {
+                    testValue.forEach(def (val) => {
+                        this.setUp();
+                        this.getAttribute(method)(val);
+                        this.tearDown();
+                    });
+                } else {
+                    this.setUp();
+                    this.getAttribute(method)(testValue);
+                    this.tearDown();
+                }
+            } else {
+                this.setUp();
+                this.getAttribute(method)();
+                this.tearDown();
+            }
+        });
+        print('\nResults:\n{}- {} assertion(s) were successful.\n{}- {} assertion(s) were failures.\n{}- {} method(s) were skipped.\n'.format(
+            UnitTest.RESULTS_PADDING,
+            this.results['passed'],
+            UnitTest.RESULTS_PADDING,
+            this.results['failed'],
+            UnitTest.RESULTS_PADDING,
+            this.results['skipped']
+        ));
+
+        if (this.results['failed'] > 0) {
+            System.exit(1);
+        }
+    }
+
+    printResult(success, errorMsg) {
+        if (success) {
+            this.results['passed'] += 1;
+
+            if (not (this.onlyFailures or this.forceOnlyFailures)) {
+                print('{}Success.'.format(UnitTest.ASSERTION_PADDING));
+            }
+        } else {
+            this.results['failed'] += 1;
+
+            print('{}Line: {} - {}'.format(UnitTest.ASSERTION_PADDING, Inspect.getLine(2), errorMsg));
+
+            if (this.exitOnFailure or this.forceExitOnFailure) {
+                System.exit(1);
+            }
+        }
+    }
+
+    assertEquals(value, expected) {
+        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));
+    }
+
+    assertNotEquals(value, expected) {
+        this.printResult(value != expected, 'Failure: {} is equal to {}.'.format(value, expected));
+    }
+
+    assertNil(value) {
+        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value));
+    }
+
+    assertNotNil(value) {
+        this.printResult(value != nil, 'Failure: Should not be nil.');
+    }
+
+    assertType(value, expected) {
+        const valType = type(value);
+        this.printResult(valType == expected, 'Failure: {}({}) is not of type {}.'.format(value, valType, expected));
+    }
+
+    assertTruthy(value) {
+        this.printResult(value, 'Failure: {} is not Truthy.'.format(value));
+    }
+
+    assertFalsey(value) {
+        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value));
+    }
+
+    assertSuccess(value) {
+        if (type(value) != 'result') {
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            return;
+        }
+
+        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value));
+    }
+
+    assertError(value) {
+        if (type(value) != 'result') {
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            return;
+        }
+
+        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));
+    }
+}

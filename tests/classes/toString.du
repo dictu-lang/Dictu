@@ -5,6 +5,7 @@
  *
  * .toString() returns the string representation of a class / object
  */
+from UnitTest import UnitTest;
 
 class Test {}
 
@@ -18,7 +19,13 @@ class TestOverload {
     }
 }
 
-assert(Test.toString() == '<Cls Test>');
-assert(Test().toString() == '<Test instance>');
-assert(TestOverload.toString() == '<Cls TestOverload>');
-assert(TestOverload().toString() == 'Testing object');
+class TestClassToString < UnitTest {
+    testClassToString() {
+        this.assertEquals(Test.toString(), '<Cls Test>');
+        this.assertEquals(Test().toString(), '<Test instance>');
+        this.assertEquals(TestOverload.toString(), '<Cls TestOverload>');
+        this.assertEquals(TestOverload().toString(), 'Testing object');
+    }
+}
+
+TestClassToString().run();

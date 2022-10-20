@@ -5,57 +5,42 @@
  *
  * Tests inserting, selecting and deleting from a table in SQLite
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var connection = Sqlite.connect(":memory:");
-assert(connection.success());
-connection = connection.unwrap();
+class TestSqliteDelete < UnitTest {
+    private connection;
 
-connection.execute("CREATE TABLE test (x int)").unwrap();
-connection.execute("INSERT INTO test VALUES (10)").unwrap();
+    setUp() {
+        const connection = Sqlite.connect(":memory:");
+        this.assertTruthy(connection.success());
+        this.connection = connection.unwrap();
 
-var select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10]]);
+        // Create table
+        this.connection.execute("CREATE TABLE test (x int)").unwrap();
 
-var resp = connection.execute("INSERT INTO test VALUES (?)", [
-    11
-]).unwrap();
+        // Seed Data
+        this.connection.execute("INSERT INTO test VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10)").unwrap();
+    }
 
-select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10], [11]]);
+    tearDown() {
+        this.connection.close();
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = 10").unwrap();
-assert(select == [[10]]);
+    testDeleteSingleRow() {
+        const result = this.connection.execute("DELETE FROM test WHERE x = ?", [
+            1
+        ]).unwrap();
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    10
-]).unwrap();
-assert(select == [[10]]);
+        this.assertEquals(this.connection.execute("SELECT COUNT(*) FROM test").unwrap(), [[9]]);
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = 11").unwrap();
-assert(select == [[11]]);
+    testDeleteAllRows() {
+        const result = this.connection.execute("DELETE FROM test").unwrap();
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    11
-]).unwrap();
-assert(select == [[11]]);
+        this.assertEquals(this.connection.execute("SELECT COUNT(*) FROM test").unwrap(), [[0]]);
+    }
+}
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    nil
-]).unwrap();
-assert(select == []);
-
-var delete = connection.execute("DELETE FROM test WHERE x = ?", [
-    10
-]).unwrap();
-
-select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[11]]);
-
-delete = connection.execute("DELETE FROM test").unwrap();
-
-select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == []);
-
-connection.close();
+TestSqliteDelete().run();

@@ -5,18 +5,25 @@
  *
  * .toString() returns the string representation of a set
  */
+from UnitTest import UnitTest;
 
-var set_a = set();
+class TestSetToString < UnitTest {
+    testSetToString() {
+        const set_a = set();
 
-set_a.add("one");
-set_a.add("two");
+        set_a.add("one");
+        set_a.add("two");
 
-var set_b = set();
-set_b.add(1);
-set_b.add(2);
+        const set_b = set();
+        set_b.add(1);
+        set_b.add(2);
 
-assert(set_a.toString() == '{"two", "one"}');
-assert(set_b.toString() == '{2, 1}');
+        this.assertEquals(set_a.toString(), '{"two", "one"}');
+        this.assertEquals(set_b.toString(), '{2, 1}');
 
-var set_a = set("one", 2, 3.3, true, false, nil);
-assert(set_a.toString() == '{2, 3.3, false, true, nil, "one"}');
+        const set_c = set("one", 2, 3.3, true, false, nil);
+        this.assertEquals(set_c.toString(), '{2, 3.3, false, true, nil, "one"}');
+    }
+}
+
+TestSetToString().run();

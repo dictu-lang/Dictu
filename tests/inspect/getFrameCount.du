@@ -1,0 +1,57 @@
+/**
+ * getFrameCount.du
+ *
+ * Testing the Inspect.getFrameCount() method
+ */
+from UnitTest import UnitTest;
+
+import Inspect;
+
+class TestInspectGetFrameCount < UnitTest {
+    /**
+     * This is required as the imports + class / methods have increased the frame count.
+     */
+    const ADDED_FRAME_COUNT = 6;
+
+    testGetFrameCount() {
+        this.assertEquals(Inspect.getFrameCount(), 0 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+    }
+
+    testGetFrameCountFunction() {
+        def test() {
+            this.assertEquals(Inspect.getFrameCount(), 1 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+        }
+
+        test();
+    }
+
+    testGetFrameCountNestedFunction() {
+        def anotherTest() {
+            def inner() {
+                this.assertEquals(Inspect.getFrameCount(), 2 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+            }
+
+            inner();
+        }
+
+        anotherTest();
+    }
+
+    testGetFrameCountMultipleNestedFunction() {
+        def anotherDeeperTest() {
+            def middle() {
+                def inner() {
+                    this.assertEquals(Inspect.getFrameCount(), 3 + TestInspectGetFrameCount.ADDED_FRAME_COUNT);
+                }
+
+                inner();
+            }
+
+            middle();
+        }
+
+        anotherDeeperTest();
+    }
+}
+
+TestInspectGetFrameCount().run();

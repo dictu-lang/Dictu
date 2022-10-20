@@ -3,37 +3,43 @@
  *
  * Testing list slicing
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2, 3, 4, 5];
+class TestListSlicing < UnitTest {
+    testListSlicing() {
+        const x = [1, 2, 3, 4, 5];
 
-assert(x[0:x.len()] == x);
-assert(x[0:] == x);
-assert(x[1:] == [2, 3, 4, 5]);
-assert(x[2:] == [3, 4, 5]);
-assert(x[3:] == [4, 5]);
-assert(x[4:] == [5]);
-assert(x[5:] == []);
+        this.assertEquals(x[0:x.len()], x);
+        this.assertEquals(x[0:], x);
+        this.assertEquals(x[1:], [2, 3, 4, 5]);
+        this.assertEquals(x[2:], [3, 4, 5]);
+        this.assertEquals(x[3:], [4, 5]);
+        this.assertEquals(x[4:], [5]);
+        this.assertEquals(x[5:], []);
 
-assert(x[:x.len()] == x);
-assert(x[:5] == x);
-assert(x[:4] == [1, 2, 3, 4]);
-assert(x[:3] == [1, 2, 3]);
-assert(x[:2] == [1, 2]);
-assert(x[:1] == [1]);
-assert(x[:0] == []);
+        this.assertEquals(x[:x.len()], x);
+        this.assertEquals(x[:5], x);
+        this.assertEquals(x[:4], [1, 2, 3, 4]);
+        this.assertEquals(x[:3], [1, 2, 3]);
+        this.assertEquals(x[:2], [1, 2]);
+        this.assertEquals(x[:1], [1]);
+        this.assertEquals(x[:0], []);
 
-assert(x[1:4] == [2, 3, 4]);
-assert(x[1:3] == [2, 3]);
-assert(x[1:2] == [2]);
-assert(x[1:1] == []);
+        this.assertEquals(x[1:4], [2, 3, 4]);
+        this.assertEquals(x[1:3], [2, 3]);
+        this.assertEquals(x[1:2], [2]);
+        this.assertEquals(x[1:1], []);
 
-assert(x[2:5] == [3, 4, 5]);
-assert(x[2:4] == [3, 4]);
-assert(x[2:3] == [3]);
+        this.assertEquals(x[2:5], [3, 4, 5]);
+        this.assertEquals(x[2:4], [3, 4]);
+        this.assertEquals(x[2:3], [3]);
 
-// Outliers
-assert(x[-100:] == [1, 2, 3, 4, 5]);
-assert(x[100:] == []);
-assert(x[:-100] == []);
-assert(x[:100] == [1, 2, 3, 4, 5]);
+        // Outliers
+        this.assertEquals(x[-100:], [1, 2, 3, 4, 5]);
+        this.assertEquals(x[100:], []);
+        this.assertEquals(x[:-100], []);
+        this.assertEquals(x[:100], [1, 2, 3, 4, 5]);
+    }
+}
 
+TestListSlicing().run();

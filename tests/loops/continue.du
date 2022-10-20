@@ -3,44 +3,55 @@
 *
 * Testing continue in a loop
 */
+from UnitTest import UnitTest;
 
-var x = [];
+class TestLoopContinue < UnitTest {
+    testLoopContinue() {
+        const x = [];
 
-for (var i = 0; i < 10; i += 1) {
-    if (i % 2 == 0)
-        continue;
+        for (var i = 0; i < 10; i += 1) {
+            if (i % 2 == 0)
+                continue;
 
-    x.push(i);
-}
+            x.push(i);
+        }
 
-assert(x == [1, 3, 5, 7, 9]);
-
-var i = 0;
-var y = [];
-
-while (i < 10) {
-    i += 1;
-    if (i % 2 == 0)
-        continue;
-
-    y.push(i);
-}
-
-assert(y == [1, 3, 5, 7, 9]);
-
-var z = [];
-
-for (var i = 0; i < 5; i += 1) {
-    for (var j = 0; j < 5; j += 1) {
-        if (j % 2 == 0)
-            continue;
-
-        z.push(j);
+        this.assertEquals(x, [1, 3, 5, 7, 9]);
     }
-    if (i % 2 == 0)
-        continue;
 
-    z.push(i);
+    testWhileLoopContinue() {
+        var i = 0;
+        const y = [];
+
+        while (i < 10) {
+            i += 1;
+            if (i % 2 == 0)
+                continue;
+
+            y.push(i);
+        }
+
+        this.assertEquals(y, [1, 3, 5, 7, 9]);
+    }
+
+    testNestedLoopContinue() {
+        const z = [];
+
+        for (var i = 0; i < 5; i += 1) {
+            for (var j = 0; j < 5; j += 1) {
+                if (j % 2 == 0)
+                    continue;
+
+                z.push(j);
+            }
+            if (i % 2 == 0)
+                continue;
+
+            z.push(i);
+        }
+
+        this.assertEquals(z, [1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 1, 3]);
+    }
 }
 
-assert(z == [1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 1, 3]);
+TestLoopContinue().run();

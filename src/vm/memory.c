@@ -106,6 +106,7 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);
             grayTable(vm, &klass->publicProperties);
+            grayTable(vm, &klass->publicConstantProperties);
             break;
         }
 
@@ -205,6 +206,7 @@ void freeObject(DictuVM *vm, Obj *object) {
             freeTable(vm, &klass->privateMethods);
             freeTable(vm, &klass->abstractMethods);
             freeTable(vm, &klass->publicProperties);
+            freeTable(vm, &klass->publicConstantProperties);
             FREE(vm, ObjClass, object);
             break;
         }

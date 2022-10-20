@@ -1,0 +1,52 @@
+/**
+* matchWrap.du
+*
+* Testing Result.matchWrap()
+*
+*/
+
+from UnitTest import UnitTest;
+
+class TestResultMatchWrap < UnitTest {
+    testMatchWrapSuccess() {
+        const success = Success(10).matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+    );
+
+        this.assertTruthy(success.success());
+        this.assertEquals(success.unwrap(), 10);
+    }
+
+    testMatchWrapError() {
+        const error = Error("error").matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+    );
+
+        this.assertFalsey(error.success());
+        this.assertEquals(error.unwrapError(), "error error!");
+    }
+
+    testMatchOnBuiltinSuccess() {
+        const success = "10".toNumber().matchWrap(
+            def (result) => result,
+            def (error) => error + " error!"
+        );
+
+        this.assertTruthy(success.success());
+        this.assertEquals(success.unwrap(), 10);
+    }
+
+    testMatchOnBuiltinError() {
+        const error = "test".toNumber().matchWrap(
+            def (result) => result,
+            def (error) => error
+        );
+
+        this.assertFalsey(error.success());
+        this.assertEquals(error.unwrapError(), "Can not convert 'test' to number");
+    }
+}
+
+TestResultMatchWrap().run();

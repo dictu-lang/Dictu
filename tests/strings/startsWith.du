@@ -5,13 +5,20 @@
  *
  * .startsWith() returns a boolean based on whether the string starts with a given substring
  */
+from UnitTest import UnitTest;
 
-assert("test".startsWith("t"));
-assert("test".startsWith("te"));
-assert("test".startsWith("test"));
-assert(!("test".startsWith("e")));
-assert(!("test".startsWith("he")));
-assert(!("test".startsWith("hello")));
-assert(!("test".startsWith("1234")));
-assert(!("test".startsWith("!@£$%")));
-assert(!("test".startsWith("123456789")));
+class TestStringStartsWith < UnitTest {
+    testStringStartsWith() {
+        this.assertTruthy("test".startsWith("t"));
+        this.assertTruthy("test".startsWith("te"));
+        this.assertTruthy("test".startsWith("test"));
+        this.assertFalsey("test".startsWith("e"));
+        this.assertFalsey("test".startsWith("he"));
+        this.assertFalsey("test".startsWith("hello"));
+        this.assertFalsey("test".startsWith("1234"));
+        this.assertFalsey("test".startsWith("!@£$%"));
+        this.assertFalsey("test".startsWith("123456789"));
+    }
+}
+
+TestStringStartsWith().run();

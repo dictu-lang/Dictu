@@ -5,7 +5,15 @@
  *
  * Returns a boolean based on whether a file exists.
  */
+from UnitTest import UnitTest;
+
 import Path;
 
-assert(Path.exists("some/dead/path.du") == false);
-assert(Path.exists("tests/runTests.du"));
+class TestPathExists < UnitTest {
+    testExists() {
+        this.assertFalsey(Path.exists("some/dead/path.du"));
+        this.assertTruthy(Path.exists("tests/runTests.du"));
+    }
+}
+
+TestPathExists().run();

@@ -5,26 +5,31 @@
  *
  * .contains() returns a boolean if the given value exists within the list
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2, 3, 4, 5, [6, 7]];
+class TestListContains < UnitTest {
+    testListContains() {
+        const x = [1, 2, 3, 4, 5, [6, 7]];
 
-// First check the list was created properly
-assert(x == [1, 2, 3, 4, 5, [6, 7]]);
+        this.assertTruthy(x.contains(1));
+        this.assertTruthy(x.contains(2));
+        this.assertTruthy(x.contains(3));
+        this.assertTruthy(x.contains(4));
+        this.assertTruthy(x.contains(5));
+        this.assertTruthy(x.contains([6, 7]));
+    }
 
-// Test .contains()
-assert(x.contains(1));
-assert(x.contains(2));
-assert(x.contains(3));
-assert(x.contains(4));
-assert(x.contains(5));
-assert(x.contains([6, 7]));
+    testListNotContains() {
+        const x = [1, 2, 3, 4, 5, [6, 7]];
 
-// Test ! .contains()
-assert(!(x.contains(6)));
-assert(!(x.contains(7)));
-assert(!(x.contains(10)));
-assert(!(x.contains(11)));
-assert(!(x.contains(12)));
-assert(!(x.contains(13)));
-assert(!(x.contains(14)));
+        this.assertFalsey(x.contains(6));
+        this.assertFalsey(x.contains(7));
+        this.assertFalsey(x.contains(10));
+        this.assertFalsey(x.contains(11));
+        this.assertFalsey(x.contains(12));
+        this.assertFalsey(x.contains(13));
+        this.assertFalsey(x.contains(14));
+    }
+}
 
+TestListContains().run();

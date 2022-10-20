@@ -3,6 +3,7 @@
  *
  * Testing traits
  */
+from UnitTest import UnitTest;
 
 trait MyTrait {
     hello(x) {
@@ -14,8 +15,6 @@ trait MyTrait {
     }
 }
 
-assert(type(MyTrait) == "trait");
-
 class MyClass {
     use MyTrait;
 
@@ -23,11 +22,6 @@ class MyClass {
         this.name = name;
     }
 }
-
-var myObject = MyClass("Jason");
-assert(myObject.name == "Jason");
-assert(myObject.hello(10) == 10);
-assert(myObject.attribute() == "Hello Jason");
 
 trait MyOtherTrait {
     test() {
@@ -39,12 +33,6 @@ class MyOtherClass < MyClass {
     use MyOtherTrait;
 }
 
-var myOtherObject = MyOtherClass("Jason");
-assert(myOtherObject.name == "Jason");
-assert(myOtherObject.hello(10) == 10);
-assert(myOtherObject.attribute() == "Hello Jason");
-assert(myOtherObject.test() == 300);
-
 trait MyDuplicateTrait {
     hello(x) {
         return x * x;
@@ -55,13 +43,6 @@ class MyDuplicateClass < MyClass {
     use MyOtherTrait, MyDuplicateTrait; // Override the hello method
 }
 
-var myDuplicateObject = MyDuplicateClass("Jason");
-assert(myDuplicateObject.name == "Jason");
-assert(myDuplicateObject.hello(10) == 100);
-assert(myDuplicateObject.attribute() == "Hello Jason");
-assert(myDuplicateObject.test() == 300);
-
-
 class MyDuplicateClassOverride < MyClass {
     use MyOtherTrait, MyDuplicateTrait; // Override the hello method
 
@@ -71,8 +52,45 @@ class MyDuplicateClassOverride < MyClass {
     }
 }
 
-var myDuplicateOverrideObject = MyDuplicateClassOverride("Jason");
-assert(myDuplicateOverrideObject.name == "Jason");
-assert(myDuplicateOverrideObject.hello(10) == 20);
-assert(myDuplicateOverrideObject.attribute() == "Hello Jason");
-assert(myDuplicateOverrideObject.test() == 300);
+class TestTraits < UnitTest {
+    testTraitType() {
+        this.assertType(MyTrait, "trait");
+    }
+
+    testTrait() {
+        const myObject = MyClass("Jason");
+
+        this.assertEquals(myObject.name, "Jason");
+        this.assertEquals(myObject.hello(10), 10);
+        this.assertEquals(myObject.attribute(), "Hello Jason");
+    }
+
+    testAnotherTrait() {
+        const myOtherObject = MyOtherClass("Jason");
+
+        this.assertEquals(myOtherObject.name, "Jason");
+        this.assertEquals(myOtherObject.hello(10), 10);
+        this.assertEquals(myOtherObject.attribute(), "Hello Jason");
+        this.assertEquals(myOtherObject.test(), 300);
+    }
+
+    testDuplicateMethodsTrait() {
+        const myDuplicateObject = MyDuplicateClass("Jason");
+
+        this.assertEquals(myDuplicateObject.name, "Jason");
+        this.assertEquals(myDuplicateObject.hello(10), 100);
+        this.assertEquals(myDuplicateObject.attribute(), "Hello Jason");
+        this.assertEquals(myDuplicateObject.test(), 300);
+    }
+
+    testOverride() {
+        const myDuplicateOverrideObject = MyDuplicateClassOverride("Jason");
+
+        this.assertEquals(myDuplicateOverrideObject.name, "Jason");
+        this.assertEquals(myDuplicateOverrideObject.hello(10), 20);
+        this.assertEquals(myDuplicateOverrideObject.attribute(), "Hello Jason");
+        this.assertEquals(myDuplicateOverrideObject.test(), 300);
+    }
+}
+
+TestTraits().run();

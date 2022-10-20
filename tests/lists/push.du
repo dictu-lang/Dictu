@@ -5,16 +5,23 @@
  *
  * .push() will insert a new value at the end of a list
  */
+from UnitTest import UnitTest;
 
-var x = [1, 2, 3, 4, 5];
+class TestListPush < UnitTest {
+    testListPush() {
+        const x = [1, 2, 3, 4, 5];
 
-// First check the list was created properly
-assert(x == [1, 2, 3, 4, 5]);
+        // First check the list was created properly
+        this.assertEquals(x, [1, 2, 3, 4, 5]);
 
-// Test .push()
-x.push(6);
-assert(x == [1, 2, 3, 4, 5, 6]);
-x.push(7);
-assert(x == [1, 2, 3, 4, 5, 6, 7]);
-x.push(8);
-assert(x == [1, 2, 3, 4, 5, 6, 7, 8]);
+        // Test .push()
+        x.push(6);
+        this.assertEquals(x, [1, 2, 3, 4, 5, 6]);
+        x.push(7);
+        this.assertEquals(x, [1, 2, 3, 4, 5, 6, 7]);
+        x.push(8);
+        this.assertEquals(x, [1, 2, 3, 4, 5, 6, 7, 8]);
+    }
+}
+
+TestListPush().run();

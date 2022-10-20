@@ -5,6 +5,7 @@
  *
  * .methods() returns the a list of all public methods attached to a class
  */
+from UnitTest import UnitTest;
 
 class Test {
     init() {}
@@ -16,59 +17,65 @@ class Test {
     private somePrivateFunc() {}
 }
 
-const expectedMethods = [
-    "init",
-    "someOtherFunc",
-    "someStaticFunc"
-];
-
-assert(Test.methods().len() == 3);
-expectedMethods.forEach(def (method) => {
-    assert(Test.methods().contains(method));
-});
-
-assert(!Test.methods().contains("somePrivateFunc"));
-
-/**
- * Test instance
- */
-assert(Test().methods().len() == 3);
-expectedMethods.forEach(def (method) => {
-    assert(Test().methods().contains(method));
-});
-
-assert(!Test().methods().contains("somePrivateFunc"));
-
-/**
- * Inheritance
- */
-
 class AnotherTest < Test {
     anotherFunc() {}
 
     private anotherPrivateFunc() {}
 }
 
-const expectedMethodsInheritance = [
-    "init",
-    "someOtherFunc",
-    "someStaticFunc",
-    "anotherFunc"
-];
+class TestMethods < UnitTest {
+    const EXPECTED_METHODS = [
+        "init",
+        "someOtherFunc",
+        "someStaticFunc"
+    ];
 
-assert(AnotherTest.methods().len() == 4);
-expectedMethodsInheritance.forEach(def (method) => {
-    assert(AnotherTest.methods().contains(method));
-});
+    const EXPECTED_METHODS_INHERITANCE = [
+        "init",
+        "someOtherFunc",
+        "someStaticFunc",
+        "anotherFunc"
+    ];
 
-assert(!AnotherTest.methods().contains("somePrivateFunc"));
+    testMethods() {
+        this.assertEquals(Test.methods().len(), 3);
 
-/**
- * Test instance
- */
-assert(AnotherTest().methods().len() == 4);
-expectedMethodsInheritance.forEach(def (method) => {
-    assert(AnotherTest().methods().contains(method));
-});
+        TestMethods.EXPECTED_METHODS.forEach(def (method) => {
+            this.assertTruthy(Test.methods().contains(method));
+        });
 
-assert(!AnotherTest().methods().contains("somePrivateFunc"));
+        this.assertFalsey(Test.methods().contains("somePrivateFunc"));
+    }
+
+    testMethodsInheritance() {
+        this.assertEquals(AnotherTest.methods().len(), 4);
+
+        TestMethods.EXPECTED_METHODS_INHERITANCE.forEach(def (method) => {
+            this.assertTruthy(AnotherTest.methods().contains(method));
+        });
+
+        this.assertFalsey(AnotherTest.methods().contains("somePrivateFunc"));
+    }
+
+    testMethodsInstance() {
+        this.assertEquals(Test().methods().len(), 3);
+
+        TestMethods.EXPECTED_METHODS.forEach(def (method) => {
+            this.assertTruthy(Test().methods().contains(method));
+        });
+
+        this.assertFalsey(Test().methods().contains("somePrivateFunc"));
+    }
+
+    testMethodsInheritanceInstance() {
+        this.assertEquals(AnotherTest().methods().len(), 4);
+
+        TestMethods.EXPECTED_METHODS_INHERITANCE.forEach(def (method) => {
+            this.assertTruthy(AnotherTest().methods().contains(method));
+        });
+
+        this.assertFalsey(AnotherTest().methods().contains("somePrivateFunc"));
+    }
+}
+
+TestMethods().run();

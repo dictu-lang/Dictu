@@ -4,8 +4,14 @@
  * Testing the not(!) logical operator
  */
 
-assert((not true) == false);
-assert(not false);
+from UnitTest import UnitTest;
 
-assert(!true == false);
-assert(!false);
+class NotOperatorTest < UnitTest {
+    testNotOperator() {
+        this.assertTruthy((not true) == false);
+        this.assertTruthy(not false);
+        this.assertTruthy(not (true == false));
+    }
+}
+
+NotOperatorTest().run();

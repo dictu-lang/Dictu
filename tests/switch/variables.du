@@ -1,0 +1,74 @@
+/**
+ * variables.du
+ *
+ * Testing variables within a switch
+ */
+from UnitTest import UnitTest;
+
+class TestSwitchVariables < UnitTest {
+    testSwitchVariables() {
+        var x = 10;
+
+        switch (x) {
+            case 1: {
+                x += 10;
+            }
+
+            case 5: {
+                x += 10;
+            }
+
+            case 10: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 20);
+    }
+
+    testSwitchVariablesNoMatch() {
+        var x = 11;
+
+        switch (x) {
+            case 1: {
+                x += 10;
+            }
+
+            case 5: {
+                x += 10;
+            }
+
+            case 5 + 5: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 11);
+    }
+
+    testSwitchVariablesNoMatchWithDefault() {
+        var x = 11;
+
+        switch (x) {
+            case 1: {
+                x += 10;
+            }
+
+            case 5: {
+                x += 10;
+            }
+
+            case 10: {
+                x += 10;
+            }
+
+            default: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 21);
+    }
+}
+
+TestSwitchVariables().run();

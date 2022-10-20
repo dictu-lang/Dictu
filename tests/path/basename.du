@@ -5,11 +5,25 @@
  *
  * Returns the basename of string.
  */
+from UnitTest import UnitTest;
+
 import Path;
 
-assert(Path.basename ("") == "");
-assert(Path.basename ("/") == "/");
-assert(Path.basename ("//a") == "a");
-assert(Path.basename ("//") == "/");
-assert(Path.basename ("/////") == "/");
-assert(Path.basename ("/root/t.ext") == "t.ext");
+class TestPathBasename < UnitTest {
+    testBasename(data) {
+        this.assertEquals(Path.basename(data["path"]), data["expected"]);
+    }
+
+    testBasenameProvider() {
+        return [
+            {"path": "", "expected": ""},
+            {"path": "/", "expected": "/"},
+            {"path": "//a", "expected": "a"},
+            {"path": "//", "expected": "/"},
+            {"path": "/////", "expected": "/"},
+            {"path": "/root/t.ext", "expected": "t.ext"},
+        ];
+    }
+}
+
+TestPathBasename().run();

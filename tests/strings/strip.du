@@ -7,25 +7,35 @@
  *
  * .(left/right)strip() returns a new string with whitespace characters removed from the start, end, or both of a string
  */
+from UnitTest import UnitTest;
 
-// Left strip
-assert("  Dictu is great!".leftStrip() == "Dictu is great!");
-assert("Dictu is great!  ".leftStrip() == "Dictu is great!  ");
-assert("  Dictu is great!  ".leftStrip() == "Dictu is great!  ");
-assert("  Dictu is great!".leftStrip().len() == 15);
-assert("Dictu is great!  ".leftStrip().len() == 17);
-assert("  Dictu is great!  ".leftStrip().len() == 17);
-// Right strip
-assert("Dictu is great!  ".rightStrip() == "Dictu is great!");
-assert("  Dictu is great!".rightStrip() == "  Dictu is great!");
-assert("  Dictu is great!  ".rightStrip() == "  Dictu is great!");
-assert("Dictu is great!  ".rightStrip().len() == 15);
-assert("  Dictu is great!".rightStrip().len() == 17);
-assert("  Dictu is great!  ".rightStrip().len() == 17);
-// Strip
-assert("Dictu is great!  ".strip() == "Dictu is great!");
-assert("  Dictu is great!".strip() == "Dictu is great!");
-assert("  Dictu is great!  ".strip() == "Dictu is great!");
-assert("Dictu is great!  ".strip().len() == 15);
-assert("  Dictu is great!".strip().len() == 15);
-assert("  Dictu is great!  ".strip().len() == 15);
+class TestStringStrip < UnitTest {
+    testStringLeftStrip() {
+        this.assertEquals("  Dictu is great!".leftStrip(), "Dictu is great!");
+        this.assertEquals("Dictu is great!  ".leftStrip(), "Dictu is great!  ");
+        this.assertEquals("  Dictu is great!  ".leftStrip(), "Dictu is great!  ");
+        this.assertEquals("  Dictu is great!".leftStrip().len(), 15);
+        this.assertEquals("Dictu is great!  ".leftStrip().len(), 17);
+        this.assertEquals("  Dictu is great!  ".leftStrip().len(), 17);
+    }
+
+    testStringRightStrip() {
+        this.assertEquals("Dictu is great!  ".rightStrip(), "Dictu is great!");
+        this.assertEquals("  Dictu is great!".rightStrip(), "  Dictu is great!");
+        this.assertEquals("  Dictu is great!  ".rightStrip(), "  Dictu is great!");
+        this.assertEquals("Dictu is great!  ".rightStrip().len(), 15);
+        this.assertEquals("  Dictu is great!".rightStrip().len(), 17);
+        this.assertEquals("  Dictu is great!  ".rightStrip().len(), 17);
+    }
+    
+    testStringStrip() {
+        this.assertEquals("Dictu is great!  ".strip(), "Dictu is great!");
+        this.assertEquals("  Dictu is great!".strip(), "Dictu is great!");
+        this.assertEquals("  Dictu is great!  ".strip(), "Dictu is great!");
+        this.assertEquals("Dictu is great!  ".strip().len(), 15);
+        this.assertEquals("  Dictu is great!".strip().len(), 15);
+        this.assertEquals("  Dictu is great!  ".strip().len(), 15);
+    }
+}
+
+TestStringStrip().run();

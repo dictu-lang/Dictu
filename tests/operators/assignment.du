@@ -4,105 +4,114 @@
  * Testing variable assignment
  */
 
+from UnitTest import UnitTest;
 
-// Variable
-var x = 10;
-
-x += 10;
-assert(x == 20);
-
-x -= 10;
-assert(x == 10);
-
-x *= 2;
-assert(x == 20);
-
-x /= 2;
-assert(x == 10);
-
-x |= 5;
-assert(x == 15);
-
-x &= 5;
-assert(x == 5);
-
-x ^= 5;
-assert(x == 0);
-
-// List
-var list = [10];
-
-list[0] += 10;
-assert(list[0] == 20);
-
-list[0] -= 10;
-assert(list[0] == 10);
-
-list[0] *= 2;
-assert(list[0] == 20);
-
-list[0] /= 2;
-assert(list[0] == 10);
-
-list[0] |= 5;
-assert(list[0] == 15);
-
-list[0] &= 5;
-assert(list[0] == 5);
-
-list[0] ^= 5;
-assert(list[0] == 0);
-
-// Dictionary
-var dictionary = {"num": 10};
-
-dictionary["num"] += 10;
-assert(dictionary["num"] == 20);
-
-dictionary["num"] -= 10;
-assert(dictionary["num"] == 10);
-
-dictionary["num"] *= 2;
-assert(dictionary["num"] == 20);
-
-dictionary["num"] /= 2;
-assert(dictionary["num"] == 10);
-
-dictionary["num"] |= 5;
-assert(dictionary["num"] == 15);
-
-dictionary["num"] &= 5;
-assert(dictionary["num"] == 5);
-
-dictionary["num"] ^= 5;
-assert(dictionary["num"] == 0);
-
-// Object
 class Object {
     init() {
         this.x = 10;
     }
 }
 
-var obj = Object();
+class VariableAssignmentTest < UnitTest {
+    testVariableAssignmentOperators() {
+        var x = 10;
+        x += 10;
 
-obj.x += 10;
-assert(obj.x == 20);
+        this.assertEquals(x, 20);
 
-obj.x -= 10;
-assert(obj.x == 10);
+        x -= 10;
+        this.assertEquals(x, 10);
 
-obj.x *= 2;
-assert(obj.x == 20);
+        x *= 2;
+        this.assertEquals(x, 20);
 
-obj.x /= 2;
-assert(obj.x == 10);
+        x /= 2;
+        this.assertEquals(x, 10);
 
-obj.x |= 5;
-assert(obj.x == 15);
+        x |= 5;
+        this.assertEquals(x, 15);
 
-obj.x &= 5;
-assert(obj.x == 5);
+        x &= 5;
+        this.assertEquals(x, 5);
 
-obj.x ^= 5;
-assert(obj.x == 0);
+        x ^= 5;
+        this.assertEquals(x, 0);
+    }
+
+    testVariableAssignmentOperatorsOnLists() {
+        const list = [10];
+
+        list[0] += 10;
+        this.assertEquals(list[0], 20);
+
+        list[0] -= 10;
+        this.assertEquals(list[0], 10);
+
+        list[0] *= 2;
+        this.assertEquals(list[0], 20);
+
+        list[0] /= 2;
+        this.assertEquals(list[0], 10);
+
+        list[0] |= 5;
+        this.assertEquals(list[0], 15);
+
+        list[0] &= 5;
+        this.assertEquals(list[0], 5);
+
+        list[0] ^= 5;
+        this.assertEquals(list[0], 0);
+    }
+
+    testVariableAssignmentOperatorsOnDictionaries() {
+        const dictionary = {"num": 10};
+
+        dictionary["num"] += 10;
+        this.assertEquals(dictionary["num"], 20);
+
+        dictionary["num"] -= 10;
+        this.assertEquals(dictionary["num"], 10);
+
+        dictionary["num"] *= 2;
+        this.assertEquals(dictionary["num"], 20);
+
+        dictionary["num"] /= 2;
+        this.assertEquals(dictionary["num"], 10);
+
+        dictionary["num"] |= 5;
+        this.assertEquals(dictionary["num"], 15);
+
+        dictionary["num"] &= 5;
+        this.assertEquals(dictionary["num"], 5);
+
+        dictionary["num"] ^= 5;
+        this.assertEquals(dictionary["num"], 0);
+    }
+
+    testVariableAssignmentOperatorsOnObjects() {
+        const obj = Object();
+
+        obj.x += 10;
+        this.assertEquals(obj.x, 20);
+
+        obj.x -= 10;
+        this.assertEquals(obj.x, 10);
+
+        obj.x *= 2;
+        this.assertEquals(obj.x, 20);
+
+        obj.x /= 2;
+        this.assertEquals(obj.x, 10);
+
+        obj.x |= 5;
+        this.assertEquals(obj.x, 15);
+
+        obj.x &= 5;
+        this.assertEquals(obj.x, 5);
+
+        obj.x ^= 5;
+        this.assertEquals(obj.x, 0);
+    }
+}
+
+VariableAssignmentTest().run();

@@ -5,38 +5,51 @@
  *
  * .isInstance() returns a boolean based on whether the object is created from a given class / parent superclass
  */
+from UnitTest import UnitTest;
 
 class Test {}
 
-assert(Test().isInstance(Test));
-
 class AnotherTest < Test {}
 
-assert(AnotherTest().isInstance(Test));
-assert(AnotherTest().isInstance(AnotherTest));
-assert(!Test().isInstance(AnotherTest));
-
 class Unrelated {}
-
-assert(!Test().isInstance(Unrelated));
-assert(!AnotherTest().isInstance(Unrelated));
-
 
 abstract class AbstractBase {}
 
 class ConcreteClass < AbstractBase {}
 
-assert(ConcreteClass().isInstance(AbstractBase));
-assert(ConcreteClass().isInstance(ConcreteClass));
-
-
 class FirstClass {}
 class SecondClass < FirstClass {}
 class ThirdClass < SecondClass {}
 
-assert(FirstClass().isInstance(FirstClass));
-assert(SecondClass().isInstance(FirstClass));
-assert(SecondClass().isInstance(SecondClass));
-assert(ThirdClass().isInstance(FirstClass));
-assert(ThirdClass().isInstance(SecondClass));
-assert(ThirdClass().isInstance(ThirdClass));
+class TestIsInstance < UnitTest {
+    testIsInstance() {
+        this.assertTruthy(Test().isInstance(Test));
+    }
+
+    testIsInstanceUnrelated() {
+        this.assertFalsey(Test().isInstance(Unrelated));
+        this.assertFalsey(AnotherTest().isInstance(Unrelated));
+    }
+
+    testIsInstanceSingleInheritance() {
+        this.assertTruthy(AnotherTest().isInstance(Test));
+        this.assertTruthy(AnotherTest().isInstance(AnotherTest));
+        this.assertFalsey(Test().isInstance(AnotherTest));
+    }
+
+    testIsInstanceAbstract() {
+        this.assertTruthy(ConcreteClass().isInstance(AbstractBase));
+        this.assertTruthy(ConcreteClass().isInstance(ConcreteClass));
+    }
+
+    testIsInstanceMultipleInheritance() {
+        this.assertTruthy(FirstClass().isInstance(FirstClass));
+        this.assertTruthy(SecondClass().isInstance(FirstClass));
+        this.assertTruthy(SecondClass().isInstance(SecondClass));
+        this.assertTruthy(ThirdClass().isInstance(FirstClass));
+        this.assertTruthy(ThirdClass().isInstance(SecondClass));
+        this.assertTruthy(ThirdClass().isInstance(ThirdClass));
+    }
+}
+
+TestIsInstance().run();

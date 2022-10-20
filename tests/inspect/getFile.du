@@ -1,0 +1,16 @@
+/**
+ * getFile.du
+ *
+ * Testing the Inspect.getFile() method
+ */
+from UnitTest import UnitTest;
+
+import Inspect;
+
+class TestInspectGetFile < UnitTest {
+    testInspectGetFile() {
+        this.assertTruthy(Inspect.getFile().endsWith("getFile.du"));
+    }
+}
+
+TestInspectGetFile().run();

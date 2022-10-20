@@ -3,6 +3,7 @@
  *
  * Testing class inheritance
  */
+from UnitTest import UnitTest;
 
 class Base {
     init() {
@@ -23,6 +24,26 @@ class Testing < Base {
     }
 }
 
-assert(Test().func() == 10);
-assert(Testing().value == 10);
-assert(Testing().newFunc() == 10);
+// Test inheritance works via an expression.
+const dict = {"class": Testing};
+
+class AnotherTest < dict["class"] {
+    init() {
+        super.init();
+    }
+}
+
+class TestClassInheritance < UnitTest {
+    testClassInheritance() {
+        this.assertEquals(Test().func(), 10);
+        this.assertEquals(Testing().value, 10);
+        this.assertEquals(Testing().newFunc(), 10);
+    }
+
+    testClassInheritanceExpression() {
+        this.assertEquals(AnotherTest().value, 10);
+        this.assertEquals(AnotherTest().newFunc(), 10);
+    }
+}
+
+TestClassInheritance().run();

@@ -327,7 +327,7 @@ static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(result);
 }
 
-ObjModule *createMathsModule(DictuVM *vm) {
+Value createMathsModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Math", 4);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -356,8 +356,15 @@ ObjModule *createMathsModule(DictuVM *vm) {
      */
     defineNativeProperty(vm, &module->values, "pi", NUMBER_VAL(3.14159265358979));
     defineNativeProperty(vm, &module->values, "e", NUMBER_VAL(2.71828182845905));
+    defineNativeProperty(vm, &module->values, "phi", NUMBER_VAL(1.61803398874989));
+    defineNativeProperty(vm, &module->values, "sqrt2", NUMBER_VAL(1.41421356237309));
+    defineNativeProperty(vm, &module->values, "sqrte", NUMBER_VAL(1.61803398874989));
+    defineNativeProperty(vm, &module->values, "sqrtpi", NUMBER_VAL(1.77245385090551));
+    defineNativeProperty(vm, &module->values, "sqrtphi", NUMBER_VAL(1.27201964951406));
+    defineNativeProperty(vm, &module->values, "ln2", NUMBER_VAL(0.69314718055994));
+    defineNativeProperty(vm, &module->values, "ln10", NUMBER_VAL(2.30258509299404));
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

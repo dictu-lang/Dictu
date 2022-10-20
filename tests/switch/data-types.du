@@ -1,0 +1,76 @@
+/**
+ * data-types.du
+ *
+ * Testing data-types within a switch
+ */
+from UnitTest import UnitTest;
+
+class TestSwitchDateTypes < UnitTest {
+    testSwitchStatement() {
+        var x = 0;
+
+        switch ("string") {
+            case 1: {
+                x += 10;
+            }
+
+            case "string": {
+                x += 10;
+            }
+
+            case [1, 2]: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 10);
+    }
+
+    testSwitchStatementOnList() {
+        var x = 0;
+
+        switch ([1, 2]) {
+            case 1: {
+                x += 10;
+            }
+
+            case "string": {
+                x += 10;
+            }
+
+            case [1, 2]: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 10);
+    }
+
+    testSwitchStatementOnFunction() {
+        def func() {}
+
+        var x = 0;
+
+        switch (func) {
+            case 1: {
+                x += 10;
+            }
+
+            case "string": {
+                x += 10;
+            }
+
+            case [1, 2]: {
+                x += 10;
+            }
+
+            case func: {
+                x += 10;
+            }
+        }
+
+        this.assertEquals(x, 10);
+    }
+}
+
+TestSwitchDateTypes().run();

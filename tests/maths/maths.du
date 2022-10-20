@@ -8,36 +8,104 @@
  *    - pi, e
  *
  */
+from UnitTest import UnitTest;
+
 import Math;
 
-assert(Math.min(1, 2, 3) == 1);
-assert(Math.min([1, 2, 3]) == 1);
-assert(Math.min([3, 2, 1]) == 1);
-assert(Math.max(1, 2, 3) == 3);
-assert(Math.max([1, 2, 3]) == 3);
-assert(Math.max([3, 2, 1]) == 3);
-assert(Math.average(1, 2, 3) == 2);
-assert(Math.average([1, 2, 3]) == 2);
-assert(Math.sum(1, 2, 3) == 6);
-assert(Math.sum([1, 2, 3]) == 6);
-assert(Math.floor(17.999) == 17);
-assert(Math.round(17.5) == 18);
-assert(Math.ceil(17.0001) == 18);
-assert(Math.abs(18) == 18);
-assert(Math.abs(-18) == 18);
-assert(Math.sqrt(25) == 5);
-assert(Math.sqrt(100) == 10);
-assert(Math.sqrt(20) == 4.47213595499958);
-assert(Math.sqrt(100_00) == 1_00);
-assert(Math.sin(1) > 0.84);
-assert(Math.sin(1) < 0.845);
-assert(Math.cos(0) == 1);
-assert(Math.tan(1) > 1.5);
-assert(Math.tan(1) < 1.6);
-assert(Math.gcd(32, 24, 12) == 4);
-assert(Math.gcd([32, 24, 12]) == 4);
-assert(Math.lcm(32, 24, 12) == 96);
-assert(Math.lcm([32, 24, 12]) == 96);
+class TestMathModule < UnitTest {
+    testMathMin() {
+        this.assertEquals(Math.min(1), 1);
+        this.assertEquals(Math.min(1, 2), 1);
+        this.assertEquals(Math.min(1, 2, 3), 1);
+        this.assertEquals(Math.min([1, 2, 3]), 1);
+        this.assertEquals(Math.min(-1, -2, -3), -3);
+        this.assertEquals(Math.min([-1, -2, -3]), -3);
+        this.assertEquals(Math.min(0.1,0.2,0.3), 0.1);
+        this.assertEquals(Math.min(1,0.5,-1,0), -1);
+    }
+    
+    testMathMax() {
+        this.assertEquals(Math.max(1), 1);
+        this.assertEquals(Math.max(1,2), 2);
+        this.assertEquals(Math.max(1, 2, 3), 3);
+        this.assertEquals(Math.max([1, 2, 3]), 3);
+        this.assertEquals(Math.max(-1, -2, -3), -1);
+        this.assertEquals(Math.max([-1, -2, -3]), -1);
+        this.assertEquals(Math.max(0.1,0.2,0.3), 0.3);
+        this.assertEquals(Math.max(1,0.5,-1,0), 1);
+    }
+    
+    testMathAverage() {
+        this.assertEquals(Math.average(1, 2, 3), 2);
+        this.assertEquals(Math.average([1, 2, 3]), 2);
+    }
+    
+    testMathSum() {
+        this.assertEquals(Math.sum(1, 2, 3), 6);
+        this.assertEquals(Math.sum([1, 2, 3]), 6);
+        this.assertEquals(Math.sum(1,6,1.2,-19,-98), -108.8);
+    }
+    
+    testMathFloor() {
+        this.assertEquals(Math.floor(17.999), 17);
+        this.assertEquals(Math.floor(-1.59), -2);
+    }
+    
+    testMathRound() {
+        this.assertEquals(Math.round(17.5), 18);
+    }
+    
+    testMathCeil() {
+        this.assertEquals(Math.ceil(17.0001), 18);
+    }
+    
+    testMathAbs() {
+        this.assertEquals(Math.abs(18), 18);
+        this.assertEquals(Math.abs(-18), 18);
+    }
+    
+    testMathSqrt() {
+        this.assertEquals(Math.sqrt(25), 5);
+        this.assertEquals(Math.sqrt(100), 10);
+        this.assertEquals(Math.sqrt(20), 4.47213595499958);
+        this.assertEquals(Math.sqrt(100_00), 1_00);
+    }
+    
+    testMathSin() {
+        this.assertTruthy(Math.sin(1) > 0.84);
+        this.assertTruthy(Math.sin(1) < 0.845);
+    }
+    
+    testMathCos() {
+        this.assertEquals(Math.cos(0), 1);
+    }
+    
+    testMathTan() {
+        this.assertTruthy(Math.tan(1) > 1.5);
+        this.assertTruthy(Math.tan(1) < 1.6);
+    }
+    
+    testMathGcd() {
+        this.assertEquals(Math.gcd(32, 24, 12), 4);
+        this.assertEquals(Math.gcd([32, 24, 12]), 4);
+    }
+    
+    testMathLcm() {
+        this.assertEquals(Math.lcm(32, 24, 12), 96);
+        this.assertEquals(Math.lcm([32, 24, 12]), 96);
+    }
+    
+    testMathConstants() {
+        this.assertEquals(Math.pi, 3.14159265358979);
+        this.assertEquals(Math.e, 2.71828182845905);
+        this.assertEquals(Math.phi, 1.61803398874989);
+        this.assertEquals(Math.sqrt2, 1.41421356237309);
+        this.assertEquals(Math.sqrte, 1.61803398874989);
+        this.assertEquals(Math.sqrtpi, 1.77245385090551);
+        this.assertEquals(Math.sqrtphi, 1.27201964951406);
+        this.assertEquals(Math.ln2, 0.69314718055994);
+        this.assertEquals(Math.ln10, 2.30258509299404);
+    }
+}
 
-assert(Math.pi == 3.14159265358979);
-assert(Math.e == 2.71828182845905);
+TestMathModule().run();

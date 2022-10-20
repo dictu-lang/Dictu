@@ -47,3 +47,24 @@ Env.set("key", "test");
 Env.set("key", nil); // Remove env var
 Env.set("key", 10); // set() arguments must be a string or nil.
 ```
+
+### Env.readFile(string: path -> optional)
+
+To read environment variables from a file this helper method is provided.
+By default it will attempt to read `.env` unless a different path is supplied.
+Returns a Result type and on success will unwrap to nil.
+
+Note: You are able to have comments in the `.env` file via the use of `#` (both in-line and first character).
+
+```env
+# This is a comment
+TEST=10
+TESTING=100 # In-line comment
+```
+
+```cs
+Env.readFile(); // <Result Suc>
+
+print(Env.get("TEST")); // 10
+print(Env.get("TESTING")); // 100
+```

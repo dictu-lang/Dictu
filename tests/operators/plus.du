@@ -4,25 +4,16 @@
  * Testing addition
  */
 
-var x = 10;
-
-assert(x + 1 == 11);
-assert(x + x == 20);
-assert(1 + x == 11);
-assert(10 + x + 10 == 30);
+from UnitTest import UnitTest;
 
 // Test function call (useful for constant folding)
 def test() {
     return 1 + 2 + 3;
 }
 
-assert(test() + 2 + test() == 14);
-
 def calculate(a, b, c) {
     return a + b + c;
 }
-
-assert(calculate(1, 2, 3) + calculate(2, 3, 4) == 15);
 
 // Test super
 class Test {
@@ -37,4 +28,27 @@ class AnotherClass < Test {
     }
 }
 
-assert(AnotherClass().test() == 20);
+class PlusOperatorTest < UnitTest {
+    testPlusOperator(data) {
+        this.assertEquals(data["operation"], data["expected"]);
+    }
+
+    testPlusOperatorProvider() {
+        const x = 10;
+
+        return [
+            {"operation": x + 1, "expected": 11},
+            {"operation": 1 + x, "expected": 11},
+            {"operation": x + x, "expected": 20},
+            {"operation": 10 + x + 10, "expected": 30},
+            {"operation": x / 2.5, "expected": 4},
+            {"operation": 20 / 2.5, "expected": 8},
+            {"operation": test(), "expected": 6},
+            {"operation": test() + 2 + test(), "expected": 14},
+            {"operation": calculate(1, 2, 3) + calculate(2, 3, 4), "expected": 15},
+            {"operation": AnotherClass().test(), "expected": 20},
+        ];
+    }
+}
+
+PlusOperatorTest().run();

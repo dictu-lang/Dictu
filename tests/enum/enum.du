@@ -3,26 +3,61 @@
  *
  * Testing enums
  */
+from UnitTest import UnitTest;
 
-enum Test {
-    a = 1,
-    b = 2,
-    c = 3
+class TestEnums < UnitTest {
+    testEnum() {
+        enum MyEnum {
+            a,
+            b,
+            c
+        }
+
+        this.assertEquals(MyEnum.a, 0);
+        this.assertEquals(MyEnum.b, 1);
+        this.assertEquals(MyEnum.c, 2);
+    }
+
+    testEnumWithValues() {
+        enum Test {
+            a = 1,
+            b = 2,
+            c = 3
+        }
+
+        this.assertEquals(Test.a, 1);
+        this.assertEquals(Test.b, 2);
+        this.assertEquals(Test.c, 3);
+    }
+
+    testEnumWithMixedValues() {
+        enum AnotherTest {
+            a,
+            b = "test",
+            c = 30,
+            d
+        }
+
+        this.assertEquals(AnotherTest.a, 0);
+        this.assertEquals(AnotherTest.b, "test");
+        this.assertEquals(AnotherTest.c, 30);
+        this.assertEquals(AnotherTest.d, 3);
+    }
+
+    testHeterogeneousEnum() {
+        const func = def () => 10;
+
+        enum HeterogeneousEnum {
+            a = 0,
+            b = "string",
+            c = func
+        }
+
+        this.assertEquals(HeterogeneousEnum.a, 0);
+        this.assertEquals(HeterogeneousEnum.b, "string");
+        this.assertEquals(HeterogeneousEnum.c, func);
+        this.assertEquals(HeterogeneousEnum.c(), 10);
+    }
 }
 
-assert(Test.a == 1);
-assert(Test.b == 2);
-assert(Test.c == 3);
-
-const func = def () => 10;
-
-enum HeterogeneousEnum {
-    a = 0,
-    b = "string",
-    c = func
-}
-
-assert(HeterogeneousEnum.a == 0);
-assert(HeterogeneousEnum.b == "string");
-assert(HeterogeneousEnum.c == func);
-assert(HeterogeneousEnum.c() == 10);
+TestEnums().run();

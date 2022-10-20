@@ -4,46 +4,53 @@
  * Testing equality for different value types
  */
 
-assert(10 == 10);
-assert(11 != 10);
-
-assert(10 >= 10);
-assert(!(10 >= 11));
-
-assert(9 <= 10);
-assert(!(10 <= 9));
-
-assert("test" == "test");
-assert("test" != "testing");
-
-// Ensure escape codes are working correctly
-assert("test\n" == "test\n");
-assert("test\"".len() == 5);
-assert("test\n".len() == 5);
-assert("test\t".len() == 5);
-assert("test\r".len() == 5);
-assert("test\v".len() == 5);
-
-assert([] == []);
-assert([10] == [10]);
-assert([] != [10]);
-assert([10] != [100]);
-
-assert({} == {});
-assert({"test": 10} == {"test": 10});
-assert({} != {"test": 10});
-assert({"test": 10} != {"test": 100});
+from UnitTest import UnitTest;
 
 def test() {}
 def test1() {}
 
-assert(test == test);
-assert(test != test1);
-
 class Test {}
 
-var obj1 = Test();
-var obj2 = Test();
+class EqualityOperatorTest < UnitTest {
+    testEqualityOperator(data) {
+        this.assertTruthy(data["operation"]);
+    }
 
-assert(obj1 != obj2);
-assert(type(obj1) == type(obj2));
+    testEqualityOperatorProvider() {
+        const obj1 = Test();
+        const obj2 = Test();
+
+        return [
+            {"operation": 10 == 10},
+            {"operation": 11 != 10},
+            {"operation": 10 >= 10},
+            {"operation": not (10 >= 11)},
+            {"operation": 9 <= 10},
+            {"operation": not (10 <= 9)},
+            {"operation": "test" == "test"},
+            {"operation": [] == []},
+            {"operation": [10] == [10]},
+            {"operation": [] != [10]},
+            {"operation": [10] != [100]},
+            {"operation": {} == {}},
+            {"operation": {"test": 10} == {"test": 10}},
+            {"operation": {} != {"test": 10}},
+            {"operation": {"test": 10} != {"test": 100}},
+            {"operation": test == test},
+            {"operation": test != test1},
+            {"operation": obj1 != obj2},
+            {"operation": type(obj1) == type(obj2)},
+        ];
+    }
+
+    testEqualityOperatorWithEscapeCodes() {
+        this.assertTruthy("test\n" == "test\n");
+        this.assertEquals("test\"".len(), 5);
+        this.assertEquals("test\n".len(), 5);
+        this.assertEquals("test\t".len(), 5);
+        this.assertEquals("test\r".len(), 5);
+        this.assertEquals("test\v".len(), 5);
+    }
+}
+
+EqualityOperatorTest().run();

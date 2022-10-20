@@ -3,11 +3,18 @@
  *
  * Testing string concatenation
  */
+from UnitTest import UnitTest;
 
-assert("Dictu" + " is " + "great!" == "Dictu is great!");
+class TestStringConcat < UnitTest {
+    testStringConcat() {
+        this.assertEquals("Dictu" + " is " + "great!", "Dictu is great!");
 
-var x = "Dictu" +
-    " is " +
-    "great!";
+        const x = "Dictu" +
+            " is " +
+            "great!";
 
-assert(x == "Dictu is great!");
+        this.assertEquals(x, "Dictu is great!");
+    }
+}
+
+TestStringConcat().run();

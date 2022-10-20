@@ -5,45 +5,79 @@
  *
  * Tests inserting and selecting from a table in SQLite
  */
+from UnitTest import UnitTest;
 
 import Sqlite;
 
-var connection = Sqlite.connect(":memory:");
-assert(connection.success());
-connection = connection.unwrap();
+class TestSqliteSelect < UnitTest {
+    private connection;
 
-connection.execute("CREATE TABLE test (x int)").unwrap();
-var resp = connection.execute("INSERT INTO test VALUES (10)").unwrap();
+    setUp() {
+        const connection = Sqlite.connect(":memory:");
+        this.assertTruthy(connection.success());
+        this.connection = connection.unwrap();
 
-var select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10]]);
+        // Create table
+        this.connection.execute("CREATE TABLE test (x int)").unwrap();
 
-resp = connection.execute("INSERT INTO test VALUES (?)", [
-    11
-]).unwrap();
+        // Seed Data
+        this.connection.execute("INSERT INTO test VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10)").unwrap();
+    }
 
-select = connection.execute("SELECT * FROM test").unwrap();
-assert(select == [[10], [11]]);
+    tearDown() {
+        this.connection.close();
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = 10").unwrap();
-assert(select == [[10]]);
+    testSelectAllRows() {
+        const result = this.connection.execute("SELECT * FROM test").unwrap();
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    10
-]).unwrap();
-assert(select == [[10]]);
+        this.assertEquals(result, [
+            [1],
+            [2],
+            [3],
+            [4],
+            [5],
+            [6],
+            [7],
+            [8],
+            [9],
+            [10]
+        ]);
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = 11").unwrap();
-assert(select == [[11]]);
+    testSelectSingleRowLiteral() {
+        const result = this.connection.execute("SELECT * FROM test WHERE x = 1").unwrap();
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    11
-]).unwrap();
-assert(select == [[11]]);
+        this.assertEquals(result, [
+            [1]
+        ]);
+    }
 
-select = connection.execute("SELECT * FROM test WHERE x = ?", [
-    nil
-]).unwrap();
-assert(select == []);
+    testSelectSingleRowVariable() {
+        const result = this.connection.execute("SELECT * FROM test WHERE x = ?", [1]).unwrap();
 
-connection.close();
+        this.assertEquals(result, [
+            [1]
+        ]);
+    }
+
+    testSelectSingleRowVariableWrongValue() {
+        const result = this.connection.execute("SELECT * FROM test WHERE x = ?", [nil]).unwrap();
+
+        this.assertEquals(result, []);
+    }
+
+    testSelectMultipleRowsVariable() {
+        const result = this.connection.execute("SELECT * FROM test WHERE x > ?", [5]).unwrap();
+
+        this.assertEquals(result, [
+            [6],
+            [7],
+            [8],
+            [9],
+            [10],
+        ]);
+    }
+}
+
+TestSqliteSelect().run();

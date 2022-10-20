@@ -10,7 +10,7 @@ RUN cd Dictu \
     && cmake -DCMAKE_BUILD_TYPE=Release -B build \
     && cmake --build ./build \
     && ./dictu tests/runTests.du \
-	&& cp dictu /usr/bin/ \
-	&& rm -rf * 
+    && cp dictu /usr/bin/ \
+    && rm -rf * 
 
 CMD ["dictu"]

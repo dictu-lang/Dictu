@@ -5,10 +5,17 @@
  *
  * .lower() returns a lowercase version of the given string
  */
+from UnitTest import UnitTest;
 
-assert("DiCtU".lower() == "dictu");
-assert("dictu".lower() == "dictu");
-assert("DICTU".lower() == "dictu");
-assert("12345".lower() == "12345");
-assert("12Dictu45".lower() == "12dictu45");
-assert("!@£$%^&*".lower() == "!@£$%^&*");
+class TestStringLower < UnitTest {
+    testStringLower() {
+        this.assertEquals("DiCtU".lower(), "dictu");
+        this.assertEquals("dictu".lower(), "dictu");
+        this.assertEquals("DICTU".lower(), "dictu");
+        this.assertEquals("12345".lower(), "12345");
+        this.assertEquals("12Dictu45".lower(), "12dictu45");
+        this.assertEquals("!@£$%^&*".lower(), "!@£$%^&*");
+    }
+}
+
+TestStringLower().run();

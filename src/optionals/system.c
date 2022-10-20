@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #define rmdir(DIRNAME) _rmdir(DIRNAME)
 #define chdir(DIRNAME) _chdir(DIRNAME)
+#define chmod(FILENAME, MODE) _chmod(FILENAME, MODE)
 #define getcwd(BUFFER, MAXLEN) _getcwd(BUFFER, MAXLEN)
 #endif
 
@@ -71,6 +72,134 @@ static Value getpidNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     return NUMBER_VAL(getpid());
+}
+
+static Value chownNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 3) {
+        runtimeError(vm, "chown() takes 3 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "first chown() argument must be a string.");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        runtimeError(vm, "second and third chown() arguments must be numbers.");
+        return EMPTY_VAL;
+    }
+
+    ObjString *file = AS_STRING(args[0]);
+    int uid = AS_NUMBER(args[1]);
+    int gid = AS_NUMBER(args[2]);
+
+    if (chown(file->chars, uid, gid) == -1) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, EMPTY_VAL);
+}
+
+static Value unameNative(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 0) {
+        runtimeError(vm, "uname() doesn't take any arguments (%d given)).", argCount);
+        return EMPTY_VAL;
+    }
+
+    struct utsname u;
+    if (uname(&u) == -1) {
+        runtimeError(vm, "uname() failed to retrieve information");
+        return EMPTY_VAL;
+    }
+
+    ObjDict *unameDict = newDict(vm);
+    push(vm, OBJ_VAL(unameDict));
+
+    ObjString *sysname = copyString(vm, "sysname", 7);
+    push(vm, OBJ_VAL(sysname));
+    ObjString *sysnameVal = copyString(vm, u.sysname, strlen(u.sysname));
+    push(vm, OBJ_VAL(sysnameVal));
+    dictSet(vm, unameDict, OBJ_VAL(sysname), OBJ_VAL(sysnameVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *nodename = copyString(vm, "nodename", 8);
+    push(vm, OBJ_VAL(nodename));
+    ObjString *nodenameVal = copyString(vm, u.nodename, strlen(u.nodename));
+    push(vm, OBJ_VAL(nodenameVal));
+    dictSet(vm, unameDict, OBJ_VAL(nodename), OBJ_VAL(nodenameVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *machine = copyString(vm, "machine", 7);
+    push(vm, OBJ_VAL(machine));
+    ObjString *machineVal = copyString(vm, u.machine, strlen(u.machine));
+    push(vm, OBJ_VAL(machineVal));
+    dictSet(vm, unameDict, OBJ_VAL(machine), OBJ_VAL(machineVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *release = copyString(vm, "release", 7);
+    push(vm, OBJ_VAL(release));
+    ObjString *releaseVal = copyString(vm, u.release, strlen(u.release));
+    push(vm, OBJ_VAL(releaseVal));
+    dictSet(vm, unameDict, OBJ_VAL(release), OBJ_VAL(releaseVal));
+    pop(vm);
+    pop(vm);
+
+    ObjString *version = copyString(vm, "version", 7);
+    push(vm, OBJ_VAL(version));
+    ObjString *versionVal = copyString(vm, u.version, strlen(u.version));
+    push(vm, OBJ_VAL(versionVal));
+    dictSet(vm, unameDict, OBJ_VAL(version), OBJ_VAL(versionVal));
+    pop(vm);
+    pop(vm);
+
+    pop(vm);
+    
+    return OBJ_VAL(unameDict);
+}
+
+static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "mkdirTemp() takes 0 or 1 argument(s) (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *template = "XXXXXX";
+
+    if (argCount == 1) {
+        if (!IS_STRING(args[0])) {
+            runtimeError(vm, "mkdirTemp() first argument must be a string");
+            return EMPTY_VAL;
+        }
+
+        template = AS_CSTRING(args[0]);
+    }
+
+    char *tmpl = {0};
+    int size;
+
+    if (template[0] != '\0') {
+        size = strlen(template) + 1;
+        tmpl = ALLOCATE(vm, char, size);
+        strcpy(tmpl, template);
+    } else {
+        size = 7;
+        tmpl = ALLOCATE(vm, char, size);
+        strcpy(tmpl, "XXXXXX");
+    }
+
+    char *tmpDir = mkdtemp(tmpl);
+    if (!tmpDir) {
+        FREE_ARRAY(vm, char, tmpl, size);
+        ERROR_RESULT;    
+    }
+
+    return newResultSuccess(vm, OBJ_VAL(takeString(vm, tmpDir, size - 1)));
 }
 #endif
 
@@ -184,12 +313,12 @@ static Value removeNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "setcwd() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "setCWD() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "setcwd() argument must be a string");
+        runtimeError(vm, "setCWD() argument must be a string");
         return EMPTY_VAL;
     }
 
@@ -281,6 +410,29 @@ static Value exitNative(DictuVM *vm, int argCount, Value *args) {
     return EMPTY_VAL; /* satisfy the tcc compiler */
 }
 
+static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "chmod() takes 2 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "chmod() arguments must be strings.");
+        return EMPTY_VAL;
+    }
+
+    ObjString *file = AS_STRING(args[0]);
+    ObjString *mode = AS_STRING(args[1]);
+
+    int i = strtol(mode->chars, 0, 8);
+
+    if (chmod(file->chars, i) == -1) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
@@ -346,7 +498,7 @@ void setVersion(DictuVM *vm, Table *table) {
     pop(vm);
 }
 
-ObjModule *createSystemModule(DictuVM *vm) {
+Value createSystemModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "System", 6);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -362,6 +514,9 @@ ObjModule *createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "geteuid", geteuidNative);
     defineNative(vm, &module->values, "getppid", getppidNative);
     defineNative(vm, &module->values, "getpid", getpidNative);
+    defineNative(vm, &module->values, "chown", chownNative);
+    defineNative(vm, &module->values, "uname", unameNative);
+    defineNative(vm, &module->values, "mkdirTemp", mkdirTempNative);
 #endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
@@ -376,6 +531,7 @@ ObjModule *createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "collect", collectNative);
     defineNative(vm, &module->values, "sleep", sleepNative);
     defineNative(vm, &module->values, "exit", exitNative);
+    defineNative(vm, &module->values, "chmod", chmodNative);
 
     /**
      * Define System properties
@@ -412,5 +568,5 @@ ObjModule *createSystemModule(DictuVM *vm) {
     pop(vm);
     pop(vm);
 
-    return module;
+    return OBJ_VAL(module);
 }

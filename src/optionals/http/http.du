@@ -1,0 +1,12 @@
+class Response {
+    // content, headers and statusCode set via C
+    init() {}
+
+    json() {
+        // Import needs to be local to ensure HTTP is defined correctly
+        import JSON;
+
+        return JSON.parse(this.content);
+    }
+}
+

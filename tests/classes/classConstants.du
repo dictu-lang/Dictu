@@ -1,0 +1,52 @@
+/**
+ * classConstants.du
+ *
+ * Testing setting class constants
+ */
+from UnitTest import UnitTest;
+
+class Test {
+    const x = 10;
+
+    init() {
+        //
+    }
+}
+
+/**
+ * Ensure inherited classes work
+ */
+class BaseClass {
+    const x = 10;
+}
+
+class Common < BaseClass {}
+
+class AnotherClass < Common {}
+
+/**
+ * Test abstract classes
+ */
+abstract class AbstractClass {
+    const x = "Hello";
+}
+
+class TestClassConstants < UnitTest {
+    testClassConstant() {
+        this.assertEquals(Test.x, 10);
+    }
+
+    testClassConstantInherit() {
+        this.assertEquals(Common.x, 10);
+        this.assertEquals(Common().x, 10);
+
+        this.assertEquals(AnotherClass.x, 10);
+        this.assertEquals(AnotherClass().x, 10);
+    }
+
+    testClassConstantAbstract() {
+        this.assertEquals(AbstractClass.x, "Hello");
+    }
+}
+
+TestClassConstants().run();

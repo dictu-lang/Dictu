@@ -5,12 +5,39 @@
  *
  * .split() returns a list of substrings split by a given delimiter
  */
+from UnitTest import UnitTest;
 
-assert("Dictu is great!".split(" ") == ["Dictu", "is", "great!"]);
-assert("Dictu,is,great!".split(",") == ["Dictu", "is", "great!"]);
-assert("Dictu--is--great!".split("--") == ["Dictu", "is", "great!"]);
-assert("Dictu<spacer>is<spacer>great!".split("<spacer>") == ["Dictu", "is", "great!"]);
-assert("Dictu is great!".split(",") == ["Dictu is great!"]);
-assert("Dictu is great!".split("12345") == ["Dictu is great!"]);
-assert("Dictu is great!".split("!@£$%^") == ["Dictu is great!"]);
-assert("Dictu is great!".split("") == ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);
+class TestStringSplit < UnitTest {
+    testStringSplit() {
+        this.assertEquals("Dictu is great!".split(" "), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu,is,great!".split(","), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu--is--great!".split("--"), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu<spacer>is<spacer>great!".split("<spacer>"), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu is great!".split(","), ["Dictu is great!"]);
+        this.assertEquals("Dictu is great!".split("12345"), ["Dictu is great!"]);
+        this.assertEquals("Dictu is great!".split("!@£$%^"), ["Dictu is great!"]);
+        this.assertEquals("Dictu is great!".split(""), ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);
+    }
+    
+    testStringSplitOptional() {
+        this.assertEquals("Dictu is great!".split(" ", -2), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu is great!".split(" ", -1), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu is great!".split(" ", 0), ["Dictu is great!"]);
+        this.assertEquals("Dictu is great!".split(" ", 1), ["Dictu", "is great!"]);
+        this.assertEquals("Dictu is great!".split(" ", 2), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu is great!".split(" ", 3), ["Dictu", "is", "great!"]);
+        this.assertEquals("Dictu is great!".split(" ", 4), ["Dictu", "is", "great!"]);
+    }
+    
+    testStringSplitOptionalSinglular() {
+        this.assertEquals("Dictu is great!".split("", -2), ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);
+        this.assertEquals("Dictu is great!".split("", -1), ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);
+        this.assertEquals("Dictu is great!".split("", 0), ["Dictu is great!"]);
+        this.assertEquals("Dictu is great!".split("", 1), ["D", "ictu is great!"]);
+        this.assertEquals("Dictu is great!".split("", 2), ["D", "i", "ctu is great!"]);
+        this.assertEquals("Dictu is great!".split("", 3), ["D", "i", "c", "tu is great!"]);
+        this.assertEquals("Dictu is great!".split("", 4), ["D", "i", "c", "t", "u is great!"]);
+    }
+}
+
+TestStringSplit().run();

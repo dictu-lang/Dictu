@@ -6,14 +6,28 @@
  * .toString() returns the string representation of a number
  */
 
-assert(1.toString() == "1");
-assert(11.1.toString() == "11.1");
+from UnitTest import UnitTest;
 
-var testnum = 123;
-assert(testnum.toString() == "123");
+class NumberToStringTest < UnitTest {
+    testNumberToString(data) {
+        this.assertEquals(data["number"].toString(), data["expected"]);
+    }
 
-// Check underscore parsing.
-assert(100_000.toString() == "100000");
-assert(100_001.901.toString() == "100001.901");
+    testNumberToStringProvider() {
+        return [
+            {"number": 1, "expected": "1"},
+            {"number": 11.1, "expected": "11.1"},
+            {"number": 11_1.1, "expected": "111.1"},
+            {"number": 100_000, "expected": "100000"},
+            {"number": 100_001.901, "expected": "100001.901"},
+        ];
+    }
 
-/* TODO: add more */
+    testNumberVariableToString() {
+        const testnum = 123;
+
+        this.assertEquals(testnum.toString(), "123");
+    }
+}
+
+NumberToStringTest().run();

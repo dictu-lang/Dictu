@@ -3,6 +3,7 @@
  *
  * Testing class static methods
  */
+from UnitTest import UnitTest;
 
 class Test {
     static func() {
@@ -14,6 +15,12 @@ class Test {
     }
 }
 
-assert(Test.func() == 10);
-assert(Test.args(10, 20) == 30);
-assert(Test.args("Dictu", " is great") == "Dictu is great");
+class TestStatic < UnitTest {
+    testStatic() {
+        this.assertEquals(Test.func(), 10);
+        this.assertEquals(Test.args(10, 20), 30);
+        this.assertEquals(Test.args("Dictu", " is great"), "Dictu is great");
+    }
+}
+
+TestStatic().run();

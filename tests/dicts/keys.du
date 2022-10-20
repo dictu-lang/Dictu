@@ -5,12 +5,19 @@
  *
  * .keys() returns a list of values of all the dictionary keys
  */
+from UnitTest import UnitTest;
 
-var dict = {"test": 1, 1: 2, true: false, false: true, nil: nil};
+class TestDictKeys < UnitTest {
+    testDictKeys() {
+        const dict = {"test": 1, 1: 2, true: false, false: true, nil: nil};
 
-// Ensure dict created properly
-assert(dict == {"test": 1, 1: 2, true: false, false: true, nil: nil});
+        // Ensure dict created properly
+        this.assertEquals(dict, {"test": 1, 1: 2, true: false, false: true, nil: nil});
 
-assert(dict.keys().len() == 5);
-assert(type(dict.keys()) == "list");
-assert(dict.keys() == [false, true, nil, 1, "test"]);
+        this.assertEquals(dict.keys().len(), 5);
+        this.assertType(dict.keys(), "list");
+        this.assertEquals(dict.keys(), [false, true, nil, 1, "test"]);
+    }
+}
+
+TestDictKeys().run();

@@ -5,13 +5,20 @@
  *
  * .endsWith() returns a boolean based on whether the string ends with a given substring
  */
+from UnitTest import UnitTest;
 
-assert("test".endsWith("t"));
-assert("test".endsWith("st"));
-assert("test".endsWith("test"));
-assert(!("test".endsWith("e")));
-assert(!("test".endsWith("he")));
-assert(!("test".endsWith("hello")));
-assert(!("test".endsWith("1234")));
-assert(!("test".endsWith("!@£$%")));
-assert(!("test".endsWith("123456789")));
+class TestStringEndsWith < UnitTest {
+    testStringEndsWith() {
+        this.assertTruthy("test".endsWith("t"));
+        this.assertTruthy("test".endsWith("st"));
+        this.assertTruthy("test".endsWith("test"));
+        this.assertFalsey("test".endsWith("e"));
+        this.assertFalsey("test".endsWith("he"));
+        this.assertFalsey("test".endsWith("hello"));
+        this.assertFalsey("test".endsWith("1234"));
+        this.assertFalsey("test".endsWith("!@£$%"));
+        this.assertFalsey("test".endsWith("123456789"));
+    }
+}
+
+TestStringEndsWith().run();

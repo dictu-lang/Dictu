@@ -1,3 +1,7 @@
+from UnitTest import UnitTest;
+
+UnitTest.forceOnlyFailures = true;
+
 import "bool/import.du";
 import "nil/import.du";
 import "number/import.du";
@@ -14,16 +18,19 @@ import "classes/import.du";
 import "enum/import.du";
 import "builtins/import.du";
 import "files/import.du";
+import "switch/import.du";
 import "maths/import.du";
 import "datetime/import.du";
 import "env/import.du";
 import "system/import.du";
 import "json/import.du";
+import "log/import.du";
 import "path/import.du";
 import "sockets/import.du";
 import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
+import "inspect/import.du";
 
 if (isDefined("HTTP")) {
   import "http/import.du";
@@ -33,6 +40,7 @@ import "modules/import.du";
 import "imports/import.du";
 import "random/import.du";
 import "hashlib/import.du";
+import "object/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

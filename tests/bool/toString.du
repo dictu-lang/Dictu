@@ -6,9 +6,21 @@
  * .toString() returns the string representation of a bool
  */
 
-assert(true.toString() == "true");
-assert(false.toString() == "false");
-var testbool = true;
-assert(testbool.toString() == "true");
-testbool = false;
-assert(testbool.toString() == "false");
+from UnitTest import UnitTest;
+
+class TestBoolToString < UnitTest {
+    testBoolLiteralToString() {
+        this.assertEquals(true.toString(), "true");
+        this.assertEquals(false.toString(), "false");
+    }
+
+    testBoolVariableToString() {
+        const trueBool = true;
+        const falseBool = false;
+
+        this.assertEquals(trueBool.toString(), "true");
+        this.assertEquals(falseBool.toString(), "false");
+    }
+}
+
+TestBoolToString().run();

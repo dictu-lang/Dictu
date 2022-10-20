@@ -1,0 +1,57 @@
+/**
+ * getAttribute.du
+ *
+ * Testing the obj.getAttribute() method
+ *
+ */
+from UnitTest import UnitTest;
+
+class Test {
+    var x = 10;
+
+    init(private priv = 10, var pub = 20) {
+        this.prop = 30;
+    }
+
+    private privMethod() {}
+
+    publicMethod() {}
+}
+
+class Inherit < Test {
+
+}
+
+class TestGetAttribute < UnitTest {
+    testGetAttribute() {
+        this.assertEquals(Test().getAttribute("x"), 10);
+        this.assertEquals(Test().getAttribute("x", nil), 10);
+        this.assertEquals(Test().getAttribute("priv"), nil);
+        this.assertEquals(Test().getAttribute("priv", 10), 10);
+        this.assertEquals(Test().getAttribute("privMethod"), nil);
+        this.assertEquals(Test().getAttribute("privMethod", 10), 10);
+        this.assertEquals(Test().getAttribute("pub"), 20);
+        this.assertEquals(Test().getAttribute("pub", nil), 20);
+        this.assertEquals(Test().getAttribute("prop"), 30);
+        this.assertEquals(Test().getAttribute("prop", nil), 30);
+        this.assertType(Test().getAttribute("publicMethod"), "method");
+        this.assertType(Test().getAttribute("publicMethod", nil), "method");
+    }
+
+    testGetAttributeInherit() {
+        this.assertEquals(Inherit().getAttribute("x"), 10);
+        this.assertEquals(Inherit().getAttribute("x", nil), 10);
+        this.assertEquals(Inherit().getAttribute("priv"), nil);
+        this.assertEquals(Inherit().getAttribute("priv", 10), 10);
+        this.assertEquals(Inherit().getAttribute("privMethod"), nil);
+        this.assertEquals(Inherit().getAttribute("privMethod", 10), 10);
+        this.assertEquals(Inherit().getAttribute("pub"), 20);
+        this.assertEquals(Inherit().getAttribute("pub", nil), 20);
+        this.assertEquals(Inherit().getAttribute("prop"), 30);
+        this.assertEquals(Inherit().getAttribute("prop", nil), 30);
+        this.assertType(Inherit().getAttribute("publicMethod"), "method");
+        this.assertType(Inherit().getAttribute("publicMethod", nil), "method");
+    }
+}
+
+TestGetAttribute().run();

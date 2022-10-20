@@ -5,10 +5,18 @@
  *
  * sleep() pauses execution for a given amount of seconds
  */
+from UnitTest import UnitTest;
+
 import System;
 
-var start = System.time();
+class TestSystemSleep < UnitTest {
+    testSystemSleep() {
+        const start = System.time();
 
-System.sleep(2);
+        System.sleep(2);
 
-assert(System.time() - start >= 2);
+        this.assertTruthy(System.time() - start >= 2);
+    }
+}
+
+TestSystemSleep().run();

@@ -5,26 +5,38 @@
  *
  * .find() returns the index of a substring or -1 if not found
  */
+from UnitTest import UnitTest;
 
-// Exists
-assert("hello".find("hello") == 0);
-assert("hello".find("l") == 2);
-assert("hello".find("l", 2) == 3);
-assert("Dictu is great! Dictu is great!".find("Dictu") == 0);
+class TestStringFind < UnitTest {
+    testStringFind() {
+        // Exists
+        this.assertEquals("hello".find("hello"), 0);
+        this.assertEquals("hello".find("l"), 2);
+        this.assertEquals("hello".find("l", 2), 3);
+        this.assertEquals("Dictu is great! Dictu is great!".find("Dictu"), 0);
+    }
 
-// Second occurrence
-assert("Dictu is great! Dictu is great!".find("Dictu", 2) == 16);
+    testStringFindSecond() {
+        this.assertEquals("Dictu is great! Dictu is great!".find("Dictu", 2), 16);
+    }
 
-// Third occurrence
-assert("Dictu is great! Dictu is great! Dictu is great!".find("Dictu", 3) == 37);
+    testStringFindThird() {
+        this.assertEquals("Dictu is great! Dictu is great! Dictu is great!".find("Dictu", 3), 37);
+    }
 
-// Doesn't exist
-assert("Dictu is great!".find("hello") == -1);
-assert("Dictu is great!".find("l") == -1);
-assert("Dictu is great!".find("hello") == -1);
+    testStringFindDoesntExist() {
+        this.assertEquals("Dictu is great!".find("hello"), -1);
+        this.assertEquals("Dictu is great!".find("l"), -1);
+        this.assertEquals("Dictu is great!".find("hello"), -1);
+    }
 
-// Second occurrence
-assert("Dictu is great!".find("Dictu", 2) == -1);
+    testStringFindDoesntExistSecond() {
+        this.assertEquals("Dictu is great!".find("Dictu", 2), -1);
+    }
 
-// Third occurrence
-assert("Dictu is great!Dictu is great!".find("Dictu", 3) == -1);
+    testStringFindDoesntExistThird() {
+        this.assertEquals("Dictu is great!Dictu is great!".find("Dictu", 3) , -1);
+    }
+}
+
+TestStringFind().run();

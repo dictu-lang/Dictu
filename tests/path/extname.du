@@ -5,7 +5,15 @@
  *
  * Returns the extension portion of string, including the dot.
  */
+from UnitTest import UnitTest;
+
 import Path;
 
-assert(Path.extname("/t.ext") == ".ext");
-assert(Path.extname("/text") == "");
+class TestPathExtname < UnitTest {
+    testExtname() {
+        this.assertEquals(Path.extname("/t.ext"), ".ext");
+        this.assertEquals(Path.extname("/text"), "");
+    }
+}
+
+TestPathExtname().run();

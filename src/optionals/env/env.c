@@ -1,5 +1,7 @@
 #include "env.h"
 
+#include "env-source.h"
+
 #ifdef _WIN32
 #define unsetenv(NAME) _putenv_s(NAME, "")
 int setenv(const char *name, const char *value, int overwrite) {
@@ -25,7 +27,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "get() arguments must be a string.");
         return EMPTY_VAL;
     }
-    
+
     char *value = getenv(AS_CSTRING(args[0]));
 
     if (argCount == 2) {
@@ -76,20 +78,22 @@ static Value set(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
-ObjModule *createEnvModule(DictuVM *vm) {
-    ObjString *name = copyString(vm, "Env", 3);
-    push(vm, OBJ_VAL(name));
-    ObjModule *module = newModule(vm, name);
-    push(vm, OBJ_VAL(module));
+Value createEnvModule(DictuVM *vm) {
+    ObjClosure *closure = compileModuleToClosure(vm, "Env", DICTU_ENV_SOURCE);
+
+    if (closure == NULL) {
+        return EMPTY_VAL;
+    }
+
+    push(vm, OBJ_VAL(closure));
 
     /**
      * Define Env methods
      */
-    defineNative(vm, &module->values, "get", get);
-    defineNative(vm, &module->values, "set", set);
+    defineNative(vm, &closure->function->module->values, "get", get);
+    defineNative(vm, &closure->function->module->values, "set", set);
 
     pop(vm);
-    pop(vm);
 
-    return module;
+    return OBJ_VAL(closure);
 }

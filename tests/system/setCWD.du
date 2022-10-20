@@ -5,19 +5,33 @@
  *
  * setCWD() sets the current working directory
  */
+from UnitTest import UnitTest;
+
 import System;
 
-var cwd = System.getCWD().unwrap();
-assert(cwd != nil);
-assert(type(cwd) == "string");
-assert(cwd.len() > 0);
-assert(System.setCWD("/").success() == true);
-if (System.platform == "windows") {
-    assert(System.getCWD().unwrap() == "C:\\" or System.getCWD().unwrap() == "D:\\");
-} else {
-    assert(System.getCWD().unwrap() == "/");
+class TestSystemSetCWD < UnitTest {
+    testSystemSetCWD() {
+        const cwd = System.getCWD().unwrap();
+
+        this.assertNotNil(cwd);
+        this.assertType(cwd, "string");
+        this.assertTruthy(cwd.len() > 0);
+        this.assertTruthy(System.setCWD("/").success());
+
+        if (System.platform == "windows") {
+            this.assertTruthy(System.getCWD().unwrap() == "C:\\" or System.getCWD().unwrap() == "D:\\");
+        } else {
+            this.assertEquals(System.getCWD().unwrap(), "/");
+        }
+
+        this.assertTruthy(System.setCWD(cwd).success());
+        this.assertEquals(System.getCWD().unwrap(), cwd);
+        this.assertFalsey(System.setCWD("some/directory/that/doesnt/exist").success());
+        this.assertEquals(System.setCWD("some/directory/that/doesnt/exist").unwrapError(), "No such file or directory");
+
+        // Reset
+        System.setCWD(cwd);
+    }
 }
-assert(System.setCWD(cwd).success() == true);
-assert(System.getCWD().unwrap() == cwd);
-assert(System.setCWD("some/directory/that/doesnt/exist").success() == false);
-assert(System.setCWD("some/directory/that/doesnt/exist").unwrapError() == "No such file or directory");
+
+TestSystemSetCWD().run();
