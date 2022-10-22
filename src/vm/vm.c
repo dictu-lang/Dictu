@@ -1589,7 +1589,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             module->path = dirname(vm, path, strlen(path));
             vm->lastModule = module;
             pop(vm);
-
+            tableSet(vm, &vm->modules, fileName, OBJ_VAL(module));
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
             pop(vm);
