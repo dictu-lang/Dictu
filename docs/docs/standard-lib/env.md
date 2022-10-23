@@ -52,6 +52,8 @@ Env.set("key", 10); // set() arguments must be a string or nil.
 
 Clears all set environment variables.
 
+Note: This is not available on Windows systems.
+
 ```cs
 Env.clearAll();
 ```
