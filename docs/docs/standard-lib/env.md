@@ -48,6 +48,16 @@ Env.set("key", nil); // Remove env var
 Env.set("key", 10); // set() arguments must be a string or nil.
 ```
 
+### Env.clearAll()
+
+Clears all set environment variables.
+
+Note: This is not available on Windows systems.
+
+```cs
+Env.clearAll();
+```
+
 ### Env.readFile(string: path -> optional)
 
 To read environment variables from a file this helper method is provided.
