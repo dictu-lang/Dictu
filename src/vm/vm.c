@@ -1565,16 +1565,20 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *fileName = READ_STRING();
             Value moduleVal;
 
-            // If we have imported this file already, skip.
-            if (tableGet(&vm->modules, fileName, &moduleVal)) {
-                vm->lastModule = AS_MODULE(moduleVal);
-                push(vm, NIL_VAL);
-                DISPATCH();
-            }
-
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+            }
+
+            ObjString *pathObj = copyString(vm, path, strlen(path));
+            push(vm, OBJ_VAL(pathObj));
+
+            // If we have imported this file already, skip.
+            if (tableGet(&vm->modules, pathObj, &moduleVal)) {
+                pop(vm);
+                vm->lastModule = AS_MODULE(moduleVal);
+                push(vm, NIL_VAL);
+                DISPATCH();
             }
 
             char *source = readFile(vm, path);
@@ -1583,13 +1587,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
-            ObjString *pathObj = copyString(vm, path, strlen(path));
-            push(vm, OBJ_VAL(pathObj));
             ObjModule *module = newModule(vm, pathObj);
             module->path = dirname(vm, path, strlen(path));
             vm->lastModule = module;
             pop(vm);
-
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
             pop(vm);
