@@ -633,7 +633,7 @@ void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
 char *httpClientToString(ObjAbstract *abstract) {
     UNUSED(abstract);
 
-    char *httpClientString = malloc(sizeof(char) * 12);
+    char *httpClientString = malloc(sizeof(char) * 13);
     snprintf(httpClientString, 12, "<HttpClient>");
     return httpClientString;
 }
