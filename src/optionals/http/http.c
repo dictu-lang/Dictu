@@ -1,9 +1,9 @@
+#include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "http.h"
-
 #include "http-source.h"
 
 #define HTTP_METHOD_GET     "GET"
@@ -233,6 +233,8 @@
 
 #define HTTP_MAX_HEADER_BYTES 1 << 20 // 1 MB
 
+#define DEFAULT_REQUEST_TIMEOUT 20
+
 static void createResponse(DictuVM *vm, Response *response) {
     response->vm = vm;
     response->headers = newList(vm);
@@ -408,7 +410,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    long timeout = 20;
+    long timeout = DEFAULT_REQUEST_TIMEOUT;
     ObjList *headers = NULL;
 
     if (argCount == 3) {
@@ -499,7 +501,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    long timeout = 20;
+    long timeout = DEFAULT_REQUEST_TIMEOUT;
     ObjDict *postValuesDict = NULL;
     ObjString *postValueString = NULL;
     ObjList *headers = NULL;
@@ -607,6 +609,339 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
 
     char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
     return newResultError(vm, errorString);
+}
+
+typedef struct {
+    CURL *curl;
+    // char *keyFile;
+    // char *certFile;
+} HttpClient;
+
+#define AS_HTTP_CLIENT(v) ((HttpClient*)AS_ABSTRACT(v)->data)
+
+struct curl_slist *headerChunk = NULL;
+
+void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
+    HttpClient *httpClient = (HttpClient*)abstract->data;
+
+    if (headerChunk) {
+        curl_slist_free_all(headerChunk);
+    }
+
+    curl_easy_cleanup(httpClient->curl);
+    curl_global_cleanup();
+
+    FREE(vm, HttpClient, abstract->data);
+}
+
+char *httpClientToString(ObjAbstract *abstract) {
+    UNUSED(abstract);
+
+    char *httpClientString = malloc(sizeof(char) * 12);
+    snprintf(httpClientString, 12, "<HttpClient>");
+    return httpClientString;
+}
+
+static Value httpClientSetTimeout(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setTimeout() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm, "timeout value must be a number");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(args[1]));
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetInsecure(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setInsecure() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_BOOL(args[1])) {
+        runtimeError(vm, "insecure value must be a bool");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setHeaders() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_LIST(args[1])) {
+        runtimeError(vm, "hedaers value must be a ist");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    ObjList *headers = AS_LIST(args[1]);
+
+    headerChunk = NULL;
+
+    for (int h = 0; h < headers->values.count; h++) {
+        headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
+    }
+    
+    curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetKeyFile(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setKeyFile() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "keyFile value must be a string");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1]));
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetCertFile(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setCertFile() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "certFile value must be a string");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1]));
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetKeyPasswd(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setKeyPasswd() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "keyPasswd value must be a string");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1]));
+
+    return NIL_VAL;
+}
+
+static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "get() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "URL passed to get() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    CURLcode curlResponse;
+
+    if (httpClient->curl) {
+        Response response;
+        createResponse(vm, &response);
+        char *url = AS_CSTRING(args[1]);
+
+        curl_easy_setopt(httpClient->curl, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEFUNCTION, writeResponse);
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_HEADERDATA, &response);
+
+        curlResponse = curl_easy_perform(httpClient->curl);
+
+        if (curlResponse != CURLE_OK) {
+            pop(vm);
+
+            char *errorString = (char *)curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
+        }
+
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient->curl, response)));
+    }
+
+    pop(vm);
+
+    char *errorString = (char *)curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
+}
+
+ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
+    ObjAbstract *abstract = newAbstract(vm, freeHttpClient, httpClientToString);
+    push(vm, OBJ_VAL(abstract));
+
+    HttpClient *httpClient = ALLOCATE(vm, HttpClient, 1);
+    httpClient->curl = curl_easy_init();
+    
+    curl_easy_setopt(httpClient->curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+
+    if (opts->count != 0) {
+        for (int i = 0; i <= opts->capacityMask; i++) {
+            DictItem *entry = &opts->entries[i];
+            if (IS_EMPTY(entry->key)) {
+                continue;
+            }
+
+            char *key;
+
+            if (IS_STRING(entry->key)) {
+                ObjString *s = AS_STRING(entry->key);
+                key = s->chars;
+            } else {
+                runtimeError(vm, "HTTP client options key must be a string");
+                return abstract;
+            }
+
+            if (strstr(key, "timeout")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+                if (!IS_NUMBER(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"timeout\" value must be a number");
+                    return abstract;
+                }
+
+                curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(entry->value));
+            } else if (strstr(key, "headers")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
+                if (!IS_LIST(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"headers\" value must be a list");
+                    return abstract;
+                }
+
+                ObjList *headers = AS_LIST(entry->value);
+
+                for (int h = 0; h < headers->values.count; h++) {
+                    headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
+                }
+                
+                curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
+            } else if (strstr(key, "insecure")) {
+                if (!IS_BOOL(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"insecure\" value must be a bool");
+                    return abstract;
+                }
+
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
+            } else if (strstr(key, "keyFile")) {
+                if (!IS_STRING(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"keyFile\" value must be a string");
+                    return abstract;
+                }
+
+                char *keyFile = AS_STRING(entry->value)->chars;
+                if (keyFile[0] == '\0') {
+                    continue;
+                }
+                
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, keyFile);
+            } else if (strstr(key, "certFile")) {
+                if (!IS_STRING(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"certFile\" value must be a string");
+                    return abstract;
+                }
+
+                char *certFile = AS_STRING(entry->value)->chars;
+                if (certFile[0] == '\0') {
+                    continue;
+                }
+
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSLCERT, certFile);
+            } else if (strstr(key, "keyPasswd")) {
+                if (!IS_STRING(entry->value)) {
+                    runtimeError(vm, "HTTP client option key \"keyPasswd\" value must be a string");
+                    return abstract;
+                }
+
+                char *keyPasswd = AS_STRING(entry->value)->chars;
+                if (keyPasswd[0] == '\0') {
+                    continue;
+                }
+
+                curl_easy_setopt(httpClient->curl, CURLOPT_KEYPASSWD, keyPasswd);
+            }
+        }
+    }
+
+    abstract->data = httpClient;
+
+    /**
+     * Setup HTTP object methods
+     */
+    defineNative(vm, &abstract->values, "get", httpClientGet);
+    defineNative(vm, &abstract->values, "post", httpClientGet);
+    defineNative(vm, &abstract->values, "delete", httpClientGet);
+    defineNative(vm, &abstract->values, "put", httpClientGet);
+    defineNative(vm, &abstract->values, "patch", httpClientGet);
+    defineNative(vm, &abstract->values, "head", httpClientGet);
+    defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
+    defineNative(vm, &abstract->values, "addHeader", httpClientSetHeaders);
+    defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
+    defineNative(vm, &abstract->values, "setKeyFile", httpClientSetKeyFile);
+    defineNative(vm, &abstract->values, "setCertfile", httpClientSetCertFile);
+    defineNative(vm, &abstract->values, "setKeyPasswd", httpClientSetKeyPasswd);
+    pop(vm);
+
+    return abstract;
+}
+
+static Value newClient(DictuVM *vm, int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError(vm, "newClient() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_DICT(args[0])) {
+        runtimeError(vm, "Options value passed to newClient() must be a dict.");
+        return EMPTY_VAL;
+    }
+
+    ObjDict *opts = AS_DICT(args[0]);
+
+    ObjAbstract *hc = newHttpClient(vm, opts);
+    return newResultSuccess(vm, OBJ_VAL(hc));
 }
 
 Value createHTTPModule(DictuVM *vm) {
@@ -852,6 +1187,8 @@ Value createHTTPModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "get", get);
     defineNative(vm, &module->values, "post", post);
+
+    defineNative(vm, &module->values, "newClient", newClient);
 
     pop(vm);
 
