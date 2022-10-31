@@ -634,7 +634,7 @@ char *httpClientToString(ObjAbstract *abstract) {
     UNUSED(abstract);
 
     char *httpClientString = malloc(sizeof(char) * 13);
-    snprintf(httpClientString, 12, "<HttpClient>");
+    snprintf(httpClientString, 13, "<HttpClient>");
     return httpClientString;
 }
 
