@@ -352,7 +352,7 @@ static bool setRequestHeaders(DictuVM *vm, struct curl_slist *list, CURL *curl, 
     return true;
 }
 
-static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response) {
+static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response, bool cleanup) {
     // Get status code
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response.statusCode);
     ObjString *content;
@@ -397,10 +397,12 @@ static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response) {
     // Pop headers from createResponse
     pop(vm);
 
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
-
+    if (cleanup) {
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+    }
+    
     return responseInstance;
 }
 
@@ -483,7 +485,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
             return newResultError(vm, errorString);
         }
 
-        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response)));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response, true)));
     }
 
     /* always cleanup */
@@ -599,7 +601,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
             return newResultError(vm, errorString);
         }
 
-        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response)));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response, true)));
     }
 
     /* always cleanup */
@@ -790,7 +792,7 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
             return newResultError(vm, errorString);
         }
 
-        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient, response)));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient, response, false)));
     }
 
     pop(vm);

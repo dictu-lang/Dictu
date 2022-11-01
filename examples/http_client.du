@@ -36,8 +36,11 @@ import System;
         print(res.unwrapError());
         System.exit(1);
     }
-    //print(res.unwrap().statusCode);
-    //print(res);
+    print(res.unwrap().statusCode);
+    const uuid = res.unwrap().json().unwrap()["uuid"];
+    print("UUID: {}".format(uuid));
+
+    System.exit(0);
 }
 
 
