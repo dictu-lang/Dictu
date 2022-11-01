@@ -621,14 +621,14 @@ struct curl_slist *headerChunk = NULL;
 
 void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
     HttpClient *httpClient = (HttpClient*)abstract->data;
-
+    printf("here 1\n");
     if (headerChunk) {
         curl_slist_free_all(headerChunk);
     }
-
+    printf("here 2\n");
     curl_easy_cleanup(httpClient);
     curl_global_cleanup();
-
+    printf("here 3\n");
     FREE(vm, HttpClient, abstract->data);
 }
 
