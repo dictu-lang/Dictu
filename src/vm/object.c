@@ -274,7 +274,10 @@ char *listToString(Value value) {
         char *element;
         int elementSize;
 
-        if (IS_STRING(listValue)) {
+        if (listValue == value) {
+            element = "[...]";
+            elementSize = 5;
+        } else if (IS_STRING(listValue)) {
             ObjString *s = AS_STRING(listValue);
             element = s->chars;
             elementSize = s->length;
@@ -300,7 +303,10 @@ char *listToString(Value value) {
             listString = newB;
         }
 
-        if (IS_STRING(listValue)) {
+        if (listValue == value) {
+            memcpy(listString + listStringLength, element, elementSize);
+            listStringLength += elementSize;
+        } else if (IS_STRING(listValue)) {
             memcpy(listString + listStringLength, "\"", 1);
             memcpy(listString + listStringLength + 1, element, elementSize);
             memcpy(listString + listStringLength + 1 + elementSize, "\"", 1);
@@ -382,8 +388,10 @@ char *dictToString(Value value) {
 
        char *element;
        int elementSize;
-
-       if (IS_STRING(item->value)) {
+       if (item->value == value){
+           element = "{...}";
+           elementSize = 5;
+       } else if (IS_STRING(item->value)) {
            ObjString *s = AS_STRING(item->value);
            element = s->chars;
            elementSize = s->length;
@@ -409,7 +417,10 @@ char *dictToString(Value value) {
            dictString = newB;
        }
 
-       if (IS_STRING(item->value)) {
+       if (item->value == value) {
+           memcpy(dictString + dictStringLength, element, elementSize);
+           dictStringLength += elementSize;
+       } else if (IS_STRING(item->value)) {
            memcpy(dictString + dictStringLength, "\"", 1);
            memcpy(dictString + dictStringLength + 1, element, elementSize);
            memcpy(dictString + dictStringLength + 1 + elementSize, "\"", 1);
