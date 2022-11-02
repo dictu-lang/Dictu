@@ -11,7 +11,7 @@ import System;
             "Accept: application/json",
             "User-Agent: Dictu"
         ],
-        "insecure": true,
+        "insecure": false,
         "keyFile": "",
         "certFile": "",
         "keyPasswd": ""
@@ -31,14 +31,16 @@ import System;
     print("Status Code: {}".format(res.unwrap().statusCode));
     print(res.unwrap().json().unwrap());
 
-    res = httpClient.get("https://httpbin.org/uuid");
+    httpClient.setInsecure(true);
+    // res = httpClient.get("https://httpbin.org/uuid");
+    res = httpClient.get("https://localhost:4433");
     if (not res.success()) {
         print(res.unwrapError());
         System.exit(1);
     }
-
-    const uuid = res.unwrap().json().unwrap()["uuid"];
-    print("UUID: {}".format(uuid));
+    print(res.unwrap().content);
+    // const uuid = res.unwrap().json().unwrap()["uuid"];
+    // print("UUID: {}".format(uuid));
 
     System.exit(0);
 }
