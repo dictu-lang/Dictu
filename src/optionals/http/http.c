@@ -785,6 +785,7 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[1]);
 
         curl_easy_setopt(httpClient, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient, CURLOPT_ACCEPT_ENCODING, "gzip");
         curl_easy_setopt(httpClient, CURLOPT_WRITEFUNCTION, writeResponse);
         curl_easy_setopt(httpClient, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(httpClient, CURLOPT_HEADERDATA, &response);
@@ -804,6 +805,76 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
     pop(vm);
 
     char *errorString = (char *)curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
+}
+
+static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
+    if (argCount < 1 || argCount > 2) {
+        runtimeError(vm, "post() takes at least 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjDict *postValuesDict = NULL;
+    ObjString *postValueString = NULL;
+
+    if (argCount == 3) {
+        if (IS_DICT(args[2])) {
+            postValuesDict = AS_DICT(args[2]);
+        } else if (IS_STRING(args[2])) {
+            postValueString = AS_STRING(args[2]);
+        } else {
+            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
+            return EMPTY_VAL;
+        }
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "URL passed to post() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    CURLcode curlResponse;
+    
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    if (httpClient) {
+        Response response;
+        createResponse(vm, &response);
+        char *url = AS_CSTRING(args[1]);
+        char *postValue = "";
+
+        if (postValuesDict != NULL) {
+            postValue = dictToPostArgs(postValuesDict);
+        } else if (postValueString != NULL) {
+            postValue = postValueString->chars;
+        }
+
+        curl_easy_setopt(httpClient, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient, CURLOPT_ACCEPT_ENCODING, "gzip");
+        curl_easy_setopt(httpClient, CURLOPT_POSTFIELDS, postValue);
+        curl_easy_setopt(httpClient, CURLOPT_WRITEFUNCTION, writeResponse);
+        curl_easy_setopt(httpClient, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(httpClient, CURLOPT_HEADERDATA, &response);
+
+        curlResponse = curl_easy_perform(httpClient);
+
+        if (postValuesDict != NULL) {
+            free(postValue);
+        }
+
+        if (curlResponse != CURLE_OK) {
+            pop(vm);
+
+            char *errorString = (char *)curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
+        }
+
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient, response, false)));
+    }
+
+    pop(vm);
+
+    char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
     return newResultError(vm, errorString);
 }
 
@@ -917,11 +988,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
      * Setup HTTP object methods
      */
     defineNative(vm, &abstract->values, "get", httpClientGet);
-    defineNative(vm, &abstract->values, "post", httpClientGet);
-    defineNative(vm, &abstract->values, "delete", httpClientGet);
-    defineNative(vm, &abstract->values, "put", httpClientGet);
-    defineNative(vm, &abstract->values, "patch", httpClientGet);
-    defineNative(vm, &abstract->values, "head", httpClientGet);
+    defineNative(vm, &abstract->values, "post", httpClientPost);
     defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
     defineNative(vm, &abstract->values, "addHeader", httpClientSetHeaders);
     defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
