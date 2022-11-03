@@ -613,7 +613,9 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, errorString);
 }
 
-typedef CURL *HttpClient;
+typedef struct {
+    CURL *curl;
+} HttpClient;
 
 #define AS_HTTP_CLIENT(v) ((HttpClient*)AS_ABSTRACT(v)->data)
 
@@ -621,12 +623,8 @@ struct curl_slist *headerChunk = NULL;
 
 void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
     HttpClient *httpClient = (HttpClient*)abstract->data;
-
-    if (headerChunk) {
-        curl_slist_free_all(headerChunk);
-    }
-
-    curl_easy_cleanup(httpClient);
+    
+    curl_easy_cleanup(httpClient->curl);
     curl_global_cleanup();
 
     FREE(vm, HttpClient, abstract->data);
@@ -653,7 +651,7 @@ static Value httpClientSetTimeout(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient, CURLOPT_TIMEOUT, AS_NUMBER(args[1]));
+    curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(args[1]));
 
     return NIL_VAL;
 }
@@ -672,13 +670,13 @@ static Value httpClientSetInsecure(DictuVM *vm, int argCount, Value *args) {
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
     if (AS_BOOL(args[1])) {
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYSTATUS, 0);
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
     } else {
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYSTATUS, 1);
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYHOST, 1);
-        curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYPEER, 1);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 1);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 1);
+        curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 1);
     }
 
     return NIL_VAL;
@@ -691,7 +689,11 @@ static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[1])) {
-        runtimeError(vm, "hedaers value must be a ist");
+        runtimeError(vm, "headers value must be a ist");
+        return EMPTY_VAL;
+    }
+
+    if (IS_EMPTY(args[1])) {
         return EMPTY_VAL;
     }
 
@@ -705,7 +707,7 @@ static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
         headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
     }
     
-    curl_easy_setopt(httpClient, CURLOPT_HTTPHEADER, headerChunk);
+    curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
 
     return NIL_VAL;
 }
@@ -723,7 +725,7 @@ static Value httpClientSetKeyFile(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
 
     return NIL_VAL;
 }
@@ -741,12 +743,12 @@ static Value httpClientSetCertFile(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
 
     return NIL_VAL;
 }
 
-static Value httpClientSetKeyPasswd(DictuVM *vm, int argCount, Value *args) {
+static Value httpClientSetKeyPass(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "setKeyPasswd() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -759,7 +761,7 @@ static Value httpClientSetKeyPasswd(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
 
     return NIL_VAL;
 }
@@ -784,13 +786,13 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
         createResponse(vm, &response);
         char *url = AS_CSTRING(args[1]);
 
-        curl_easy_setopt(httpClient, CURLOPT_URL, url);
-        curl_easy_setopt(httpClient, CURLOPT_ACCEPT_ENCODING, "gzip");
-        curl_easy_setopt(httpClient, CURLOPT_WRITEFUNCTION, writeResponse);
-        curl_easy_setopt(httpClient, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(httpClient, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient->curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEFUNCTION, writeResponse);
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_HEADERDATA, &response);
 
-        curlResponse = curl_easy_perform(httpClient);
+        curlResponse = curl_easy_perform(httpClient->curl);
 
         if (curlResponse != CURLE_OK) {
             pop(vm);
@@ -799,7 +801,7 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
             return newResultError(vm, errorString);
         }
 
-        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient, response, false)));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient->curl, response, false)));
     }
 
     pop(vm);
@@ -817,7 +819,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
     ObjDict *postValuesDict = NULL;
     ObjString *postValueString = NULL;
 
-    if (argCount == 3) {
+    if (argCount == 2) {
         if (IS_DICT(args[2])) {
             postValuesDict = AS_DICT(args[2]);
         } else if (IS_STRING(args[2])) {
@@ -849,14 +851,14 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
             postValue = postValueString->chars;
         }
 
-        curl_easy_setopt(httpClient, CURLOPT_URL, url);
-        curl_easy_setopt(httpClient, CURLOPT_ACCEPT_ENCODING, "gzip");
-        curl_easy_setopt(httpClient, CURLOPT_POSTFIELDS, postValue);
-        curl_easy_setopt(httpClient, CURLOPT_WRITEFUNCTION, writeResponse);
-        curl_easy_setopt(httpClient, CURLOPT_WRITEDATA, &response);
-        curl_easy_setopt(httpClient, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient->curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+        curl_easy_setopt(httpClient->curl, CURLOPT_POSTFIELDS, postValue);
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEFUNCTION, writeResponse);
+        curl_easy_setopt(httpClient->curl, CURLOPT_WRITEDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_HEADERDATA, &response);
 
-        curlResponse = curl_easy_perform(httpClient);
+        curlResponse = curl_easy_perform(httpClient->curl);
 
         if (postValuesDict != NULL) {
             free(postValue);
@@ -869,7 +871,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
             return newResultError(vm, errorString);
         }
 
-        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient, response, false)));
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient->curl, response, false)));
     }
 
     pop(vm);
@@ -883,9 +885,9 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     push(vm, OBJ_VAL(abstract));
 
     HttpClient *httpClient = ALLOCATE(vm, HttpClient, 1);
-    httpClient = curl_easy_init();
+    httpClient->curl = curl_easy_init();
     
-    curl_easy_setopt(httpClient, CURLOPT_HEADERFUNCTION, writeHeaders);
+    curl_easy_setopt(httpClient->curl, CURLOPT_HEADERFUNCTION, writeHeaders);
 
     if (opts->count != 0) {
         for (int i = 0; i <= opts->capacityMask; i++) {
@@ -913,7 +915,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     return abstract;
                 }
 
-                curl_easy_setopt(httpClient, CURLOPT_TIMEOUT, AS_NUMBER(entry->value));
+                curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(entry->value));
             } else if (strstr(key, "headers")) {
                 if (IS_EMPTY(entry->value)) {
                     continue;
@@ -930,19 +932,27 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
                 }
                 
-                curl_easy_setopt(httpClient, CURLOPT_HTTPHEADER, headerChunk);
+                curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
             } else if (strstr(key, "insecure")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
                 if (!IS_BOOL(entry->value)) {
                     runtimeError(vm, "HTTP client option \"insecure\" value must be a bool");
                     return abstract;
                 }
 
-                if (!AS_BOOL(entry->value)) {
-                    curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYSTATUS, 0);
-                    curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYHOST, 0);
-                    curl_easy_setopt(httpClient, CURLOPT_SSL_VERIFYPEER, 0);
+                if (AS_BOOL(entry->value)) {
+                    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
+                    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
                 }
             } else if (strstr(key, "keyFile")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option \"keyFile\" value must be a string");
                     return abstract;
@@ -953,8 +963,12 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     continue;
                 }
                 
-                curl_easy_setopt(httpClient, CURLOPT_SSLKEY, keyFile);
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, keyFile);
             } else if (strstr(key, "certFile")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option \"certFile\" value must be a string");
                     return abstract;
@@ -965,8 +979,12 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     continue;
                 }
 
-                curl_easy_setopt(httpClient, CURLOPT_SSLCERT, certFile);
+                curl_easy_setopt(httpClient->curl, CURLOPT_SSLCERT, certFile);
             } else if (strstr(key, "keyPasswd")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option key \"keyPasswd\" value must be a string");
                     return abstract;
@@ -977,7 +995,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     continue;
                 }
 
-                curl_easy_setopt(httpClient, CURLOPT_KEYPASSWD, keyPasswd);
+                curl_easy_setopt(httpClient->curl, CURLOPT_KEYPASSWD, keyPasswd);
             }
         }
     }
@@ -990,11 +1008,11 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     defineNative(vm, &abstract->values, "get", httpClientGet);
     defineNative(vm, &abstract->values, "post", httpClientPost);
     defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
-    defineNative(vm, &abstract->values, "addHeader", httpClientSetHeaders);
+    defineNative(vm, &abstract->values, "setHeaders", httpClientSetHeaders);
     defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
     defineNative(vm, &abstract->values, "setKeyFile", httpClientSetKeyFile);
-    defineNative(vm, &abstract->values, "setCertfile", httpClientSetCertFile);
-    defineNative(vm, &abstract->values, "setKeyPasswd", httpClientSetKeyPasswd);
+    defineNative(vm, &abstract->values, "setCertFile", httpClientSetCertFile);
+    defineNative(vm, &abstract->values, "setKeyPass", httpClientSetKeyPass);
     pop(vm);
 
     return abstract;
@@ -1007,7 +1025,7 @@ static Value newClient(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_DICT(args[0])) {
-        runtimeError(vm, "Options value passed to newClient() must be a dict.");
+        runtimeError(vm, "Options dict passed to newClient() must be a dict.");
         return EMPTY_VAL;
     }
 
