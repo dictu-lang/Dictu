@@ -1,0 +1,20 @@
+/**
+ * isatty.du
+ *
+ * Testing the Term.isatty() function
+ *
+ * isatty() returns a boolean indicating whether the file descriptor passed is
+ * attached to a tty.
+ */
+from UnitTest import UnitTest;
+
+import Term;
+
+class TestIsatty < UnitTest {
+
+    testIsatty() {
+        this.assertTruthy(Term.isatty(0));
+    }
+}
+
+TestIsatty().run();

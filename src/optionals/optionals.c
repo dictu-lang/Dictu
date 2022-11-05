@@ -14,6 +14,7 @@ BuiltinModules modules[] = {
         {"Sqlite", &createSqliteModule, false},
         {"Process", &createProcessModule, false},
         {"System", &createSystemModule, false},
+        {"Term", &createTermModule, false},
         {"UnitTest", &createUnitTestModule, true},
         {"Inspect", &createInspectModule, false},
         {"Object", &createObjectModule, true},
