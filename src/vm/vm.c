@@ -1802,7 +1802,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     }
 
                     RUNTIME_ERROR("String index out of bounds.");
-                }
+                } 
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
@@ -1921,7 +1921,9 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
+                        char *key = valueToString(vm, indexValue);
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", key);
+                        FREE(vm, char, key);
                     }
 
                     vm->stackTop[-1] = dictValue;
