@@ -86,7 +86,7 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "format() placeholders do not match arguments");
 
         for (int i = 0; i < argCount; ++i) {
-            free(replaceStrings[i]);
+            FREE(vm, char, replaceStrings[i]);
         }
 
         FREE_ARRAY(vm, char, tmp , stringLen);

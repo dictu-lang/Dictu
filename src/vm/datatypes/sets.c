@@ -52,7 +52,7 @@ static Value removeSetItem(DictuVM *vm, int argCount, Value *args) {
     if (!setDelete(vm, set, args[1])) {
         char *str = valueToString(vm, args[1]);
         runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", str);
-        free(str);
+        FREE(vm, char, str);
         return EMPTY_VAL;
     }
 

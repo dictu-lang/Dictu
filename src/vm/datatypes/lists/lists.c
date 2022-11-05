@@ -253,7 +253,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
 
         memcpy(fullString + length, output, elementLength);
         if (!IS_STRING(list->values.values[j])) {
-            free(output);
+            FREE(vm, char, output);
         }
         length += elementLength;
         memcpy(fullString + length, delimiter, delimiterLength);
@@ -275,7 +275,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     fullString[length] = '\0';
 
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
-        free(output);
+        FREE(vm, char, output);
     }
 
     return OBJ_VAL(takeString(vm, fullString, length));

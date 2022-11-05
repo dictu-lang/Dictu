@@ -452,13 +452,13 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
 void printValue(DictuVM *vm, Value value) {
     char *output = valueToString(vm, value);
     printf("%s", output);
-    free(output);
+    FREE(vm, char, output);
 }
 
 void printValueError(DictuVM *vm, Value value) {
     char *output = valueToString(vm, value);
     fprintf(stderr, "%s", output);
-    free(output);
+    FREE(vm, char, output);
 }
 
 static bool listComparison(Value a, Value b) {

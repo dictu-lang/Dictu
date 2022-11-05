@@ -321,10 +321,10 @@ static char *dictToPostArgs(DictuVM *vm, ObjDict *dict) {
         currentLen += 1;
 
         if (!IS_STRING(entry->key)) {
-            free(key);
+            FREE(vm, char, key);
         }
         if (!IS_STRING(entry->value)) {
-            free(value);
+            FREE(vm, char, value);
         }
     }
 
