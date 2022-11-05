@@ -33,32 +33,43 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
     ObjDict *terminalSizeDict = newDict(vm);
     push(vm, OBJ_VAL(terminalSizeDict));
 
-#ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    int width = (int)(csbi.srWindow.Right-csbi.srWindow.Left+1);
-    int height = (int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
-#else
-    struct winsize w;
-    ioctl(0, TIOCGWINSZ, &w);
-
     ObjString *lines = copyString(vm, "rows", 4);
     push(vm, OBJ_VAL(lines));
-    dictSet(vm, terminalSizeDict, OBJ_VAL(lines), NUMBER_VAL(w.ws_row));
-    pop(vm);
 
     ObjString *columns = copyString(vm, "columns", 7);
     push(vm, OBJ_VAL(columns));
-    dictSet(vm, terminalSizeDict, OBJ_VAL(columns), NUMBER_VAL(w.ws_col));
+
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    
+    int height = (int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
+    int width = (int)(csbi.srWindow.Right-csbi.srWindow.Left+1);
+
+    dictSet(vm, terminalSizeDict, OBJ_VAL(lines), NUMBER_VAL(height));
     pop(vm);
 
+    dictSet(vm, terminalSizeDict, OBJ_VAL(columns), NUMBER_VAL(width));
+    pop(vm);
+#else
     ObjString *horizantalPixesl = copyString(vm, "horizantal_pixels", 17);
     push(vm, OBJ_VAL(horizantalPixesl));
-    dictSet(vm, terminalSizeDict, OBJ_VAL(horizantalPixesl), NUMBER_VAL(w.ws_col));
-    pop(vm);
 
     ObjString *verticalPixels = copyString(vm, "vertical_pixels", 15);
     push(vm, OBJ_VAL(verticalPixels));
+
+    struct winsize w;
+    ioctl(0, TIOCGWINSZ, &w);
+
+    dictSet(vm, terminalSizeDict, OBJ_VAL(lines), NUMBER_VAL(w.ws_row));
+    pop(vm);
+
+    dictSet(vm, terminalSizeDict, OBJ_VAL(columns), NUMBER_VAL(w.ws_col));
+    pop(vm);
+
+    dictSet(vm, terminalSizeDict, OBJ_VAL(horizantalPixesl), NUMBER_VAL(w.ws_col));
+    pop(vm);
+
     dictSet(vm, terminalSizeDict, OBJ_VAL(verticalPixels), NUMBER_VAL(w.ws_col));
     pop(vm);
 #endif
