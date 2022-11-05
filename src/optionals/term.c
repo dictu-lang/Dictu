@@ -30,11 +30,17 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    struct winsize w;
-    ioctl(0, TIOCGWINSZ, &w);
-    
     ObjDict *terminalSizeDict = newDict(vm);
     push(vm, OBJ_VAL(terminalSizeDict));
+
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    width = (int)(csbi.srWindow.Right-csbi.srWindow.Left+1);
+    height = (int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
+#else
+    struct winsize w;
+    ioctl(0, TIOCGWINSZ, &w);
 
     ObjString *lines = copyString(vm, "rows", 4);
     push(vm, OBJ_VAL(lines));
@@ -55,6 +61,7 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(verticalPixels));
     dictSet(vm, terminalSizeDict, OBJ_VAL(verticalPixels), NUMBER_VAL(w.ws_col));
     pop(vm);
+#endif
 
     pop(vm);
     
