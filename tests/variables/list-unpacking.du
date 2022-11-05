@@ -9,23 +9,23 @@ class TestListUnpacking < UnitTest {
     testListUnpacking() {
         var [a, b, c] = [1, 2, 3];
 
-        assert(a == 1);
-        assert(b == 2);
-        assert(c == 3);
+        this.assertEquals(a, 1);
+        this.assertEquals(b, 2);
+        this.assertEquals(c, 3);
 
         var o,i,g;
 
         [o,i,g]=[111,222,333];
 
-        assert(o == 111);
-        assert(i == 222);
-        assert(g == 333);
+        this.assertEquals(o, 111);
+        this.assertEquals(i, 222);
+        this.assertEquals(g, 333);
 
         var [d, e, f] = [1 + 1, 2 + 2, 3 + 3];
 
-        this.assertEquals(a, 1);
-        this.assertEquals(b, 2);
-        this.assertEquals(c, 3);
+        this.assertEquals(d, 2);
+        this.assertEquals(e, 4);
+        this.assertEquals(f, 6);
     }
 
     testListUnpackingExpression() {
