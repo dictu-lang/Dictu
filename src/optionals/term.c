@@ -1,7 +1,8 @@
-#include <sys/ioctl.h>
-#include <unistd.h>
-
 #include "term.h"
+
+#ifdef _WIN32
+#define isatty(fd) _isatty(fd)
+#endif
 
 static Value termIsattyNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
