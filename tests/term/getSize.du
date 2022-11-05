@@ -3,7 +3,7 @@
  *
  * Testing the Term.getSize() function
  *
- * getSize() returns the number of rows, columns, horizantal and vertical pixels.
+ * getSize() returns the number of rows, columns, horizontal and vertical pixels.
  */
 from UnitTest import UnitTest;
 

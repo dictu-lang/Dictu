@@ -52,8 +52,8 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
     dictSet(vm, terminalSizeDict, OBJ_VAL(columns), NUMBER_VAL(width));
     pop(vm);
 #else
-    ObjString *horizantalPixesl = copyString(vm, "horizantal_pixels", 17);
-    push(vm, OBJ_VAL(horizantalPixesl));
+    ObjString *horizontalPixesl = copyString(vm, "horizontal_pixels", 17);
+    push(vm, OBJ_VAL(horizontalPixesl));
 
     ObjString *verticalPixels = copyString(vm, "vertical_pixels", 15);
     push(vm, OBJ_VAL(verticalPixels));
@@ -67,7 +67,7 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
     dictSet(vm, terminalSizeDict, OBJ_VAL(columns), NUMBER_VAL(w.ws_col));
     pop(vm);
 
-    dictSet(vm, terminalSizeDict, OBJ_VAL(horizantalPixesl), NUMBER_VAL(w.ws_col));
+    dictSet(vm, terminalSizeDict, OBJ_VAL(horizontalPixesl), NUMBER_VAL(w.ws_col));
     pop(vm);
 
     dictSet(vm, terminalSizeDict, OBJ_VAL(verticalPixels), NUMBER_VAL(w.ws_col));

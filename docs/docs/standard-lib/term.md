@@ -34,10 +34,10 @@ Term.isatty(0);
 
 ### Term.getSize()
 
-Returns the number of rows, columns, horizantal and vertical pixels of the attached terminal.
+Returns the number of rows, columns, horizontal and vertical pixels of the attached terminal.
 
 ```cs
 Term.getSize();
 print(Term.getSize());
-// {"rows": 13, "columns": 145, "horizantal_pixels": 145, "vertical_pixels": 145}
+// {"rows": 13, "columns": 145, "horizontal_pixels": 145, "vertical_pixels": 145}
 ```
