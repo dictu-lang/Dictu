@@ -39,9 +39,6 @@ class TestHttpClient < UnitTest {
     testSetInsecure() {
         const ret = this.httpClient.setInsecure(true);
         this.assertNil(ret);
-
-        // const ret2 = this.httpClient.setInsecure(1);
-        // this.assertEmpty(ret2);
     }
 
     testSetKeyFile() {
