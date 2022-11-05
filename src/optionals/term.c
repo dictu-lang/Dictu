@@ -36,8 +36,8 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    width = (int)(csbi.srWindow.Right-csbi.srWindow.Left+1);
-    height = (int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
+    int width = (int)(csbi.srWindow.Right-csbi.srWindow.Left+1);
+    int height = (int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
 #else
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
