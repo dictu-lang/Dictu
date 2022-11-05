@@ -1817,8 +1817,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                         push(vm, v);
                         DISPATCH();
                     }
-
-                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
+                    
+                    char *key = valueToString(vm, indexValue);
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", key);
+                    FREE(vm, char, key);
                 }
 
                 default: {
