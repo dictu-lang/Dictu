@@ -336,24 +336,24 @@ void graySet(DictuVM *vm, ObjSet *set) {
 char *valueToString(DictuVM *vm, Value value) {
     if (IS_BOOL(value)) {
         char *str = AS_BOOL(value) ? "true" : "false";
-        char *boolString = ALLOCATE(vm, char, sizeof(char) * (strlen(str) + 1));
+        char *boolString = ALLOCATE(vm, char, (strlen(str) + 1));
         snprintf(boolString, strlen(str) + 1, "%s", str);
         return boolString;
     } else if (IS_NIL(value)) {
-        char *nilString = ALLOCATE(vm, char, sizeof(char) * 4);
+        char *nilString = ALLOCATE(vm, char, 4);
         snprintf(nilString, 4, "%s", "nil");
         return nilString;
     } else if (IS_NUMBER(value)) {
         double number = AS_NUMBER(value);
         int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
-        char *numberString = ALLOCATE(vm, char, sizeof(char) * numberStringLength);
+        char *numberString = ALLOCATE(vm, char, numberStringLength);
         snprintf(numberString, numberStringLength, "%.15g", number);
         return numberString;
     } else if (IS_OBJ(value)) {
         return objectToString(vm, value);
     }
 
-    char *unknown = ALLOCATE(vm, char, sizeof(char) * 8);
+    char *unknown = ALLOCATE(vm, char, 8);
     snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }
