@@ -3,8 +3,8 @@
 
 #include "chunk.h"
 
-void disassembleChunk(Chunk *chunk, const char *name);
+void disassembleChunk(DictuVM *vm, Chunk *chunk, const char *name);
 
-int disassembleInstruction(Chunk *chunk, int offset);
+int disassembleInstruction(DictuVM *vm, Chunk *chunk, int offset);
 
 #endif

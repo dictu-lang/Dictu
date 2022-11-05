@@ -18,7 +18,7 @@ static Value toStringList(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = listToString(args[0]);
+    char *valueString = listToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
     free(valueString);
@@ -245,7 +245,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
         if (IS_STRING(list->values.values[j])) {
             output = AS_CSTRING(list->values.values[j]);
         } else {
-            output = valueToString(list->values.values[j]);
+            output = valueToString(vm, list->values.values[j]);
         }
         int elementLength = strlen(output);
 
@@ -264,7 +264,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     if (IS_STRING(list->values.values[list->values.count - 1])) {
         output = AS_CSTRING(list->values.values[list->values.count - 1]);
     } else {
-        output = valueToString(list->values.values[list->values.count - 1]);
+        output = valueToString(vm, list->values.values[list->values.count - 1]);
     }
 
     int elementLength = strlen(output);

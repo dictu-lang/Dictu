@@ -273,7 +273,7 @@ static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data) {
     return size * nitems;
 }
 
-static char *dictToPostArgs(ObjDict *dict) {
+static char *dictToPostArgs(DictuVM *vm, ObjDict *dict) {
     int len = 100;
     char *ret = malloc(sizeof(char) * len);
     int currentLen = 0;
@@ -288,14 +288,14 @@ static char *dictToPostArgs(ObjDict *dict) {
         if (IS_STRING(entry->key)) {
             key = AS_CSTRING(entry->key);
         } else {
-            key = valueToString(entry->key);
+            key = valueToString(vm, entry->key);
         }
 
         char *value;
         if (IS_STRING(entry->value)) {
             value = AS_CSTRING(entry->value);
         } else {
-            value = valueToString(entry->value);
+            value = valueToString(vm, entry->value);
         }
 
         int keyLen = strlen(key);
@@ -566,7 +566,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         }
 
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }

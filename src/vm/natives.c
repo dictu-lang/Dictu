@@ -91,7 +91,7 @@ static Value printNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValue(args[i]);
+        printValue(vm, args[i]);
         printf("\n");
     }
 
@@ -107,7 +107,7 @@ static Value printErrorNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValueError(args[i]);
+        printValueError(vm, args[i]);
         fprintf(stderr, "\n");
     }
 
