@@ -67,12 +67,7 @@ const opts = {
     "certFile": "",
     "keyPasswd": ""
 };
-const ret = HTTP.newClient(opts);
-if (not ret.success()) {
-    print(res.unwrapError());
-    System.exit(1);
-}
-var httpClient = ret.unwrap();
+var httpClient = HTTP.newClient(opts);
 ```
 
 ### httpClient.get(string)
