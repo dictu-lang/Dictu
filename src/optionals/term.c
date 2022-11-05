@@ -1,6 +1,6 @@
+#include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <sys/ioctl.h>
 #include "term.h"
 
 static Value termIsattyNative(DictuVM *vm, int argCount, Value *args) {
