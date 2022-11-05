@@ -156,7 +156,7 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
                     );
 
                     if (!IS_STRING(entry->key)) {
-                        free(key);
+                        FREE(vm, char, key);
                     }
                 }
 
