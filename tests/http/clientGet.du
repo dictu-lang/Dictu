@@ -13,9 +13,7 @@ class TestHttpClientGet < UnitTest {
     private httpClient;
 
     setUp() {
-        const ret = HTTP.newClient({});
-        this.assertNotNil(ret);
-        this.httpClient = ret.unwrap();
+        this.httpClient = HTTP.newClient({});
     }
 
     testHttpGet() {

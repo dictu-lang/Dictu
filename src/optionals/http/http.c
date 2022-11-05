@@ -1032,7 +1032,7 @@ static Value newClient(DictuVM *vm, int argCount, Value *args) {
     ObjDict *opts = AS_DICT(args[0]);
 
     ObjAbstract *hc = newHttpClient(vm, opts);
-    return newResultSuccess(vm, OBJ_VAL(hc));
+    return OBJ_VAL(hc);
 }
 
 Value createHTTPModule(DictuVM *vm) {
