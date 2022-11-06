@@ -61,6 +61,12 @@ static void advance(Parser *parser) {
     }
 }
 
+static void recede(Parser *parser){
+    for (int i = 0; i < parser->current.length; ++i) {
+            backTrack(&parser->scanner);
+    }
+}
+
 static void consume(Compiler *compiler, TokenType type, const char *message) {
     if (compiler->parser->current.type == type) {
         advance(compiler->parser);
@@ -1921,7 +1927,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 }
 
-static void expressionStatement(Compiler *compiler) {
+static void expressionStatement(Compiler *compiler) { 
     Token previous = compiler->parser->previous;
     advance(compiler->parser);
     TokenType t = compiler->parser->current.type;
@@ -2481,6 +2487,71 @@ static void whileStatement(Compiler *compiler) {
     endLoop(compiler);
 }
 
+static void unpackListStatement(Compiler *compiler){
+    int varCount = 0;
+    Token variables[255];
+    Token previous=compiler->parser->previous;
+    do {
+        if(!check(compiler,TOKEN_IDENTIFIER)){
+            if(varCount>0){
+                recede(compiler->parser);
+            }
+            int varsAndCommas=varCount+(varCount-1);
+            for(int var=0;var<varsAndCommas;var++){
+                recede(compiler->parser);
+            }
+            recede(compiler->parser);
+            compiler->parser->current=previous;
+            expressionStatement(compiler);
+            return;
+        }
+        consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+        variables[varCount] = compiler->parser->previous;
+        varCount++;
+    } while (match(compiler, TOKEN_COMMA));
+
+    consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
+
+    if(!check(compiler, TOKEN_EQUAL)){
+        recede(compiler->parser);
+        int varsAndCommas=varCount+(varCount-1);
+        for(int var=0;var<varsAndCommas;var++){
+                recede(compiler->parser);
+        }
+        recede(compiler->parser);
+        compiler->parser->current=previous;
+        expressionStatement(compiler);
+        return;
+    }
+
+    consume(compiler, TOKEN_EQUAL, "Expect '=' after list destructure.");
+
+    expression(compiler);
+
+    emitBytes(compiler, OP_UNPACK_LIST, varCount);
+
+
+    for(int i=varCount-1;i>-1;i--){
+        Token token=variables[i];
+    
+        uint8_t setOp;
+        int arg = resolveLocal(compiler, &token, false);
+        if (arg != -1) {
+                setOp = OP_SET_LOCAL;
+        } else if ((arg = resolveUpvalue(compiler, &token)) != -1) {
+                setOp = OP_SET_UPVALUE;
+        } else {
+                arg = identifierConstant(compiler, &token);
+                setOp = OP_SET_MODULE;
+        }
+        checkConst(compiler, setOp, arg);
+        emitBytes(compiler, setOp, (uint8_t) arg);
+        emitByte(compiler, OP_POP);
+    }
+
+    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+}
+
 static void synchronize(Parser *parser) {
     parser->panicMode = false;
 
@@ -2564,6 +2635,8 @@ static void statement(Compiler *compiler) {
         breakStatement(compiler);
     } else if (match(compiler, TOKEN_WHILE)) {
         whileStatement(compiler);
+    } else if (match(compiler, TOKEN_LEFT_BRACKET)) {
+        unpackListStatement(compiler);
     } else if (match(compiler, TOKEN_LEFT_BRACE)) {
         Parser *parser = compiler->parser;
         Token previous = parser->previous;
