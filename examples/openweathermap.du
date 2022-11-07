@@ -46,4 +46,3 @@ class Client {
 
     print("Current Weather Data for: {} \n\n{}\n".format(location, current));
 }
-

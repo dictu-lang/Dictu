@@ -2,8 +2,8 @@ import System;
 
 // Template is a simple template rendering engine.
 class Template {
-    var LEFT_BRACE = "{";
-    var RIGHT_BRACE = "}";
+    const LEFT_BRACE = "{";
+    const RIGHT_BRACE = "}";
 
     init(private tmpl, private klass) {}
 
