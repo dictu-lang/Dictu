@@ -5,6 +5,8 @@
  *
  * getSize() returns the number of rows, columns, horizontal and vertical pixels.
  */
+import System;
+
 from UnitTest import UnitTest;
 
 import Term;
@@ -13,9 +15,10 @@ class TestTermGetSize < UnitTest {
 
     testTermGetSize() {
         const termSize = Term.getSize();
+        const len = System.platform == 'windows' ? 2 : 4;
 
         this.assertNotNil(termSize);
-        this.assertTruthy(termSize.len() == 4);
+        this.assertTruthy(termSize.len() == len);
         this.assertTruthy(termSize.exists("rows"));
         this.assertType(termSize.get("columns"), "number");
     }
