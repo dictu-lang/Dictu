@@ -31,7 +31,8 @@ var files = [
     'src/vm/datatypes/result/result',
     'src/optionals/unittest/unittest',
     'src/optionals/env/env',
-    'src/optionals/http/http'
+    'src/optionals/http/http',
+    'src/optionals/object/object'
 ];
 
 for (var i = 0; i < files.len(); i += 1) {

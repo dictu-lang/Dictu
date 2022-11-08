@@ -33,6 +33,23 @@ static void resetStack(DictuVM *vm) {
     vm->compiler = NULL;
 }
 
+#define HANDLE_UNPACK                                                               \
+    if (unpack) {                                                                   \
+        if (!IS_LIST(peek(vm, 0))) {                                                \
+            runtimeError(vm, "Attempted to unpack a value that is not a list");     \
+            return false;                                                           \
+        }                                                                           \
+                                                                                    \
+        ObjList *list = AS_LIST(pop(vm));                                     \
+                                                                                    \
+        for (int i = 0; i < list->values.count; ++i) {                              \
+            push(vm, list->values.values[i]);                                       \
+        }                                                                           \
+                                                                                    \
+        argCount += (list->values.count - 1);                                       \
+        unpack = false;                                                             \
+    }
+
 void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
@@ -264,8 +281,10 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     return true;
 }
 
-static bool callValue(DictuVM *vm, Value callee, int argCount) {
+static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
     if (IS_OBJ(callee)) {
+        HANDLE_UNPACK
+
         switch (OBJ_TYPE(callee)) {
             case OBJ_BOUND_METHOD: {
                 ObjBoundMethod *bound = AS_BOUND_METHOD(callee);
@@ -301,6 +320,9 @@ static bool callValue(DictuVM *vm, Value callee, int argCount) {
 
             case OBJ_CLOSURE: {
                 vm->stackTop[-argCount - 1] = callee;
+
+
+
                 return call(vm, AS_CLOSURE(callee), argCount);
             }
 
@@ -343,7 +365,9 @@ static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
 }
 
 static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
-                            int argCount) {
+                            int argCount, bool unpack) {
+    HANDLE_UNPACK
+
     // Look for the method.
     Value method;
     if (!tableGet(&klass->publicMethods, name, &method)) {
@@ -359,8 +383,10 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
     return call(vm, AS_CLOSURE(method), argCount);
 }
 
-static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
+static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
     Value receiver = peek(vm, argCount);
+
+    HANDLE_UNPACK
 
     if (IS_INSTANCE(receiver)) {
         ObjInstance *instance = AS_INSTANCE(receiver);
@@ -383,7 +409,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
         // Look for a field which may shadow a method.
         if (tableGet(&instance->publicFields, name, &value)) {
             vm->stackTop[-argCount - 1] = value;
-            return callValue(vm, value, argCount);
+            return callValue(vm, value, argCount, unpack);
         }
     } else if (IS_CLASS(receiver)) {
         ObjClass *instance = AS_CLASS(receiver);
@@ -399,7 +425,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
-            return callValue(vm, method, argCount);
+            return callValue(vm, method, argCount, unpack);
         }
 
         if (tableGet(&instance->publicMethods, name, &method)) {
@@ -413,7 +439,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
                 return false;
             }
 
-            return callValue(vm, method, argCount);
+            return callValue(vm, method, argCount, unpack);
         }
 
         if (tableGet(&vm->classMethods, name, &method)) {
@@ -425,8 +451,10 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount) {
     return false;
 }
 
-static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
+static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
     Value receiver = peek(vm, argCount);
+
+    HANDLE_UNPACK
 
     if (!IS_OBJ(receiver)) {
         if (IS_NUMBER(receiver)) {
@@ -464,7 +492,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                     runtimeError(vm, "Undefined property '%s'.", name->chars);
                     return false;
                 }
-                return callValue(vm, value, argCount);
+                return callValue(vm, value, argCount, unpack);
             }
 
             case OBJ_CLASS: {
@@ -481,7 +509,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                         return false;
                     }
 
-                    return callValue(vm, method, argCount);
+                    return callValue(vm, method, argCount, unpack);
                 }
 
                 if (tableGet(&vm->classMethods, name, &method)) {
@@ -509,7 +537,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
                 // Look for a field which may shadow a method.
                 if (tableGet(&instance->publicFields, name, &value)) {
                     vm->stackTop[-argCount - 1] = value;
-                    return callValue(vm, value, argCount);
+                    return callValue(vm, value, argCount, unpack);
                 }
 
                 if (tableGet(&instance->klass->privateMethods, name, &value)) {
@@ -628,7 +656,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount) {
 
                 Value value;
                 if (tableGet(&enumObj->values, name, &value)) {
-                    return callValue(vm, value, argCount);
+                    return callValue(vm, value, argCount, false);
                 }
 
                 runtimeError(vm, "'%s' enum has no property '%s'.", enumObj->name->chars, name->chars);
@@ -1537,16 +1565,20 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *fileName = READ_STRING();
             Value moduleVal;
 
-            // If we have imported this file already, skip.
-            if (tableGet(&vm->modules, fileName, &moduleVal)) {
-                vm->lastModule = AS_MODULE(moduleVal);
-                push(vm, NIL_VAL);
-                DISPATCH();
-            }
-
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+            }
+
+            ObjString *pathObj = copyString(vm, path, strlen(path));
+            push(vm, OBJ_VAL(pathObj));
+
+            // If we have imported this file already, skip.
+            if (tableGet(&vm->modules, pathObj, &moduleVal)) {
+                pop(vm);
+                vm->lastModule = AS_MODULE(moduleVal);
+                push(vm, NIL_VAL);
+                DISPATCH();
             }
 
             char *source = readFile(vm, path);
@@ -1555,13 +1587,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
-            ObjString *pathObj = copyString(vm, path, strlen(path));
-            push(vm, OBJ_VAL(pathObj));
             ObjModule *module = newModule(vm, pathObj);
             module->path = dirname(vm, path, strlen(path));
             vm->lastModule = module;
             pop(vm);
-
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
             pop(vm);
@@ -2000,8 +2029,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(CALL): {
             int argCount = READ_BYTE();
+            bool unpack = READ_BYTE();
+
             frame->ip = ip;
-            if (!callValue(vm, peek(vm, argCount), argCount)) {
+            if (!callValue(vm, peek(vm, argCount), argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm->frames[vm->frameCount - 1];
@@ -2012,8 +2043,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(INVOKE): {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
+            bool unpack = READ_BYTE();
+
             frame->ip = ip;
-            if (!invoke(vm, method, argCount)) {
+            if (!invoke(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm->frames[vm->frameCount - 1];
@@ -2024,8 +2057,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(INVOKE_INTERNAL): {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
+            bool unpack = READ_BYTE();
+
             frame->ip = ip;
-            if (!invokeInternal(vm, method, argCount)) {
+            if (!invokeInternal(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm->frames[vm->frameCount - 1];
@@ -2036,9 +2071,11 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(SUPER): {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
+            bool unpack = READ_BYTE();
+
             frame->ip = ip;
             ObjClass *superclass = AS_CLASS(pop(vm));
-            if (!invokeFromClass(vm, superclass, method, argCount)) {
+            if (!invokeFromClass(vm, superclass, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
             frame = &vm->frames[vm->frameCount - 1];
@@ -2247,7 +2284,7 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
     push(vm, OBJ_VAL(closure));
-    callValue(vm, OBJ_VAL(closure), 0);
+    callValue(vm, OBJ_VAL(closure), 0, false);
     DictuInterpretResult result = run(vm);
 
     return result;

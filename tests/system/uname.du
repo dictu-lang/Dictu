@@ -1,0 +1,23 @@
+/**
+ * uname.du
+ *
+ * Testing the System.uname() function
+ *
+ * uname() returns the name and version of the system along with operating 
+ * system and hardware information
+ */
+from UnitTest import UnitTest;
+
+import System;
+
+class TestSystemUname < UnitTest {
+    testSystemUname() {
+        if (System.platform != "windows") {
+            const uname = System.uname();
+            this.assertNotNil(uname);
+            this.assertType(uname, "dict");
+        }
+    }
+}
+
+TestSystemUname().run();

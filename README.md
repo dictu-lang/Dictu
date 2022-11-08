@@ -91,6 +91,32 @@ $ ./build/Dictu
 
 Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/README.md)
 
+### FreeBSD Installation
+
+For a full installation, make sure `curl` and `linenoise` are installed. They can be installed from the commands below:
+
+```bash
+$ pkg install -y curl linenoise-ng
+```
+
+The following variables need to be set/available to run `cmake` successfully.
+
+For Bourne compatible shells...
+
+```bash
+export CPATH=/usr/local/include
+export LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH=/usr/local/lib
+```
+
+```bash
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
+$ cmake --build ./build
+$ ./dictu
+```
+
 ## Extensions
 
 Dictu has a Visual Studio Code extension [here](https://marketplace.visualstudio.com/items?itemName=Dictu.dictuvsc) with the implementation located

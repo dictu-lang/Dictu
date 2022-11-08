@@ -1,0 +1,14 @@
+import System;
+import Term;
+
+// main
+{
+    const terminalSize = Term.getSize();
+    print(terminalSize);
+
+    if (Term.isatty(0)) {
+        print("we're in a terminal!");
+    }
+
+    System.exit(0);
+}

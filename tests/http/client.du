@@ -1,0 +1,58 @@
+/**
+ * Test HTTP client
+ */
+from UnitTest import UnitTest;
+
+import HTTP;
+
+class TestHttpClient < UnitTest {
+
+    private httpClient;
+
+    setUp() {
+        this.httpClient = HTTP.newClient({});
+    }
+
+    testHttpNewClient() {
+        const client = HTTP.newClient({"timeout": 20});
+        this.assertNotNil(client);
+    }
+
+    testSetTimeout() {
+        const ret = this.httpClient.setTimeout(20);
+        this.assertNil(ret);
+    }
+
+    testSetHeaders() {
+        const headers = [
+            "Content-Type: application/json", 
+            "Accept: application/json",
+            "User-Agent: Dictu"
+        ];
+        const ret = this.httpClient.setHeaders(headers);
+        
+        this.assertNil(ret);
+    }
+
+    testSetInsecure() {
+        const ret = this.httpClient.setInsecure(true);
+        this.assertNil(ret);
+    }
+
+    testSetKeyFile() {
+        const ret = this.httpClient.setKeyFile("/path/to/key/file");
+        this.assertNil(ret);
+    }
+
+    testSetCertFile() {
+        const ret = this.httpClient.setCertFile("/path/to/cert/file");
+        this.assertNil(ret);
+    }
+
+    testSetKeyPass() {
+        const ret = this.httpClient.setKeyPass("keyPass");
+        this.assertNil(ret);
+    }
+}
+
+TestHttpClient().run();

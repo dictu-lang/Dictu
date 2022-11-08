@@ -1,0 +1,17 @@
+/**
+ * repeat.du
+ *
+ * Testing the str.repeat() method
+ *
+ * .repeat() returns a new string with the original string repeated the given number of times
+ */
+from UnitTest import UnitTest;
+
+class TestStringRepeat < UnitTest {
+    testStringRepeat() {
+        this.assertEquals("ba" + "na".repeat(2), "banana");
+        this.assertEquals("ha".repeat(6), "hahahahahaha");
+    }
+}
+
+TestStringRepeat().run();

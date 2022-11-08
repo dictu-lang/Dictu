@@ -258,3 +258,12 @@ Returns a title cased version of string with first letter of each word capitaliz
 "this documentation".title(); // This Documentation
 "once upon a time".title(); // Once Upon A Time
 ```
+
+### string.repeat(number)
+
+Returns a new string with the original string repeated the given number of times.
+
+```cs
+"ba"+"na".repeat(2); // banana
+"la".repeat(2) + " land"; // lala land
+```
