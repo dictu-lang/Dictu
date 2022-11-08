@@ -7,6 +7,15 @@ on:
       - master
 
 jobs:
+     check-tests:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - name: Make dictu and run checkTests
+           run: |
+             cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
+             cmake --build ./build
+             ./dictu scripts/checkTests.du
      test-ubuntu-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
