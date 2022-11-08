@@ -15,7 +15,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
-             ./dictu scripts/checkTests.du
+             ./dictu scripts/checkTests.du ci
      test-ubuntu-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -29,7 +29,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
          - name: Remove build directory
            run: |
              rm -rf build
@@ -39,7 +39,7 @@ jobs:
              sudo apt-get install -y libcurl4-openssl-dev
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
      test-mac-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -53,7 +53,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
          - name: Remove build directory
            run: |
              rm -rf build
@@ -61,7 +61,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
-             ./dictu tests/runTests.du | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
      test-windows-cmake:
        name: Test on ${{ matrix.os }}
        runs-on: ${{ matrix.os }}
@@ -75,7 +75,7 @@ jobs:
            run: |
              cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
              cmake --build build
-             Debug\dictu.exe tests/runTests.du
+             Debug\dictu.exe tests/runTests.du ci
      run-examples:
        name: Test Examples
        runs-on: ubuntu-latest
@@ -87,4 +87,4 @@ jobs:
              sudo apt-get install -y libcurl4-openssl-dev
              cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
              cmake --build ./build
-             ./dictu examples/runExamples.du | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+             ./dictu examples/runExamples.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
