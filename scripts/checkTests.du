@@ -1,0 +1,33 @@
+import System;
+import Path;
+
+const ignored = [
+    'runTests.du',
+    'benchmarks'
+];
+
+const dir = Path.listDir('tests').filter(def (dir) => {
+    return not ignored.contains(dir);
+});
+const imports = [];
+
+with ('tests/runTests.du', 'r') {
+    var line;
+
+    while((line = file.readLine()) != nil) {
+        line = line.strip();
+        if (line.startsWith('import')) {
+            const importName = line[8:].split('/')[0];
+            imports.push(importName);
+        }
+    }
+}
+
+const missingImports = dir.filter(def (importName) => {
+    return not imports.contains(importName);
+});
+
+if (missingImports) {
+    print('There are missing imports in runTests.du: {}'.format(missingImports));
+    System.exit(1);
+}
