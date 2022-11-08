@@ -52,7 +52,6 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 ### HTTP.newClient(dict)
 
 Creates a new HTTP client with a given set of options.
-Returns a Result and neecds to be unwraped upon success.
 
 ```cs
 const opts = {
@@ -81,7 +80,7 @@ httpClient.get("https://httpbin.org/get");
 {"content": "...", "headers": ["...", "..."], "statusCode": 200}
 ```
 
-### HTTP.post(string, dictionary: postArgs)
+### httpClient.post(string, dictionary: postArgs)
 
 Sends a HTTP POST request to a given URL.
 Returns a Result and unwraps to a Response upon success.
