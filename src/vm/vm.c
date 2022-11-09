@@ -1818,9 +1818,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
                     
-                    char *key = valueToString(vm, indexValue);
-                    RUNTIME_ERROR("Key %s does not exist within dictionary.", key);
-                    FREE(vm, char, key);
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
                 }
 
                 default: {
@@ -1921,9 +1919,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        char *key = valueToString(vm, indexValue);
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", key);
-                        FREE(vm, char, key);
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
                     }
 
                     vm->stackTop[-1] = dictValue;
