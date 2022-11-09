@@ -9,7 +9,7 @@ static Value toStringSet(DictuVM *vm, int argCount, Value *args) {
     char *valueString = setToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    FREE(vm, ObjString, valueString);
 
     return OBJ_VAL(string);
 }

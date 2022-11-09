@@ -11,7 +11,7 @@ static Value toString(DictuVM *vm, int argCount, Value *args) {
     char *valueString = classToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    FREE(vm, ObjString, valueString);
 
     return OBJ_VAL(string);
 }
