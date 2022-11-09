@@ -846,7 +846,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         char *postValue = "";
 
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }
