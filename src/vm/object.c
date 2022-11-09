@@ -511,9 +511,9 @@ char *setToString(DictuVM *vm, Value value) {
     return setString;
 }
 
-char *classToString(Value value) {
+char *classToString(DictuVM *vm, Value value) {
     ObjClass *klass = AS_CLASS(value);
-    char *classString = malloc(sizeof(char) * (klass->name->length + 7));
+    char *classString = ALLOCATE(vm, char, klass->name->length + 7);
     memcpy(classString, "<Cls ", 5);
     memcpy(classString + 5, klass->name->chars, klass->name->length);
     memcpy(classString + 5 + klass->name->length, ">", 1);
@@ -521,9 +521,9 @@ char *classToString(Value value) {
     return classString;
 }
 
-char *instanceToString(Value value) {
+char *instanceToString(DictuVM *vm, Value value) { 
     ObjInstance *instance = AS_INSTANCE(value);
-    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
+    char *instanceString = ALLOCATE(vm, char, instance->klass->name->length + 12);
     memcpy(instanceString, "<", 1);
     memcpy(instanceString + 1, instance->klass->name->chars, instance->klass->name->length);
     memcpy(instanceString + 1 + instance->klass->name->length, " instance>", 10);
@@ -535,7 +535,7 @@ char *objectToString(DictuVM *vm, Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_MODULE: {
             ObjModule *module = AS_MODULE(value);
-            char *moduleString = malloc(sizeof(char) * (module->name->length + 11));
+            char *moduleString = ALLOCATE(vm, char, module->name->length + 11);
             snprintf(moduleString, (module->name->length + 10), "<Module %s>", module->name->chars);
             return moduleString;
         }
@@ -543,17 +543,17 @@ char *objectToString(DictuVM *vm, Value value) {
         case OBJ_CLASS: {
             if (IS_TRAIT(value)) {
                 ObjClass *trait = AS_CLASS(value);
-                char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
+                char *traitString = ALLOCATE(vm, char, trait->name->length + 10);
                 snprintf(traitString, trait->name->length + 9, "<Trait %s>", trait->name->chars);
                 return traitString;
             }
 
-            return classToString(value);
+            return classToString(vm, value);
         }
 
         case OBJ_ENUM: {
             ObjEnum *enumObj = AS_ENUM(value);
-            char *enumString = malloc(sizeof(char) * (enumObj->name->length + 8));
+            char *enumString = ALLOCATE(vm, char, enumObj->name->length + 8);
             memcpy(enumString, "<Enum ", 6);
             memcpy(enumString + 6, enumObj->name->chars, enumObj->name->length);
             memcpy(enumString + 6 + enumObj->name->length, ">", 1);
@@ -570,13 +570,13 @@ char *objectToString(DictuVM *vm, Value value) {
             if (method->method->function->name != NULL) {
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
+                        methodString = ALLOCATE(vm, char, method->method->function->name->length + 17);
                         snprintf(methodString, method->method->function->name->length + 17, "<Static Method %s>", method->method->function->name->chars);
                         break;
                     }
 
                     default: {
-                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 16));
+                        methodString = ALLOCATE(vm, char, method->method->function->name->length + 16);
                         snprintf(methodString, method->method->function->name->length + 16, "<Bound Method %s>", method->method->function->name->chars);
                         break;
                     }
@@ -584,14 +584,14 @@ char *objectToString(DictuVM *vm, Value value) {
             } else {
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        methodString = malloc(sizeof(char) * 16);
+                        methodString = ALLOCATE(vm, char,  16);
                         memcpy(methodString, "<Static Method>", 15);
                         methodString[15] = '\0';
                         break;
                     }
 
                     default: {
-                        methodString = malloc(sizeof(char) * 15);
+                        methodString = ALLOCATE(vm, char,  15);
                         memcpy(methodString, "<Bound Method>", 14);
                         methodString[14] = '\0';
                         break;
@@ -607,10 +607,10 @@ char *objectToString(DictuVM *vm, Value value) {
             char *closureString;
 
             if (closure->function->name != NULL) {
-                closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
+                closureString = ALLOCATE(vm, char, closure->function->name->length + 6);
                 snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
             } else {
-                closureString = malloc(sizeof(char) * 9);
+                closureString = ALLOCATE(vm, char, 9);
                 memcpy(closureString, "<Script>", 8);
                 closureString[8] = '\0';
             }
@@ -623,10 +623,10 @@ char *objectToString(DictuVM *vm, Value value) {
             char *functionString;
 
             if (function->name != NULL) {
-                functionString = malloc(sizeof(char) * (function->name->length + 6));
+                functionString = ALLOCATE(vm, char, function->name->length + 6);
                 snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
             } else {
-                functionString = malloc(sizeof(char) * 5);
+                functionString = ALLOCATE(vm, char, 5);
                 memcpy(functionString, "<fn>", 4);
                 functionString[4] = '\0';
             }
@@ -635,11 +635,11 @@ char *objectToString(DictuVM *vm, Value value) {
         }
 
         case OBJ_INSTANCE: {
-            return instanceToString(value);
+            return instanceToString(vm, value);
         }
 
         case OBJ_NATIVE: {
-            char *nativeString = malloc(sizeof(char) * 12);
+            char *nativeString = ALLOCATE(vm, char, 12);
             memcpy(nativeString, "<fn native>", 11);
             nativeString[11] = '\0';
             return nativeString;
@@ -647,7 +647,7 @@ char *objectToString(DictuVM *vm, Value value) {
 
         case OBJ_STRING: {
             ObjString *stringObj = AS_STRING(value);
-            char *string = malloc(sizeof(char) * stringObj->length + 1);
+            char *string = ALLOCATE(vm, char, stringObj->length + 1);
             memcpy(string, stringObj->chars, stringObj->length);
             string[stringObj->length] = '\0';
             return string;
@@ -655,7 +655,7 @@ char *objectToString(DictuVM *vm, Value value) {
 
         case OBJ_FILE: {
             ObjFile *file = AS_FILE(value);
-            char *fileString = malloc(sizeof(char) * (strlen(file->path) + 8));
+            char *fileString = ALLOCATE(vm, char, strlen(file->path) + 8);
             snprintf(fileString, strlen(file->path) + 8, "<File %s>", file->path);
             return fileString;
         }

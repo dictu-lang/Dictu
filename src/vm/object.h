@@ -289,8 +289,8 @@ ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 char *setToString(DictuVM *vm, Value value);
 char *dictToString(DictuVM *vm, Value value);
 char *listToString(DictuVM *vm, Value value);
-char *classToString(Value value);
-char *instanceToString(Value value);
+char *classToString(DictuVM *vm, Value value);
+char *instanceToString(DictuVM *vm, Value value);
 char *objectToString(DictuVM *vm, Value value);
 
 static inline bool isObjType(Value value, ObjType type) {

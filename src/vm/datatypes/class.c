@@ -8,7 +8,7 @@ static Value toString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = classToString(args[0]);
+    char *valueString = classToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
     free(valueString);
