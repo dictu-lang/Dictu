@@ -21,7 +21,7 @@ static Value toStringList(DictuVM *vm, int argCount, Value *args) {
     char *valueString = listToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    FREE(vm, char, valueString);
 
     return OBJ_VAL(string);
 }
