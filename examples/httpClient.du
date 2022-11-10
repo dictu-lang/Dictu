@@ -27,15 +27,13 @@ import System;
     print(res.unwrap().json().unwrap());
 
     httpClient.setInsecure(true);
-    // res = httpClient.get("https://httpbin.org/uuid");
-    res = httpClient.get("https://localhost:4433");
+    res = httpClient.get("https://httpbin.org/uuid");
     if (not res.success()) {
         print(res.unwrapError());
         System.exit(1);
     }
-    print(res.unwrap().content);
-    // const uuid = res.unwrap().json().unwrap()["uuid"];
-    // print("UUID: {}".format(uuid));
+    const uuid = res.unwrap().json().unwrap()["uuid"];
+    print("UUID: {}".format(uuid));
 
     res = httpClient.post("https://httpbin.org/post", {});
     if (not res.success()) {

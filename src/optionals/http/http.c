@@ -651,7 +651,7 @@ static Value httpClientSetTimeout(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(args[1]));
+    curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, (long)AS_NUMBER(args[1]));
 
     return NIL_VAL;
 }
@@ -915,7 +915,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     return abstract;
                 }
 
-                curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, AS_NUMBER(entry->value));
+                curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, (long)AS_NUMBER(entry->value));
             } else if (strstr(key, "headers")) {
                 if (IS_EMPTY(entry->value)) {
                     continue;
