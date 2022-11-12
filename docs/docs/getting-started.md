@@ -33,6 +33,11 @@ Hello World!
 
 As you see, `Hello, World!` is printed to the screen. You have just created your first Dictu program, now onto bigger and better things!
 
+The `hello-world.du` file can be called directly from the shell. 2 things are required:
+
+* Make the file file executable: `chmod +x hello-world.du`
+* Add a shebang line to the top of the script: `#!/usr/bin/env dictu`
+
 ## REPL
 
 The REPL is a language shell, allowing you to run code on the fly via your terminal. This is very useful for debugging, or small little checks you may want to perform. When you enter the REPL, there is a magic variable `_` which stores the last returned value (`nil` excluded).

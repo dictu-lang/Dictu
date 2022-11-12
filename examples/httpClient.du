@@ -1,3 +1,5 @@
+#!/usr/local/bin/dictu
+
 import HTTP;
 import JSON;
 import System;
