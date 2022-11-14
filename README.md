@@ -16,7 +16,7 @@ Documentation for Dictu can be found [here](https://dictu-lang.com/)
 [![CI](https://github.com/Jason2605/Dictu/workflows/CI/badge.svg)](https://github.com/Jason2605/Dictu/actions)
 
 ## Example programs
-```js
+```cs
 import System;
 
 const guess = 10;
@@ -36,7 +36,7 @@ while {
 }
 ```
 
-```js
+```cs
 def fibonacci(num) {
     if (num < 2) {
         return num;
