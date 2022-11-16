@@ -466,6 +466,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -579,6 +580,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -677,6 +679,28 @@ static Value httpClientSetInsecure(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 1);
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 1);
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 1);
+    }
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetFollowRedirects(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setFollowRedirects() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_BOOL(args[1])) {
+        runtimeError(vm, "setFollowRedirects value must be a bool");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    if (AS_BOOL(args[1])) {
+        curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 1L);
+    } else {
+        curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 0L);
     }
 
     return NIL_VAL;
@@ -888,6 +912,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     httpClient->curl = curl_easy_init();
     
     curl_easy_setopt(httpClient->curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+    curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 1L);
 
     if (opts->count != 0) {
         for (int i = 0; i <= opts->capacityMask; i++) {
@@ -947,6 +972,19 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
+                }
+            } else if (strstr(key, "follow_redirects")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
+                if (!IS_BOOL(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"follow_redirects\" value must be a bool");
+                    return abstract;
+                }
+
+                if (!AS_BOOL(entry->value)) {
+                    curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 0L);
                 }
             } else if (strstr(key, "keyFile")) {
                 if (IS_EMPTY(entry->value)) {
@@ -1010,6 +1048,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
     defineNative(vm, &abstract->values, "setHeaders", httpClientSetHeaders);
     defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
+    defineNative(vm, &abstract->values, "setFollowRedirects", httpClientSetFollowRedirects);
     defineNative(vm, &abstract->values, "setKeyFile", httpClientSetKeyFile);
     defineNative(vm, &abstract->values, "setCertFile", httpClientSetCertFile);
     defineNative(vm, &abstract->values, "setKeyPass", httpClientSetKeyPass);

@@ -39,6 +39,11 @@ class TestHttpClient < UnitTest {
         this.assertNil(ret);
     }
 
+    testSetFollowRedirects() {
+        const ret = this.httpClient.setFollowRedirects(false);
+        this.assertNil(ret);
+    }
+
     testSetKeyFile() {
         const ret = this.httpClient.setKeyFile("/path/to/key/file");
         this.assertNil(ret);
