@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
     };
 
     struct argparse argparse;
-    argparse_init(&argparse, options, usage, 0);
+    argparse_init(&argparse, options, usage, ARGPARSE_STOP_AT_NON_OPTION);
     argc = argparse_parse(&argparse, argc, (const char **)argv);
 
     if (version) {
