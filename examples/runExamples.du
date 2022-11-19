@@ -3,7 +3,7 @@
  */
 
 import "design-patterns/builder.du";
-import "design-patterns/chain-of-responsibility.du";
+import "design-patterns/chainOfResponsibility.du";
 import "design-patterns/factoryMethod.du";
 import "design-patterns/observer.du";
 import "binarySearchTree.du";
@@ -17,5 +17,5 @@ import "inheritance.du";
 import "isPalindrome.du";
 import "factorial.du";
 import "pathWalker.du";
-import "structured_logger.du";
-import "template_engine.du";
+import "structuredLogger.du";
+import "templateEngine.du";
