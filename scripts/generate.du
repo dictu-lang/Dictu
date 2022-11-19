@@ -25,7 +25,7 @@ def generate(filename) {
     }
 }
 
-var files = [
+const files = [
     'src/vm/datatypes/lists/list',
     'src/vm/datatypes/dicts/dict',
     'src/vm/datatypes/result/result',
