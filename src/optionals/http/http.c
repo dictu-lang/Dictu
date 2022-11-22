@@ -466,6 +466,7 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -579,6 +580,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
         /* Perform the request, res will get the return code */
         curlResponse = curl_easy_perform(curl);
@@ -677,6 +679,28 @@ static Value httpClientSetInsecure(DictuVM *vm, int argCount, Value *args) {
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 1);
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 1);
         curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 1);
+    }
+
+    return NIL_VAL;
+}
+
+static Value httpClientSetFollowRedirects(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "setFollowRedirects() takes 1 argument (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_BOOL(args[1])) {
+        runtimeError(vm, "setFollowRedirects value must be a bool");
+        return EMPTY_VAL;
+    }
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    if (AS_BOOL(args[1])) {
+        curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 1L);
+    } else {
+        curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 0L);
     }
 
     return NIL_VAL;
@@ -880,7 +904,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, errorString);
 }
 
-ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
+Value newHttpClient(DictuVM *vm, ObjDict *opts) {
     ObjAbstract *abstract = newAbstract(vm, freeHttpClient, httpClientToString);
     push(vm, OBJ_VAL(abstract));
 
@@ -888,6 +912,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     httpClient->curl = curl_easy_init();
     
     curl_easy_setopt(httpClient->curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+    curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 1L);
 
     if (opts->count != 0) {
         for (int i = 0; i <= opts->capacityMask; i++) {
@@ -903,7 +928,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                 key = s->chars;
             } else {
                 runtimeError(vm, "HTTP client options key must be a string");
-                return abstract;
+                return EMPTY_VAL;
             }
 
             if (strstr(key, "timeout")) {
@@ -912,7 +937,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
                 if (!IS_NUMBER(entry->value)) {
                     runtimeError(vm, "HTTP client option \"timeout\" value must be a number");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, (long)AS_NUMBER(entry->value));
@@ -923,7 +948,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
 
                 if (!IS_LIST(entry->value)) {
                     runtimeError(vm, "HTTP client option \"headers\" value must be a list");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 ObjList *headers = AS_LIST(entry->value);
@@ -940,13 +965,26 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
 
                 if (!IS_BOOL(entry->value)) {
                     runtimeError(vm, "HTTP client option \"insecure\" value must be a bool");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 if (AS_BOOL(entry->value)) {
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYSTATUS, 0);
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYHOST, 0);
                     curl_easy_setopt(httpClient->curl, CURLOPT_SSL_VERIFYPEER, 0);
+                }
+            } else if (strstr(key, "follow_redirects")) {
+                if (IS_EMPTY(entry->value)) {
+                    continue;
+                }
+
+                if (!IS_BOOL(entry->value)) {
+                    runtimeError(vm, "HTTP client option \"follow_redirects\" value must be a bool");
+                    return EMPTY_VAL;
+                }
+
+                if (!AS_BOOL(entry->value)) {
+                    curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 0L);
                 }
             } else if (strstr(key, "keyFile")) {
                 if (IS_EMPTY(entry->value)) {
@@ -955,7 +993,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
 
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option \"keyFile\" value must be a string");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 char *keyFile = AS_STRING(entry->value)->chars;
@@ -971,7 +1009,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
 
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option \"certFile\" value must be a string");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 char *certFile = AS_STRING(entry->value)->chars;
@@ -987,7 +1025,7 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
 
                 if (!IS_STRING(entry->value)) {
                     runtimeError(vm, "HTTP client option key \"keyPasswd\" value must be a string");
-                    return abstract;
+                    return EMPTY_VAL;
                 }
 
                 char *keyPasswd = AS_STRING(entry->value)->chars;
@@ -1010,12 +1048,13 @@ ObjAbstract *newHttpClient(DictuVM *vm, ObjDict *opts) {
     defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
     defineNative(vm, &abstract->values, "setHeaders", httpClientSetHeaders);
     defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
+    defineNative(vm, &abstract->values, "setFollowRedirects", httpClientSetFollowRedirects);
     defineNative(vm, &abstract->values, "setKeyFile", httpClientSetKeyFile);
     defineNative(vm, &abstract->values, "setCertFile", httpClientSetCertFile);
     defineNative(vm, &abstract->values, "setKeyPass", httpClientSetKeyPass);
     pop(vm);
 
-    return abstract;
+    return OBJ_VAL(abstract);
 }
 
 static Value newClient(DictuVM *vm, int argCount, Value *args) {
@@ -1031,8 +1070,7 @@ static Value newClient(DictuVM *vm, int argCount, Value *args) {
 
     ObjDict *opts = AS_DICT(args[0]);
 
-    ObjAbstract *hc = newHttpClient(vm, opts);
-    return OBJ_VAL(hc);
+    return newHttpClient(vm, opts);
 }
 
 Value createHTTPModule(DictuVM *vm) {
