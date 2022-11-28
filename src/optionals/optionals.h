@@ -2,6 +2,7 @@
 #define dictu_optionals_h
 
 #include "../vm/util.h"
+#include "argparse.h"
 #include "math.h"
 #include "env/env.h"
 #include "system.h"
