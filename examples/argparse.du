@@ -11,10 +11,11 @@ Examples:
 
 { // main
     const parser = Argparse.newParser(NAME, "Example program", USAGE);
-    parser.addString("-h", "--help", "help menu", false);
-    parser.addNumber("-p", "--port", "server port", false);
-    parser.addBool("-s", "--ssl", "run securely", true);
-    parser.addList("-u", "--users", "active users", true);
+    parser.addString("-b", "birth month", false, "month");
+    parser.addBool("-h", "help menu", false, "help");
+    parser.addNumber("--port", "server port", false, "socket");
+    parser.addBool("-s", "run securely", true, "secure");
+    parser.addList("-u", "active users", true, "users");
     var args = parser.parse().match(
         def(result) => result,
         def(error) => {

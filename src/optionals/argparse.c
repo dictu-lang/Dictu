@@ -10,13 +10,11 @@ enum argType {
 };
 
 typedef struct {
-    char *shortFlag;
-    char *longFlag;
+    char *flag;
     char *desc;
     bool required;
     char *metavar;
     enum argType type;
-    void *data;
 } Arg;
 
 typedef struct {
@@ -54,23 +52,23 @@ static void addArg(Argparser *argParser, Arg *arg) {
 }
 
 static Value addString(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 4) {
-        runtimeError(vm, "addString() takes at least 4 arguments (%d given)", argCount);
+    if (argCount < 3) {
+        runtimeError(vm, "addString() takes at least 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1]) || !IS_STRING(args[2]) || !IS_STRING(args[3])) {
+    if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "addString() arguments must be strings");
         return EMPTY_VAL;
     }
 
-    if (!IS_BOOL(args[4])) {
+    if (!IS_BOOL(args[3])) {
         runtimeError(vm, "addString() required argument must be a bool");
         return EMPTY_VAL;
     }
 
-    if (!IS_EMPTY(args[5])) {
-        if (!IS_STRING(args[5])) {
+    if (!IS_EMPTY(args[4]) && IS_NIL(args[4])) {
+        if (!IS_STRING(args[4])) {
             runtimeError(vm, "addString() metavar argument must be a string");
             return EMPTY_VAL;
         }
@@ -78,20 +76,21 @@ static Value addString(DictuVM *vm, int argCount, Value *args) {
 
     Arg *arg = ALLOCATE(vm, Arg, 1);
 
-    char *shortFlag = AS_STRING(args[1])->chars;
-    arg->shortFlag = ALLOCATE(vm, char, strlen(shortFlag));
-    strcpy(arg->shortFlag, shortFlag);
-
-    char *longFlag = AS_STRING(args[2])->chars;
-    arg->longFlag = ALLOCATE(vm, char, strlen(longFlag));
-    strcpy(arg->longFlag, longFlag);
+    char *flag = AS_STRING(args[1])->chars;
+    arg->flag = ALLOCATE(vm, char, strlen(flag));
+    strcpy(arg->flag, flag);
     
-    char *desc = AS_STRING(args[3])->chars;
+    char *desc = AS_STRING(args[2])->chars;
     arg->desc = ALLOCATE(vm, char, strlen(desc));
     strcpy(arg->desc, desc);
 
-    arg->required = AS_BOOL(args[4]);
+    arg->required = AS_BOOL(args[3]);
     arg->type = stringType;
+
+    if (!IS_NIL(args[4])) {
+        arg->metavar = ALLOCATE(vm, char, strlen(AS_STRING(args[4])->chars));
+        strcpy(arg->metavar, AS_STRING(args[4])->chars);
+    }
 
     Argparser *argParser = AS_ARGPARSER(args[0]);
     addArg(argParser, arg);
@@ -100,23 +99,23 @@ static Value addString(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value addNumber(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 4) {
+    if (argCount < 3) {
         runtimeError(vm, "addNumber() takes at least 4 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1]) || !IS_STRING(args[2]) || !IS_STRING(args[3])) {
+    if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "addNumber() arguments must be strings");
         return EMPTY_VAL;
     }
 
-    if (!IS_BOOL(args[4])) {
+    if (!IS_BOOL(args[3])) {
         runtimeError(vm, "addNumber() required argument must be a bool");
         return EMPTY_VAL;
     }
     
-    if (!IS_EMPTY(args[5])) {
-        if (!IS_STRING(args[5])) {
+    if (!IS_EMPTY(args[4]) && IS_NIL(args[4])) {
+        if (!IS_STRING(args[4])) {
             runtimeError(vm, "addNumber() metavar argument must be a string");
             return EMPTY_VAL;
         }
@@ -124,20 +123,21 @@ static Value addNumber(DictuVM *vm, int argCount, Value *args) {
 
     Arg *arg = ALLOCATE(vm, Arg, 1);
 
-    char *shortFlag = AS_STRING(args[1])->chars;
-    arg->shortFlag = ALLOCATE(vm, char, strlen(shortFlag));
-    strcpy(arg->shortFlag, shortFlag);
-
-    char *longFlag = AS_STRING(args[2])->chars;
-    arg->longFlag = ALLOCATE(vm, char, strlen(longFlag));
-    strcpy(arg->longFlag, longFlag);
+    char *flag = AS_STRING(args[1])->chars;
+    arg->flag = ALLOCATE(vm, char, strlen(flag));
+    strcpy(arg->flag, flag);
     
-    char *desc = AS_STRING(args[3])->chars;
+    char *desc = AS_STRING(args[2])->chars;
     arg->desc = ALLOCATE(vm, char, strlen(desc));
     strcpy(arg->desc, desc);
 
-    arg->required = AS_BOOL(args[4]);
+    arg->required = AS_BOOL(args[3]);
     arg->type = numberType;
+
+    if (!IS_NIL(args[4])) {
+        arg->metavar = ALLOCATE(vm, char, strlen(AS_STRING(args[4])->chars));
+        strcpy(arg->metavar, AS_STRING(args[4])->chars);
+    }
 
     Argparser *argParser = AS_ARGPARSER(args[0]);
     addArg(argParser, arg);
@@ -146,23 +146,23 @@ static Value addNumber(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value addBool(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 4) {
+    if (argCount < 3) {
         runtimeError(vm, "addBool() takes at least 4 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1]) || !IS_STRING(args[2]) || !IS_STRING(args[3])) {
+    if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "addBool() arguments must be strings");
         return EMPTY_VAL;
     }
 
-    if (!IS_BOOL(args[4])) {
+    if (!IS_BOOL(args[3])) {
         runtimeError(vm, "addBool() required argument must be a bool");
         return EMPTY_VAL;
     }
     
-    if (!IS_EMPTY(args[5])) {
-        if (!IS_STRING(args[5])) {
+    if (!IS_EMPTY(args[4]) && IS_NIL(args[4])) {
+        if (!IS_STRING(args[4])) {
             runtimeError(vm, "addBool() metavar argument must be a string");
             return EMPTY_VAL;
         }
@@ -170,20 +170,21 @@ static Value addBool(DictuVM *vm, int argCount, Value *args) {
 
     Arg *arg = ALLOCATE(vm, Arg, 1);
 
-    char *shortFlag = AS_STRING(args[1])->chars;
-    arg->shortFlag = ALLOCATE(vm, char, strlen(shortFlag));
-    strcpy(arg->shortFlag, shortFlag);
-
-    char *longFlag = AS_STRING(args[2])->chars;
-    arg->longFlag = ALLOCATE(vm, char, strlen(longFlag));
-    strcpy(arg->longFlag, longFlag);
+    char *flag = AS_STRING(args[1])->chars;
+    arg->flag = ALLOCATE(vm, char, strlen(flag));
+    strcpy(arg->flag, flag);
     
-    char *desc = AS_STRING(args[3])->chars;
+    char *desc = AS_STRING(args[2])->chars;
     arg->desc = ALLOCATE(vm, char, strlen(desc));
     strcpy(arg->desc, desc);
 
-    arg->required = AS_BOOL(args[4]);
+    arg->required = AS_BOOL(args[3]);
     arg->type = boolType;
+
+    if (!IS_NIL(args[4])) {
+        arg->metavar = ALLOCATE(vm, char, strlen(AS_STRING(args[4])->chars));
+        strcpy(arg->metavar, AS_STRING(args[4])->chars);
+    }
 
     Argparser *argParser = AS_ARGPARSER(args[0]);
     addArg(argParser, arg);
@@ -192,23 +193,23 @@ static Value addBool(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value addList(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 4) {
+    if (argCount < 3) {
         runtimeError(vm, "addBaddListool() takes at least 4 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1]) || !IS_STRING(args[2]) || !IS_STRING(args[3])) {
+    if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "addList() arguments must be strings");
         return EMPTY_VAL;
     }
 
-    if (!IS_BOOL(args[4])) {
+    if (!IS_BOOL(args[3])) {
         runtimeError(vm, "addList() required argument must be a bool");
         return EMPTY_VAL;
     }
     
-    if (!IS_EMPTY(args[5])) {
-        if (!IS_STRING(args[5])) {
+    if (!IS_EMPTY(args[4]) && IS_NIL(args[4])) {
+        if (!IS_STRING(args[4])) {
             runtimeError(vm, "addList() metavar argument must be a string");
             return EMPTY_VAL;
         }
@@ -216,21 +217,22 @@ static Value addList(DictuVM *vm, int argCount, Value *args) {
 
     Arg *arg = ALLOCATE(vm, Arg, 1);
 
-    char *shortFlag = AS_STRING(args[1])->chars;
-    arg->shortFlag = ALLOCATE(vm, char, strlen(shortFlag));
-    strcpy(arg->shortFlag, shortFlag);
-
-    char *longFlag = AS_STRING(args[2])->chars;
-    arg->longFlag = ALLOCATE(vm, char, strlen(longFlag));
-    strcpy(arg->longFlag, longFlag);
+    char *flag = AS_STRING(args[1])->chars;
+    arg->flag = ALLOCATE(vm, char, strlen(flag));
+    strcpy(arg->flag, flag);
     
-    char *desc = AS_STRING(args[3])->chars;
+    char *desc = AS_STRING(args[2])->chars;
     arg->desc = ALLOCATE(vm, char, strlen(desc));
     strcpy(arg->desc, desc);
 
-    arg->required = AS_BOOL(args[4]);
+    arg->required = AS_BOOL(args[3]);
     arg->type = listType;
 
+    if (!IS_NIL(args[4])) {
+        arg->metavar = ALLOCATE(vm, char, strlen(AS_STRING(args[4])->chars));
+        strcpy(arg->metavar, AS_STRING(args[4])->chars);
+    }
+    
     Argparser *argParser = AS_ARGPARSER(args[0]);
     addArg(argParser, arg);
 
@@ -250,6 +252,8 @@ static Value parserUsage(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, argParser->usage, strlen(argParser->usage)));
 }
 
+#define IS_SHORT_FLAG(v) v[0] == '-' && v[1] != '-'
+
 static Value parse(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -264,18 +268,23 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
 
     for (int i = 0; i < argParser->argsCount; i++) {
         for (int j = 0; j < vm->argc; j++) { 
-            if (strcmp(argParser->args[i]->shortFlag, vm->argv[j]) == 0) {
+            if (strcmp(argParser->args[i]->flag, vm->argv[j]) == 0) {
                 if (argParser->args[i]->type != boolType) {
+                    
                     if (vm->argv[j+1] == NULL || vm->argv[j+1][0] == '-') {
-                        runtimeError(vm, "%s requires an argument", argParser->args[i]->shortFlag);
+                        runtimeError(vm, "%s requires an argument", argParser->args[i]->flag);
                         return EMPTY_VAL;
                     }
-
+                    
                     ObjString *flagName;
                     if (argParser->args[i]->metavar != NULL) {
                         flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
                     } else {
-                        flagName = copyString(vm, argParser->args[i]->shortFlag, strlen(argParser->args[i]->shortFlag));
+                        if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
+                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                        } else {
+                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                        }
                     }
                     
                     push(vm, OBJ_VAL(flagName));
@@ -286,20 +295,20 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                     pop(vm);
                     pop(vm);
                 } else {
-                    printf("Processing: %s\n", argParser->args[i]->shortFlag);
                     ObjString *flagName;
                     if (argParser->args[i]->metavar != NULL) {
                         flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
                     } else {
-                        flagName = copyString(vm, argParser->args[i]->shortFlag, strlen(argParser->args[i]->shortFlag));
+                        if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
+                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                        } else {
+                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                        }
                     }
                     
                     push(vm, OBJ_VAL(flagName));
-                    
-                    ObjString *flagVal = copyString(vm, vm->argv[j+1], strlen(vm->argv[j+1]));
-                    push(vm, OBJ_VAL(flagVal));
+
                     dictSet(vm, argsDict, OBJ_VAL(flagName), BOOL_VAL(true));
-                    pop(vm);
                     pop(vm);
                 }
             } 
