@@ -31,6 +31,38 @@ typedef struct {
 #define ARGS_DEFAULT_INC   2
 
 void freeArgParser(DictuVM *vm, ObjAbstract *abstract) {
+    Argparser *argParser = (Argparser*)abstract->data;
+
+    if (argParser->name != NULL) {
+        FREE(vm, char, argParser->name);
+    }
+    if (argParser->desc != NULL) {
+        FREE(vm, char, argParser->desc);
+    }
+    if (argParser->usage != NULL) {
+        FREE(vm, char, argParser->usage);
+    }
+
+    if (argParser->args != NULL) {
+        for (int i = 0; i < argParser->argsCapacity; i++) {
+            if (argParser->args[i] != NULL) {
+                if (argParser->args[i]->flag != NULL) {
+                    FREE(vm, char, argParser->args[i]->flag);
+                }
+                if (argParser->args[i]->desc != NULL) {
+                    FREE(vm, char, argParser->args[i]->desc);
+                }
+                if (argParser->args[i]->metavar != NULL) {
+                    FREE(vm, char, argParser->args[i]->metavar);
+                }
+
+                FREE(vm, Arg, argParser->args[i]);
+            }
+        }
+
+        FREE(vm, Arg, argParser->args);
+    }
+
     FREE(vm, Argparser, abstract->data);
 }
 
@@ -100,7 +132,7 @@ static Value addString(DictuVM *vm, int argCount, Value *args) {
 
 static Value addNumber(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 3) {
-        runtimeError(vm, "addNumber() takes at least 4 arguments (%d given)", argCount);
+        runtimeError(vm, "addNumber() takes at least 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -147,7 +179,7 @@ static Value addNumber(DictuVM *vm, int argCount, Value *args) {
 
 static Value addBool(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 3) {
-        runtimeError(vm, "addBool() takes at least 4 arguments (%d given)", argCount);
+        runtimeError(vm, "addBool() takes at least 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -194,7 +226,7 @@ static Value addBool(DictuVM *vm, int argCount, Value *args) {
 
 static Value addList(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 3) {
-        runtimeError(vm, "addBaddListool() takes at least 4 arguments (%d given)", argCount);
+        runtimeError(vm, "addList() takes at least 3 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -232,7 +264,7 @@ static Value addList(DictuVM *vm, int argCount, Value *args) {
         arg->metavar = ALLOCATE(vm, char, strlen(AS_STRING(args[4])->chars));
         strcpy(arg->metavar, AS_STRING(args[4])->chars);
     }
-    
+
     Argparser *argParser = AS_ARGPARSER(args[0]);
     addArg(argParser, arg);
 
@@ -269,8 +301,63 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argParser->argsCount; i++) {
         for (int j = 0; j < vm->argc; j++) { 
             if (strcmp(argParser->args[i]->flag, vm->argv[j]) == 0) {
-                if (argParser->args[i]->type != boolType) {
+                if (argParser->args[i]->type == boolType) {
+                    ObjString *flagName;
+                    if (argParser->args[i]->metavar != NULL) {
+                        flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
+                    } else {
+                        if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
+                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                        } else {
+                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                        }
+                    }
                     
+                    push(vm, OBJ_VAL(flagName));
+
+                    dictSet(vm, argsDict, OBJ_VAL(flagName), BOOL_VAL(true));
+                    pop(vm);
+                } else if (argParser->args[i]->type == listType) {
+                    if (vm->argv[j+1] == NULL || vm->argv[j+1][0] == '-') {
+                        runtimeError(vm, "%s requires an argument", argParser->args[i]->flag);
+                        return EMPTY_VAL;
+                    }
+                    
+                    ObjString *flagName;
+                    if (argParser->args[i]->metavar != NULL) {
+                        flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
+                    } else {
+                        if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
+                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                        } else {
+                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                        }
+                    }
+                    
+                    push(vm, OBJ_VAL(flagName));
+                    
+                    ObjString *flagVal = copyString(vm, vm->argv[j+1], strlen(vm->argv[j+1]));
+                    push(vm, OBJ_VAL(flagVal));
+
+                    // list time...
+                    ObjList *list = newList(vm);
+                    push(vm, OBJ_VAL(list));
+
+                    char *p = strtok(vm->argv[j+1], ",");
+                    while (p != NULL) {
+                        Value str = OBJ_VAL(copyString(vm, p, strlen(p)));
+                        push(vm, str);
+                        writeValueArray(vm, &list->values, str);
+                        p = strtok(NULL, ",");
+                    }
+
+                    dictSet(vm, argsDict, OBJ_VAL(flagName), OBJ_VAL(list));
+                    pop(vm);
+                    pop(vm);
+                    pop(vm);
+                    pop(vm);
+                    pop(vm);
+                } else {
                     if (vm->argv[j+1] == NULL || vm->argv[j+1][0] == '-') {
                         runtimeError(vm, "%s requires an argument", argParser->args[i]->flag);
                         return EMPTY_VAL;
@@ -294,22 +381,6 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                     dictSet(vm, argsDict, OBJ_VAL(flagName), OBJ_VAL(flagVal));
                     pop(vm);
                     pop(vm);
-                } else {
-                    ObjString *flagName;
-                    if (argParser->args[i]->metavar != NULL) {
-                        flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
-                    } else {
-                        if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
-                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
-                        } else {
-                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
-                        }
-                    }
-                    
-                    push(vm, OBJ_VAL(flagName));
-
-                    dictSet(vm, argsDict, OBJ_VAL(flagName), BOOL_VAL(true));
-                    pop(vm);
                 }
             } 
         }
@@ -326,10 +397,10 @@ ObjAbstract *newParser(DictuVM *vm, char *name, char *desc, char *usage) {
 
     Argparser *argParser = ALLOCATE(vm, Argparser, 1);
 
-    argParser->name = ALLOCATE(vm, char, strlen(name)+1);
+    argParser->name = ALLOCATE(vm, char, strlen(name));
     strcpy(argParser->name, name);
 
-    argParser->desc = ALLOCATE(vm, char, strlen(desc)+1);
+    argParser->desc = ALLOCATE(vm, char, strlen(desc));
     strcpy(argParser->desc, desc);
 
     argParser->usage = ALLOCATE(vm, char, strlen(usage)+1);

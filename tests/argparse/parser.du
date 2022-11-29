@@ -1,0 +1,54 @@
+/**
+ * parser.du
+ *
+ * Testing the Argparse.newParser() function
+ *
+ * newParser()
+ */
+from UnitTest import UnitTest;
+
+import Argparse;
+
+class TestArgparser < UnitTest {
+
+    private parser;
+
+    setUp() {
+        this.parser = Argparse.newParser("parser_test", "Test Program", "usage: parser_test <args>");
+    }
+
+    testNewParser() {
+        this.assertNotNil(this.parser);
+    }
+
+    testAddString() {
+        const ret = this.parser.addString("-s", "string arg", false);
+        this.assertNil(ret);
+    }
+
+    testAddNumber() {
+        const ret = this.parser.addNumber("-n", "number arg", true);
+        this.assertNil(ret);
+    }
+
+    testAddBool() {
+        const ret = this.parser.addBool("-b", "bool arg", true, "bool");
+        this.assertNil(ret);
+    }
+
+    testAddList() {
+        const ret = this.parser.addString("-l", "list arg", true);
+        this.assertNil(ret);
+    }
+
+    testParse() {
+        this.parser.addString("-s", "string arg", false);
+        var args = this.parser.parse().match(
+            def(result) => result,
+            def(error) => error
+        );
+        this.assertType(args, "dict");
+    }
+}
+
+TestArgparser().run();
