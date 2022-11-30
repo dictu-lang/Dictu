@@ -2,6 +2,7 @@ from UnitTest import UnitTest;
 
 UnitTest.forceOnlyFailures = true;
 
+import "argparse/import.du";
 import "bool/import.du";
 import "nil/import.du";
 import "number/import.du";
