@@ -386,11 +386,17 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                     if (argParser->args[i]->metavar != NULL) {
                         flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
                     } else {
+                        char *formattedFlag = NULL;
                         if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
-                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                            formattedFlag = ALLOCATE(vm, char, strlen(argParser->args[i]->flag)-1);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         } else {
-                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                            formattedFlag = ALLOCATE(vm , char, strlen(argParser->args[i]->flag)-2);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         }
+                        FREE(vm, char, formattedFlag);
                     }
                     
                     push(vm, OBJ_VAL(flagName));
