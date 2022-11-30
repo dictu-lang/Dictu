@@ -286,6 +286,14 @@ static Value parserUsage(DictuVM *vm, int argCount, Value *args) {
 
 #define IS_SHORT_FLAG(v) v[0] == '-' && v[1] != '-'
 
+inline static void removeLeadingHyphens(const char *str1, char *str2, bool shortFlag) {
+    unsigned long i = shortFlag ? 1 : 2;
+    
+    for (; i < strlen(str1); i++) {
+        str2[i-1] = str1[i];
+    }
+}
+
 static Value parse(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -306,11 +314,17 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                     if (argParser->args[i]->metavar != NULL) {
                         flagName = copyString(vm, argParser->args[i]->metavar, strlen(argParser->args[i]->metavar));
                     } else {
+                        char *formattedFlag = NULL;
                         if (IS_SHORT_FLAG(argParser->args[i]->flag)) {
-                            flagName = copyString(vm, argParser->args[i]->flag+=1, strlen(argParser->args[i]->flag));
+                            formattedFlag = ALLOCATE(vm, char, strlen(argParser->args[i]->flag)-1);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         } else {
-                            flagName = copyString(vm, argParser->args[i]->flag+=2, strlen(argParser->args[i]->flag));
+                            formattedFlag = ALLOCATE(vm , char, strlen(argParser->args[i]->flag)-2);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         }
+                        FREE(vm, char, formattedFlag);
                     }
                     
                     push(vm, OBJ_VAL(flagName));
@@ -339,7 +353,6 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                     ObjString *flagVal = copyString(vm, vm->argv[j+1], strlen(vm->argv[j+1]));
                     push(vm, OBJ_VAL(flagVal));
 
-                    // list time...
                     ObjList *list = newList(vm);
                     push(vm, OBJ_VAL(list));
 
