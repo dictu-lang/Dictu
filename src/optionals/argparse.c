@@ -12,9 +12,9 @@ enum argType {
 typedef struct {
     char *flag;
     char *desc;
-    bool required;
     char *metavar;
     enum argType type;
+    bool required;
 } Arg;
 
 typedef struct {
@@ -34,36 +34,36 @@ void freeArgParser(DictuVM *vm, ObjAbstract *abstract) {
     Argparser *argParser = (Argparser*)abstract->data;
 
     if (argParser->name != NULL) {
-        FREE(vm, char, argParser->name);
+        FREE(vm, char*, argParser->name);
     }
     if (argParser->desc != NULL) {
-        FREE(vm, char, argParser->desc);
+        FREE(vm, char*, argParser->desc);
     }
     if (argParser->usage != NULL) {
-        FREE(vm, char, argParser->usage);
+        FREE(vm, char*, argParser->usage);
     }
 
     if (argParser->args != NULL) {
         for (int i = 0; i < argParser->argsCapacity; i++) {
             if (argParser->args[i] != NULL) {
                 if (argParser->args[i]->flag != NULL) {
-                    FREE(vm, char, argParser->args[i]->flag);
+                    FREE(vm, char*, argParser->args[i]->flag);
                 }
                 if (argParser->args[i]->desc != NULL) {
-                    FREE(vm, char, argParser->args[i]->desc);
+                    FREE(vm, char*, argParser->args[i]->desc);
                 }
                 if (argParser->args[i]->metavar != NULL) {
-                    FREE(vm, char, argParser->args[i]->metavar);
-                }
-
-                FREE(vm, Arg, argParser->args[i]);
+                    FREE(vm, char*, argParser->args[i]->metavar);
+                } 
             }
+
+            FREE(vm, Arg, argParser->args[i]);
         }
 
         FREE(vm, Arg, argParser->args);
     }
 
-    FREE(vm, Argparser, abstract->data);
+    FREE(vm, Argparser, argParser);
 }
 
 char *argParserToString(ObjAbstract *abstract) {
@@ -321,10 +321,10 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         } else {
                             formattedFlag = ALLOCATE(vm , char, strlen(argParser->args[i]->flag)-2);
-                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, false);
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         }
-                        FREE(vm, char, formattedFlag);
+                        FREE(vm, char*, formattedFlag);
                     }
                     
                     push(vm, OBJ_VAL(flagName));
@@ -348,10 +348,10 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         } else {
                             formattedFlag = ALLOCATE(vm , char, strlen(argParser->args[i]->flag)-2);
-                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, false);
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         }
-                        FREE(vm, char, formattedFlag);
+                        FREE(vm, char*, formattedFlag);
                     }
                     
                     push(vm, OBJ_VAL(flagName));
@@ -393,10 +393,10 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         } else {
                             formattedFlag = ALLOCATE(vm , char, strlen(argParser->args[i]->flag)-2);
-                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, true);
+                            removeLeadingHyphens(argParser->args[i]->flag, formattedFlag, false);
                             flagName = copyString(vm, formattedFlag, strlen(argParser->args[i]->flag));
                         }
-                        FREE(vm, char, formattedFlag);
+                        FREE(vm, char*, formattedFlag);
                     }
                     
                     push(vm, OBJ_VAL(flagName));
@@ -442,7 +442,7 @@ ObjAbstract *newParser(DictuVM *vm, char *name, char *desc, char *usage) {
     abstract->data = argParser;
 
     /**
-     * Setup ArgParser object methods
+     * Setup Argparser object methods
      */
     defineNative(vm, &abstract->values, "addString", addString);
     defineNative(vm, &abstract->values, "addNumber", addNumber);

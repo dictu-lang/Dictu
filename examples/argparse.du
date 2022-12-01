@@ -13,7 +13,7 @@ Examples:
     const parser = Argparse.newParser(NAME, "Example program", USAGE);
     parser.addString("-b", "birth month", false, "month");
     parser.addBool("-h", "help menu", false, "help");
-    parser.addNumber("--port", "server port", false, "socket");
+    parser.addNumber("--port", "server port", false);
     parser.addBool("-s", "run securely", true, "secure");
     parser.addList("-u", "active users", true, "users");
     var args = parser.parse().match(
