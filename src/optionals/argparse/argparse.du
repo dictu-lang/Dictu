@@ -1,0 +1,38 @@
+from Argparse import Parser;
+
+enum argType {
+    stringType,
+    numberType,
+    boolType,
+    listType
+}
+
+class Arg {
+    init() {}
+}
+
+class Parser {
+    private args = [];
+
+    init(var name, var desc, var usage) {}
+
+    private addArg(argType, flag, desc, required, ...metavar) {
+        this.args.push(Args());
+        return Success();
+    }
+
+    addString(flag, desc, required, ...metavar) {
+        return this.addArg(flag, desc, required, ...metavar);
+    }
+
+    addNumber(flag, desc, required, ...metavar) {}
+
+    addBool(flag, desc, required, ...metavar) {}
+
+    addList(flag, desc, required, ...metavar) {}
+
+    parse() {
+
+        return this.args;
+    }
+}

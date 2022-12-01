@@ -1,0 +1,55 @@
+/**
+ * parser.du
+ *
+ * Testing the Argparse.Parser.parse() method
+ */
+import Base64;
+
+from UnitTest import UnitTest;
+from Argparse import Parser;
+
+class TestArgparser < UnitTest {
+
+    private parser;
+
+    setUp() {
+        this.parser = Parser("parser_test", "Test Program", "usage: parser_test <args>");
+    }
+
+    testNewParser() {
+        this.assertNotNil(this.parser);
+    }
+
+    testAddString() {
+        const ret = this.parser.addString("-s", "string arg", false, "");
+        this.assertNil(ret);
+    }
+
+    testAddNumber() {
+        const ret = this.parser.addNumber("-n", "number arg", true, "");
+        this.assertNil(ret);
+    }
+
+    testAddBool() {
+        const ret = this.parser.addBool("-b", "bool arg", true, "bool");
+        this.assertNil(ret);
+    }
+
+    testAddList() {
+        const ret = this.parser.addString("-l", "list arg", true, "");
+        this.assertNil(ret);
+    }
+
+    testParse() {
+        this.parser.addString("-s", "string arg", false);
+        this.parser.addBool("-b", "bool arg", true);
+        this.parser.addList("-l", "list arg", true);
+        this.parser.addNumber("-n", "list arg", true);
+        var args = this.parser.parse();
+        this.assertType(args, "result");
+        this.assertTruthy(args.success());
+        print(args.unwrap().l);
+    }
+}
+
+TestArgparser().run();
