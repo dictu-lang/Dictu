@@ -18,6 +18,7 @@ class Parser { \
     private args; \
 \
     var preArgs = []; \
+    var required = []; \
 \
     init(var name, var desc, var userUsage) { \
         this.args = Args(name, desc); \
@@ -42,6 +43,10 @@ class Parser { \
                 'required': required, \
                 'metavr': metavar \
             }); \
+\
+            if (required) { \
+                this.required.push(flag); \
+            } \
         } \
     } \
 \
@@ -74,12 +79,28 @@ class Parser { \
         return this.userUsage; \
     } \
 \
+    private hasRequired() { \
+        var found = 0; \
+        for (var i = 0; i < System.argv.len(); i+=1) { \
+            for (var j = 0; j < this.required.len(); j+=1) { \
+                if (System.argv[i] == this.required[j]) { \
+                    found += 1;\
+                } \
+            } \
+        } \
+\
+        if (found == this.required.len()) { \
+            return true; \
+        } \
+\
+        return false; \
+    } \
+\
     parse() { \
         for (var i = 0; i < System.argv.len(); i+=1) { \
             for (var j = 0; j < this.preArgs.len(); j+=1) { \
                 if (System.argv[i] == this.preArgs[j]['flag']) { \
                     if (this.preArgs[j]['type'] == 'bool') { \
-                        print(this.preArgs[j]['type']); \
                         this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), true); \
                     } else if (this.preArgs[j]['type'] == 'list') { \
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') { \
@@ -106,6 +127,10 @@ class Parser { \
                     } \
                 } \
             } \
+        } \
+\
+        if (not this.hasRequired()) { \
+            return Error('1 or more required flags missing'); \
         } \
 \
         return Success(this.args); \

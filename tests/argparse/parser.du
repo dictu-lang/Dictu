@@ -21,35 +21,58 @@ class TestArgparser < UnitTest {
     }
 
     testAddString() {
-        const ret = this.parser.addString("-s", "string arg", false, "");
-        this.assertNil(ret);
+        this.parser.addString("-s", "string arg", false, "");
+        const res = this.parser.parse();
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+        const args = res.unwrap();
+        this.assertNotNil(args.s);
     }
 
     testAddNumber() {
-        const ret = this.parser.addNumber("-n", "number arg", true, "");
-        this.assertNil(ret);
+        this.parser.addNumber("-n", "number arg", true, "");
+        const res = this.parser.parse();
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+        const args = res.unwrap();
+        this.assertNotNil(args.n);
     }
 
     testAddBool() {
-        const ret = this.parser.addBool("-b", "bool arg", true, "bool");
-        this.assertNil(ret);
+        this.parser.addBool("-b", "bool arg", true, "bool");
+        const res = this.parser.parse();
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+        const args = res.unwrap();
+        this.assertNotNil(args.b);
+    }
+
+    testAddLongflag() {
+        this.parser.addNumber("--port", "tcp port to listen on", true);
+        const res = this.parser.parse();
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+        const args = res.unwrap();
+        this.assertNotNil(args.port);
     }
 
     testAddList() {
-        const ret = this.parser.addString("-l", "list arg", true, "");
-        this.assertNil(ret);
+        this.parser.addString("-l", "list arg", true, "");
+        const res = this.parser.parse();
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+        const args = res.unwrap();
+        this.assertNotNil(args.l);
     }
 
-    testParse() {
-        this.parser.addString("-s", "string arg", false);
-        this.parser.addBool("-b", "bool arg", true);
-        this.parser.addList("-l", "list arg", true);
-        this.parser.addNumber("-n", "short number arg", true);
-        this.parser.addNumber("--number", "long number arg", true);
-        var args = this.parser.parse();
-        print(this.parser.usage());
-        // this.assertType(args, "result");
-        // this.assertTruthy(args.success());
+    testUsage() {
+        const usage = this.parser.usage();
+        this.assertNotEquals(usage, "");
     }
 }
 
