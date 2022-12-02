@@ -3,12 +3,6 @@ import System; \
 \
 class Args { \
     init(private name, private desc) {} \
-\
-    toString() { \
-        return 'usage: {}\n \
-    {}\n \
-        '.format(this.name, this.desc); \
-    } \
 } \
 \
 class Parser { \

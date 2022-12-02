@@ -3,10 +3,19 @@
  *
  * Testing the Argparse.Parser.parse() method
  */
-import Base64;
+import System;
 
 from UnitTest import UnitTest;
 from Argparse import Parser;
+
+System.argv.extend([
+    "--number", "7",
+    "-n", "8080",
+    "-s", "string",
+    "-b",
+    "-l", "adsf,qwer",
+    "--port", "8080"
+]);
 
 class TestArgparser < UnitTest {
 
@@ -21,7 +30,8 @@ class TestArgparser < UnitTest {
     }
 
     testAddString() {
-        this.parser.addString("-s", "string arg", false, "");
+        print(System.argv);
+        this.parser.addString("-s", "string arg", false);
         const res = this.parser.parse();
         this.assertType(res, "result");
         this.assertNotNil(res);
@@ -31,7 +41,8 @@ class TestArgparser < UnitTest {
     }
 
     testAddNumber() {
-        this.parser.addNumber("-n", "number arg", true, "");
+        print(System.argv);
+        this.parser.addNumber("-n", "number arg", true);
         const res = this.parser.parse();
         this.assertType(res, "result");
         this.assertNotNil(res);
@@ -41,6 +52,7 @@ class TestArgparser < UnitTest {
     }
 
     testAddBool() {
+        print(System.argv);
         this.parser.addBool("-b", "bool arg", true, "bool");
         const res = this.parser.parse();
         this.assertType(res, "result");
@@ -61,7 +73,7 @@ class TestArgparser < UnitTest {
     }
 
     testAddList() {
-        this.parser.addString("-l", "list arg", true, "");
+        this.parser.addString("-l", "list arg", true);
         const res = this.parser.parse();
         this.assertType(res, "result");
         this.assertNotNil(res);
