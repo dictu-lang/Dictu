@@ -1,38 +1,104 @@
-from Argparse import Parser;
-
-enum argType {
-    stringType,
-    numberType,
-    boolType,
-    listType
-}
+import Argparse;
+import System;
 
 class Arg {
-    init() {}
+    init(argType, flag, desc, required) {
+        this.setAttribute('type', argType);
+        this.setAttribute('flag', flag);
+        this.setAttribute('desc', desc);
+        this.setAttribute('required', required);
+    }
+}
+
+class Args {
+    init(private name, private desc) {}
+
+    toString() {
+        return 'usage: {}\n
+    {}\n
+        '.format(this.name, this.desc);\
+    }
 }
 
 class Parser {
-    private args = [];
+    private name;
+    private desc;
+    private userUsage;
+    private args;
 
-    init(var name, var desc, var usage) {}
+    var preArgs = [];
 
-    private addArg(argType, flag, desc, required, ...metavar) {
-        this.args.push(Args());
-        return Success();
+    init(var name, var desc, var userUsage) {
+        this.args = {};
     }
 
-    addString(flag, desc, required, ...metavar) {
-        return this.addArg(flag, desc, required, ...metavar);
+    private addFlag(flagType, flag, desc, required, ...metavar) {
+        this.preArgs.push({
+            'type': flagType,
+            'flag': flag,
+            'desc': desc,
+            'required': required,
+            'metavr': metavar
+        });
     }
 
-    addNumber(flag, desc, required, ...metavar) {}
+    // addString(flag, desc, required, ...metavar) {
+    //     this.addFlag('string', flag, desc, required, ...metavar);
+    // }
 
-    addBool(flag, desc, required, ...metavar) {}
+    // addNumber(flag, desc, required, ...metavar) {
+    //     this.addFlag('number', flag, desc, required, ...metavar);
+    // }
 
-    addList(flag, desc, required, ...metavar) {}
+    // addBool(flag, desc, required, ...metavar) {
+    //     this.addFlag('bool', flag, desc, required, ...metavar);
+    // }
+
+    // addList(flag, desc, required, ...metavar) {
+    //     this.addFlag('list', flag, desc, required, ...metavar);
+    // }
+
+    usage() {
+        if (this.userUsage == '') {
+            var u = "usage: {}\n".format(this.name);
+            u += this.args.forEach(def(a) => {
+                return "    {}    {}\n".format(a['flag'], a['desc']);
+            });
+        }
+
+        return this.userUsage;
+    }
 
     parse() {
+        for (var i = 0; i < System.argv.len(); i+=1) {
+            for (var j = 0; j < this.preArgs.len(); j+=1) {
+                if (System.argv[i] == this.preArgs[j]['flag']) {
+                    if (this.preArgs[j]['type'] == 'bool') {
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), true);
+                    } else if (this.preArgs[j]['type'] == 'list') {
+                        if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
+                            return Error('{} requires an argument');
+                        }
 
-        return this.args;
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(','));
+                    } else if (this.preArgs[j]['type'] == 'number') {
+                        const res = System.argv[i+1].toNumber();
+                        if (not res.success()) {
+                            return Error('{} arg must be a number'.format(System.argv[i]));
+                        }
+
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), res.unwrap());
+                    } else {
+                        if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
+                            return Error('{} requires an argument');
+                        }
+
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1]);
+                    }
+                }
+            }
+        }
+
+        return Success(this.args);
     }
 }

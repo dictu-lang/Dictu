@@ -13,7 +13,7 @@ class TestArgparser < UnitTest {
     private parser;
 
     setUp() {
-        this.parser = Parser("parser_test", "Test Program", "usage: parser_test <args>");
+        this.parser = Parser("parser_test", "Test Program", "");
     }
 
     testNewParser() {
@@ -44,11 +44,12 @@ class TestArgparser < UnitTest {
         this.parser.addString("-s", "string arg", false);
         this.parser.addBool("-b", "bool arg", true);
         this.parser.addList("-l", "list arg", true);
-        this.parser.addNumber("-n", "list arg", true);
+        this.parser.addNumber("-n", "short number arg", true);
+        this.parser.addNumber("--number", "long number arg", true);
         var args = this.parser.parse();
-        this.assertType(args, "result");
-        this.assertTruthy(args.success());
-        print(args.unwrap().l);
+        print(this.parser.usage());
+        // this.assertType(args, "result");
+        // this.assertTruthy(args.success());
     }
 }
 

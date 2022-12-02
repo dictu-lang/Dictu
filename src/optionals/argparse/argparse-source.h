@@ -1,85 +1,114 @@
 #define DICTU_ENV_SOURCE "import Argparse; \
 import System; \
 \
-class Arg { \
-    init(argType, flag, desc, required) { \
-        this.setAttribute('type', argType); \
-        this.setAttribute('flag', flag); \
-        this.setAttribute('desc', desc); \
-        this.setAttribute('required', required); \
-    } \
-} \
-\
 class Args { \
-    init() {} \
+    init(private name, private desc) {} \
+\
+    toString() { \
+        return 'usage: {}\n \
+    {}\n \
+        '.format(this.name, this.desc); \
+    } \
 } \
 \
 class Parser { \
     private name; \
     private desc; \
-    private usage; \
+    private userUsage; \
+    private args; \
 \
-    var args = []; \
+    var preArgs = []; \
 \
-    init(var name, var desc, var usage) {} \
+    init(var name, var desc, var userUsage) { \
+        this.args = Args(name, desc); \
+    } \
+\
+    private flagExists(flag) { \
+        for (var i = 0; i < this.preArgs.len(); i+=1) { \
+            if (this.preArgs[i]['flag'] == flag) { \
+                return true;\
+            } \
+        } \
+\
+        return false; \
+    } \
+\
+    private addFlag(flagType, flag, desc, required, ...metavar) { \
+        if (not this.flagExists(flag)) { \
+            this.preArgs.push({ \
+                'type': flagType, \
+                'flag': flag, \
+                'desc': desc, \
+                'required': required, \
+                'metavr': metavar \
+            }); \
+        } \
+    } \
 \
     addString(flag, desc, required, ...metavar) { \
-        this.args.push(Arg('string', flag, desc, required)); \
+        this.addFlag('string', flag, desc, required, ...metavar); \
     } \
 \
     addNumber(flag, desc, required, ...metavar) { \
-        this.args.push(Arg('number', flag, desc, required)); \
+        this.addFlag('number', flag, desc, required, ...metavar); \
     } \
 \
     addBool(flag, desc, required, ...metavar) { \
-        this.args.push(Arg('bool', flag, desc, required)); \
+        this.addFlag('bool', flag, desc, required, ...metavar); \
     } \
 \
     addList(flag, desc, required, ...metavar) { \
-        this.args.push(Arg('list', flag, desc, required)); \
+        this.addFlag('list', flag, desc, required, ...metavar); \
     } \
 \
     usage() { \
-        if (this.usage == '') { \
-            return ""; \
+        if (this.userUsage == '') { \
+            var u = 'usage: {}\n    {}\n\n'.format(this.name, this.desc); \
+            for (var i = 0; i < this.preArgs.len(); i+=1) { \
+                u += '    {}    {}\n'.format(this.preArgs[i]['flag'], this.preArgs[i]['desc']); \
+            } \
+\
+            return u; \
         } \
 \
-        return this.usage; \
+        return this.userUsage; \
     } \
 \
     parse() { \
-        var args = Args(); \
-\
         for (var i = 0; i < System.argv.len(); i+=1) { \
-            for (var j = 0; j < this.args.len(); j+=1) { \
-                if (System.argv[i] == this.args[j].flag) { \
-                    if (this.args[j].type == 'bool') { \
-                        args.setAttribute(this.args[j].flag.replace('-', ''), true); \
-                    } else if (this.args[j].type == 'list') { \
+            for (var j = 0; j < this.preArgs.len(); j+=1) { \
+                if (System.argv[i] == this.preArgs[j]['flag']) { \
+                    if (this.preArgs[j]['type'] == 'bool') { \
+                        print(this.preArgs[j]['type']); \
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), true); \
+                    } else if (this.preArgs[j]['type'] == 'list') { \
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') { \
                             return Error('{} requires an argument'); \
                         } \
 \
-                        args.setAttribute(this.args[j].flag.replace('-', ''), System.argv[i+1].split(',')); \
-                    } else if (this.args[j].type == 'number') { \
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(',')); \
+                    } else if (this.preArgs[j]['type'] == 'number') { \
+                        if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') { \
+                            return Error('{} requires an argument'); \
+                        } \
                         const res = System.argv[i+1].toNumber(); \
                         if (not res.success()) { \
                             return Error('{} arg must be a number'.format(System.argv[i])); \
                         } \
 \
-                        args.setAttribute(this.args[j].flag.replace('-', ''), res.unwrap()); \
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), res.unwrap()); \
                     } else { \
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') { \
                             return Error('{} requires an argument'); \
                         } \
 \
-                        args.setAttribute(this.args[j].flag.replace('-', ''), System.argv[i+1]); \
+                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1]); \
                     } \
                 } \
             } \
         } \
 \
-        return Success(args); \
+        return Success(this.args); \
     } \
 } \
 "
