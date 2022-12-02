@@ -11,7 +11,7 @@ Examples:
 	{} -h".format(NAME, NAME);
 
 { // main
-    const parser = Argparse.newParser(NAME, "Example program", USAGE);
+    const parser = Parser(NAME, "Example program", USAGE);
     parser.addString("-b", "birth month", false, "month");
     parser.addBool("-h", "help menu", false, "help");
     parser.addNumber("--port", "server port", false);

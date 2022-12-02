@@ -1,7 +1,7 @@
 /**
  * parser.du
  *
- * Testing the Argparse.Parser.parse() method
+ * Testing the Argparse.Parser methods
  */
 import System;
 
@@ -18,7 +18,6 @@ System.argv.extend([
 ]);
 
 class TestArgparser < UnitTest {
-
     private parser;
 
     setUp() {
@@ -29,35 +28,32 @@ class TestArgparser < UnitTest {
         this.assertNotNil(this.parser);
     }
 
-    testAddString() {
-        print(System.argv);
-        this.parser.addString("-s", "string arg", false);
-        const res = this.parser.parse();
+    private addFlagCheck(res) {
         this.assertType(res, "result");
         this.assertNotNil(res);
         this.assertTruthy(res.success());
+    }
+
+    testAddString() {
+        this.parser.addString("-s", "string arg", false);
+        const res = this.parser.parse();
         const args = res.unwrap();
+        this.addFlagCheck(res);
         this.assertNotNil(args.s);
     }
 
     testAddNumber() {
-        print(System.argv);
         this.parser.addNumber("-n", "number arg", true);
         const res = this.parser.parse();
-        this.assertType(res, "result");
-        this.assertNotNil(res);
-        this.assertTruthy(res.success());
         const args = res.unwrap();
+        this.addFlagCheck(res);
         this.assertNotNil(args.n);
     }
 
     testAddBool() {
-        print(System.argv);
         this.parser.addBool("-b", "bool arg", true, "bool");
         const res = this.parser.parse();
-        this.assertType(res, "result");
-        this.assertNotNil(res);
-        this.assertTruthy(res.success());
+        this.addFlagCheck(res);
         const args = res.unwrap();
         this.assertNotNil(args.b);
     }
@@ -65,9 +61,7 @@ class TestArgparser < UnitTest {
     testAddLongflag() {
         this.parser.addNumber("--port", "tcp port to listen on", true);
         const res = this.parser.parse();
-        this.assertType(res, "result");
-        this.assertNotNil(res);
-        this.assertTruthy(res.success());
+        this.addFlagCheck(res);
         const args = res.unwrap();
         this.assertNotNil(args.port);
     }
@@ -75,9 +69,7 @@ class TestArgparser < UnitTest {
     testAddList() {
         this.parser.addString("-l", "list arg", true);
         const res = this.parser.parse();
-        this.assertType(res, "result");
-        this.assertNotNil(res);
-        this.assertTruthy(res.success());
+        this.addFlagCheck(res);
         const args = res.unwrap();
         this.assertNotNil(args.l);
     }
