@@ -13,6 +13,8 @@ jobs:
          - uses: actions/checkout@v2
          - name: Make dictu and run checkTests
            run: |
+             sudo apt-get update
+             sudo apt-get install -y libcurl4-openssl-dev uuid-dev
              cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
              cmake --build ./build
              ./dictu scripts/checkTests.du ci
