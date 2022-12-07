@@ -16,6 +16,9 @@ BuiltinModules modules[] = {
     {"Process", &createProcessModule, false},
     {"System", &createSystemModule, false},
     {"Term", &createTermModule, false},
+#ifndef DISABLE_UUID
+    {"UUID", &createUuidModule, false},
+#endif
     {"UnitTest", &createUnitTestModule, true},
     {"Inspect", &createInspectModule, false},
     {"Object", &createObjectModule, true},
