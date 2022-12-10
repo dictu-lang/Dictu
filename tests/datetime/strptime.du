@@ -52,7 +52,6 @@ class TestStrptimeDatetimeModule < UnitTest {
     }
 }
 
-
 if (System.platform != "windows") {
     TestStrptimeDatetimeModule().run();
 }

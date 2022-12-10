@@ -1,0 +1,45 @@
+/**
+ * constants.du
+ *
+ * Testing the Datetime constant values.
+ *
+ * A set of constants defined in the Datetime module.
+ */
+
+import Datetime;
+
+from UnitTest import UnitTest;
+
+class TestDatetimeConstants < UnitTest {
+    const DATE_TIME_FORMAT = "%a %b %d %H:%M:%S %Y";
+
+    testSecondsInMinuteConstant() {
+        const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020");
+        const minAgo = startSec - Datetime.SECONDS_IN_MINUTE;
+        const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:11:32 2020");
+        this.assertTruthy(minAgo == endSec);
+    }
+
+    testSecondsInHourConstant() {
+        const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020");
+        const hourAgo = startSec - Datetime.SECONDS_IN_HOUR;
+        const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 02:12:32 2020");
+        this.assertTruthy(hourAgo == endSec);
+    }
+
+    testSecondsInDayConstant() {
+        const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020");
+        const dayAgo = startSec - Datetime.SECONDS_IN_DAY;
+        const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 28 03:12:32 2020");
+        this.assertTruthy(dayAgo == endSec);
+    }
+
+    testSecondsInWeekConstant() {
+        const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020");
+        const weekAgo = startSec - Datetime.SECONDS_IN_WEEK;
+        const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 22 03:12:32 2020");
+        this.assertTruthy(weekAgo == endSec);
+    }
+}
+
+TestDatetimeConstants().run();
