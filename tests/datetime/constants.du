@@ -42,4 +42,6 @@ class TestDatetimeConstants < UnitTest {
     }
 }
 
-TestDatetimeConstants().run();
+if (System.platform != "windows") {
+    TestDatetimeConstants().run();
+}
