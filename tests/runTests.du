@@ -34,7 +34,11 @@ import "process/import.du";
 import "inspect/import.du";
 
 if (isDefined("HTTP")) {
-  import "http/import.du";
+    import "http/import.du";
+}
+
+if (isDefined("UUID")) {
+    import "uuid/import.du";
 }
 
 import "modules/import.du";
