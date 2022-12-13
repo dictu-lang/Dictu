@@ -21,7 +21,7 @@
 "    private flagExists(flag) {\n" \
 "        for (var i = 0; i < this.preArgs.len(); i+=1) {\n" \
 "            if (this.preArgs[i]['flag'] == flag) {\n" \
-"                return true;\\n" \
+"                return true;\n" \
 "            }\n" \
 "        }\n" \
 "\n" \
@@ -78,7 +78,7 @@
 "        for (var i = 0; i < System.argv.len(); i+=1) {\n" \
 "            for (var j = 0; j < this.required.len(); j+=1) {\n" \
 "                if (System.argv[i] == this.required[j]) {\n" \
-"                    found += 1;\\n" \
+"                    found += 1;\n" \
 "                }\n" \
 "            }\n" \
 "        }\n" \
