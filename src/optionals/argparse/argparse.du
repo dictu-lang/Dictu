@@ -21,7 +21,7 @@ class Parser {
     private flagExists(flag) {
         for (var i = 0; i < this.preArgs.len(); i+=1) {
             if (this.preArgs[i]['flag'] == flag) {
-                return true;\
+                return true;
             }
         }
 
@@ -78,7 +78,7 @@ class Parser {
         for (var i = 0; i < System.argv.len(); i+=1) {
             for (var j = 0; j < this.required.len(); j+=1) {
                 if (System.argv[i] == this.required[j]) {
-                    found += 1;\
+                    found += 1;
                 }
             }
         }
