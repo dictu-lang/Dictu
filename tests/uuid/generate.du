@@ -6,11 +6,11 @@
  * The UUID.generate function provides the ability to generate UUID.
  */
 import UUID;
+import System;
 
 from UnitTest import UnitTest;
 
 class TestUUIDGenerate < UnitTest {
-
     testGenerate() {
         const ret = UUID.generate();
         this.assertTruthy(ret.success());
@@ -21,4 +21,6 @@ class TestUUIDGenerate < UnitTest {
     }
 }
 
-TestUUIDGenerate().run();
+if (System.platform != "windows") {
+    TestUUIDGenerate().run();
+}

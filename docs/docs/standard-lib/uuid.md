@@ -28,6 +28,8 @@ import UUID;
 
 Returns a Result value with a string representation of the UUID on success or an Error on failure. This function attempts to use `/dev/urandom` if available but if it's not, it uses alterntive means of generating randomness.
 
+Note: This is not available on Windows systems.
+
 ```cs
 const uuid = UUID.generate(0).unwrap();
 print(uuid);
@@ -38,6 +40,8 @@ print(uuid);
 
 Returns a Result value with a string representation of the UUID on success or an Error on failure. This function forces the use of the all-random UUID format.
 
+Note: This is not available on Windows systems.
+
 ```cs
 const uuid = UUID.generateRandom().unwrap();
 print(uuid);
@@ -47,6 +51,8 @@ print(uuid);
 ### UUID.generateTime()
 
 Returns a Result value with a string representation of the UUID on success or an Error on failure. This function forces the use of the alternative algorithm which uses the current time and local MAC address (if available).
+
+Note: This is not available on Windows systems.
 
 ```cs
 const uuid = UUID.generateTime().unwrap();

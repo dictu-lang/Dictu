@@ -12,12 +12,12 @@ import System;
 
 class TestSystemUname < UnitTest {
     testSystemUname() {
-        if (System.platform != "windows") {
-            const uname = System.uname();
-            this.assertNotNil(uname);
-            this.assertType(uname, "dict");
-        }
+        const uname = System.uname();
+        this.assertNotNil(uname);
+        this.assertType(uname, "dict");
     }
 }
 
-TestSystemUname().run();
+if (System.platform != "windows") {
+    TestSystemUname().run();
+}
