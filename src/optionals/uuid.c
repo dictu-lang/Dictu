@@ -4,6 +4,7 @@ static uuid_t uuid;
 
 #define UUID_STRING_LEN 37
 
+#ifndef _WIN32
 static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -69,6 +70,7 @@ static Value uuidGenTimeNative(DictuVM *vm, int argCount, Value *args) {
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
 }
+#endif
 
 Value createUuidModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "UUID", 4);
@@ -79,10 +81,11 @@ Value createUuidModule(DictuVM *vm) {
     /**
      * Define UUID methods
      */
+#ifndef _WIN32
     defineNative(vm, &module->values, "generate", uuidGenerateNative);
     defineNative(vm, &module->values, "generateRandom", uuidGenRandomNative);
     defineNative(vm, &module->values, "generateTime", uuidGenTimeNative);
-
+#endif
     /**
      * Define UUID properties
      */
