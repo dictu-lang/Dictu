@@ -20,7 +20,7 @@ static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[37] = {};
+    char out[UUID_STRING_LEN] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
@@ -42,7 +42,7 @@ static Value uuidGenRandomNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[37] = {};
+    char out[UUID_STRING_LEN] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
@@ -64,7 +64,7 @@ static Value uuidGenTimeNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[37] = {};
+    char out[UUID_STRING_LEN] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
