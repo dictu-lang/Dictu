@@ -1,0 +1,31 @@
+import System;
+
+from Argparse import Parser;
+
+const NAME = "argparser";
+const USAGE = "Usage: {} [-vh]
+Options:
+	-h        help menu
+	-v        show version
+Examples:
+	{} -h".format(NAME, NAME);
+
+{ // main
+    const parser = Parser(NAME, "Example program", USAGE);
+    parser.addString("-b", "birth month", false, "month");
+    parser.addBool("-h", "help menu", false, "help");
+    parser.addNumber("--port", "server port", false);
+    parser.addBool("-s", "run securely", true, "secure");
+    parser.addList("-u", "active users", true, "users");
+    var args = parser.parse().match(
+        def(result) => result,
+        def(error) => {
+            print(error);
+            System.exit(1);
+        }
+    );
+
+    //print(parser.usage());
+    print(args);
+    System.exit(0);
+}

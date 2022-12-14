@@ -5,8 +5,8 @@
 "    const METHOD_NAME_PADDING = '    ';\n" \
 "    const RESULTS_PADDING     = '    ';\n" \
 "    const ASSERTION_PADDING   = '         ';\n" \
-"    var forceOnlyFailures     = false;\n" \
-"    var forceExitOnFailure    = false;\n" \
+"    var forceOnlyFailures   = false;\n" \
+"    var forceExitOnFailure  = false;\n" \
 "\n" \
 "    init(var onlyFailures = false, var exitOnFailure = false) {\n" \
 "        this.results = {\n" \
