@@ -30,13 +30,18 @@ class Parser {
 
     private addFlag(flagType, flag, desc, required, ...metavar) {
         if (not this.flagExists(flag)) {
-            this.preArgs.push({
+            var arg = {
                 'type': flagType,
                 'flag': flag,
                 'desc': desc,
-                'required': required,
-                'metavr': metavar
-            });
+                'required': required
+            };
+
+            if (metavar.len() == 1) {
+                arg['metavar'] = metavar[0];
+            }
+
+            this.preArgs.push(arg);
 
             if (required) {
                 this.required.push(flag);
@@ -63,6 +68,7 @@ class Parser {
     usage() {
         if (this.userUsage == '') {
             var u = 'usage: {}\n    {}\n\n'.format(this.name, this.desc);
+
             for (var i = 0; i < this.preArgs.len(); i+=1) {
                 u += '    {}    {}\n'.format(this.preArgs[i]['flag'], this.preArgs[i]['desc']);
             }
@@ -95,29 +101,48 @@ class Parser {
             for (var j = 0; j < this.preArgs.len(); j+=1) {
                 if (System.argv[i] == this.preArgs[j]['flag']) {
                     if (this.preArgs[j]['type'] == 'bool') {
-                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), true);
+                        if (this.preArgs[j].exists('metavar') and this.preArgs[j]['metavar'] != '') {
+                            this.args.setAttribute(this.preArgs[j]['metavar'], true);
+                        } else {
+                            this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), true);
+                        }
+                        
                     } else if (this.preArgs[j]['type'] == 'list') {
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
-                            return Error('{} requires an argument');
+                            return Error('{} requires an argument'.format(System.argv[i]));
                         }
 
-                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(','));
+                        if (this.preArgs[j].exists('metavar') and this.preArgs[j]['metavar'] != '') {
+                            this.args.setAttribute(this.preArgs[j]['metavar'], System.argv[i+1].split(','));   
+                        } else {
+                            this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(','));
+                        }
                     } else if (this.preArgs[j]['type'] == 'number') {
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
-                            return Error('{} requires an argument');
+                            return Error('{} requires an argument'.format(System.argv[i]));
                         }
+
                         const res = System.argv[i+1].toNumber();
                         if (not res.success()) {
                             return Error('{} arg must be a number'.format(System.argv[i]));
                         }
 
-                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), res.unwrap());
+                        if (this.preArgs[j].exists('metavar') and this.preArgs[j]['metavar'] != '') {
+                            print(this.preArgs[j]['metavar']);
+                            this.args.setAttribute(this.preArgs[j]['metavar'], res.unwrap());
+                        } else {
+                            this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), res.unwrap());
+                        }
                     } else {
                         if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
-                            return Error('{} requires an argument');
+                            return Error('{} requires an argument'.format(System.argv[i]));
                         }
 
-                        this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1]);
+                        if (this.preArgs[j].exists('metavar') and this.preArgs[j]['metavar'] != '') {
+                            this.args.setAttribute(this.preArgs[j]['metavar'], System.argv[i+1]);
+                        } else {
+                            this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1]);
+                        }
                     }
                 }
             }

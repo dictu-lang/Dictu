@@ -55,7 +55,7 @@ class TestArgparser < UnitTest {
         const res = this.parser.parse();
         this.addFlagCheck(res);
         const args = res.unwrap();
-        this.assertNotNil(args.b);
+        this.assertNotNil(args.bool);
     }
 
     testAddLongflag() {
