@@ -1135,7 +1135,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     if (strcmp(name->chars, "annotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
+                        push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
                         DISPATCH();
                     }
 
@@ -2161,7 +2161,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            klass->annotations = dict;
+            klass->classAnnotations = dict;
+
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            klass->methodAnnotations = dict;
 
             DISPATCH();
         }

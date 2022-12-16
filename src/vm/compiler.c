@@ -163,7 +163,8 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->class = NULL;
     compiler->loop = NULL;
     compiler->withBlock = false;
-    compiler->annotations = NULL;
+    compiler->classAnnotations = NULL;
+    compiler->methodAnnotations = NULL;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -1628,6 +1629,7 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
     classCompiler->annotations = NULL;
+    classCompiler->methodAnnotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
 }
@@ -1636,10 +1638,16 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     freeTable(compiler->parser->vm, &classCompiler->privateVariables);
     compiler->class = compiler->class->enclosing;
 
-    if (compiler->annotations != NULL) {
-        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->annotations));
+    if (compiler->classAnnotations != NULL) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->classAnnotations));
         emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
-        compiler->annotations = NULL;
+        compiler->classAnnotations = NULL;
+    }
+
+    if (compiler->methodAnnotations != NULL) {
+        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->methodAnnotations));
+        emitBytes(compiler, OP_DEFINE_METHOD_ANNOTATIONS, importConstant);
+        compiler->methodAnnotations = NULL;
     }
 }
 
@@ -1648,9 +1656,9 @@ static bool checkLiteralToken(Compiler *compiler) {
         check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
 }
 
-static void parseClassAnnotations(Compiler *compiler) {
+static void parseMethodAnnotations(Compiler *compiler) {
     DictuVM *vm = compiler->parser->vm;
-    compiler->annotations = newDict(vm);
+    compiler->methodAnnotations = newDict(vm);
 
     do {
         consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
@@ -1668,24 +1676,68 @@ static void parseClassAnnotations(Compiler *compiler) {
             if (match(compiler, TOKEN_STRING)) {
                 Value string = parseString(compiler, false);
                 push(vm, string);
-                dictSet(vm, compiler->annotations, annotationName, string);
+                dictSet(vm, compiler->methodAnnotations, annotationName, string);
                 pop(vm);
             } else if (match(compiler, TOKEN_NUMBER)) {
                 Value number = parseNumber(compiler, false);
-                dictSet(vm, compiler->annotations, annotationName, number);
+                dictSet(vm, compiler->methodAnnotations, annotationName, number);
             } else if (match(compiler, TOKEN_TRUE)) {
-                dictSet(vm, compiler->annotations, annotationName, TRUE_VAL);
+                dictSet(vm, compiler->methodAnnotations, annotationName, TRUE_VAL);
             } else if (match(compiler, TOKEN_FALSE)) {
-                dictSet(vm, compiler->annotations, annotationName, FALSE_VAL);
+                dictSet(vm, compiler->methodAnnotations, annotationName, FALSE_VAL);
             } else if (match(compiler, TOKEN_NIL)) {
-                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+                dictSet(vm, compiler->methodAnnotations, annotationName, NIL_VAL);
             } else {
-                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+                dictSet(vm, compiler->methodAnnotations, annotationName, NIL_VAL);
             }
 
             consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after annotation value.");
         } else {
-            dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            dictSet(vm, compiler->methodAnnotations, annotationName, NIL_VAL);
+        }
+
+        pop(vm);
+    } while (match(compiler, TOKEN_AT));
+}
+
+static void parseClassAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    compiler->classAnnotations = newDict(vm);
+
+    do {
+        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+        Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
+                                                  compiler->parser->previous.length));
+        push(vm, annotationName);
+
+        if (match(compiler, TOKEN_LEFT_PAREN)) {
+            if (!checkLiteralToken(compiler)) {
+                errorAtCurrent(compiler->parser,
+                               "Annotations can only have literal values of type string, bool, number or nil.");
+                return;
+            }
+
+            if (match(compiler, TOKEN_STRING)) {
+                Value string = parseString(compiler, false);
+                push(vm, string);
+                dictSet(vm, compiler->classAnnotations, annotationName, string);
+                pop(vm);
+            } else if (match(compiler, TOKEN_NUMBER)) {
+                Value number = parseNumber(compiler, false);
+                dictSet(vm, compiler->classAnnotations, annotationName, number);
+            } else if (match(compiler, TOKEN_TRUE)) {
+                dictSet(vm, compiler->classAnnotations, annotationName, TRUE_VAL);
+            } else if (match(compiler, TOKEN_FALSE)) {
+                dictSet(vm, compiler->classAnnotations, annotationName, FALSE_VAL);
+            } else if (match(compiler, TOKEN_NIL)) {
+                dictSet(vm, compiler->classAnnotations, annotationName, NIL_VAL);
+            } else {
+                dictSet(vm, compiler->classAnnotations, annotationName, NIL_VAL);
+            }
+
+            consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after annotation value.");
+        } else {
+            dictSet(vm, compiler->classAnnotations, annotationName, NIL_VAL);
         }
 
         pop(vm);
@@ -2591,9 +2643,9 @@ static void declaration(Compiler *compiler) {
         return;
     }
 
-    if (compiler->annotations != NULL) {
-        errorAtCurrent(compiler->parser, "Annotations can only be applied to classes");
-    }
+    // if (compiler->classAnnotations != NULL) {
+    //     errorAtCurrent(compiler->parser, "Annotations can only be applied to classes");
+    // }
 
     if (match(compiler, TOKEN_TRAIT)) {
         traitDeclaration(compiler);
@@ -2609,6 +2661,7 @@ static void declaration(Compiler *compiler) {
         enumDeclaration(compiler);
     } else if (match(compiler, TOKEN_AT)) {
         parseClassAnnotations(compiler);
+        parseMethodAnnotations(compiler);
     } else {
         statement(compiler);
     }
@@ -2726,11 +2779,13 @@ void grayCompilerRoots(DictuVM *vm) {
 
         while (classCompiler != NULL) {
             grayObject(vm, (Obj *) classCompiler->annotations);
+            grayObject(vm, (Obj *) classCompiler->methodAnnotations);
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
         }
 
-        grayObject(vm, (Obj *) compiler->annotations);
+        grayObject(vm, (Obj *) compiler->classAnnotations);
+        grayObject(vm, (Obj *) compiler->methodAnnotations);
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;
