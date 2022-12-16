@@ -69,7 +69,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->publicMethods);
     initTable(&klass->publicProperties);
     initTable(&klass->publicConstantProperties);
-    klass->annotations = NULL;
+    klass->classAnnotations = NULL;
 
     push(vm, OBJ_VAL(klass));
     ObjString *nameString = copyString(vm, "_name", 5);
