@@ -1,8 +1,8 @@
 import Path;
 import System;
 
-const srcFile = "src_file";
-const dstFile = "dst_file";
+const srcFile = "src_file",
+      dstFile = "dst_file";
 
 def cleanup(tmpDir) {
     Path.listDir(tmpDir).forEach(def(f) => {

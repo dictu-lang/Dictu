@@ -5,6 +5,7 @@
  */
 
 import "access.du";
+import "copyFile.du";
 import "version.du";
 import "sleep.du";
 import "getCWD.du";
