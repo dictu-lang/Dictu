@@ -263,11 +263,21 @@ Makes a temporary directory. If an empty string is given, the temporary director
 
 The directory template passed in **must** end with "XXXXXX".
 
-Returns a Result type and on success will unwrap to a the created directory name.
+Returns a Result type and on success will unwrap to a string containing the created directory name.
 
 Note: This is not available on Windows systems.
 
 ```cs
 System.mkdirTemp().unwrap(); // "VOO16s"
 System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
+```
+
+### System.copyFile(string: src, string: dst)
+
+Copies the contents from the source file to the destination file.
+
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+System.copyFile(src, dst);
 ```
