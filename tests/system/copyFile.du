@@ -18,7 +18,8 @@ class TestSystemCopyFile < UnitTest {
     private tmpDir;
 
     setUp() {
-        this.tmpDir = System.mkdir("temp").unwrap();
+        this.tmpDir = "temp";
+        System.mkdir("temp");
     }
 
     tearDown() {
