@@ -17,29 +17,62 @@ nav_order: 9
 
 ## Introduction
 
+These guidelines attempt to provide a framework for code styling and formatting with the end goal of having all Dictu code similar enough for maximal familiarity and readability.
+
 ## Formatting
+
+Favor 4 spaces over tabs.
 
 ## Commentary
 
-## Names
+Dictu supports single and multiline comments in the form of `//` and `/** */` respectively. Declaration comments should use the former.
+
+For example:
+
+```cs
+// class User provides ...
+class User {
+    private password;
+    
+     // User class initializer. Creates a new user value, sets the given name fields,
+     // and generates a new password.
+    init(var firstName, var lastName) {
+        // generate a new password.
+        this.password = generatePassword();
+    }
+}
+```
 
 ## Module Names
 
-Depending on how a module is imported, either module name becomes the accessor or the item is accessed directly. Modules should have short names and be simple nouns describing the contents. For example: `Sockets`, `HTTP`.
+Depending on how a module is imported, either the module name becomes the accessor or the item imported is accessed directly. Modules should have short names and be simple nouns describing the contents. For example: `Sockets`, `HTTP`, `System`.
 
 ```cs
 import System;
 ```
 
-the importing package can talk about `System.uname()`. The convention for naming is for modules
+## Imports
+
+Imports should be grouped together into 3 seconds. The first section is for regular imports from the standard library. The second is for `from` imports from the standard library. And the third is for local file based imports. The 3 above sections should be seperated by 1 line and listed alphabetically.
+
+```cs
+import Env;
+import HTTP;
+import Sockets;
+
+from Argparse import Parser;
+
+from "standard_model/particles.du" import Boson;
+from "standard_model/particles.du" import Quark;
+```
 
 ## Mixed Caps
 
-The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case, to write multiword names. The only exception to this rule is when defining constants. 
+The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case, to write multiword names.
 
 ## Constants 
 
-Constants should be defined using all upper case in snake case.
+Constants should be defined using snake case. E.g. `const CONSTANT_VALUE = 10;`
 
 ## Control Flow
 
@@ -55,10 +88,6 @@ if () {
 while () {
     // code
 }
-
-while {
-    // code
-}
 ```
 
 ```cs
@@ -66,3 +95,26 @@ for (...) {
     // code
 }
 ```
+
+## Error Handling
+
+The `Result` type is preferred for error handling and include values to be unwrapped. 2 common patterns have emerged to be the most common. These are preferred and can be referenced below:
+
+```cs
+const val = someFunc().match(
+    def(result) => result,
+    def(error) {
+        print(error);
+        System.exit(0);        
+    }
+);
+```
+
+```cs
+const ret = someFunc();
+if (not ret.success()) {
+    // do something with the error
+    ret.unwrapError();
+}
+```
+
