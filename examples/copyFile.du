@@ -1,0 +1,57 @@
+import Path;
+import System;
+
+const srcFile = "src_file",
+      dstFile = "dst_file";
+
+def cleanup(tmpDir) {
+    Path.listDir(tmpDir).forEach(def(f) => {
+        System.remove(Path.join(tmpDir, f)).match(
+            def(result) => result,
+            def(error) => {
+                print(error);
+                System.exit(1);
+            }
+        );
+    });
+
+    System.rmdir(tmpDir).match(
+        def(result) => result,
+        def(error) => {
+            print(error);
+            System.exit(1);
+        }
+    );
+}
+
+{ // main
+    const tmpDir = System.mkdirTemp().unwrap();
+
+    with(Path.join(tmpDir, srcFile), 'w') {
+        file.write("blah blah blah");
+    }
+
+    print("source file!");
+    with(Path.join(tmpDir, srcFile), 'r') {
+        print(file.read());
+    }
+
+    System.copyFile(Path.join(tmpDir, srcFile), Path.join(tmpDir, dstFile)).match(
+        def(result) => result,
+        def(error) => {
+            print(error);
+            System.exit(1);
+        }
+    );
+
+    print("destination file!");
+    with(Path.join(tmpDir, srcFile), 'r') {
+        print(file.read());
+    }
+
+    System.sleep(10);
+
+    cleanup(tmpDir);
+
+    System.exit(0);
+}
