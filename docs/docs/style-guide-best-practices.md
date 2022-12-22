@@ -17,7 +17,7 @@ nav_order: 9
 
 ## Introduction
 
-These guidelines attempt to provide a framework for code styling and formatting with the end goal of having all Dictu code similar enough for maximal familiarity and readability.
+These guidelines attempt to provide a framework for code styling and formatting with the end goal of having all Dictu code similar enough for maximal readability and familiarity.
 
 ## Formatting
 
@@ -72,7 +72,7 @@ The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case,
 
 ## Constants 
 
-Constants should be defined using snake case. E.g. `const CONSTANT_VALUE = 10;`
+Constants should be defined using snake case when defined in global scope. E.g. `const CONSTANT_VALUE = 10;`. Locally scoped constants should be defined like any other variable.
 
 ## Control Flow
 
