@@ -1098,7 +1098,7 @@ Value createHTTPModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "STATUS_CODE_SWITCHING_PROTOCOLS", NUMBER_VAL(HTTP_STATUS_CODE_SWITCHING_PROTOCOLS));
     defineNativeProperty(vm, &module->values, "STATUS_CODE_PROCESSING", NUMBER_VAL(HTTP_STATUS_CODE_PROCESSING));
     defineNativeProperty(vm, &module->values, "STATUS_CODE_EARLY_HINTS", NUMBER_VAL(HTTP_STATUS_CODE_EARLY_HINTS));
-    defineNativeProperty(vm, &module->values, "STATUS_OK", NUMBER_VAL(HTTP_STATUS_CODE_OK));
+    defineNativeProperty(vm, &module->values, "STATUS_CODE_OK", NUMBER_VAL(HTTP_STATUS_CODE_OK));
 
     defineNativeProperty(vm, &module->values, "STATUS_CODE_CREATED", NUMBER_VAL(HTTP_STATUS_CODE_CREATED));
     defineNativeProperty(vm, &module->values, "STATUS_CODE_ACCEPTED", NUMBER_VAL(HTTP_STATUS_CODE_ACCEPTED));

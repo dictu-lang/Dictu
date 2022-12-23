@@ -12,7 +12,7 @@ class TestHttpConstants < UnitTest {
 
     testHttpConstantsProvider() {
         return [
-            {"constant": HTTP.STATUS_OK, "expected": 200},
+            {"constant": HTTP.STATUS_CODE_OK, "expected": 200},
         ];
     }
 }
