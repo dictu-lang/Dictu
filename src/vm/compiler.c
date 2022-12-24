@@ -1627,8 +1627,8 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->hasSuperclass = false;
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
-    classCompiler->abstractClass = abstract;
-    classCompiler->annotations = NULL;
+    classCompiler->abstractClass = abstract; 
+    classCompiler->classAnnotations = NULL;
     classCompiler->methodAnnotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
@@ -1768,6 +1768,9 @@ static void parseClassBody(Compiler *compiler) {
             emitByte(compiler, true);
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class constant declaration.");
+        } else if (match(compiler, TOKEN_AT)) {
+            printf("found method annotation\n");
+            parseMethodAnnotations(compiler);
         } else {
             if (match(compiler, TOKEN_PRIVATE)) {
                 if (match(compiler, TOKEN_IDENTIFIER)) {
@@ -2661,7 +2664,6 @@ static void declaration(Compiler *compiler) {
         enumDeclaration(compiler);
     } else if (match(compiler, TOKEN_AT)) {
         parseClassAnnotations(compiler);
-        parseMethodAnnotations(compiler);
     } else {
         statement(compiler);
     }
@@ -2778,7 +2780,7 @@ void grayCompilerRoots(DictuVM *vm) {
         ClassCompiler *classCompiler = vm->compiler->class;
 
         while (classCompiler != NULL) {
-            grayObject(vm, (Obj *) classCompiler->annotations);
+            grayObject(vm, (Obj *) classCompiler->classAnnotations);
             grayObject(vm, (Obj *) classCompiler->methodAnnotations);
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
