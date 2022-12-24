@@ -66,6 +66,8 @@ from "standard_model/particles.du" import Boson;
 from "standard_model/particles.du" import Quark;
 ```
 
+Add 2 blank lines after imports are complete.
+
 ## Mixed Caps
 
 The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case, to write multiword names.
