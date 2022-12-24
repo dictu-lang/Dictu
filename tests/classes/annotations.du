@@ -1,7 +1,7 @@
 /**
- * classannotations.du
+ * classAnnotations.du
  *
- * Testing class classannotations
+ * Testing class classAnnotations
  */
 from UnitTest import UnitTest;
 
@@ -20,17 +20,17 @@ class Test {
 
 class TestClassAnnotations < UnitTest {
     testClassAnnotationsEmpty() {
-        this.assertEquals(NoAnnotations.classannotations, nil);
+        this.assertEquals(NoAnnotations.classAnnotations, nil);
     }
 
     testClassAnnotations() {
-        this.assertEquals(Test.classannotations.len(), 6);
-        this.assertEquals(Test.classannotations['EmptyAnnotation'], nil);
-        this.assertEquals(Test.classannotations['TrueAnnotation'], true);
-        this.assertEquals(Test.classannotations['FalseAnnotation'], false);
-        this.assertEquals(Test.classannotations['NumberAnnotation'], 10);
-        this.assertEquals(Test.classannotations['DecimalNumberAnnotation'], 10.5);
-        this.assertEquals(Test.classannotations['NilAnnotation'], nil);
+        this.assertEquals(Test.classAnnotations.len(), 6);
+        this.assertEquals(Test.classAnnotations['EmptyAnnotation'], nil);
+        this.assertEquals(Test.classAnnotations['TrueAnnotation'], true);
+        this.assertEquals(Test.classAnnotations['FalseAnnotation'], false);
+        this.assertEquals(Test.classAnnotations['NumberAnnotation'], 10);
+        this.assertEquals(Test.classAnnotations['DecimalNumberAnnotation'], 10.5);
+        this.assertEquals(Test.classAnnotations['NilAnnotation'], nil);
     }
 }
 
