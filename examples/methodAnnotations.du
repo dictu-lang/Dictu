@@ -1,4 +1,12 @@
-@Annotation
+@ResourceController("/api/v1")
 class AnnotatedClass {
     init() {}
+
+    @Get("/releases")
+    releaseHandler() {}
 }
+
+const a = AnnotatedClass();
+print(a.getAttributes());
+print(a._class.classAnnotations);
+print(a._class.methodAnnotations);

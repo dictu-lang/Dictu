@@ -1133,9 +1133,15 @@ static DictuInterpretResult run(DictuVM *vm) {
                         klass = klass->superclass;
                     }
 
-                    if (strcmp(name->chars, "annotations") == 0) {
+                    if (strcmp(name->chars, "classAnnotations") == 0) {
                         pop(vm); // Klass
                         push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
+                        DISPATCH();
+                    }
+                    
+                    if (strcmp(name->chars, "methodAnnotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->methodAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->methodAnnotations));
                         DISPATCH();
                     }
 
