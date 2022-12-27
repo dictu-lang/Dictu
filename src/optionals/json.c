@@ -150,9 +150,9 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
                     }
 
                     json_object_push(
-                            json,
-                            key,
-                            stringifyJson(vm, entry->value)
+                        json,
+                        key,
+                        stringifyJson(vm, entry->value)
                     );
 
                     if (!IS_STRING(entry->key)) {

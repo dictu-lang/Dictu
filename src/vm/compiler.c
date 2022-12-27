@@ -1627,9 +1627,9 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool has
 
                 if (strcmp(key, "methodName") == 0) {
                     ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
-                    push(vm, OBJ_VAL(methodKey));
+                    //push(vm, OBJ_VAL(methodKey));
                     compiler->methodAnnotations->entries[i].key = OBJ_VAL(methodKey);
-                    pop(vm);
+                    //pop(vm);
                 }
 
                 if (!IS_STRING(entry->key)) {
