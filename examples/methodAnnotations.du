@@ -1,12 +1,28 @@
+// @BaseClassAnnotation
+// class BaseClass {
+//     @AbstractMethodAnnotation
+//     getHandler() {}
+
+// }
+
 @ResourceController("/api/v1")
 class AnnotatedClass {
     init() {}
 
-    @Get("/releases")
+    @BasicAuth @Get("/releases")
     releaseHandler() {}
+
+    @BasicAuth
+    @Get("/assets")
+    assetHandler() {}
+
+    private someOtherHandler() {}
 }
 
 const a = AnnotatedClass();
-print(a.getAttributes());
+
 print(a._class.classAnnotations);
 print(a._class.methodAnnotations);
+print(type(a._class.methodAnnotations));
+const methodAnnotations = a._class.methodAnnotations;
+print(methodAnnotations["releaseHandler"]);
