@@ -14,7 +14,14 @@ class NoAnnotations {}
 @DecimalNumberAnnotation(10.5)
 @NilAnnotation(nil)
 class Test {
-
+    
+    @EmptyAnnotation
+    @TrueAnnotation(true)
+    @FalseAnnotation(false)
+    @NumberAnnotation(10)
+    @DecimalNumberAnnotation(10.5)
+    @NilAnnotation(nil)
+    methodOnAClass() {}
 }
 
 
@@ -31,6 +38,16 @@ class TestClassAnnotations < UnitTest {
         this.assertEquals(Test.classAnnotations['NumberAnnotation'], 10);
         this.assertEquals(Test.classAnnotations['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(Test.classAnnotations['NilAnnotation'], nil);
+    }
+
+    testMethodAnnotations() {
+        this.assertEquals(Test.methodAnnotations.len(), 1);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['EmptyAnnotation'], nil);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['TrueAnnotation'], true);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['FalseAnnotation'], false);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['NumberAnnotation'], 10);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['DecimalNumberAnnotation'], 10.5);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['NilAnnotation'], nil);
     }
 }
 
