@@ -42,6 +42,7 @@ class TestClassAnnotations < UnitTest {
 
     testMethodAnnotations() {
         this.assertEquals(Test.methodAnnotations.len(), 1);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass'].len(), 6);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['EmptyAnnotation'], nil);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['TrueAnnotation'], true);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['FalseAnnotation'], false);
