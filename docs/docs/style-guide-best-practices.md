@@ -78,7 +78,7 @@ Constants should be defined using snake case when defined in global scope. E.g. 
 
 ## Annotations
 
-Annotations should be Pascal case.
+Annotations, class and method, should be Pascal case.
 
 ## Control Flow
 
