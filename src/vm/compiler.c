@@ -1612,28 +1612,14 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool has
                     continue;
                 }
 
-                char *key;
-
-                if (IS_STRING(entry->key)) {
-                    ObjString *s = AS_STRING(entry->key);
-                    key = s->chars;
-                } else if (IS_NIL(entry->key)) {
-                    key = malloc(5);
-                    memcpy(key, "null", 4);
-                    key[4] = '\0';
-                } else {
-                    key = valueToString(entry->key);
-                }
+                char *key = AS_STRING(entry->key)->chars;
 
                 if (strcmp(key, "methodName") == 0) {
+                    Value existingDict;
+                    dictGet(compiler->methodAnnotations, entry->key, &existingDict);
+                    dictDelete(vm, compiler->methodAnnotations, entry->key);
                     ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
-                    //push(vm, OBJ_VAL(methodKey));
-                    compiler->methodAnnotations->entries[i].key = OBJ_VAL(methodKey);
-                    //pop(vm);
-                }
-
-                if (!IS_STRING(entry->key)) {
-                    free(key);
+                    dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
                 }
             }
         }
@@ -1699,8 +1685,8 @@ static void parseMethodAnnotations(Compiler *compiler) {
     }
     
     ObjDict *annotationDict = newDict(vm);
+    push(vm, OBJ_VAL(annotationDict));
     ObjString *methodName = copyString(vm, "methodName", 10);
-    push(vm, OBJ_VAL(methodName));
 
     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), OBJ_VAL(annotationDict));
 
@@ -1742,7 +1728,7 @@ static void parseMethodAnnotations(Compiler *compiler) {
 
         pop(vm);
     } while (match(compiler, TOKEN_AT));
-
+    
     pop(vm);
 }
 

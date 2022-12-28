@@ -10,11 +10,15 @@ class AnnotatedClass {
     init() {}
 
     @BasicAuth @Get("/releases")
-    releaseHandler() {}
+    releaseHandler() {
+        // impl
+    }
 
     @BasicAuth
     @Get("/assets")
-    assetHandler() {}
+    private assetHandler() {
+        // impl
+    }
 
     private someOtherHandler() {}
 }

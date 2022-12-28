@@ -649,8 +649,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes that by themselves have no impact.
-They, however, can provide user defined changes at runtime to given classes.
+Annotations are metadata that are applied to classes and methods that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
@@ -659,25 +658,43 @@ class AnnotatedClass {
 }
 ```
 
-Annotations are accessed via the `.annotations` property available on all classes. If annotations
-are preset a dictionary is returned, otherwise the `.annotations` property is `nil`.
+```cs
+class ClassWithMethodAnnotation {
+    init() {}
+
+    @MethodAnnotation
+    method() {}
+}
+```
+
+Annotations are access via the `.classAnnotations` and `.methodAnnotations` proprties available on all classes.
+
+For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+
+For mathod annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 ```cs
-print(AnnotatedClass.annotations); // {"Annotation": nil}
+print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
+```
+
+```cs
+print(ClassWithMethodAnnotation.methodAnnotations); // {"method": {"MethodAnnotation": nil}}
 ```
 
 Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
 
-```
+```cs
 @Annotation("Some extra value!")
 class AnnotatedClass {
 
 }
 
-print(AnnotatedClass.annotations); // {"Annotation": "Some extra value!"}
+print(AnnotatedClass.classAnnotations); // {"Annotation": "Some extra value!"}
 ```
 
-Multiple annotations can be supplied to classes.
+Method annotations are available on all class methods except initializers.
+
+Multiple annotations can be supplied to classes and methods.
 
 ```cs
 @Annotation
@@ -685,7 +702,10 @@ Multiple annotations can be supplied to classes.
 @SomeOtherAnnotation
 class AnnotatedClass {
 
+    @MethodAnnotation
+    @AnotherMethodAnnotation(10)
+    @SomeOtherMethodAnnotation("another one")
+    method() {}
+
 }
 ```
-
-**Note**: Annotations are not available on methods.
