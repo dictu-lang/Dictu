@@ -76,6 +76,10 @@ The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case,
 
 Constants should be defined using snake case when defined in global scope. E.g. `const CONSTANT_VALUE = 10;`. Locally scoped constants should be defined like any other variable.
 
+## Annotations
+
+Annotations should be Pascal case.
+
 ## Control Flow
 
 Dictu provides a number of [control structures](https://dictu-lang.com/docs/control-flow/) allowing for robust functionality. These strcutures should be formatted as follows:
