@@ -1564,7 +1564,7 @@ static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler, bool private, Token *identifier, bool hasAnnotation) {
+static void method(Compiler *compiler, bool private, Token *identifier, bool *hasAnnotation) {
     AccessLevel level = ACCESS_PUBLIC;
     FunctionType type;
 
@@ -1603,7 +1603,7 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool has
         memcmp(compiler->parser->previous.start, "init", 4) == 0) {
         type = TYPE_INITIALIZER;
     } else {
-        if (hasAnnotation) {
+        if (*hasAnnotation) {
             DictuVM *vm = compiler->parser->vm;
 
             for (int i = 0; i <= compiler->methodAnnotations->capacityMask; i++) {
@@ -1612,9 +1612,7 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool has
                     continue;
                 }
 
-                char *key = AS_STRING(entry->key)->chars;
-
-                if (strcmp(key, "methodName") == 0) {
+                if (strcmp(AS_STRING(entry->key)->chars, "annotatedMethodName") == 0) {
                     Value existingDict;
                     dictGet(compiler->methodAnnotations, entry->key, &existingDict);
                     dictDelete(vm, compiler->methodAnnotations, entry->key);
@@ -1622,6 +1620,7 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool has
                     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
                 }
             }
+            *hasAnnotation = false;
         }
     }
 
@@ -1686,8 +1685,8 @@ static void parseMethodAnnotations(Compiler *compiler) {
     
     ObjDict *annotationDict = newDict(vm);
     push(vm, OBJ_VAL(annotationDict));
-    ObjString *methodName = copyString(vm, "methodName", 10);
-
+    ObjString *methodName = copyString(vm, "annotatedMethodName", 19);
+    push(vm, OBJ_VAL(methodName));
     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), OBJ_VAL(annotationDict));
 
     do {
@@ -1695,7 +1694,7 @@ static void parseMethodAnnotations(Compiler *compiler) {
         Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
                                                   compiler->parser->previous.length));
         push(vm, annotationName);
-
+        
         if (match(compiler, TOKEN_LEFT_PAREN)) {
             if (!checkLiteralToken(compiler)) {
                 errorAtCurrent(compiler->parser,
@@ -1728,7 +1727,7 @@ static void parseMethodAnnotations(Compiler *compiler) {
 
         pop(vm);
     } while (match(compiler, TOKEN_AT));
-    
+    pop(vm);
     pop(vm);
 }
 
@@ -1813,16 +1812,15 @@ static void parseClassBody(Compiler *compiler) {
                                  AS_STRING(currentChunk(compiler)->constants.values[name]), EMPTY_VAL);
                         continue;
                     }
-                    method(compiler, true, &compiler->parser->previous, methodHasAnnotation);
-                    methodHasAnnotation = false;
+
+                    method(compiler, true, &compiler->parser->previous, &methodHasAnnotation);
                     continue;
                 }
-                
-                method(compiler, true, NULL, methodHasAnnotation);
-                methodHasAnnotation = false;
+
+                method(compiler, true, NULL, &methodHasAnnotation);
             } else {
-                method(compiler, false, NULL, methodHasAnnotation);
-                methodHasAnnotation = false;
+                method(compiler, false, NULL, &methodHasAnnotation);
+                
             }
         }
     }
