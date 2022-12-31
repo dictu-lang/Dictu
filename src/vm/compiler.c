@@ -1689,7 +1689,8 @@ static void parseMethodAnnotations(Compiler *compiler) {
     push(vm, OBJ_VAL(methodName));
     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), OBJ_VAL(annotationDict));
     pop(vm);
-
+    pop(vm);
+    
     do {
         consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
         Value annotationName = OBJ_VAL(copyString(vm, compiler->parser->previous.start,
@@ -1728,7 +1729,6 @@ static void parseMethodAnnotations(Compiler *compiler) {
 
         pop(vm);
     } while (match(compiler, TOKEN_AT));
-    pop(vm);
 }
 
 static void parseClassAnnotations(Compiler *compiler) {
@@ -1820,7 +1820,6 @@ static void parseClassBody(Compiler *compiler) {
                 method(compiler, true, NULL, &methodHasAnnotation);
             } else {
                 method(compiler, false, NULL, &methodHasAnnotation);
-                
             }
         }
     }
