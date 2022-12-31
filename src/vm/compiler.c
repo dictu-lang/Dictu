@@ -1688,6 +1688,7 @@ static void parseMethodAnnotations(Compiler *compiler) {
     ObjString *methodName = copyString(vm, "annotatedMethodName", 19);
     push(vm, OBJ_VAL(methodName));
     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), OBJ_VAL(annotationDict));
+    pop(vm);
 
     do {
         consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
@@ -1727,7 +1728,6 @@ static void parseMethodAnnotations(Compiler *compiler) {
 
         pop(vm);
     } while (match(compiler, TOKEN_AT));
-    pop(vm);
     pop(vm);
 }
 
