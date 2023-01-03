@@ -1670,7 +1670,7 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     }
 
     if (compiler->methodAnnotations != NULL) {
-        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->methodAnnotations));
+        int methodAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->methodAnnotations));
         emitBytes(compiler, OP_DEFINE_METHOD_ANNOTATIONS, importConstant);
         compiler->methodAnnotations = NULL;
     }
