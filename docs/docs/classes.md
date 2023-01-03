@@ -671,7 +671,7 @@ Annotations are access via the `.classAnnotations` and `.methodAnnotations` prop
 
 For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
-For mathod annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+For method annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 ```cs
 print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
