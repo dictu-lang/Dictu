@@ -1664,7 +1664,7 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     compiler->class = compiler->class->enclosing;
 
     if (compiler->classAnnotations != NULL) {
-        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->classAnnotations));
+        int classAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->classAnnotations));
         emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
         compiler->classAnnotations = NULL;
     }
