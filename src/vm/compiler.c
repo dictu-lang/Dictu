@@ -1615,9 +1615,13 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool *ha
                 if (strcmp(AS_STRING(entry->key)->chars, "annotatedMethodName") == 0) {
                     Value existingDict;
                     dictGet(compiler->methodAnnotations, entry->key, &existingDict);
-                    dictDelete(vm, compiler->methodAnnotations, entry->key);
+                    push(vm, OBJ_VAL(existingDict));
                     ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
                     dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
+                    pop(vm);
+                    dictDelete(vm, compiler->methodAnnotations, entry->key);
+
+                    break;
                 }
             }
             *hasAnnotation = false;
@@ -2095,6 +2099,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_NEW_DICT:
         case OP_CLOSE_FILE:
         case OP_MULTI_CASE:
+        case OP_DEFINE_METHOD_ANNOTATIONS:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
