@@ -1665,13 +1665,13 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
 
     if (compiler->classAnnotations != NULL) {
         int classAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->classAnnotations));
-        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
+        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, classAnnotationsConstant);
         compiler->classAnnotations = NULL;
     }
 
     if (compiler->methodAnnotations != NULL) {
         int methodAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->methodAnnotations));
-        emitBytes(compiler, OP_DEFINE_METHOD_ANNOTATIONS, importConstant);
+        emitBytes(compiler, OP_DEFINE_METHOD_ANNOTATIONS, methodAnnotationsConstant);
         compiler->methodAnnotations = NULL;
     }
 }
