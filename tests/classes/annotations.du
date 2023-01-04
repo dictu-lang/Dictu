@@ -26,6 +26,12 @@ class Test {
     private noMethodAnnotations() {}
 }
 
+class WithAnnotatetdInit {
+
+    @InitAnnotation
+    init() {}
+}
+
 
 class TestClassAnnotations < UnitTest {
     testClassAnnotationsEmpty() {
@@ -53,6 +59,10 @@ class TestClassAnnotations < UnitTest {
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['NumberAnnotation'], 10);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['NilAnnotation'], nil);
+    }
+
+    testInitAnnotation() {
+        this.assertEquals(WithAnnotatetdInit.methodAnnotations['init']['InitAnnotation'], nil);
     }
 }
 

@@ -692,8 +692,6 @@ class AnnotatedClass {
 print(AnnotatedClass.classAnnotations); // {"Annotation": "Some extra value!"}
 ```
 
-Method annotations are available on all class methods except initializers.
-
 Multiple annotations can be supplied to classes and methods.
 
 ```cs

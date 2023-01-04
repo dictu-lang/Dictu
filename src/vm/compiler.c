@@ -1602,32 +1602,31 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool *ha
     if (compiler->parser->previous.length == 4 &&
         memcmp(compiler->parser->previous.start, "init", 4) == 0) {
         type = TYPE_INITIALIZER;
-    } else {
-        if (*hasAnnotation) {
-            DictuVM *vm = compiler->parser->vm;
-
-            for (int i = 0; i <= compiler->methodAnnotations->capacityMask; i++) {
-                DictItem *entry = &compiler->methodAnnotations->entries[i];
-                if (IS_EMPTY(entry->key)) {
-                    continue;
-                }
-
-                if (strcmp(AS_STRING(entry->key)->chars, "annotatedMethodName") == 0) {
-                    Value existingDict;
-                    dictGet(compiler->methodAnnotations, entry->key, &existingDict);
-                    push(vm, OBJ_VAL(existingDict));
-                    ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
-                    dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
-                    pop(vm);
-                    dictDelete(vm, compiler->methodAnnotations, entry->key);
-
-                    break;
-                }
-            }
-            *hasAnnotation = false;
-        }
     }
 
+    if (*hasAnnotation) {
+        DictuVM *vm = compiler->parser->vm;
+
+        for (int i = 0; i <= compiler->methodAnnotations->capacityMask; i++) {
+            DictItem *entry = &compiler->methodAnnotations->entries[i];
+            if (IS_EMPTY(entry->key)) {
+                continue;
+            }
+
+            if (strcmp(AS_STRING(entry->key)->chars, "annotatedMethodName") == 0) {
+                Value existingDict;
+                dictGet(compiler->methodAnnotations, entry->key, &existingDict);
+                push(vm, OBJ_VAL(existingDict));
+                ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
+                dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
+                pop(vm);
+                dictDelete(vm, compiler->methodAnnotations, entry->key);
+
+                break;
+            }
+        }
+        *hasAnnotation = false;
+    }
 
     if (type != TYPE_ABSTRACT) {
         function(compiler, type, level);
