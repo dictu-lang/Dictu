@@ -101,7 +101,6 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             grayObject(vm, (Obj *) klass->name);
             grayObject(vm, (Obj *) klass->superclass);
-            grayObject(vm, (Obj *) klass->annotations);
             grayTable(vm, &klass->publicMethods);
             grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);

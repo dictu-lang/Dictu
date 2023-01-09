@@ -1,0 +1,25 @@
+@ResourceController("/api/v1")
+class AnnotatedClass {
+    init() {}
+
+    @BasicAuth @Get("/releases")
+    releaseHandler() {
+        // impl
+    }
+
+    @BasicAuth
+    @Get("/assets")
+    private assetHandler() {
+        // impl
+    }
+
+    private someOtherHandler() {}
+}
+
+const a = AnnotatedClass();
+
+print(a._class.classAnnotations);
+print(a._class.methodAnnotations);
+print(type(a._class.methodAnnotations));
+const methodAnnotations = a._class.methodAnnotations;
+print(methodAnnotations["releaseHandler"]);
