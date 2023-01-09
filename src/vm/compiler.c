@@ -1778,19 +1778,12 @@ static void parseClassAnnotations(Compiler *compiler) {
     } while (match(compiler, TOKEN_AT));
 }
 
-static void invalidAnnotation(Compiler *compiler, const char *type) {
-    printf("Annotations not allowed on \"%s\" statements\n", type);
-    runtimeError(compiler->parser->vm, "Annotations only allowed on methods");
-    exit(1);
-}
-
 static void parseClassBody(Compiler *compiler) {
     bool methodHasAnnotation = false;
     
     while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
         if (match(compiler, TOKEN_USE)) {
             if (methodHasAnnotation) {
-                invalidAnnotation(compiler, "use");
                 consume(compiler, TOKEN_USE, "Annotations not allowed on `use` statements\n");
             }
 
