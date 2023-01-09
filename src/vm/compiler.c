@@ -1778,13 +1778,28 @@ static void parseClassAnnotations(Compiler *compiler) {
     } while (match(compiler, TOKEN_AT));
 }
 
+static void invalidAnnotation(Compiler *compiler, const char *type) {
+    printf("Annotations not allowed on \"%s\" statements\n", type);
+    runtimeError(compiler->parser->vm, "Annotations only allowed on methods");
+    exit(1);
+}
+
 static void parseClassBody(Compiler *compiler) {
     bool methodHasAnnotation = false;
-
+    
     while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
         if (match(compiler, TOKEN_USE)) {
+            if (methodHasAnnotation) {
+                invalidAnnotation(compiler, "use");
+                consume(compiler, TOKEN_USE, "Annotations not allowed on `use` statements\n");
+            }
+
             useStatement(compiler);
         } else if (match(compiler, TOKEN_VAR)) {
+            if (methodHasAnnotation) {
+                consume(compiler, TOKEN_VAR, "Annotations not allowed on `var` statements");
+            }
+
             consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
             consume(compiler, TOKEN_EQUAL, "Expect '=' after class variable identifier.");
@@ -1794,6 +1809,10 @@ static void parseClassBody(Compiler *compiler) {
 
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class variable declaration.");
         } else if (match(compiler, TOKEN_CONST)) {
+            if (methodHasAnnotation) {
+                consume(compiler, TOKEN_CONST, "Annotations not allowed on `const` statements");
+            }
+            
             consume(compiler, TOKEN_IDENTIFIER, "Expect class constant name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
             consume(compiler, TOKEN_EQUAL, "Expect '=' after class constant identifier.");
@@ -1825,6 +1844,10 @@ static void parseClassBody(Compiler *compiler) {
                 method(compiler, false, NULL, &methodHasAnnotation);
             }
         }
+    }
+
+    if (methodHasAnnotation) {
+        consume(compiler, TOKEN_CLASS, "Annotations only allowed on methods");
     }
 }
 
