@@ -1,0 +1,9 @@
+/**
+ * import.du
+ *
+ * General import file for all the uuid tests
+ */
+
+import "generate.du";
+import "generateRandom.du";
+import "generateTime.du";
