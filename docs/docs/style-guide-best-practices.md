@@ -82,7 +82,7 @@ Annotations, class and method, should be Pascal case.
 
 ## Control Flow
 
-Dictu provides a number of [control structures](https://dictu-lang.com/docs/control-flow/) allowing for robust functionality. These strcutures should be formatted as follows:
+Dictu provides a number of [control structures](https://dictu-lang.com/docs/control-flow/) allowing for robust functionality. These structures should be formatted as follows:
 
 ```cs
 if () {
