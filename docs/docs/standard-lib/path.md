@@ -26,12 +26,12 @@ import Path;
 
 ### Constants
 
-| Constant           | Description                          |
-|--------------------|--------------------------------------|
-| Path.delimiter     | System dependent path delimiter      |
-| Path.dirSeparator  | System dependent directory separator |
+| Constant          | Description                          |
+| ----------------- | ------------------------------------ |
+| Path.delimiter    | System dependent path delimiter      |
+| Path.dirSeparator | System dependent directory separator |
 
-### Path.basename(string)
+### Path.basename(String) -> String
 
 Returns the basename of the path.
 
@@ -39,7 +39,7 @@ Returns the basename of the path.
 Path.basename("/usr/bin"); // 'bin'
 ```
 
-### Path.dirname(string)
+### Path.dirname(String) -> String
 
 Returns the directory name of the path.
 
@@ -47,7 +47,7 @@ Returns the directory name of the path.
 Path.dirname("/usr/bin"); // '/usr'
 ```
 
-### Path.extname(string)
+### Path.extname(String) -> String
 
 Returns the extension portion of the path, including the dot.
 
@@ -56,7 +56,7 @@ Path.extname("/tmp/t.ext"); // '.ext'
 Path.extname("/tmp/t");     // ''
 ```
 
-### Path.isAbsolute(string)
+### Path.isAbsolute(String) -> Boolean
 
 Returns true if path is absolute, false otherwise.
 
@@ -65,7 +65,7 @@ Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
 
-### Path.realpath(string)
+### Path.realpath(String) -> Result
 
 Returns A result type and unwraps the canonicalized absolute pathname as a string.
 
@@ -75,7 +75,7 @@ Returns A result type and unwraps the canonicalized absolute pathname as a strin
 Path.realpath("/dir/../dir/../dir"); // '/dir'
 ```
 
-### Path.exists(string)
+### Path.exists(String) -> Boolean
 
 Returns a boolean whether a file exists at a given path.
 
@@ -83,7 +83,7 @@ Returns a boolean whether a file exists at a given path.
 Path.exists("some/path/to/a/file.du"); // true
 ```
 
-### Path.isDir(string)
+### Path.isDir(String) -> Boolean
 
 Checks whether a given path points to a directory or not. 
 
@@ -93,7 +93,7 @@ Checks whether a given path points to a directory or not.
 Path.isDir("/usr/bin/"); //true
 ```
 
-### Path.listDir(string)
+### Path.listDir(String) -> List
 
 Returns a list of strings containing the contents of the input path.
 
@@ -103,7 +103,7 @@ Returns a list of strings containing the contents of the input path.
 Path.listDir("/"); // ["bin", "dev", "home", "lib", ...]
 ```
 
-### Path.join(iterable)
+### Path.join(Iterable) -> String
 
 Returns the provided string arguments joined using the directory separator.
 

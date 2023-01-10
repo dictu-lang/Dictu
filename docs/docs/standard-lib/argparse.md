@@ -24,7 +24,7 @@ To make use of the Argparse module an import is required.
 from Argparse import Parse;
 ```
 
-### New Parser(string, string, string)
+### New Parser(String, String, String) -> Parser
 
 To create a new parser instance, call the `Parser` class with the 3 required string arguments; name, description, and user provided usage.
 
@@ -32,7 +32,7 @@ To create a new parser instance, call the `Parser` class with the 3 required str
 var parser = Parser("prog_name", "Program to do all the things", "");
 ```
 
-### Parse.addString(string, string, bool, string -> optional)
+### Parse.addString(String, String, Bool, string -> Optional)
 
 To add a new string argument, call the method below with at least the 3 required arguments; name, description, and boolean indicating the flag is required. A fourth argument can be passed to give the parser a custom name for the given flag.
 
@@ -40,7 +40,7 @@ To add a new string argument, call the method below with at least the 3 required
 parser.addString("-b", "birth month", false, "month");
 ```
 
-### Parser.addNumber(string, string, bool, string -> optional)
+### Parser.addNumber(String, String, Bool, String -> Optional)
 
 To add a new number argument, call the method below with at least the 3 required arguments; name, description, and boolean indicating the flag is required. A fourth argument can be passed to give the parser a custom name for the given flag.
 
@@ -48,7 +48,7 @@ To add a new number argument, call the method below with at least the 3 required
 parser.addNumber("--port", "server port", false);
 ```
 
-### Parser.addBool(string, string, bool, string -> optional)
+### Parser.addBool(String, String, Bool, String -> Optional)
 
 To add a new bool argument, call the method below with at least the 3 required arguments; name, description, and boolean indicating the flag is required. A fourth argument can be passed to give the parser a custom name for the given flag.
 
@@ -56,7 +56,7 @@ To add a new bool argument, call the method below with at least the 3 required a
 parser.addBool("-s", "run securely", true, "secure");
 ```
 
-### Parser.addList(string, string, bool, string -> optional)
+### Parser.addList(String, String, Bool, String -> Optional)
 
 To add a new list argument, call the method below with at least the 3 required arguments; name, description, and boolean indicating the flag is required. A fourth argument can be passed to give the parser a custom name for the given flag.
 
@@ -64,7 +64,7 @@ To add a new list argument, call the method below with at least the 3 required a
 parser.addList("-u", "active users", true, "users");
 ```
 
-### Parser.parse()
+### Parser.parse() -> Result
 
 The `parse` method needs to be called to process the given flags against the configured flags. `parse` returns a `Result` value that, on success, will need to be unwrapped to access an instance of the `Args` class.
 

@@ -33,7 +33,7 @@ import Datetime;
 | Datetime.SECONDS_IN_DAY    | The number of seconds in a day.    |
 | Datetime.SECONDS_IN_WEEK   | The number of seconds in a week.   |
 
-### Datetime.now()
+### Datetime.now() -> String
 
 Returns a human readable locale datetime string.
 
@@ -41,7 +41,7 @@ Returns a human readable locale datetime string.
 Datetime.now(); // Fri May 29 03:12:32 2020
 ```
 
-### Datetime.nowUTC()
+### Datetime.nowUTC() -> String
 
 Returns a human readable UTC datetime string.
 
@@ -82,7 +82,7 @@ Datetime.now(); // Fri May 29 02:12:32 2020
 | %%        | A literal %                                                                        |                          |
 
 
-### Datetime.strftime(string, number: time -> optional)
+### Datetime.strftime(String, Number: time -> Optional) -> String
 
 Returns a user-defined datetime formatted string, see [Datetime formats](#datetime-formats). `strftime` also takes an optional argument
 which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
@@ -95,7 +95,7 @@ var time = System.time();
 Datetime.strftime("Some point in time %H:%M:%S", time);
 ```
 
-### Datetime.strptime(string, string)
+### Datetime.strptime(String, String) -> Number
 
 Returns a number which is the number of seconds from epoch. `strptime` expects two parameters
 the first parameter being the date format, see [Datetime formats](#datetime-formats) and the second

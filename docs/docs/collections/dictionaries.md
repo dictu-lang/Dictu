@@ -48,7 +48,7 @@ var myDict = {"key": 1, "key1": true};
 var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
 ```
 
-### dict.get(string, value: default -> optional)
+### dict.get(String, value: default -> Optional) -> Dict
 
 Returns the dictionary value at the given key, or returns the default value if the key does
 not exist in the dictionary. If the key does not exist and no default is provided `nil` is returned.
@@ -61,7 +61,7 @@ myDict.get("unknown key", 10); // 10
 myDict.get("unknown key"); // nil
 ```
 
-### dict.keys()
+### dict.keys() -> List
 
 Returns a list of all of the dictionary keys.
 
@@ -71,7 +71,8 @@ var myDict = {1: 2, "test": 3};
 myDict.keys(); // [1, "test"]
 ```
 
-### dict.toString()
+### dict.toString() -> String
+
 Converts a dictionary to a string.
 
 ```cs
@@ -79,7 +80,7 @@ Converts a dictionary to a string.
 {"1": {1: "1", "1": 1}, 1: "1"}.toString(); // '{"1": {"1": 1, 1: "1"}, 1: "1"}'
 ```
 
-### dict.toBool()
+### dict.toBool() -> Boolean
 
 Converts a dictionary to a boolean. A dictionary is a "truthy" value when it has a length greater than 0.
 
@@ -91,7 +92,7 @@ x["test"] = 1;
 x.toBool(); // true
 ```
 
-### dict.len()
+### dict.len() -> Number
 
 Returns the length of the given dictionary.
 
@@ -99,7 +100,7 @@ Returns the length of the given dictionary.
 {1: "one", 2: "two", 3: "three"}.len(); // 3
 ```
 
-### dict.exists(string)
+### dict.exists(String) -> Boolean
 
 To check if a key exists within a dictionary use `.exists()`
 
@@ -109,7 +110,7 @@ var keyExists = myDict.exists("key"); // true
 var keyDoesNotExist = myDict.exists("unknown key"); // false
 ```
 
-### dict.remove(string)
+### dict.remove(String)
 
 To remove a key from a dictionary use `.remove()`.
 
@@ -132,7 +133,7 @@ var myDict1 = myDict.copy(); // Shallow copy
 var myDict2 = myDict.deepCopy(); // Deep copy
 ```
 
-### dict.forEach(func)
+### dict.forEach(Func)
 
 To run a function on every element in a dictionary we use `.forEach`. The callback function
 passed to `.forEach` expects two parameters which will be the key-value pair of the dictionary.
@@ -145,7 +146,7 @@ myDict.forEach(def (key, value) => {
 });
 ```
 
-### dict.merge(anotherDict)
+### dict.merge(Dict)
 
 To merge two dicts together we use `.merge`. This operation will take a shallow copy of the dict the `.merge` method
 was called on and add any items from the dictionary passed into the method. If there are keys that exist in both dictionaries

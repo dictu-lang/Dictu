@@ -22,13 +22,13 @@ Opening files is very easy in Dictu. Syntax is `with(<file name>, <open mode>) {
 as a constant for you, and is the file object which has just been opened. Dictu will handle closing the file for you and happens
 when you leave the with scope automatically. Note, the path when opening files is relative to the process **not** the current script running.
 
-| Open Mode | Description                                            |
-|-----------|--------------------------------------------------------|
-| r         | Opens a file for reading, the file must exist already. |
-| w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten. |
-| a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file. |
-| r+        | Opens a file for updating (read + write), the file must exist already. |
-| w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten |
+| Open Mode | Description                                                                                                                |
+| --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| r         | Opens a file for reading, the file must exist already.                                                                     |
+| w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten.                      |
+| a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file.               |
+| r+        | Opens a file for updating (read + write), the file must exist already.                                                     |
+| w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten       |
 | a+        | Opens a file for updating (read + write), if a file does not exist one is created, else appends text to the end of a file. |
 
 ```cs
@@ -77,7 +77,7 @@ with("test.txt", "r") {
 
 Another method which may come in useful when reading files is `seek()`. `seek()` allows you to move the file cursor so you can re-read a file, for example, without closing the file and reopening.
 
-### Seek(number, number: from  -> optional)
+### Seek(Number, Number: from  -> Optional)
 Both arguments passed to seek need to be of numeric value, however the `from` argument is optional.
 The first argument (offset) is the amount of characters you wish to move from the cursor position (negative offset for seeking backwards).
 The second argument (from) is for controlling where the cursor will be within the file, options are 0, 1 or 2.

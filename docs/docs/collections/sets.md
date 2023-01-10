@@ -24,7 +24,8 @@ var mySet = set("test", 10);
 print(mySet); // {10, "test"}
 ```
 
-### set.toString()
+### set.toString() -> String
+
 Converts a given set to a string.
 
 ```cs
@@ -41,7 +42,7 @@ set_a.toString(); // '{"two", "one"}');
 set_b.toString(); // '{2, 1}'
 ```
 
-### set.toBool()
+### set.toBool() -> Boolean
 
 Converts a set to a boolean. A set is a "truthy" value when it has a length greater than 0.
 
@@ -53,7 +54,7 @@ x.add("test");
 x.toBool(); // true
 ```
 
-### set.len()
+### set.len() -> Number
 
 Returns the length of the given set.
 
@@ -72,7 +73,7 @@ var mySet = set();
 mySet.add("Dictu!");
 ```
 
-### set.contains(value)
+### set.contains(value) -> Boolean
 
 To check if a set contains a value use `.contains()`
 
@@ -83,7 +84,7 @@ print(mySet.contains("Dictu!")); // true
 print(mySet.contains("Other!")); // false
 ```
 
-### set.containsAll(value)
+### set.containsAll(value) -> Boolean
 
 To check if a set contains all elements in a given list use `.containsAll()`
 
