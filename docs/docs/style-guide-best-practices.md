@@ -63,7 +63,7 @@ import Sockets;
 from Argparse import Parser;
 
 from "standard_model/particles.du" import Boson;
-from "standard_model/particles.du" import Quark;
+from "standard_model/colliders.du" import Cern; 
 ```
 
 Add 2 blank lines after imports are complete.
