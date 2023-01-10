@@ -165,7 +165,7 @@ myList.remove(1);
 print(myList); // [2]
 ```
 
-### list.pop(Number: index -> Optional)
+### list.pop(Number: index -> Optional) -> value
 
 To remove a value from a list, with an optional index, use `.pop()`
 
@@ -247,7 +247,7 @@ myList.forEach(def (value) => {
 });
 ```
 
-### list.map(Func)
+### list.map(Func) -> List
 
 Similar to `.foreach`, `.map` will run a function for each element within the list, however
 the difference is that `.map` returns a new list of values generated from the callback function.
@@ -258,7 +258,7 @@ parameter which is the current item in the list.
 print([1, 2, 3, 4, 5].map(def (x) => x * 2)); // [2, 4, 6, 8, 10]
 ```
 
-### list.filter(Func)
+### list.filter(Func) -> List
 
 To filter out values within a list we use `.filter()`. Filter expects a single parameter which is a callback
 and if the callback returns a truthy value it will be appended to the list. The callback itself also expects one
@@ -270,7 +270,7 @@ Note: `.filter()` returns a new list.
 print([1, 2, 3, 4, 5].filter(def (x) => x > 2)); // [3, 4, 5]
 ```
 
-### list.reduce(Func, value: initial -> Optional)
+### list.reduce(Func, value: initial -> Optional) -> List
 
 To reduce a list down to a single value we use `.reduce()`. Reduce expects at least one parameter which is a callback
 that will be executed on each item of the list. The value of the callback function is returned and saved for the next
@@ -286,7 +286,7 @@ By default the initial value for `.reduce()` is 0, however we can change this to
 print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
 ```
 
-### list.find(Func, Number: start -> Optional, Number: end -> Optional)
+### list.find(Func, Number: start -> Optional, Number: end -> Optional) -> List
 
 To find a single item within a list we use `.find()`. Find will search through each item in the list and as soon as the
 callback returns a truthy value, the item that satisfied the callback is returned, if none of the items satisfy the callback
