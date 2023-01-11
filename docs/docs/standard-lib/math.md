@@ -39,36 +39,36 @@ import Math;
 | Math.ln2     | The mathematical constant: 0.69314718055994 |
 | Math.ln10    | The mathematical constant: 2.30258509299404 |
 
-### Math.min(Iterable) -> Number
+### Math.min(...Number|List) -> Number
 
-Return the smallest number within the iterable
+Return the smallest number within the iterable.
 
 ```cs
 Math.min(1, 2, 3); // 1
 Math.min([1, 2, 3]); // 1
 ```
 
-### Math.max(Iterable) -> Number
+### Math.max(...Number|List) -> Number
 
-Return the largest number within the iterable
+Return the largest number within the iterable.
 
 ```cs
 Math.max(1, 2, 3); // 3
 Math.max([1, 2, 3]); // 3
 ```
 
-### Math.average(Iterable) -> Number
+### Math.average(...Number|List) -> Number
 
-Return the average of the iterable
+Return the average of the iterable.
 
 ```cs
 Math.average(1, 2, 3); // 2
 Math.average([1, 2, 3]); // 2
 ```
 
-### Math.sum(Iterable) -> Number
+### Math.sum(...Number|List) -> Number
 
-Return the sum of the iterable
+Return the sum of the iterable.
 
 ```cs
 Math.sum(1, 2, 3); // 6
@@ -77,7 +77,7 @@ Math.sum([1, 2, 3]); // 6
 
 ### Math.floor(Number) -> Number
 
-Return the largest integer less than or equal to the given input
+Return the largest integer less than or equal to the given input.
 
 ```cs
 Math.floor(17.4); // 17
@@ -87,7 +87,7 @@ Math.floor(17); // 17
 
 ### Math.round(Number) -> Number
 
-Round to the nearest integer
+Round to the nearest integer.
 
 ```cs
 Math.round(17.4); // 17
@@ -97,7 +97,7 @@ Math.round(17.5); // 18
 
 ### Math.ceil(Number) -> Number
 
-Returns smallest integer greater than or equal to given input
+Returns smallest integer greater than or equal to given input.
 
 ```cs
 Math.ceil(17.4); // 18
@@ -107,7 +107,7 @@ Math.ceil(17); // 17
 
 ### Math.abs(Number) -> Number
 
-Returns absolute value of a given number
+Returns absolute value of a given number.
 
 ```cs
 Math.abs(-10); // 10
@@ -117,7 +117,7 @@ Math.abs(-10.5); // 10.5
 
 ### Math.sqrt(Number) -> Number
 
-Returns the square root of a given number
+Returns the square root of a given number.
 
 ```cs
 Math.sqrt(25); // 5
@@ -126,7 +126,7 @@ Math.sqrt(100); // 10
 
 ### Math.sin(Number) -> Number
 
-Returns the sin value of a given number in radian
+Returns the sin value of a given number in radian.
 
 ```cs
 Math.sin(1); // 0.8414
@@ -135,7 +135,7 @@ Math.sin(50); // -0.2623
 
 ### Math.cos(Number) -> Number
 
-Returns the cos value of a given number in radian
+Returns the cos value of a given number in radian.
 
 ```cs
 Math.cos(1); // 0.5403
@@ -144,25 +144,25 @@ Math.cos(50); // 0.9649
 
 ### Math.tan(Number) -> Number
 
-Returns the tan value of a given number in radian
+Returns the tan value of a given number in radian.
 
 ```cs
 Math.tan(1); // 1.5574
 Math.tan(50); // -0.2719
 ```
 
-### Math.gcd(Iterable) -> Number
+### Math.gcd(...Number|List) -> Number
 
-Return the greatest common divisor of the numbers within the iterable
+Return the greatest common divisor of the numbers within the iterable.
 
 ```cs
 Math.gcd(32, 24, 12); // 4
 Math.gcd([32, 24, 12]); // 4
 ```
 
-### Math.lcm(Iterable) -> Number
+### Math.lcm(...Number|List) -> Number
 
-Return the least common multiple of the numbers within the iterable
+Return the least common multiple of the numbers within the iterable.
 
 ```cs
 Math.lcm(32, 24, 12); // 96
