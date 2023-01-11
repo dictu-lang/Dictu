@@ -49,7 +49,7 @@ import System;
 | System.W_OK     | Test for write permission.                                                                        |
 | System.R_OK     | Test for read permission.                                                                         |
 
-### System.mkdir(String, Number: mode -> Optional) -> Result
+### System.mkdir(String, Number: mode -> Optional) -> Result<Nil>
 
 Make directory.
 Returns a Result type and on success will unwrap nil.
@@ -69,9 +69,9 @@ var
 System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 ```
 
-### System.access(String, Number) -> Result
+### System.access(String, Number) -> Result<Nil>
 
-Check user's permissions for a file
+Check user's permissions for a file.
 Returns a Result type and on success will unwrap nil.
 
 **Note:** This method and the F_OK\|X_OK\|W_OK\|R_OK constants are not available on windows systems.
@@ -82,7 +82,7 @@ var F_OK = System.F_OK;
 System.access("/", F_OK);
 ```
 
-### System.rmdir(String) -> Result
+### System.rmdir(String) -> Result<Nil>
 
 Remove directory.
 
@@ -92,7 +92,7 @@ Returns a Result type and on success will unwrap nil.
 System.rmdir(dir);
 ```
 
-### System.remove(String) -> Result
+### System.remove(String) -> Result<Nil>
 
 Delete a file from filesystem.
 
@@ -162,7 +162,7 @@ Returns the effective group ID of the calling process as a number.
 System.getegid();
 ```
 
-### System.getCWD() -> Result
+### System.getCWD() -> Result<String>
 
 Get the current working directory of the Dictu process.
 
@@ -172,7 +172,7 @@ Returns a Result type and on success will unwrap a string.
 System.getCWD().unwrap(); // '/Some/Path/To/A/Directory'
 ```
 
-### System.setCWD(String) -> Result
+### System.setCWD(String) -> Result<Nil>
 
 Set current working directory of the Dictu process.
 
@@ -257,7 +257,7 @@ Note: This is not available on Windows systems.
 System.uname();
 ```
 
-### System.mkdirTemp(String: directory_template -> Optional) -> Result
+### System.mkdirTemp(String: directory_template -> Optional) -> Result<String>
 
 Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
 
@@ -272,7 +272,7 @@ System.mkdirTemp().unwrap(); // "VOO16s"
 System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
 ```
 
-### System.copyFile(String: src, String: dst) -> Result
+### System.copyFile(String: src, String: dst) -> Result<Nil>
 
 Copies the contents from the source file to the destination file.
 

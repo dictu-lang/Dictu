@@ -64,7 +64,7 @@ To add a new list argument, call the method below with at least the 3 required a
 parser.addList("-u", "active users", true, "users");
 ```
 
-### Parser.parse() -> Result
+### Parser.parse() -> Result<Dict>
 
 The `parse` method needs to be called to process the given flags against the configured flags. `parse` returns a `Result` value that, on success, will need to be unwrapped to access an instance of the `Args` class.
 

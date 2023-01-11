@@ -25,7 +25,7 @@ Note: Unlike SQLite and most other libraries, foreign keys **are** enabled by de
 import Sqlite;
 ```
 
-### Sqlite.connect(String: database) -> Result
+### Sqlite.connect(String: database) -> Result<SQLite>
 
 This opens a connection to a SQLite database. Returns a Result type and on success wraps an abstract SQLite type.
 
@@ -36,7 +36,7 @@ Sqlite.connect(":memory:").unwrap();
 Sqlite.connect("my/database/file.db").unwrap();
 ```
 
-### sqlite.execute(String: query, List: arguments -> Optional) -> Result
+### sqlite.execute(String: query, List: arguments -> Optional) -> Result<Nil>
 
 The `execute` method is ran on the abstract that is returned from `.connect` rather than the `Sqlite` module, hence the
 lower case `sqlite`. The `execute` method executes an SQL query and can return one of 3 values.

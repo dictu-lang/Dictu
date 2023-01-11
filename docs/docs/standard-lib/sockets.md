@@ -33,7 +33,7 @@ import Socket;
 | Socket.SOL_SOCKET   | SOL_SOCKET option level         |
 | Socket.SO_REUSEADDR | SO_REUSEADDR allow socket reuse |
 
-### Socket.create(Number: family, Number: type) -> Result
+### Socket.create(Number: family, Number: type) -> Result<Socket>
 
 Create a new socket object given a socket type and socket family.
 This will return a Result and unwrap to a new socket object in which the rest of the methods are ran on.
@@ -48,7 +48,7 @@ if (!result.success()) {
 var socket = result.unwrap();
 ```
 
-### socket.bind(String, Number) -> Result
+### socket.bind(String, Number) -> Result<Nil>
 
 This will bind a given socket object to an IP and port number.
 Returns a Result type and on success will unwrap to nil.
@@ -61,7 +61,7 @@ if (!result.success()) {
 }
 ```
 
-### socket.connect(String, Number) -> Result
+### socket.connect(String, Number) -> Result<Nil>
 
 This will connect to a socket on a given host and IP.
 Returns a Result type and on success will unwrap to nil.
@@ -74,7 +74,7 @@ if (!result.success()) {
 }
 ```
 
-### socket.listen(Number: backlog -> Optional) -> Result
+### socket.listen(Number: backlog -> Optional) -> Result<Nil>
 
 This will enable connections to be made. The backlog parameter specifies how many
 pending connections can be queued before they begin to get rejected. If left unspecified
@@ -89,7 +89,7 @@ if (!result.success()) {
 }
 ```
 
-### socket.accept() -> Result
+### socket.accept() -> Result<List>
 
 This will accept incoming connections. The socket must be bound to an address an listening for incoming connections before
 `.accept()` can be used.
@@ -101,7 +101,7 @@ var [client, address] = socket.accept().unwrap();
 print(address); // 127.0.0.1
 ```
 
-### socket.write(String) -> Result
+### socket.write(String) -> Result<Number>
 
 This will write data to the remote client socket.
 Returns a Result type and on success will unwrap to a number (amount of chars written).
@@ -114,7 +114,7 @@ if (!result.success()) {
 }
 ```
 
-### socket.recv(Number) -> Result
+### socket.recv(Number) -> Result<String>
 
 This will receive data from the client socket. The maximum amount of data to be read at a given
 time is specified by the argument passed to `recv()`. 
