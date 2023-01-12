@@ -1,5 +1,10 @@
 #!/usr/local/bin/dictu
 
+/*
+ * This script is used in the CI process to create RPMs, debs, and apks when
+ * new releases/tags are created.
+ */
+
 import Env;
 import Process;
 import System;
@@ -18,8 +23,7 @@ const PKG_FORMATS = ["deb", "rpm", "apk"],
             print(GIT_REV.unwrapError());
             System.exit(1);
         }
-        semver = GIT_REV.unwrap();
-        semver = semver.strip();
+        semver = GIT_REV.unwrap().strip();
         Env.set("SEMVER", semver);
     }
 
@@ -29,7 +33,7 @@ const PKG_FORMATS = ["deb", "rpm", "apk"],
         print("Creating {}...".format(pkgFmt));
 
         Process.run(["nfpm", "pkg", "-f", "ops/nfpm_amd64.yaml", "--packager", pkgFmt, "--target", "build"], true).match(
-            def(result) => {},
+            def(_) => _,
             def(error) => {
                 print(error);
                 System.exit(1);  
