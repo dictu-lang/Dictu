@@ -300,7 +300,7 @@ print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2)); // 4
 print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2, 3)); // nil
 ```
 
-### list.findIndex(Func, Number: start -> Optional, Number: end -> Optional)
+### list.findIndex(Func, Number: start -> Optional, Number: end -> Optional) -> Number
 
 To find a single item within a list we use `.findIndex()`. Find will search through each item in the list and as soon as the
 callback returns a truthy value, the index at which the item that satisfied the callback is returned, if none of the items satisfy the callback

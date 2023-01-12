@@ -77,7 +77,7 @@ with("test.txt", "r") {
 
 Another method which may come in useful when reading files is `seek()`. `seek()` allows you to move the file cursor so you can re-read a file, for example, without closing the file and reopening.
 
-### Seek(Number, Number: from  -> Optional)
+### file.Seek(Number, Number: from  -> Optional)
 Both arguments passed to seek need to be of numeric value, however the `from` argument is optional.
 The first argument (offset) is the amount of characters you wish to move from the cursor position (negative offset for seeking backwards).
 The second argument (from) is for controlling where the cursor will be within the file, options are 0, 1 or 2.

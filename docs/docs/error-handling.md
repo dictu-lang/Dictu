@@ -80,7 +80,7 @@ Check if a Result type is in a SUCCESS state, returns a boolean.
 "number".toNumber().success(); // false
 ```
 
-### .match(Func: success, Func: error)
+### .match(Func: success, Func: error) -> value
 
 `.match` takes two callbacks that are ran depending upon the status of the result type. The callbacks passed to
 match must both have one parameter each, on success the unwrapped value is passed as the first argument and on
@@ -96,7 +96,7 @@ var number = "10".toNumber().match(
     }
 );
 
-print(Number); // 10
+print(number); // 10
 
 var number = "number".toNumber().match(
     def (result) => result,
@@ -109,7 +109,7 @@ var number = "number".toNumber().match(
 print(number);
 ```
 
-### .matchWrap(Func: success, Func: error)
+### .matchWrap(Func: success, Func: error) -> Result
 
 `.matchWrap` is exactly the same as `.wrap` however, the value returned from either callback
 function is implicitly wrapped back up into a Result object. This allows us to easily deal
