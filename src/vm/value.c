@@ -354,7 +354,7 @@ char *valueToString(DictuVM *vm, Value value) {
         return objectToString(vm, value);
     }
 
-    char *unknown = ALLOCATE(vm, char, 8);
+    char *unknown = ALLOCATE(vm, char, sizeof(char) * 8);
     snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }
