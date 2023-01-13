@@ -73,6 +73,7 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
         va_start(args, format);
         vfprintf(stderr, format, args);
         fputs("\n\n", stderr);
+        FREE(vm, char, args);
         va_end(args);
     }
 
@@ -802,7 +803,6 @@ static void setReplVar(DictuVM *vm, Value value) {
 }
 
 static DictuInterpretResult run(DictuVM *vm) {
-
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -1823,7 +1823,6 @@ static DictuInterpretResult run(DictuVM *vm) {
                         push(vm, v);
                         DISPATCH();
                     }
-
                     RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
                 }
 
