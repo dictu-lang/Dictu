@@ -77,7 +77,7 @@ typedef struct {
     Value *values;
 } ValueArray;
 
-bool valuesEqual(Value a, Value b);
+bool valuesEqual(DictuVM *vm, Value a, Value b);
 
 void initValueArray(ValueArray *array);
 
@@ -89,11 +89,11 @@ void grayDict(DictuVM *vm, ObjDict *dict);
 
 bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value);
 
-bool dictGet(ObjDict *dict, Value key, Value *value);
+bool dictGet(DictuVM *vm, ObjDict *dict, Value key, Value *value);
 
 bool dictDelete(DictuVM *vm, ObjDict *dict, Value key);
 
-bool setGet(ObjSet *set, Value value);
+bool setGet(DictuVM *vm, ObjSet *set, Value value);
 
 bool setInsert(DictuVM *vm, ObjSet *set, Value value);
 
@@ -101,12 +101,12 @@ bool setDelete(DictuVM *vm, ObjSet *set, Value value);
 
 void graySet(DictuVM *vm, ObjSet *set);
 
-char *valueToString(Value value);
+char *valueToString(DictuVM *vm, Value value);
 
 char *valueTypeToString(DictuVM *vm, Value value, int *length);
 
-void printValue(Value value);
+void printValue(DictuVM *vm, Value value);
 
-void printValueError(Value value);
+void printValueError(DictuVM *vm, Value value);
 
 #endif

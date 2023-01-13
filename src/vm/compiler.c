@@ -1615,7 +1615,7 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool *ha
 
             if (strcmp(AS_STRING(entry->key)->chars, "__annotatedMethodName") == 0) {
                 Value existingDict;
-                dictGet(compiler->methodAnnotations, entry->key, &existingDict);
+                dictGet(vm, compiler->methodAnnotations, entry->key, &existingDict);
                 ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
                 push(vm, OBJ_VAL(methodKey));
                 dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);

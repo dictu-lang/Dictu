@@ -56,7 +56,7 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
     for (int j = 1; j < argCount + 1; j++) {
         Value value = args[j];
         if (!IS_STRING(value))
-            replaceStrings[j - 1] = valueToString(value);
+            replaceStrings[j - 1] = valueToString(vm, value);
         else {
             ObjString *strObj = AS_STRING(value);
             char *str = malloc(strObj->length + 1);

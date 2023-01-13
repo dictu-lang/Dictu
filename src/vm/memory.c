@@ -45,7 +45,7 @@ void grayObject(DictuVM *vm, Obj *object) {
 
 #ifdef DEBUG_TRACE_GC
     printf("%p gray ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printValue(vm, OBJ_VAL(object));
     printf("\n");
 #endif
 
@@ -77,7 +77,7 @@ static void grayArray(DictuVM *vm, ValueArray *array) {
 static void blackenObject(DictuVM *vm, Obj *object) {
 #ifdef DEBUG_TRACE_GC
     printf("%p blacken ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printValue(vm, OBJ_VAL(object));
     printf("\n");
 #endif
 

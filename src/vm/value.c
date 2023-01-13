@@ -46,9 +46,10 @@ static inline uint32_t hashBits(uint64_t hash) {
     return (uint32_t) (hash & 0x3fffffff);
 }
 
-static uint32_t hashObject(Obj *object) {
+static uint32_t hashObject(DictuVM *vm, Obj *object) { 
     switch (object->type) {
         case OBJ_STRING: {
+            UNUSED(vm);
             return ((ObjString *) object)->hash;
         }
 
@@ -56,7 +57,7 @@ static uint32_t hashObject(Obj *object) {
         default: {
 #ifdef DEBUG_PRINT_CODE
             printf("Object: ");
-            printValue(OBJ_VAL(object));
+            printValue(vm, OBJ_VAL(object));
             printf(" not hashable!\n");
             exit(1);
 #endif
@@ -65,19 +66,19 @@ static uint32_t hashObject(Obj *object) {
     }
 }
 
-static uint32_t hashValue(Value value) {
+static uint32_t hashValue(DictuVM *vm, Value value) {
     if (IS_OBJ(value)) {
-        return hashObject(AS_OBJ(value));
+        return hashObject(vm, AS_OBJ(value));
     }
 
     return hashBits(value);
 }
 
-bool dictGet(ObjDict *dict, Value key, Value *value) {
+bool dictGet(DictuVM *vm, ObjDict *dict, Value key, Value *value) {
     if (dict->count == 0) return false;
 
     DictItem *entry;
-    uint32_t index = hashValue(key) & dict->capacityMask;
+    uint32_t index = hashValue(vm, key) & dict->capacityMask;
     uint32_t psl = 0;
 
     for (;;) {
@@ -87,7 +88,7 @@ bool dictGet(ObjDict *dict, Value key, Value *value) {
             return false;
         }
 
-        if (valuesEqual(key, entry->key)) {
+        if (valuesEqual(vm, key, entry->key)) {
             break;
         }
 
@@ -131,7 +132,7 @@ bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value) {
         adjustDictCapacity(vm, dict, capacityMask);
     }
 
-    uint32_t index = hashValue(key) & dict->capacityMask;
+    uint32_t index = hashValue(vm, key) & dict->capacityMask;
     DictItem *bucket;
     bool isNewKey = false;
 
@@ -147,7 +148,7 @@ bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value) {
             isNewKey = true;
             break;
         } else {
-            if (valuesEqual(key, bucket->key)) {
+            if (valuesEqual(vm, key, bucket->key)) {
                 break;
             }
 
@@ -172,7 +173,7 @@ bool dictDelete(DictuVM *vm, ObjDict *dict, Value key) {
     if (dict->count == 0) return false;
 
     int capacityMask = dict->capacityMask;
-    uint32_t index = hashValue(key) & capacityMask;
+    uint32_t index = hashValue(vm, key) & capacityMask;
     uint32_t psl = 0;
     DictItem *entry;
 
@@ -183,7 +184,7 @@ bool dictDelete(DictuVM *vm, ObjDict *dict, Value key) {
             return false;
         }
 
-        if (valuesEqual(key, entry->key)) {
+        if (valuesEqual(vm, key, entry->key)) {
             break;
         }
 
@@ -232,9 +233,9 @@ void grayDict(DictuVM *vm, ObjDict *dict) {
 }
 
 
-static SetItem *findSetEntry(SetItem *entries, int capacityMask,
+static SetItem *findSetEntry(DictuVM *vm, SetItem *entries, int capacityMask,
                              Value value) {
-    uint32_t index = hashValue(value) & capacityMask;
+    uint32_t index = hashValue(vm, value) & capacityMask;
     SetItem *tombstone = NULL;
 
     for (;;) {
@@ -248,7 +249,7 @@ static SetItem *findSetEntry(SetItem *entries, int capacityMask,
                 // We found a tombstone.
                 if (tombstone == NULL) tombstone = entry;
             }
-        } else if (valuesEqual(value, entry->value)) {
+        } else if (valuesEqual(vm, value, entry->value)) {
             // We found the key.
             return entry;
         }
@@ -257,10 +258,10 @@ static SetItem *findSetEntry(SetItem *entries, int capacityMask,
     }
 }
 
-bool setGet(ObjSet *set, Value value) {
+bool setGet(DictuVM *vm, ObjSet *set, Value value) {
     if (set->count == 0) return false;
 
-    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    SetItem *entry = findSetEntry(vm, set->entries, set->capacityMask, value);
     if (IS_EMPTY(entry->value) || entry->deleted) return false;
 
     return true;
@@ -279,7 +280,7 @@ static void adjustSetCapacity(DictuVM *vm, ObjSet *set, int capacityMask) {
         SetItem *entry = &set->entries[i];
         if (IS_EMPTY(entry->value) || entry->deleted) continue;
 
-        SetItem *dest = findSetEntry(entries, capacityMask, entry->value);
+        SetItem *dest = findSetEntry(vm, entries, capacityMask, entry->value);
         dest->value = entry->value;
         set->count++;
     }
@@ -296,7 +297,7 @@ bool setInsert(DictuVM *vm, ObjSet *set, Value value) {
         adjustSetCapacity(vm, set, capacityMask);
     }
 
-    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    SetItem *entry = findSetEntry(vm, set->entries, set->capacityMask, value);
     bool isNewKey = IS_EMPTY(entry->value) || entry->deleted;
     entry->value = value;
     entry->deleted = false;
@@ -309,7 +310,7 @@ bool setInsert(DictuVM *vm, ObjSet *set, Value value) {
 bool setDelete(DictuVM *vm, ObjSet *set, Value value) {
     if (set->count == 0) return false;
 
-    SetItem *entry = findSetEntry(set->entries, set->capacityMask, value);
+    SetItem *entry = findSetEntry(vm, set->entries, set->capacityMask, value);
     if (IS_EMPTY(entry->value)) return false;
 
     // Place a tombstone in the entry.
@@ -333,7 +334,7 @@ void graySet(DictuVM *vm, ObjSet *set) {
 }
 
 // Calling function needs to free memory
-char *valueToString(Value value) {
+char *valueToString(DictuVM *vm, Value value) {
     if (IS_BOOL(value)) {
         char *str = AS_BOOL(value) ? "true" : "false";
         char *boolString = malloc(sizeof(char) * (strlen(str) + 1));
@@ -350,10 +351,10 @@ char *valueToString(Value value) {
         snprintf(numberString, numberStringLength, "%.15g", number);
         return numberString;
     } else if (IS_OBJ(value)) {
-        return objectToString(value);
+        return objectToString(vm, value);
     }
 
-    char *unknown = malloc(sizeof(char) * 8);
+    char *unknown = ALLOCATE(vm, char, sizeof(char) * 8);
     snprintf(unknown, 8, "%s", "unknown");
     return unknown;
 }
@@ -449,19 +450,19 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
 #undef CONVERT_VARIABLE
 }
 
-void printValue(Value value) {
-    char *output = valueToString(value);
+void printValue(DictuVM *vm, Value value) {
+    char *output = valueToString(vm, value);
     printf("%s", output);
     free(output);
 }
 
-void printValueError(Value value) {
-    char *output = valueToString(value);
+void printValueError(DictuVM *vm, Value value) {
+    char *output = valueToString(vm, value);
     fprintf(stderr, "%s", output);
     free(output);
 }
 
-static bool listComparison(Value a, Value b) {
+static bool listComparison(DictuVM *vm, Value a, Value b) {
     ObjList *list = AS_LIST(a);
     ObjList *listB = AS_LIST(b);
 
@@ -469,14 +470,14 @@ static bool listComparison(Value a, Value b) {
         return false;
 
     for (int i = 0; i < list->values.count; ++i) {
-        if (!valuesEqual(list->values.values[i], listB->values.values[i]))
+        if (!valuesEqual(vm, list->values.values[i], listB->values.values[i]))
             return false;
     }
 
     return true;
 }
 
-static bool dictComparison(Value a, Value b) {
+static bool dictComparison(DictuVM *vm, Value a, Value b) {
     ObjDict *dict = AS_DICT(a);
     ObjDict *dictB = AS_DICT(b);
 
@@ -497,13 +498,13 @@ static bool dictComparison(Value a, Value b) {
 
         Value value;
         // Check if key from dict A is in dict B
-        if (!dictGet(dictB, item->key, &value)) {
+        if (!dictGet(vm, dictB, item->key, &value)) {
             // Key doesn't exist
             return false;
         }
 
         // Key exists
-        if (!valuesEqual(item->value, value)) {
+        if (!valuesEqual(vm, item->value, value)) {
             // Values don't equal
             return false;
         }
@@ -512,7 +513,7 @@ static bool dictComparison(Value a, Value b) {
     return true;
 }
 
-static bool setComparison(Value a, Value b) {
+static bool setComparison(DictuVM *vm, Value a, Value b) {
     ObjSet *set = AS_SET(a);
     ObjSet *setB = AS_SET(b);
 
@@ -532,7 +533,7 @@ static bool setComparison(Value a, Value b) {
             continue;
 
         // Check if key from dict A is in dict B
-        if (!setGet(setB, item->value)) {
+        if (!setGet(vm, setB, item->value)) {
             // Key doesn't exist
             return false;
         }
@@ -541,21 +542,21 @@ static bool setComparison(Value a, Value b) {
     return true;
 }
 
-bool valuesEqual(Value a, Value b) {
+bool valuesEqual(DictuVM *vm, Value a, Value b) { 
     if (IS_OBJ(a) && IS_OBJ(b)) {
         if (AS_OBJ(a)->type != AS_OBJ(b)->type) return false;
 
         switch (AS_OBJ(a)->type) {
             case OBJ_LIST: {
-                return listComparison(a, b);
+                return listComparison(vm, a, b);
             }
 
             case OBJ_DICT: {
-                return dictComparison(a, b);
+                return dictComparison(vm, a, b);
             }
 
             case OBJ_SET: {
-                return setComparison(a, b);
+                return setComparison(vm, a, b);
             }
 
                 // Pass through

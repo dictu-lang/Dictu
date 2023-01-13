@@ -6,7 +6,7 @@ static Value toStringSet(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = setToString(args[0]);
+    char *valueString = setToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
     free(valueString);
@@ -50,7 +50,7 @@ static Value removeSetItem(DictuVM *vm, int argCount, Value *args) {
     ObjSet *set = AS_SET(args[0]);
 
     if (!setDelete(vm, set, args[1])) {
-        char *str = valueToString(args[1]);
+        char *str = valueToString(vm, args[1]);
         runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", str);
         free(str);
         return EMPTY_VAL;
@@ -67,7 +67,7 @@ static Value containsSetItem(DictuVM *vm, int argCount, Value *args) {
 
     ObjSet *set = AS_SET(args[0]);
 
-    return setGet(set, args[1]) ? TRUE_VAL : FALSE_VAL;
+    return setGet(vm, set, args[1]) ? TRUE_VAL : FALSE_VAL;
 }
 
 static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
@@ -76,7 +76,7 @@ static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if(!IS_LIST(args[1])){
+    if (!IS_LIST(args[1])){
         runtimeError(vm, "containsAll() argument must be a list");
         return EMPTY_VAL;
     }
@@ -85,8 +85,8 @@ static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
     ObjList *list = AS_LIST(args[1]);
 
     int listSize = list->values.count;
-    for(int index=0;index<listSize;index++){
-        if(setGet(set, list->values.values[index])==false){
+    for (int index=0;index<listSize;index++){
+        if (setGet(vm, set, list->values.values[index])==false){
             return FALSE_VAL;
         }
     }

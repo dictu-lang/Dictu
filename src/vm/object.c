@@ -262,7 +262,7 @@ ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot) {
     return upvalue;
 }
 
-char *listToString(Value value) {
+char *listToString(DictuVM *vm, Value value) { 
     int size = 50;
     ObjList *list = AS_LIST(value);
     char *listString = malloc(sizeof(char) * size);
@@ -283,7 +283,7 @@ char *listToString(Value value) {
             element = s->chars;
             elementSize = s->length;
         } else {
-            element = valueToString(listValue);
+            element = valueToString(vm, listValue);
             elementSize = strlen(element);
         }
 
@@ -330,7 +330,7 @@ char *listToString(Value value) {
     return listString;
 }
 
-char *dictToString(Value value) {
+char *dictToString(DictuVM *vm, Value value) {
    int count = 0;
    int size = 50;
    ObjDict *dict = AS_DICT(value);
@@ -354,7 +354,7 @@ char *dictToString(Value value) {
            key = s->chars;
            keySize = s->length;
        } else {
-           key = valueToString(item->key);
+           key = valueToString(vm, item->key);
            keySize = strlen(key);
        }
 
@@ -397,7 +397,7 @@ char *dictToString(Value value) {
            element = s->chars;
            elementSize = s->length;
        } else {
-           element = valueToString(item->value);
+           element = valueToString(vm, item->value);
            elementSize = strlen(element);
        }
 
@@ -444,7 +444,7 @@ char *dictToString(Value value) {
    return dictString;
 }
 
-char *setToString(Value value) {
+char *setToString(DictuVM *vm, Value value) {
     int count = 0;
     int size = 50;
     ObjSet *set = AS_SET(value);
@@ -467,7 +467,7 @@ char *setToString(Value value) {
             element = s->chars;
             elementSize = s->length;
         } else {
-            element = valueToString(item->value);
+            element = valueToString(vm, item->value);
             elementSize = strlen(element);
         }
 
@@ -532,7 +532,7 @@ char *instanceToString(Value value) {
     return instanceString;
 }
 
-char *objectToString(Value value) {
+char *objectToString(DictuVM *vm, Value value) {
     switch (OBJ_TYPE(value)) {
         case OBJ_MODULE: {
             ObjModule *module = AS_MODULE(value);
@@ -662,15 +662,15 @@ char *objectToString(Value value) {
         }
 
         case OBJ_LIST: {
-            return listToString(value);
+            return listToString(vm, value);
         }
 
         case OBJ_DICT: {
-            return dictToString(value);
+            return dictToString(vm, value);
         }
 
         case OBJ_SET: {
-            return setToString(value);
+            return setToString(vm, value);
         }
 
         case OBJ_UPVALUE: {

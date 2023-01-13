@@ -146,7 +146,7 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
                         memcpy(key, "null", 4);
                         key[4] = '\0';
                     } else {
-                        key = valueToString(entry->key);
+                        key = valueToString(vm, entry->key);
                     }
 
                     json_object_push(

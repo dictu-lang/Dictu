@@ -16,7 +16,7 @@ static Value toStringDict(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = dictToString(args[0]);
+    char *valueString = dictToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
     free(valueString);
@@ -76,7 +76,7 @@ static Value getDictItem(DictuVM *vm, int argCount, Value *args) {
     ObjDict *dict = AS_DICT(args[0]);
 
     Value ret;
-    if (dictGet(dict, args[1], &ret)) {
+    if (dictGet(vm, dict, args[1], &ret)) {
         return ret;
     }
 
@@ -100,7 +100,7 @@ static Value removeDictItem(DictuVM *vm, int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    char *str = valueToString(args[1]);
+    char *str = valueToString(vm, args[1]);
     runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", str);
     free(str);
 
@@ -125,7 +125,7 @@ static Value dictItemExists(DictuVM *vm, int argCount, Value *args) {
     }
 
     Value v;
-    if (dictGet(dict, args[1], &v)) {
+    if (dictGet(vm, dict, args[1], &v)) {
         return TRUE_VAL;
     }
 

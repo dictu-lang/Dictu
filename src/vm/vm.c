@@ -886,7 +886,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 printf("          ");                                                             \
                 for (Value *stackValue = vm->stack; stackValue < vm->stackTop; stackValue++) {    \
                     printf("[ ");                                                                 \
-                    printValue(*stackValue);                                                      \
+                    printValue(vm, *stackValue);                                                      \
                     printf(" ]");                                                                 \
                 }                                                                                 \
                 printf("\n");                                                                     \
@@ -945,7 +945,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
-                printValue(v);
+                printValue(vm, v);
                 printf("\n");
             }
             pop(vm);
@@ -1415,7 +1415,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(EQUAL): {
             Value b = pop(vm);
             Value a = pop(vm);
-            push(vm, BOOL_VAL(valuesEqual(a, b)));
+            push(vm, BOOL_VAL(valuesEqual(vm, a, b)));
             DISPATCH();
         }
 
@@ -1519,7 +1519,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             Value switchValue = peek(vm, count + 1);
             Value caseValue = pop(vm);
             for (int i = 0; i < count; ++i) {
-                if (valuesEqual(switchValue, caseValue)) {
+                if (valuesEqual(vm, switchValue, caseValue)) {
                     i++;
                     while(i <= count) {
                         pop(vm);
@@ -1536,7 +1536,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(COMPARE_JUMP):{
             uint16_t offset = READ_SHORT();
             Value a = pop(vm);
-            if (!valuesEqual(peek(vm,0), a)) {
+            if (!valuesEqual(vm, peek(vm,0), a)) {
                 ip += offset;
             } else {
                 // switch expression.
@@ -1819,12 +1819,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                     Value v;
                     pop(vm);
                     pop(vm);
-                    if (dictGet(dict, indexValue, &v)) {
+                    if (dictGet(vm, dict, indexValue, &v)) {
                         push(vm, v);
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
                 }
 
                 default: {
@@ -1924,8 +1924,8 @@ static DictuInterpretResult run(DictuVM *vm) {
                     }
 
                     Value dictValue;
-                    if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    if (!dictGet(vm, dict, indexValue, &dictValue)) {
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(vm, indexValue));
                     }
 
                     vm->stackTop[-1] = dictValue;

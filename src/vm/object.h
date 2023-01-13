@@ -212,7 +212,7 @@ typedef struct sUpvalue {
 typedef struct {
     Obj obj;
     ObjFunction *function;
-    ObjUpvalue **upvalues;
+    ObjUpvalue **upvalues; 
     int upvalueCount;
 } ObjClosure;
 
@@ -287,12 +287,12 @@ Value newResultError(DictuVM *vm, char *errorMsg);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 
-char *setToString(Value value);
-char *dictToString(Value value);
-char *listToString(Value value);
+char *setToString(DictuVM *vm, Value value);
+char *dictToString(DictuVM *vm, Value value);
+char *listToString(DictuVM *vm, Value value);
 char *classToString(Value value);
 char *instanceToString(Value value);
-char *objectToString(Value value);
+char *objectToString(DictuVM *vm, Value value);
 
 static inline bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;

@@ -5,19 +5,19 @@
 #include "object.h"
 #include "value.h"
 
-void disassembleChunk(Chunk *chunk, const char *name) {
+void disassembleChunk(DictuVM *vm, Chunk *chunk, const char *name) {
     printf("== %s ==\n", name);
 
     for (int offset = 0; offset < chunk->count;) {
-        offset = disassembleInstruction(chunk, offset);
+        offset = disassembleInstruction(vm, chunk, offset);
     }
 }
 
-static int constantInstruction(const char *name, Chunk *chunk,
+static int constantInstruction(DictuVM *vm, const char *name, Chunk *chunk,
                                int offset) {
     uint8_t constant = chunk->code[offset + 1];
     printf("%-16s %4d '", name, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(vm, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 2;
 }
@@ -29,47 +29,47 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     return offset + 3;
 }
 
-static int invokeInstruction(const char* name, Chunk* chunk,
+static int invokeInstruction(DictuVM *vm, const char* name, Chunk* chunk,
                              int offset) {
     uint8_t argCount = chunk->code[offset + 1];
     uint8_t constant = chunk->code[offset + 2];
     uint8_t unpack = chunk->code[offset + 3];
     printf("%-16s (%d args) %4d unpack - %d '", name, argCount, constant, unpack);
-    printValue(chunk->constants.values[constant]);
+    printValue(vm, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 4;
 }
 
-static int importFromInstruction(const char *name, Chunk *chunk,
+static int importFromInstruction(DictuVM *vm, const char *name, Chunk *chunk,
                                int offset) {
     uint8_t constant = chunk->code[offset + 1];
     uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s %4d '", name, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(vm, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 1 + argCount;
 }
 
-static int builtinImportInstruction(const char* name, Chunk* chunk,
+static int builtinImportInstruction(DictuVM *vm, const char* name, Chunk* chunk,
                              int offset) {
     uint8_t module = chunk->code[offset + 2];
     printf("%-16s '", name);
-    printValue(chunk->constants.values[module]);
+    printValue(vm, chunk->constants.values[module]);
     printf("'\n");
     return offset + 3;
 }
 
-static int builtinFromImportInstruction(const char* name, Chunk* chunk,
+static int builtinFromImportInstruction(DictuVM *vm, const char* name, Chunk* chunk,
                                     int offset) {
     uint8_t module = chunk->code[offset + 1];
     uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s '", name);
-    printValue(chunk->constants.values[module]);
+    printValue(vm, chunk->constants.values[module]);
     printf("'\n");
     return offset + 2 + argCount;
 }
 
-static int classInstruction(const char* name, Chunk* chunk,
+static int classInstruction(DictuVM *vm, const char* name, Chunk* chunk,
                             int offset) {
     uint8_t type = chunk->code[offset + 1];
     uint8_t constant = chunk->code[offset + 2];
@@ -99,7 +99,7 @@ static int classInstruction(const char* name, Chunk* chunk,
 
 
     printf("%-16s (Type: %s) %4d '", name, typeString, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(vm, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 3;
 }
@@ -123,7 +123,7 @@ static int jumpInstruction(const char *name, int sign, Chunk *chunk,
     return offset + 3;
 }
 
-int disassembleInstruction(Chunk *chunk, int offset) {
+int disassembleInstruction(DictuVM *vm, Chunk *chunk, int offset) { 
     printf("%04d ", offset);
     if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
         printf("   | ");
@@ -134,7 +134,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     uint8_t instruction = chunk->code[offset];
     switch (instruction) {
         case OP_CONSTANT:
-            return constantInstruction("OP_CONSTANT", chunk, offset);
+            return constantInstruction(vm, "OP_CONSTANT", chunk, offset);
         case OP_NIL:
             return simpleInstruction("OP_NIL", offset);
         case OP_TRUE:
@@ -150,39 +150,39 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_SET_LOCAL:
             return byteInstruction("OP_SET_LOCAL", chunk, offset);
         case OP_GET_GLOBAL:
-            return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+            return constantInstruction(vm, "OP_GET_GLOBAL", chunk, offset);
         case OP_GET_MODULE:
-            return constantInstruction("OP_GET_MODULE", chunk, offset);
+            return constantInstruction(vm, "OP_GET_MODULE", chunk, offset);
         case OP_DEFINE_MODULE:
-            return constantInstruction("OP_DEFINE_MODULE", chunk, offset);
+            return constantInstruction(vm, "OP_DEFINE_MODULE", chunk, offset);
         case OP_DEFINE_OPTIONAL:
-            return constantInstruction("OP_DEFINE_OPTIONAL", chunk, offset);
+            return constantInstruction(vm, "OP_DEFINE_OPTIONAL", chunk, offset);
         case OP_SET_MODULE:
-            return constantInstruction("OP_SET_MODULE", chunk, offset);
+            return constantInstruction(vm, "OP_SET_MODULE", chunk, offset);
         case OP_GET_UPVALUE:
             return byteInstruction("OP_GET_UPVALUE", chunk, offset);
         case OP_SET_UPVALUE:
             return byteInstruction("OP_SET_UPVALUE", chunk, offset);
         case OP_GET_PROPERTY:
-            return constantInstruction("OP_GET_PROPERTY", chunk, offset);
+            return constantInstruction(vm, "OP_GET_PROPERTY", chunk, offset);
         case OP_GET_PRIVATE_PROPERTY:
-            return constantInstruction("OP_GET_PRIVATE_PROPERTY", chunk, offset);
+            return constantInstruction(vm, "OP_GET_PRIVATE_PROPERTY", chunk, offset);
         case OP_GET_PROPERTY_NO_POP:
-            return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
+            return constantInstruction(vm, "OP_GET_PROPERTY_NO_POP", chunk, offset);
         case OP_GET_PRIVATE_PROPERTY_NO_POP:
-            return constantInstruction("OP_GET_PRIVATE_PROPERTY_NO_POP", chunk, offset);
+            return constantInstruction(vm, "OP_GET_PRIVATE_PROPERTY_NO_POP", chunk, offset);
         case OP_SET_PROPERTY:
-            return constantInstruction("OP_SET_PROPERTY", chunk, offset);
+            return constantInstruction(vm, "OP_SET_PROPERTY", chunk, offset);
         case OP_SET_PRIVATE_PROPERTY:
-            return constantInstruction("OP_SET_PRIVATE_PROPERTY", chunk, offset);
+            return constantInstruction(vm, "OP_SET_PRIVATE_PROPERTY", chunk, offset);
         case OP_SET_CLASS_VAR:
-            return constantInstruction("OP_SET_CLASS_VAR", chunk, offset);
+            return constantInstruction(vm, "OP_SET_CLASS_VAR", chunk, offset);
         case OP_SET_INIT_PROPERTIES:
-            return constantInstruction("OP_SET_INIT_PROPERTIES", chunk, offset);
+            return constantInstruction(vm, "OP_SET_INIT_PROPERTIES", chunk, offset);
         case OP_SET_PRIVATE_INIT_PROPERTIES:
-            return constantInstruction("OP_SET_PRIVATE_INIT_PROPERTIES", chunk, offset);
+            return constantInstruction(vm, "OP_SET_PRIVATE_INIT_PROPERTIES", chunk, offset);
         case OP_GET_SUPER:
-            return constantInstruction("OP_GET_SUPER", chunk, offset);
+            return constantInstruction(vm, "OP_GET_SUPER", chunk, offset);
         case OP_EQUAL:
             return simpleInstruction("OP_EQUAL", offset);
         case OP_GREATER:
@@ -224,15 +224,15 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_LOOP:
             return jumpInstruction("OP_LOOP", -1, chunk, offset);
         case OP_IMPORT:
-            return constantInstruction("OP_IMPORT", chunk, offset);
+            return constantInstruction(vm, "OP_IMPORT", chunk, offset);
         case OP_IMPORT_BUILTIN:
-            return builtinImportInstruction("OP_IMPORT_BUILTIN", chunk, offset);
+            return builtinImportInstruction(vm, "OP_IMPORT_BUILTIN", chunk, offset);
         case OP_IMPORT_BUILTIN_VARIABLE:
-            return builtinFromImportInstruction("OP_IMPORT_BUILTIN_VARIABLE", chunk, offset);
+            return builtinFromImportInstruction(vm, "OP_IMPORT_BUILTIN_VARIABLE", chunk, offset);
         case OP_IMPORT_VARIABLE:
             return simpleInstruction("OP_IMPORT_VARIABLE", offset);
         case OP_IMPORT_FROM:
-            return importFromInstruction("OP_IMPORT_FROM", chunk, offset);
+            return importFromInstruction(vm, "OP_IMPORT_FROM", chunk, offset);
         case OP_IMPORT_END:
             return simpleInstruction("OP_IMPORT_END", offset);
         case OP_NEW_LIST:
@@ -252,16 +252,16 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_CALL:
             return callInstruction("OP_CALL", chunk, offset);
         case OP_INVOKE_INTERNAL:
-            return invokeInstruction("OP_INVOKE_INTERNAL", chunk, offset);
+            return invokeInstruction(vm, "OP_INVOKE_INTERNAL", chunk, offset);
         case OP_INVOKE:
-            return invokeInstruction("OP_INVOKE", chunk, offset);
+            return invokeInstruction(vm, "OP_INVOKE", chunk, offset);
         case OP_SUPER:
-            return invokeInstruction("OP_SUPER_", chunk, offset);
+            return invokeInstruction(vm, "OP_SUPER_", chunk, offset);
         case OP_CLOSURE: {
             offset++;
             uint8_t constant = chunk->code[offset++];
             printf("%-16s %4d ", "OP_CLOSURE", constant);
-            printValue(chunk->constants.values[constant]);
+            printValue(vm, chunk->constants.values[constant]);
             printf("\n");
 
             ObjFunction *function = AS_FUNCTION(
@@ -283,27 +283,27 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_EMPTY:
             return simpleInstruction("OP_EMPTY", offset);
         case OP_CLASS:
-            return classInstruction("OP_CLASS", chunk, offset);
+            return classInstruction(vm, "OP_CLASS", chunk, offset);
         case OP_SUBCLASS:
-            return classInstruction("OP_SUBCLASS", chunk, offset);
+            return classInstruction(vm, "OP_SUBCLASS", chunk, offset);
         case OP_END_CLASS:
             return simpleInstruction("OP_END_CLASS", offset);
         case OP_METHOD:
-            return constantInstruction("OP_METHOD", chunk, offset);
+            return constantInstruction(vm, "OP_METHOD", chunk, offset);
         case OP_DEFINE_CLASS_ANNOTATIONS:
-            return constantInstruction("OP_DEFINE_CLASS_ANNOTATIONS", chunk, offset);
+            return constantInstruction(vm, "OP_DEFINE_CLASS_ANNOTATIONS", chunk, offset);
         case OP_DEFINE_METHOD_ANNOTATIONS:
-            return constantInstruction("OP_DEFINE_METHOD_ANNOTATIONS", chunk, offset);
+            return constantInstruction(vm, "OP_DEFINE_METHOD_ANNOTATIONS", chunk, offset);
         case OP_ENUM:
-            return constantInstruction("OP_ENUM", chunk, offset);
+            return constantInstruction(vm, "OP_ENUM", chunk, offset);
         case OP_SET_ENUM_VALUE:
-            return constantInstruction("OP_SET_ENUM_VALUE", chunk, offset);
+            return constantInstruction(vm, "OP_SET_ENUM_VALUE", chunk, offset);
         case OP_USE:
-            return constantInstruction("OP_USE", chunk, offset);
+            return constantInstruction(vm, "OP_USE", chunk, offset);
         case OP_OPEN_FILE:
-            return constantInstruction("OP_OPEN_FILE", chunk, offset);
+            return constantInstruction(vm, "OP_OPEN_FILE", chunk, offset);
         case OP_CLOSE_FILE:
-            return constantInstruction("OP_CLOSE_FILE", chunk, offset);
+            return constantInstruction(vm, "OP_CLOSE_FILE", chunk, offset);
         case OP_BREAK:
             return simpleInstruction("OP_BREAK", offset);
         default:

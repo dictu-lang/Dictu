@@ -18,7 +18,7 @@ static Value toStringList(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = listToString(args[0]);
+    char *valueString = listToString(vm, args[0]);
 
     ObjString *string = copyString(vm, valueString, strlen(valueString));
     free(valueString);
@@ -166,7 +166,7 @@ static Value removeListItem(DictuVM *vm, int argCount, Value *args) {
 
     if (list->values.count > 1) {
         for (int i = 0; i < list->values.count - 1; i++) {
-            if (!found && valuesEqual(remove, list->values.values[i])) {
+            if (!found && valuesEqual(vm, remove, list->values.values[i])) {
                 found = true;
             }
 
@@ -177,11 +177,11 @@ static Value removeListItem(DictuVM *vm, int argCount, Value *args) {
         }
 
         // Check if it's the last element
-        if (!found && valuesEqual(remove, list->values.values[list->values.count - 1])) {
+        if (!found && valuesEqual(vm, remove, list->values.values[list->values.count - 1])) {
             found = true;
         }
     } else {
-        if (valuesEqual(remove, list->values.values[0])) {
+        if (valuesEqual(vm, remove, list->values.values[0])) {
             found = true;
         }
     }
@@ -205,7 +205,7 @@ static Value containsListItem(DictuVM *vm, int argCount, Value *args) {
     Value search = args[1];
 
     for (int i = 0; i < list->values.count; ++i) {
-        if (valuesEqual(list->values.values[i], search)) {
+        if (valuesEqual(vm, list->values.values[i], search)) {
             return TRUE_VAL;
         }
     }
@@ -245,7 +245,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
         if (IS_STRING(list->values.values[j])) {
             output = AS_CSTRING(list->values.values[j]);
         } else {
-            output = valueToString(list->values.values[j]);
+            output = valueToString(vm, list->values.values[j]);
         }
         int elementLength = strlen(output);
 
@@ -264,7 +264,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     if (IS_STRING(list->values.values[list->values.count - 1])) {
         output = AS_CSTRING(list->values.values[list->values.count - 1]);
     } else {
-        output = valueToString(list->values.values[list->values.count - 1]);
+        output = valueToString(vm, list->values.values[list->values.count - 1]);
     }
 
     int elementLength = strlen(output);
