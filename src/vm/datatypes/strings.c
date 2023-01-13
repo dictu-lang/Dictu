@@ -110,7 +110,7 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         memcpy(newStr + stringLength + tmpLength, replaceStrings[i], replaceLength);
         stringLength += tmpLength + replaceLength;
         tmp = pos + 2;
-        free(replaceStrings[i]);
+        FREE(vm, char, replaceStrings[i]);
     }
 
     FREE_ARRAY(vm, char*, replaceStrings, argCount);

@@ -315,7 +315,7 @@ char *listToString(DictuVM *vm, Value value) {
         } else {
             memcpy(listString + listStringLength, element, elementSize);
             listStringLength += elementSize;
-            free(element);
+            FREE(vm, char, element);
         }
 
         if (i != list->values.count - 1) {
@@ -384,7 +384,7 @@ char *dictToString(DictuVM *vm, Value value) {
            memcpy(dictString + dictStringLength, key, keySize);
            memcpy(dictString + dictStringLength + keySize, ": ", 2);
            dictStringLength += 2 + keySize;
-           free(key);
+           FREE(vm, char, key);
        }
 
        char *element;
@@ -429,7 +429,7 @@ char *dictToString(DictuVM *vm, Value value) {
        } else {
            memcpy(dictString + dictStringLength, element, elementSize);
            dictStringLength += elementSize;
-           free(element);
+           FREE(vm, char, element);
        }
 
        if (count != dict->count) {
@@ -497,7 +497,7 @@ char *setToString(DictuVM *vm, Value value) {
         } else {
             memcpy(setString + setStringLength, element, elementSize);
             setStringLength += elementSize;
-            free(element);
+            FREE(vm, char, element);
         }
 
         if (count != set->count) {

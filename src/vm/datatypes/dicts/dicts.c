@@ -102,7 +102,7 @@ static Value removeDictItem(DictuVM *vm, int argCount, Value *args) {
 
     char *str = valueToString(vm, args[1]);
     runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", str);
-    free(str);
+    FREE(vm, char, str);
 
     return EMPTY_VAL;
 }
