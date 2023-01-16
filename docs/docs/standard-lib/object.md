@@ -24,7 +24,7 @@ To make use of the Object module an import is required.
 import Object;
 ```
 
-### Object.getClassRef(string)
+### Object.getClassRef(String) -> Result<Object>
 
 This method will attempt to get a class reference from the class name provided as a string.
 
@@ -38,7 +38,7 @@ class Test {}
 Object.getClassRef("Test").unwrap(); // <Cls Test>
 ```
 
-### Object.createFrom(string)
+### Object.createFrom(String) -> Result<Object>
 
 This method will attempt to create a new object from the class name provided as a string.
 

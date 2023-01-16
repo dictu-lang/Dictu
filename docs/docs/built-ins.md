@@ -45,7 +45,7 @@ printError("test"); // "test"
 printError(10, "test", nil, true); // 10, "test", nil, true
 ```
 
-### input(string: prompt -> optional)
+### input(String: prompt -> Optional) -> String
 
 Gathers user input from stdin and returns the value as a string. `input()` has an optional prompt which will be shown to
 the user before they enter their string.
@@ -55,7 +55,7 @@ input();
 input("Input: ");
 ```
 
-### type(value)
+### type(value) -> String
 
 Returns the type of a given value as a string.
 
@@ -65,7 +65,7 @@ type(true); // "bool"
 type([]); // "list"
 ```
 
-### assert(boolean)
+### assert(Boolean)
 
 Raise a runtime error if the given boolean is not true.
 
@@ -74,7 +74,7 @@ assert(10 > 9);
 assert(9 > 10); // assert() was false!
 ```
 
-### isDefined(string)
+### isDefined(String) -> Boolean
 
 Returns a boolean depending on whether a variable has been defined in the global scope.
 

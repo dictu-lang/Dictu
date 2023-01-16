@@ -24,7 +24,7 @@ To make use of the HTTP module an import is required. Along with the methods des
 import HTTP;
 ```
 
-### HTTP.get(string, list: headers -> optional, number: timeout -> optional)
+### HTTP.get(String, list: headers -> Optional, Number: timeout -> Optional) -> Result<Response>
 
 Sends a HTTP GET request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
@@ -37,7 +37,7 @@ HTTP.get("https://httpbin.org/get", ["Content-Type: application/json"], 1);
 {"content": "...", "headers": ["...", "..."], "statusCode": 200}
 ```
 
-### HTTP.post(string, dictionary: postArgs -> optional, list: headers -> optional, number: timeout -> optional)
+### HTTP.post(String, dictionary: postArgs -> Optional, list: headers -> Optional, Number: timeout -> Optional) -> Result<Response>
 
 Sends a HTTP POST request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
@@ -49,7 +49,7 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/json"], 1);
 ```
 
-### HTTP.newClient(dict)
+### HTTP.newClient(Dict) -> HttpClient
 
 Creates a new HTTP client with a given set of options.
 
@@ -69,7 +69,7 @@ const opts = {
 var httpClient = HTTP.newClient(opts);
 ```
 
-### httpClient.get(string)
+### httpClient.get(String) -> Result<Response>
 
 Sends a HTTP GET request to a given URL.
 Returns a Result and unwraps to a Response upon success.
@@ -80,7 +80,7 @@ httpClient.get("https://httpbin.org/get");
 {"content": "...", "headers": ["...", "..."], "statusCode": 200}
 ```
 
-### httpClient.post(string, dictionary: postArgs)
+### httpClient.post(String, Dict: postArgs) -> Result<Response>
 
 Sends a HTTP POST request to a given URL.
 Returns a Result and unwraps to a Response upon success.
@@ -163,6 +163,7 @@ print(response.statusCode);
 200
 ```
 
-#### Response.json()
+#### Response.json() -> Result<Any>
+
 To quickly convert the raw string contained within the Response object we can use the helper `.json` method.
 This works exactly the same as `JSON.parse()` and will return a Result object.

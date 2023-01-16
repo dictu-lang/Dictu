@@ -49,7 +49,7 @@ import System;
 | System.W_OK     | Test for write permission.                                                                        |
 | System.R_OK     | Test for read permission.                                                                         |
 
-### System.mkdir(string, number: mode -> optional)
+### System.mkdir(String, Number: mode -> Optional) -> Result<Nil>
 
 Make directory.
 Returns a Result type and on success will unwrap nil.
@@ -69,9 +69,9 @@ var
 System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 ```
 
-### System.access(string, number)
+### System.access(String, Number) -> Result<Nil>
 
-Check user's permissions for a file
+Check user's permissions for a file.
 Returns a Result type and on success will unwrap nil.
 
 **Note:** This method and the F_OK\|X_OK\|W_OK\|R_OK constants are not available on windows systems.
@@ -82,7 +82,7 @@ var F_OK = System.F_OK;
 System.access("/", F_OK);
 ```
 
-### System.rmdir(string)
+### System.rmdir(String) -> Result<Nil>
 
 Remove directory.
 
@@ -92,7 +92,7 @@ Returns a Result type and on success will unwrap nil.
 System.rmdir(dir);
 ```
 
-### System.remove(string)
+### System.remove(String) -> Result<Nil>
 
 Delete a file from filesystem.
 
@@ -102,7 +102,7 @@ Returns a Result type and on success will unwrap nil.
 System.remove(file);
 ```
 
-### System.getpid()
+### System.getpid() -> Number
 
 Returns the process ID (PID) of the calling process as a number.
 
@@ -112,7 +112,7 @@ Returns the process ID (PID) of the calling process as a number.
 System.getpid();
 ```
 
-### System.getppid()
+### System.getppid() -> Number
 
 Returns the process ID of the parent of the calling process as a number.
 
@@ -122,7 +122,7 @@ Returns the process ID of the parent of the calling process as a number.
 System.getppid();
 ```
 
-### System.getuid()
+### System.getuid() -> Number
 
 Returns the real user ID of the calling process as a number.
 
@@ -132,7 +132,7 @@ Returns the real user ID of the calling process as a number.
 System.getuid();
 ```
 
-### System.geteuid()
+### System.geteuid() -> Number
 
 Returns the effective user ID of the calling process as a number.
 
@@ -142,7 +142,7 @@ Returns the effective user ID of the calling process as a number.
 System.geteuid();
 ```
 
-### System.getgid()
+### System.getgid() -> Number
 
 Returns the real group ID of the calling process as a number.
 
@@ -152,7 +152,7 @@ Returns the real group ID of the calling process as a number.
 System.getgid();
 ```
 
-### System.getegid()
+### System.getegid() -> Number
 
 Returns the effective group ID of the calling process as a number.
 
@@ -162,7 +162,7 @@ Returns the effective group ID of the calling process as a number.
 System.getegid();
 ```
 
-### System.getCWD()
+### System.getCWD() -> Result<String>
 
 Get the current working directory of the Dictu process.
 
@@ -172,7 +172,7 @@ Returns a Result type and on success will unwrap a string.
 System.getCWD().unwrap(); // '/Some/Path/To/A/Directory'
 ```
 
-### System.setCWD(string)
+### System.setCWD(String) -> Result<Nil>
 
 Set current working directory of the Dictu process.
 
@@ -184,7 +184,7 @@ if (!System.setCWD('/').success()) {
 }
 ```
 
-### System.sleep(number)
+### System.sleep(Number)
 
 Sleep pauses execution of the program for a given amount of time in seconds.
 
@@ -192,7 +192,7 @@ Sleep pauses execution of the program for a given amount of time in seconds.
 System.sleep(3); // Pauses execution for 3 seconds
 ```
 
-### System.clock()
+### System.clock() -> Number
 
 Returns number of clock ticks since the start of the program as a number, useful for benchmarks.
 
@@ -200,7 +200,7 @@ Returns number of clock ticks since the start of the program as a number, useful
 System.clock();
 ```
 
-### System.time()
+### System.time() -> Number
 
 Returns UNIX timestamp as a number.
 
@@ -216,7 +216,7 @@ Manually trigger a garbage collection.
 System.collect();
 ```
 
-### System.exit(number)
+### System.exit(Number)
 
 When you wish to prematurely exit the script with a given exit code.
 
@@ -229,7 +229,7 @@ Shell
 $ echo $?; // 10
 ```
 
-### System.chmod(string, string)
+### System.chmod(String, String)
 
 Set the permissions on a file or directory.
 
@@ -237,7 +237,7 @@ Set the permissions on a file or directory.
 System.chmod("/usr/local/share", "755");
 ```
 
-### System.chown(string, number, number)
+### System.chown(String, Number, Number)
 
 Set the ownership of a file or directory with the given path, uid, and gid.
 
@@ -247,7 +247,7 @@ Note: This is not available on Windows systems.
 System.chown("/path/to/file", 0, 0);
 ```
 
-### System.uname()
+### System.uname() -> Dict
 
 Returns the name and version of the system along with operating system and hardware information.
 
@@ -257,7 +257,7 @@ Note: This is not available on Windows systems.
 System.uname();
 ```
 
-### System.mkdirTemp(string: directory_template -> optional)
+### System.mkdirTemp(String: directory_template -> Optional) -> Result<String>
 
 Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
 
@@ -272,7 +272,7 @@ System.mkdirTemp().unwrap(); // "VOO16s"
 System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
 ```
 
-### System.copyFile(string: src, string: dst)
+### System.copyFile(String: src, String: dst) -> Result<Nil>
 
 Copies the contents from the source file to the destination file.
 

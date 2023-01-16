@@ -24,7 +24,7 @@ To make use of the Term module an import is required.
 import Term;
 ```
 
-### Term.isatty(number)
+### Term.isatty(Number) -> Boolean
 
 Returns a boolean indicating whether the file descriptor passed is attached to a tty.
 
@@ -32,7 +32,7 @@ Returns a boolean indicating whether the file descriptor passed is attached to a
 Term.isatty(0);
 ```
 
-### Term.getSize()
+### Term.getSize() -> Number
 
 Returns the number of rows, columns, horizontal and vertical pixels of the attached terminal.
 

@@ -14,4 +14,4 @@ Dictu has been proudly sponsored by [DigitalOcean](https://m.do.co/c/02bd923f5cd
  tooling that comes with these specific platforms.
  
 I've personally been using their services for many years prior to this sponsorship so can attest to their excellent service, so if you too wish
- to sign up, you can do so via [this](https://m.do.co/c/02bd923f5cda) referral link! 
+ to sign up, you can do so via [this](https://m.do.co/c/02bd923f5cda) referral link!
