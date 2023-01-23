@@ -58,4 +58,12 @@
 "        }\n" \
 "    }\n" \
 "}\n" \
+"\n" \
+"def splice(list, index, count=0, items=[]) {\n" \
+"    if (count == 0) {\n" \
+"        return list[:index]+items+list[index:];    \n" \
+"    }\n" \
+"\n" \
+"    return list[:index]+items+list[index+count:];\n" \
+"}\n" \
 

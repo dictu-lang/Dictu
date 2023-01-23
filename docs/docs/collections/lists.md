@@ -313,3 +313,14 @@ print([1, 2, 3].findIndex(def (item) => item == 2)); // 1
 print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2)); // 3
 print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2, 3)); // nil
 ```
+
+### list.Splice(Number, Number, List) -> List
+
+Splice provides a means of changing the contents of a list by removing or replacing existing elements and/or adding new elements in place.
+
+```cs
+[1, 2, 3, 4, 5].splice(1, 0, [100]); // [1, 100, 2, 3, 4, 5]
+[1, 2, 3, 4, 5].splice(1, 1, [100]); // [1, 100, 3, 4, 5]
+[1, 2, 3, 4, 5].splice(1, 2, [100]); // [1, 100, 4, 5]
+[1, 2, 3, 4, 5].splice(3, 0, [100, 101, 102]); // [1, 2, 3, 100, 101, 102, 4, 5]
+```
