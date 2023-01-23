@@ -314,9 +314,9 @@ print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2)); // 3
 print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2, 3)); // nil
 ```
 
-### list.Splice(Number, Number, List) -> List
+### list.splice(Number, Number, List) -> List
 
-Splice provides a means of changing the contents of a list by removing or replacing existing elements and/or adding new elements in place.
+Splice provides a means of changing the contents of a list by removing or replacing existing elements and/or adding new elements and returns a new list reflecting the changes.
 
 ```cs
 [1, 2, 3, 4, 5].splice(1, 0, [100]); // [1, 100, 2, 3, 4, 5]
