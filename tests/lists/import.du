@@ -23,7 +23,7 @@ import "remove.du";
 import "reverse.du";
 import "slicing.du";
 import "sort.du";
-import "splicing.du";
+import "splice.du";
 import "subscript.du";
 import "toBool.du";
 import "toString.du";
