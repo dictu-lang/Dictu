@@ -58,3 +58,11 @@ def findIndex(list, func, start=0, end=list.len()) {
         }
     }
 }
+
+def splice(list, index, count, items) {
+    if (count == 0) {
+        return list[:index]+items+list[index:];    
+    }
+
+    return list[:index]+items+list[index+count:];
+}
