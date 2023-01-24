@@ -70,15 +70,7 @@ Add 2 blank lines after imports are complete.
 
 ## Mixed Caps
 
-The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case, to write multiword names.
-
-## Constants 
-
-Constants should be defined using snake case when defined in global scope. E.g. `const CONSTANT_VALUE = 10;`.
-
-## Annotations
-
-Annotations, class and method, should be Pascal case.
+The naming convention in Dictu is to use mixed caps, Camel Case and Pascal Case, to write multiword names. Variables, constants, and methods should favor the former, and classes and annotations the latter.
 
 ## Control Flow
 
