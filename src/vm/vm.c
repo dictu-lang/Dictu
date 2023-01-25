@@ -123,6 +123,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
+    vm->annotationString = copyString(vm, "__annotatedMethodName", 21);
 
     // Native functions
     defineAllNatives(vm);

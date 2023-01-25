@@ -40,6 +40,7 @@ struct _vm {
     Table instanceMethods;
     Table resultMethods;
     ObjString *initString;
+    ObjString *annotationString;
     ObjString *replVar;
     ObjUpvalue *openUpvalues;
     size_t bytesAllocated;

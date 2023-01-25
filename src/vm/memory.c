@@ -345,6 +345,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->resultMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
+    grayObject(vm, (Obj *) vm->annotationString);
     grayObject(vm, (Obj *) vm->replVar);
 
     // Traverse the references.
