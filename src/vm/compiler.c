@@ -1687,10 +1687,7 @@ static void parseMethodAnnotations(Compiler *compiler) {
     
     ObjDict *annotationDict = newDict(vm);
     push(vm, OBJ_VAL(annotationDict));
-    ObjString *methodName = copyString(vm, "__annotatedMethodName", 21);
-    push(vm, OBJ_VAL(methodName));
-    dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), OBJ_VAL(annotationDict));
-    pop(vm);
+    dictSet(vm, compiler->methodAnnotations, OBJ_VAL(vm->annotationString), OBJ_VAL(annotationDict));
     pop(vm);
     
     do {
