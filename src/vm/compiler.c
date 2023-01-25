@@ -1613,14 +1613,13 @@ static void method(Compiler *compiler, bool private, Token *identifier, bool *ha
                 continue;
             }
 
-            if (strcmp(AS_STRING(entry->key)->chars, "__annotatedMethodName") == 0) {
+            if (OBJ_VAL(vm->annotationString) == entry->key) {
                 Value existingDict;
                 dictGet(compiler->methodAnnotations, entry->key, &existingDict);
                 ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
                 push(vm, OBJ_VAL(methodKey));
                 dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
-                pop(vm);
-                dictDelete(vm, compiler->methodAnnotations, entry->key);
+                dictDelete(vm, compiler->methodAnnotations, OBJ_VAL(vm->annotationString));
 
                 break;
             }
