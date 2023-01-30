@@ -1,4 +1,4 @@
-#!/usr/local/bin/dictu
+#!/usr/bin/env dictu
 
 /*
  * This script is used in the CI process to create RPMs, debs, and apks when
@@ -18,12 +18,12 @@ const PKG_FORMATS = ["deb", "rpm", "apk"],
 
     var semver = Env.get("SEMVER");
     if (not semver) {
-        const GIT_REV = Process.run(["git", "rev-parse", "--short", "HEAD"], true);
-        if (not GIT_REV.success()) {
-            print(GIT_REV.unwrapError());
+        const gitRev = Process.run(["git", "rev-parse", "--short", "HEAD"], true);
+        if (not gitRev.success()) {
+            print(gitRev.unwrapError());
             System.exit(1);
         }
-        semver = GIT_REV.unwrap().strip();
+        semver = gitRev.unwrap().strip();
         Env.set("SEMVER", semver);
     }
 
