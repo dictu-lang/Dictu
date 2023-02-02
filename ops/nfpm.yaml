@@ -1,4 +1,4 @@
-name: dictu-lang
+name: dictu
 
 # Architecture. (required)
 # This will expand any env var you set in the field, e.g. version: ${GOARCH}
