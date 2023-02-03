@@ -35,6 +35,7 @@ import Socket;
 | Socket.SOCK_SEQPACKET | Sequenced, reliable, two-way connection |
 | Socket.SOL_SOCKET     | SOL_SOCKET option level                 |
 | Socket.SO_REUSEADDR   | SO_REUSEADDR allow socket reuse         |
+| Socket.SO_BROADCAST   | Allow sending to dgram sockets          |
 
 ### Socket.create(Number: family, Number: type) -> Result<Socket>
 
