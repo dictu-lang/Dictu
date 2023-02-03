@@ -359,6 +359,7 @@ Value createSocketModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "SOCK_SEQPACKET", NUMBER_VAL(SOCK_SEQPACKET));
     defineNativeProperty(vm, &module->values, "SOL_SOCKET", NUMBER_VAL(SOL_SOCKET));
     defineNativeProperty(vm, &module->values, "SO_REUSEADDR", NUMBER_VAL(SO_REUSEADDR));
+    defineNativeProperty(vm, &module->values, "SO_BROADCAST", NUMBER_VAL(SO_BROADCAST));
 
     pop(vm);
     pop(vm);
