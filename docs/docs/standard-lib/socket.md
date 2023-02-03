@@ -26,12 +26,17 @@ import Socket;
 
 ### Constants
 
-| Constant            | Description                     |
-| ------------------- | ------------------------------- |
-| Socket.AF_INET      | AF_INET protocol family         |
-| Socket.SOCK_STREAM  | SOCK_STREAM protocol type       |
-| Socket.SOL_SOCKET   | SOL_SOCKET option level         |
-| Socket.SO_REUSEADDR | SO_REUSEADDR allow socket reuse |
+| Constant               | Description                             |
+| ---------------------- | --------------------------------------- |
+| Socket.AF_INET         | AF_INET protocol family                 |
+| Socket.SOCK_STREAM     | SOCK_STREAM protocol type               |
+| Socket.SOCK_DGRAM      | SOCK_DGRAM protocol type                |
+| Socket.SOCK_RAW        | SOCK_RAW protocol type                  |
+| Socket.SOCK_MAXADDRLEN | Max address length                      |
+| Socket.SOCK_RDM        | Reliable datagram layer                 |
+| Socket.SOCK_SEQPACKET  | Sequenced, reliable, two-way connection |
+| Socket.SOL_SOCKET      | SOL_SOCKET option level                 |
+| Socket.SO_REUSEADDR    | SO_REUSEADDR allow socket reuse         |
 
 ### Socket.create(Number: family, Number: type) -> Result<Socket>
 
