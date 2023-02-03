@@ -19,7 +19,7 @@ platform: linux
 # This will expand any env var you set in the field, e.g. version: ${SEMVER}
 # Some package managers, like deb, require the version to start with a digit.
 # Hence, you should not prefix the version with 'v'.
-version: 0.26.0
+version: ${GITHUB_REF_NAME}
 
 # Version Schema allows you to specify how to parse the version string.
 # Default is `semver`

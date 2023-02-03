@@ -30,6 +30,6 @@ jobs:
         overwrite: 'true'
         files: |
           dictu-linux-x86_64
-          dictu-0.26.0-1_amd64.deb
-          dictu-0.26.0-1_x86_64.apk
-          dictu-0.26.0-1.x86_64.rpm
+          dictu_${{ github.ref_name }}_amd64.deb
+          dictu_${{ github.ref_name }}_x86_64.apk
+          dictu_${{ github.ref_name }}.x86_64.rpm
