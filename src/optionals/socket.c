@@ -356,8 +356,6 @@ Value createSocketModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "SOCK_STREAM", NUMBER_VAL(SOCK_STREAM));
     defineNativeProperty(vm, &module->values, "SOCK_DGRAM", NUMBER_VAL(SOCK_DGRAM));
     defineNativeProperty(vm, &module->values, "SOCK_RAW", NUMBER_VAL(SOCK_RAW));
-    //defineNativeProperty(vm, &module->values, "SOCK_MAXADDRLEN", NUMBER_VAL(SOCK_MAXADDRLEN));
-    defineNativeProperty(vm, &module->values, "SOCK_RDM", NUMBER_VAL(SOCK_RDM));
     defineNativeProperty(vm, &module->values, "SOCK_SEQPACKET", NUMBER_VAL(SOCK_SEQPACKET));
     defineNativeProperty(vm, &module->values, "SOL_SOCKET", NUMBER_VAL(SOL_SOCKET));
     defineNativeProperty(vm, &module->values, "SO_REUSEADDR", NUMBER_VAL(SO_REUSEADDR));
