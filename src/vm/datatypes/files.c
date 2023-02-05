@@ -88,7 +88,7 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
         buffer = SHRINK_ARRAY(vm, buffer, char, fileSize + 1, bytesRead + 1);
     }
 
-    if (strcmp(file->openType, "r") == 0) {
+    if (strcmp(file->openType, "rb") != 0) {
         buffer[bytesRead] = '\0';
     }
     
