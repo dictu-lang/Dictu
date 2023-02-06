@@ -75,25 +75,13 @@ $ cmake --build ./build
 $ ./dictu
 ```
 
-#### Compiling without linenoise
-[Linenoise](https://github.com/antirez/linenoise) is used within Dictu to enhance the REPL, however it does not build on windows
-systems so a simpler REPL solution is used.
-
-```bash
-$ git clone -b master https://github.com/dictu-lang/Dictu.git
-$ cd Dictu
-$ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_LINENOISE=1 -B ./build 
-$ cmake --build ./build
-$ ./build/Dictu
-```
-
 ### Docker Installation
 
 Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/README.md)
 
 ### FreeBSD Installation
 
-For a full installation, make sure `curl` and `linenoise` are installed. They can be installed from the commands below:
+For a full installation, make sure `curl` is installed. It can be installed from the commands below:
 
 ```bash
 $ pkg install -y curl linenoise-ng

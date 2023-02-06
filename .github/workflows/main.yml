@@ -71,11 +71,11 @@ jobs:
       matrix:
         os: [windows-2022, windows-2019]
 
-    steps:
+       steps:
       - uses: actions/checkout@v3
-      - name: Make dictu and run tests (No HTTP No Linenoise)
+      - name: Make dictu and run tests (No HTTP)
         run: |
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -B build
           cmake --build build
           Debug\dictu.exe tests/runTests.du ci
   run-examples:
