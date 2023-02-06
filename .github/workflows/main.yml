@@ -7,86 +7,86 @@ on:
       - master
 
 jobs:
-     check-tests:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run checkTests
-           run: |
-             sudo apt-get update
-             sudo apt-get install -y libcurl4-openssl-dev uuid-dev
-             cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
-             cmake --build ./build
-             ./dictu scripts/checkTests.du ci
-     test-ubuntu-cmake:
-       name: Test on ${{ matrix.os }}
-       runs-on: ${{ matrix.os }}
-       strategy:
-         matrix:
-           os: [ubuntu-latest, ubuntu-20.04]
+  check-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make dictu and run checkTests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
+          cmake --build ./build
+          ./dictu ops/checkTests.du ci
+  test-ubuntu-cmake:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
 
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run tests (No HTTP)
-           run: |
-             cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
-             cmake --build ./build
-             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
-         - name: Remove build directory
-           run: |
-             rm -rf build
-         - name: Make dictu and run tests (HTTP)
-           run: |
-             sudo apt-get update
-             sudo apt-get install -y libcurl4-openssl-dev uuid-dev
-             cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
-             cmake --build ./build
-             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
-     test-mac-cmake:
-       name: Test on ${{ matrix.os }}
-       runs-on: ${{ matrix.os }}
-       strategy:
-         matrix:
-           os: [macOS-latest, macOS-11]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make dictu and run tests (No HTTP)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
+          cmake --build ./build
+          ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+      - name: Remove build directory
+        run: |
+          rm -rf build
+      - name: Make dictu and run tests (HTTP)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
+          cmake --build ./build
+          ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+  test-mac-cmake:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-latest, macOS-11]
 
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run tests (No HTTP)
-           run: |
-             cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
-             cmake --build ./build
-             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
-         - name: Remove build directory
-           run: |
-             rm -rf build
-         - name: Make dictu and run tests
-           run: |
-             cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
-             cmake --build ./build
-             ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
-     test-windows-cmake:
-       name: Test on ${{ matrix.os }}
-       runs-on: ${{ matrix.os }}
-       strategy:
-         matrix:
-           os: [windows-2022, windows-2019]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make dictu and run tests (No HTTP)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
+          cmake --build ./build
+          ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+      - name: Remove build directory
+        run: |
+          rm -rf build
+      - name: Make dictu and run tests
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
+          cmake --build ./build
+          ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+  test-windows-cmake:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2019]
 
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run tests (No HTTP No Linenoise)
-           run: |
-             cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
-             cmake --build build
-             Debug\dictu.exe tests/runTests.du ci
-     run-examples:
-       name: Test Examples
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v2
-         - name: Make dictu and run examples
-           run: |
-             sudo apt-get update
-             sudo apt-get install -y libcurl4-openssl-dev uuid-dev
-             cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
-             cmake --build ./build
-             ./dictu examples/runExamples.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make dictu and run tests (No HTTP No Linenoise)
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -DDISABLE_LINENOISE=1 -B build
+          cmake --build build
+          Debug\dictu.exe tests/runTests.du ci
+  run-examples:
+    name: Test Examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Make dictu and run examples
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
+          cmake --build ./build
+          ./dictu examples/runExamples.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
