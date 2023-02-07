@@ -26,8 +26,8 @@ static Value writeFile(DictuVM *vm, int argCount, Value *args) {
         charsWrote = fwrite(string->chars, 1, string->length, file->file);
     } else {
         charsWrote = fprintf(file->file, "%s", string->chars);
-        fflush(file->file);
     }
+    fflush(file->file);
 
     return NUMBER_VAL(charsWrote);
 }
