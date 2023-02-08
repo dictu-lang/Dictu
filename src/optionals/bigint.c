@@ -24,14 +24,18 @@ typedef struct {
 
 static void freeBigInt(DictuVM *vm, ObjAbstract *abstract)
 {
-    UNUSED(vm);
     mp_clear(&AS_BIGINT(abstract)->value);
+    FREE(vm, BigIntData, AS_BIGINT(abstract));
 }
 
 static char *bigIntToString(ObjAbstract *abstract) {
     int len = 0;
     int res = mp_radix_size(&AS_BIGINT(abstract)->value, 10, &len);
-    UNUSED(res);
+
+    if (res != MP_OKAY) {
+        return strdup("0");
+    }
+
     char *str = malloc(len);
     res = mp_to_radix(&AS_BIGINT(abstract)->value, str, len, NULL, 10);
     return str;
@@ -55,7 +59,6 @@ static bool isIntString(Value val) {
 }
 
 static bool isBigInt(ObjAbstract* abstract) {
-    UNUSED(abstract);
     return abstract->func == &freeBigInt;
 }
 
@@ -67,18 +70,30 @@ static bool isBigIntValue(Value val) {
     return isBigInt((ObjAbstract*) AS_ABSTRACT(val));
 }
 
+static BigIntData* freeBigIntOnFailure(DictuVM *vm, BigIntData* bigint, int res) {
+    if (bigint != NULL && res != MP_OKAY) {
+        FREE(vm, BigIntData, bigint);
+        return NULL;
+    }
+
+    return bigint;
+}
+
 static BigIntData *allocBigInt(DictuVM *vm) {
     BigIntData *bigint = ALLOCATE(vm, BigIntData, 1);
     int res = mp_init(&bigint->value);
-    UNUSED(res);
-    return bigint;
+    return freeBigIntOnFailure(vm, bigint, res);
 }
 
 static BigIntData *cloneBigInt(DictuVM *vm, BigIntData* toClone) {
     BigIntData *bigint = allocBigInt(vm);
-    int res = mp_init_copy(&bigint->value, &toClone->value);
-    UNUSED(res);
-    return bigint;
+    int res = MP_ERR;
+
+    if (bigint != NULL) {
+        res = mp_init_copy(&bigint->value, &toClone->value);
+    }
+
+    return freeBigIntOnFailure(vm, bigint, res);
 }
 
 static BigIntData *bigIntFromIntString(DictuVM *vm, Value strValue) {
@@ -89,9 +104,13 @@ static BigIntData *bigIntFromIntString(DictuVM *vm, Value strValue) {
 
     ObjString* str = AS_STRING(strValue);
     BigIntData *bigint = allocBigInt(vm);
-    int res = mp_read_radix(&bigint->value, str->chars, 10);
-    UNUSED(res);
-    return bigint;
+    int res = MP_ERR;
+
+    if (bigint != NULL) {
+        res = mp_read_radix(&bigint->value, str->chars, 10);
+    }
+
+    return freeBigIntOnFailure(vm, bigint, res);
 }
 
 static BigIntData *bigIntFromLong(DictuVM *vm, Value numValue) {
@@ -102,13 +121,17 @@ static BigIntData *bigIntFromLong(DictuVM *vm, Value numValue) {
 
     long num = (long) AS_NUMBER(numValue);
     BigIntData *bigint = allocBigInt(vm);
-    mp_set_l(&bigint->value, num);
+
+    if (bigint != NULL) {
+        mp_set_l(&bigint->value, num);
+    }
+
     return bigint;
 }
 
 static Value newBigIntValue(DictuVM *vm, BigIntData *bigint) {
     if (bigint == NULL) {
-        return EMPTY_VAL;
+        return newResultError(vm, "error: failed to instantiate bigint");
     }
 
     ObjAbstract *abstract = newAbstract(vm, &freeBigInt, &bigIntToString);
@@ -132,16 +155,18 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bigint) {
     defineNative(vm, &abstract->values, "modulo",      &arithMod);
     pop(vm);
 
-    return OBJ_VAL(abstract);
+    return newResultSuccess(vm, OBJ_VAL(abstract));
 }
 
 static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "bigint() takes 1 argument (%0d given)", argCount);
-        return EMPTY_VAL;
+    if (argCount > 1) {
+        runtimeError(vm, "bigint() takes 1 or 0 arguments (%0d given)", argCount);
+        return newResultError(vm, "error: wrong number of arguments");
     }
 
-    if (IS_NUMBER(args[0])) {
+    if (argCount == 0) {
+        return newBigIntValue(vm, bigIntFromLong(vm, 0));
+    } else if (IS_NUMBER(args[0])) {
         return newBigIntValue(vm, bigIntFromLong(vm, args[0]));
     } else if (IS_STRING(args[0])) {
         return newBigIntValue(vm, bigIntFromIntString(vm, args[0]));
@@ -150,22 +175,32 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
     }
 
     runtimeError(vm, "bigint() argument must be an integral number, string or bigint");
-    return EMPTY_VAL;
+    return newResultError(vm, "error: invalid argument");
 }
 
 static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, const mp_int*)) {
     if (argCount != 1) {
         runtimeError(vm, "%s() takes 1 argument (%0d given)", fname, argCount);
-        return EMPTY_VAL;
+        return newResultError(vm, "error: wrong number of arguments");
     }
 
     if (!isBigIntValue(args[1])) {
         runtimeError(vm, "%s() argument must be a bigint", fname, argCount);
-        return EMPTY_VAL;
+        return newResultError(vm, "error: invalid argument");
     }
 
     int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value);
     return NUMBER_VAL(res);
+}
+
+static Value dealWithReturn(DictuVM *vm,  BigIntData* bigint, int res) {
+    bigint = freeBigIntOnFailure(vm, bigint, res);
+
+    if (res == MP_OKAY) {
+        return newBigIntValue(vm, bigint);
+    } else {
+        return newResultError(vm, "error: operation error");
+    }
 }
 
 static Value applyOp0ArgAndReturn(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, mp_int*)) {
@@ -175,9 +210,13 @@ static Value applyOp0ArgAndReturn(DictuVM *vm, int argCount, Value *args, const 
     }
 
     BigIntData *bigint = allocBigInt(vm);
-    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &bigint->value);
-    UNUSED(res);
-    return newBigIntValue(vm, bigint);
+    int res = MP_ERR;
+
+    if (bigint != NULL) {
+        res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &bigint->value);
+    }
+
+    return dealWithReturn(vm, bigint, res);
 }
 
 static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, const mp_int*, mp_int*)) {
@@ -192,9 +231,13 @@ static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, const 
     }
 
     BigIntData *bigint = allocBigInt(vm);
-    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value, &bigint->value);
-    UNUSED(res);
-    return newBigIntValue(vm, bigint);
+    int res = MP_ERR;
+
+    if (bigint != NULL) {
+        res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value, &bigint->value);
+    }
+
+    return dealWithReturn(vm, bigint, res);
 }
 
 static Value compare(DictuVM *vm, int argCount, Value *args) {
