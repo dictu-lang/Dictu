@@ -55,7 +55,7 @@ with("test.txt", "w") {
 
 ### Reading files
 
-There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character.
+There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character. It takes an optional arugment for the buffer read size.
 
 ```cs
 // Read entire file

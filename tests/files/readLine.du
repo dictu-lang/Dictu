@@ -15,6 +15,16 @@ class TestFileReadline < UnitTest {
             }
         }
     }
+
+    testFileReadlineWithGivenBufferSize() {
+        with("tests/files/read.txt", "r") {
+            var line;
+            while ((line = file.readLine(16)) != nil) {
+                // Check readline works with empty lines as well
+                this.assertTruthy(line == "Dictu is great!" or line == "");
+            }
+        }
+    }
 }
 
 TestFileReadline().run();

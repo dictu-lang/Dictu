@@ -1,6 +1,8 @@
 #include "files.h"
 #include "../memory.h"
 
+#define READLINE_BUFFER_SIZE 4096
+
 static Value writeFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "write() takes 1 argument (%d given)", argCount);
@@ -87,16 +89,25 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
-        return EMPTY_VAL;
+    int readLineBufferSize = READLINE_BUFFER_SIZE;
+
+    if (argCount > 0) {
+        // runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
+        // return EMPTY_VAL;
+
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "readLine() argument must be a number");
+            return EMPTY_VAL;
+        }
+
+        readLineBufferSize = AS_NUMBER(args[1]);
     }
 
     // TODO: This could be better
-    char line[4096];
+    char line[readLineBufferSize];
 
     ObjFile *file = AS_FILE(args[0]);
-    if (fgets(line, 4096, file->file) != NULL) {
+    if (fgets(line, readLineBufferSize, file->file) != NULL) {
         int lineLength = strlen(line);
         // Remove newline char
         if (line[lineLength - 1] == '\n') {
