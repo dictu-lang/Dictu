@@ -90,11 +90,12 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
     int readLineBufferSize = READLINE_BUFFER_SIZE;
+    if (argCount > 1) {
+        runtimeError(vm, "readLine() takes at most 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
 
-    if (argCount > 0) {
-        // runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
-        // return EMPTY_VAL;
-
+    if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
             runtimeError(vm, "readLine() argument must be a number");
             return EMPTY_VAL;
