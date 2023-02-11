@@ -1,44 +1,42 @@
 #include "bigint.h"
 
-#ifndef DISABLE_BIGINT
-#include <tommath.h>
+#include "bigint/bigint.h"
 
 #define AS_BIGINT(abstract) ((BigIntData*) ((abstract)->data))
 
-static Value compare(DictuVM *vm, int argCount, Value *args);
-static Value arithNeg(DictuVM *vm, int argCount, Value *args);
-static Value arithAbs(DictuVM *vm, int argCount, Value *args);
-static Value arithSqr(DictuVM *vm, int argCount, Value *args);
-static Value bitwiseAnd(DictuVM *vm, int argCount, Value *args);
-static Value bitwiseOr(DictuVM *vm, int argCount, Value *args);
-static Value bitwiseXor(DictuVM *vm, int argCount, Value *args);
-static Value arithAdd(DictuVM *vm, int argCount, Value *args);
-static Value arithSub(DictuVM *vm, int argCount, Value *args);
-static Value arithMul(DictuVM *vm, int argCount, Value *args);
-static Value arithDiv(DictuVM *vm, int argCount, Value *args);
-static Value arithMod(DictuVM *vm, int argCount, Value *args);
+#define DECL_OP(name) \
+    static Value name(DictuVM *vm, int argCount, Value *args)
+
+#define APPLY_OP(name, optype, func) \
+    DECL_OP(name) { \
+        return apply##optype(vm, argCount, args, func); \
+    }
 
 typedef struct {
-    mp_int value;
+    bigint value;
 } BigIntData;
 
-static void freeBigInt(DictuVM *vm, ObjAbstract *abstract)
-{
-    mp_clear(&AS_BIGINT(abstract)->value);
+DECL_OP(compare);
+DECL_OP(arithNeg);
+DECL_OP(arithAbs);
+DECL_OP(bitwiseAnd);
+DECL_OP(bitwiseOr);
+DECL_OP(bitwiseXor);
+DECL_OP(arithAdd);
+DECL_OP(arithSub);
+DECL_OP(arithMul);
+DECL_OP(arithDiv);
+DECL_OP(arithMod);
+
+static void freeBigInt(DictuVM *vm, ObjAbstract *abstract) {
+    bigint_free(&AS_BIGINT(abstract)->value);
     FREE(vm, BigIntData, AS_BIGINT(abstract));
 }
 
 static char *bigIntToString(ObjAbstract *abstract) {
-    int len = 0;
-    int res = mp_radix_size(&AS_BIGINT(abstract)->value, 10, &len);
-
-    if (res != MP_OKAY) {
-        return strdup("0");
-    }
-
+    int len = bigint_write_size(&AS_BIGINT(abstract)->value, 10);
     char *str = malloc(len);
-    res = mp_to_radix(&AS_BIGINT(abstract)->value, str, len, NULL, 10);
-    return str;
+    return bigint_write(str, len, &AS_BIGINT(abstract)->value);
 }
 
 static bool isLong(Value val) {
@@ -48,8 +46,13 @@ static bool isLong(Value val) {
 
 static bool isIntString(Value val) {
     ObjString *str = AS_STRING(val);
+    int i = 0;
 
-    for (int i = 0; i < str->length; i++) {
+    if (str->chars[i] == '+' || str->chars[i] == '-') {
+        i = 1;
+    }
+
+    for (; i < str->length; i++) {
         if (!isdigit(str->chars[i])) {
             return false;
         }
@@ -70,73 +73,71 @@ static bool isBigIntValue(Value val) {
     return isBigInt((ObjAbstract*) AS_ABSTRACT(val));
 }
 
-static BigIntData* freeBigIntOnFailure(DictuVM *vm, BigIntData* bigint, int res) {
-    if (bigint != NULL && res != MP_OKAY) {
-        FREE(vm, BigIntData, bigint);
+static BigIntData* freeBigIntOnFailure(DictuVM *vm, BigIntData* bi, bigint* ptr) {
+    if (bi != NULL && ptr == NULL) {
+        FREE(vm, BigIntData, bi);
         return NULL;
     }
 
-    return bigint;
+    return bi;
 }
 
 static BigIntData *allocBigInt(DictuVM *vm) {
-    BigIntData *bigint = ALLOCATE(vm, BigIntData, 1);
-    int res = mp_init(&bigint->value);
-    return freeBigIntOnFailure(vm, bigint, res);
+    BigIntData *bi = ALLOCATE(vm, BigIntData, 1);
+    bigint_init(&bi->value);
+    return bi;
 }
 
 static BigIntData *cloneBigInt(DictuVM *vm, BigIntData* toClone) {
-    BigIntData *bigint = allocBigInt(vm);
-    int res = MP_ERR;
+    BigIntData *bi = allocBigInt(vm);
 
-    if (bigint != NULL) {
-        res = mp_init_copy(&bigint->value, &toClone->value);
+    if (bi != NULL) {
+        bigint_cpy(&bi->value, &toClone->value);
     }
 
-    return freeBigIntOnFailure(vm, bigint, res);
+    return bi;
 }
 
 static BigIntData *bigIntFromIntString(DictuVM *vm, Value strValue) {
     if (!isIntString(strValue)) {
-        runtimeError(vm, "bigint() string argument must only contain digits ('%s' given)", AS_STRING(strValue)->chars);
         return NULL;
     }
 
     ObjString* str = AS_STRING(strValue);
-    BigIntData *bigint = allocBigInt(vm);
-    int res = MP_ERR;
+    BigIntData *bi = allocBigInt(vm);
+    bigint *ret = NULL;
 
-    if (bigint != NULL) {
-        res = mp_read_radix(&bigint->value, str->chars, 10);
+    if (bi != NULL) {
+        ret = bigint_from_str(&bi->value, str->chars);
     }
 
-    return freeBigIntOnFailure(vm, bigint, res);
+    return freeBigIntOnFailure(vm, bi, ret);
 }
 
 static BigIntData *bigIntFromLong(DictuVM *vm, Value numValue) {
     if (!isLong(numValue)) {
-        runtimeError(vm, "bigint() number argument must be an integer ('%f' given)", AS_NUMBER(numValue));
         return NULL;
     }
 
     long num = (long) AS_NUMBER(numValue);
-    BigIntData *bigint = allocBigInt(vm);
+    BigIntData *bi = allocBigInt(vm);
+    bigint *ret = NULL;
 
-    if (bigint != NULL) {
-        mp_set_l(&bigint->value, num);
+    if (bi != NULL) {
+        ret = bigint_from_int(&bi->value, num);
     }
 
-    return bigint;
+    return freeBigIntOnFailure(vm, bi, ret);
 }
 
-static Value newBigIntValue(DictuVM *vm, BigIntData *bigint) {
-    if (bigint == NULL) {
+static Value newBigIntValue(DictuVM *vm, BigIntData *bi) {
+    if (bi == NULL) {
         return newResultError(vm, "error: failed to instantiate bigint");
     }
 
     ObjAbstract *abstract = newAbstract(vm, &freeBigInt, &bigIntToString);
     push(vm, OBJ_VAL(abstract));
-    abstract->data = bigint;
+    abstract->data = bi;
 
     /**
      * Setup BigInt object methods
@@ -144,10 +145,9 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bigint) {
     defineNative(vm, &abstract->values, "compare",     &compare);
     defineNative(vm, &abstract->values, "negate",      &arithNeg);
     defineNative(vm, &abstract->values, "absoluteVal", &arithAbs);
-    defineNative(vm, &abstract->values, "squared",     &arithSqr);
-    defineNative(vm, &abstract->values, "and",         &bitwiseAnd);
-    defineNative(vm, &abstract->values, "or",          &bitwiseOr);
-    defineNative(vm, &abstract->values, "xor",         &bitwiseXor);
+    defineNative(vm, &abstract->values, "bitwiseAnd",  &bitwiseAnd);
+    defineNative(vm, &abstract->values, "bitwiseOr",   &bitwiseOr);
+    defineNative(vm, &abstract->values, "bitwiseXor",  &bitwiseXor);
     defineNative(vm, &abstract->values, "add",         &arithAdd);
     defineNative(vm, &abstract->values, "subtract",    &arithSub);
     defineNative(vm, &abstract->values, "multiply",    &arithMul);
@@ -160,7 +160,6 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bigint) {
 
 static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "bigint() takes 1 or 0 arguments (%0d given)", argCount);
         return newResultError(vm, "error: wrong number of arguments");
     }
 
@@ -174,18 +173,15 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
         return newBigIntValue(vm, cloneBigInt(vm, AS_ABSTRACT(args[0])->data));
     }
 
-    runtimeError(vm, "bigint() argument must be an integral number, string or bigint");
     return newResultError(vm, "error: invalid argument");
 }
 
-static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, const mp_int*)) {
+static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const bigint*, const bigint*)) {
     if (argCount != 1) {
-        runtimeError(vm, "%s() takes 1 argument (%0d given)", fname, argCount);
         return newResultError(vm, "error: wrong number of arguments");
     }
 
     if (!isBigIntValue(args[1])) {
-        runtimeError(vm, "%s() argument must be a bigint", fname, argCount);
         return newResultError(vm, "error: invalid argument");
     }
 
@@ -193,109 +189,61 @@ static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, const char* fna
     return NUMBER_VAL(res);
 }
 
-static Value dealWithReturn(DictuVM *vm,  BigIntData* bigint, int res) {
-    bigint = freeBigIntOnFailure(vm, bigint, res);
+static Value dealWithReturn(DictuVM *vm,  BigIntData* bi, bigint* ptr) {
+    bi = freeBigIntOnFailure(vm, bi, ptr);
 
-    if (res == MP_OKAY) {
-        return newBigIntValue(vm, bigint);
-    } else {
+    if (ptr == NULL) {
         return newResultError(vm, "error: operation error");
+    } else {
+        return newBigIntValue(vm, bi);
     }
 }
 
-static Value applyOp0ArgAndReturn(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, mp_int*)) {
+static Value applyOp0ArgToReturn(DictuVM *vm, int argCount, Value *args, bigint* (*op)(bigint*)) {
     if (argCount != 0) {
-        runtimeError(vm, "%s() takes no arguments (%0d given)", fname, argCount);
-        return EMPTY_VAL;
+        return newResultError(vm, "error: wrong number of arguments");
     }
 
-    BigIntData *bigint = allocBigInt(vm);
-    int res = MP_ERR;
+    BigIntData *bi = cloneBigInt(vm, AS_ABSTRACT(args[0])->data);
+    bigint *ret = NULL;
 
-    if (bigint != NULL) {
-        res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &bigint->value);
+    if (bi != NULL) {
+        ret = op(&bi->value);
     }
 
-    return dealWithReturn(vm, bigint, res);
+    return dealWithReturn(vm, bi, ret);
 }
 
-static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, const char* fname, int (*op)(const mp_int*, const mp_int*, mp_int*)) {
+static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, bigint* (*op)(bigint*, const bigint*, const bigint*)) {
     if (argCount != 1) {
-        runtimeError(vm, "%s() takes 1 argument (%0d given)", fname, argCount);
-        return EMPTY_VAL;
+        return newResultError(vm, "error: wrong number of arguments");
     }
 
     if (!isBigIntValue(args[1])) {
-        runtimeError(vm, "%s() argument must be a bigint", fname, argCount);
-        return EMPTY_VAL;
+        return newResultError(vm, "error: invalid argument");
     }
 
-    BigIntData *bigint = allocBigInt(vm);
-    int res = MP_ERR;
+    BigIntData *bi = allocBigInt(vm);
+    bigint *ret = NULL;
 
-    if (bigint != NULL) {
-        res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value, &bigint->value);
+    if (bi != NULL) {
+        ret = op(&bi->value, &AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value);
     }
 
-    return dealWithReturn(vm, bigint, res);
+    return dealWithReturn(vm, bi, ret);
 }
 
-static Value compare(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1Arg(vm, argCount, args, "compare", &mp_cmp);
-}
-
-static Value arithNeg(DictuVM *vm, int argCount, Value *args) {
-    return applyOp0ArgAndReturn(vm, argCount, args, "negate", &mp_neg);
-}
-
-static Value arithAbs(DictuVM *vm, int argCount, Value *args) {
-    return applyOp0ArgAndReturn(vm, argCount, args, "absoluteVal", &mp_abs);
-}
-
-static Value arithSqr(DictuVM *vm, int argCount, Value *args) {
-    return applyOp0ArgAndReturn(vm, argCount, args, "squared", &mp_sqr);
-}
-
-static Value bitwiseAnd(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "and", &mp_and);
-}
-
-static Value bitwiseOr(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "or", &mp_or);
-}
-
-static Value bitwiseXor(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "xor", &mp_xor);
-}
-
-static Value arithAdd(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "add", &mp_add);
-}
-
-static Value arithSub(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "subtract", &mp_sub);
-}
-
-static Value arithMul(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "multiply", &mp_mul);
-}
-
-static int mp_div_only(const mp_int* a, const mp_int* b, mp_int* c) {
-    return mp_div(a, b, c, NULL);
-}
-
-static int mp_mod_only(const mp_int* a, const mp_int* b, mp_int* c) {
-    return mp_div(a, b, NULL, c);
-}
-
-static Value arithDiv(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "divide", &mp_div_only);
-}
-
-static Value arithMod(DictuVM *vm, int argCount, Value *args) {
-    return applyOp1ArgAndReturn(vm, argCount, args, "modulo", &mp_mod_only);
-}
-#endif
+APPLY_OP(compare,    Op1Arg,          &bigint_cmp)
+APPLY_OP(arithNeg,   Op0ArgToReturn,  &bigint_negate)
+APPLY_OP(arithAbs,   Op0ArgToReturn,  &bigint_abs)
+APPLY_OP(bitwiseAnd, Op1ArgAndReturn, &bigint_and)
+APPLY_OP(bitwiseOr,  Op1ArgAndReturn, &bigint_or)
+APPLY_OP(bitwiseXor, Op1ArgAndReturn, &bigint_xor)
+APPLY_OP(arithAdd,   Op1ArgAndReturn, &bigint_add)
+APPLY_OP(arithSub,   Op1ArgAndReturn, &bigint_sub)
+APPLY_OP(arithMul,   Op1ArgAndReturn, &bigint_mul)
+APPLY_OP(arithDiv,   Op1ArgAndReturn, &bigint_div)
+APPLY_OP(arithMod,   Op1ArgAndReturn, &bigint_mod)
 
 Value createBigIntModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "BigInt", 6);
@@ -306,9 +254,7 @@ Value createBigIntModule(DictuVM *vm) {
     /**
      * Define BigInt methods
      */
-#ifndef DISABLE_BIGINT
     defineNative(vm, &module->values, "bigint", newBigInt);
-#endif
 
     pop(vm);
     pop(vm);
