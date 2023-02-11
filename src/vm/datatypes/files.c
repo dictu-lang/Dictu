@@ -104,7 +104,7 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
     }
 
 #ifdef _WIN32
-    char line[] = ALLOCATE(vm, char, readLineBufferSize);
+    char *line = ALLOCATE(vm, char, readLineBufferSize);
 #else 
     char line[readLineBufferSize]; 
 #endif
