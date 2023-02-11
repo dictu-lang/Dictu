@@ -89,11 +89,12 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
-    int readLineBufferSize = READLINE_BUFFER_SIZE;
     if (argCount > 1) {
         runtimeError(vm, "readLine() takes at most 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
+
+    int readLineBufferSize = READLINE_BUFFER_SIZE;
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
@@ -104,8 +105,11 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
         readLineBufferSize = AS_NUMBER(args[1]);
     }
 
-    // TODO: This could be better
-    char line[readLineBufferSize];
+#ifdef _WIN32
+    char line[] = ALLOCATE(vm, char,readLineBufferSize);
+#else 
+    char line[readLineBufferSize]; 
+#endif
 
     ObjFile *file = AS_FILE(args[0]);
     if (fgets(line, readLineBufferSize, file->file) != NULL) {
@@ -117,6 +121,10 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
         }
         return OBJ_VAL(copyString(vm, line, lineLength));
     }
+
+#ifdef _WIN32
+    FREE(vm, char, line);
+#endif 
 
     return NIL_VAL;
 }
