@@ -26,9 +26,7 @@ BuiltinModules modules[] = {
 #ifndef DISABLE_HTTP
     {"HTTP", &createHTTPModule, true},
 #endif
-#ifndef DISABLE_BIGINT
     {"BigInt", &createBigIntModule, false},
-#endif
     {NULL, NULL, false}
 };
 
