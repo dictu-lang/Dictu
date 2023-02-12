@@ -158,6 +158,24 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bi) {
     return newResultSuccess(vm, OBJ_VAL(abstract));
 }
 
+static Value unwrapBigInt(Value val) {
+    if (isBigIntValue(val)) {
+        return val;
+    } else if (!IS_RESULT(val)) {
+        return EMPTY_VAL;
+    }
+
+    ObjResult* result = AS_RESULT(val);
+
+    if (result->status != SUCCESS) {
+        return val;
+    } else if (isBigIntValue(result->value)) {
+        return result->value;
+    } else {
+        return EMPTY_VAL;
+    }
+}
+
 static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
         return newResultError(vm, "error: wrong number of arguments");
@@ -169,11 +187,35 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
         return newBigIntValue(vm, bigIntFromLong(vm, args[0]));
     } else if (IS_STRING(args[0])) {
         return newBigIntValue(vm, bigIntFromIntString(vm, args[0]));
-    } else if (isBigIntValue(args[0])) {
+    }
+
+    Value val = unwrapBigInt(args[0]);
+
+    if (isBigIntValue(val)) {
         return newBigIntValue(vm, cloneBigInt(vm, AS_ABSTRACT(args[0])->data));
     }
 
     return newResultError(vm, "error: invalid argument");
+}
+
+static bool handleLongOrUnwrap(Value arg, bigint* tmp, Value* val, bool* argIsLong) {
+    if (IS_NUMBER(arg) && isLong(arg)) {
+        *argIsLong = true;
+        bigint_init(tmp);
+        return bigint_from_int(tmp, (long) AS_NUMBER(arg)) != NULL;
+    } else {
+        *argIsLong = false;
+        *val = unwrapBigInt(arg);
+        return isBigIntValue(*val);
+    }
+}
+
+static Value handleLongOrUnwrapError(DictuVM *vm, bool argIsLong) {
+    if (argIsLong) {
+        return newResultError(vm, "error: invalid argument");
+    } else {
+        return newResultError(vm, "error: operation error");
+    }
 }
 
 static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const bigint*, const bigint*)) {
@@ -181,11 +223,21 @@ static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const
         return newResultError(vm, "error: wrong number of arguments");
     }
 
-    if (!isBigIntValue(args[1])) {
-        return newResultError(vm, "error: invalid argument");
+    bool argIsLong;
+    bigint tmp;
+    Value val;
+    bool ok = handleLongOrUnwrap(args[1], &tmp, &val, &argIsLong);
+
+    if (!ok) {
+        return handleLongOrUnwrapError(vm, argIsLong);
     }
 
-    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value);
+    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, argIsLong ? &tmp : &AS_BIGINT(AS_ABSTRACT(val))->value);
+
+    if (argIsLong) {
+        bigint_free(&tmp);
+    }
+
     return NUMBER_VAL(res);
 }
 
@@ -219,15 +271,24 @@ static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, bigint
         return newResultError(vm, "error: wrong number of arguments");
     }
 
-    if (!isBigIntValue(args[1])) {
-        return newResultError(vm, "error: invalid argument");
+    bool argIsLong;
+    bigint tmp;
+    Value val;
+    bool ok = handleLongOrUnwrap(args[1], &tmp, &val, &argIsLong);
+
+    if (!ok) {
+        return handleLongOrUnwrapError(vm, argIsLong);
     }
 
     BigIntData *bi = allocBigInt(vm);
     bigint *ret = NULL;
 
     if (bi != NULL) {
-        ret = op(&bi->value, &AS_BIGINT(AS_ABSTRACT(args[0]))->value, &AS_BIGINT(AS_ABSTRACT(args[1]))->value);
+        ret = op(&bi->value, &AS_BIGINT(AS_ABSTRACT(args[0]))->value, argIsLong ? &tmp : &AS_BIGINT(AS_ABSTRACT(val))->value);
+    }
+
+    if (argIsLong) {
+        bigint_free(&tmp);
     }
 
     return dealWithReturn(vm, bi, ret);
