@@ -15,12 +15,18 @@ static Value writeFile(DictuVM *vm, int argCount, Value *args) {
     ObjFile *file = AS_FILE(args[0]);
     ObjString *string = AS_STRING(args[1]);
 
-    if (strcmp(file->openType, "r") == 0) {
+    if (strcmp(file->openType, "r") == 0 || strcmp(file->openType, "rb") == 0) {
         runtimeError(vm, "File is not writable!");
         return EMPTY_VAL;
     }
 
-    int charsWrote = fprintf(file->file, "%s", string->chars);
+    int charsWrote = 0;
+
+    if (strcmp(file->openType, "wb") == 0) {
+        charsWrote = fwrite(string->chars, 1, string->length, file->file);
+    } else {
+        charsWrote = fprintf(file->file, "%s", string->chars);
+    }
     fflush(file->file);
 
     return NUMBER_VAL(charsWrote);
@@ -83,6 +89,7 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     buffer[bytesRead] = '\0';
+    
     return OBJ_VAL(takeString(vm, buffer, bytesRead));
 }
 

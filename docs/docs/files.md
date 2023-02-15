@@ -26,6 +26,8 @@ when you leave the with scope automatically. Note, the path when opening files i
 | --------- | -------------------------------------------------------------------------------------------------------------------------- |
 | r         | Opens a file for reading, the file must exist already.                                                                     |
 | w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten.                      |
+| rb        | Opens a file for reading binary, the file must exist already.                                                              |
+| wb        | Opens a file for writing in binary mode, if a file does not exist one is created, else existing file is overwritten.       |
 | a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file.               |
 | r+        | Opens a file for updating (read + write), the file must exist already.                                                     |
 | w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten       |
