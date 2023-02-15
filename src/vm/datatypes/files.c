@@ -100,7 +100,7 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        readLineBufferSize = AS_NUMBER(args[1]);
+        readLineBufferSize = AS_NUMBER(args[1]) + 1;
     }
 
 #ifdef _WIN32

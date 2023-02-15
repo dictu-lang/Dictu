@@ -55,7 +55,9 @@ with("test.txt", "w") {
 
 ### Reading files
 
-There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character. It takes an optional arugment for the buffer read size.
+There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character.
+
+`readline()` can also take an optional argument for the buffer size.
 
 ```cs
 // Read entire file
@@ -71,6 +73,14 @@ with("test.txt", "r") {
     // When you reach the end of the file, nil is returned
     while((line = file.readLine()) != nil) {
         print(line);
+    }
+}
+
+with("test.txt", "r") {
+    var line;
+    // When you reach the end of the file, nil is returned
+    while((line = file.readLine(10)) != nil) {
+        print(line); // Will only read 10
     }
 }
 ```
