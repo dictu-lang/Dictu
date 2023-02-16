@@ -13,53 +13,59 @@
 
 #include "linenoise/linenoise.h"
 
-static bool replCountBraces(char *line) {
-    int leftBraces = 0;
-    int rightBraces = 0;
-    bool inString = false;
-
-    for (int i = 0; line[i]; i++) {
-        if (line[i] == '\'' || line[i] == '"') {
-            inString = !inString;
-        }
-
-        if (inString) {
-            continue;
-        }
-
-        if (line[i] == '{') {
-            leftBraces++;
-        } else if (line[i] == '}') {
-            rightBraces++;
+static int matchStringLiteral(char* line, int i)
+{
+    char quote = line[i];
+    
+    if (quote != '\'' && quote != '"') {
+        return i; // not at beginning of string, return same index
+    }
+    
+    while (line[++i]) {
+        if (line[i] == '\\') {
+            char skipped = line[++i];
+            
+            if (skipped == '\0') {
+                return -1; // string not closed
+            }
+        } else if (line[i] == quote) {
+            return i; // return index of last character of string
         }
     }
-
-    return leftBraces == rightBraces;
+    
+    return -1; // string not closed
 }
 
-static bool replCountQuotes(char *line) {
-    int singleQuotes = 0;
-    int doubleQuotes = 0;
-    char quote = '\0';
+static bool matchBraces(char *line) {
+    int braceLevel = 0;
 
     for (int i = 0; line[i]; i++) {
-        if (line[i] == '\'' && quote != '"') {
-            singleQuotes++;
-
-            if (quote == '\0') {
-                quote = '\'';
-            }
-        } else if (line[i] == '"' && quote != '\'') {
-            doubleQuotes++;
-            if (quote == '\0') {
-                quote = '"';
-            }
-        } else if (line[i] == '\\') {
-            line++;
+        i = matchStringLiteral(line, i);
+        
+        if (i == -1) {
+            return false;
+        }
+        
+        if (line[i] == '\0') {
+            break;
+        } else if (line[i] == '{') {
+            braceLevel++;
+        } else if (line[i] == '}') {
+            braceLevel--;
+        }
+        
+        if (braceLevel < 0) {
+            return true; // closed brace before opening, end line now
         }
     }
 
-    return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
+    return braceLevel == 0;
+}
+
+static void memcpyAndAppendNul(char* dst, char* src, int len)
+{
+    memcpy(dst, src, len);
+    dst[len] = '\0';
 }
 
 static void repl(DictuVM *vm) {
@@ -68,14 +74,14 @@ static void repl(DictuVM *vm) {
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        int fullLineLength = strlen(line);
-        char *fullLine = malloc(sizeof(char) * (fullLineLength + 1));
-        snprintf(fullLine, fullLineLength + 1, "%s", line);
+        int statementLength = strlen(line);
+        char *statement = malloc(sizeof(char) * (statementLength + 1));
+        memcpyAndAppendNul(statement, line, statementLength);
 
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
 
-        while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
+        while (!matchBraces(statement)) {
             free(line);
             line = linenoise("... ");
 
@@ -84,25 +90,26 @@ static void repl(DictuVM *vm) {
             }
 
             int lineLength = strlen(line);
-            char *temp = realloc(fullLine, sizeof(char) * fullLineLength + lineLength);
+            statement[statementLength++] = '\n'; // keep newline characters between lines
+            char *temp = realloc(statement, sizeof(char) * (statementLength + lineLength + 1));
 
             if (temp == NULL) {
                 printf("Unable to allocate memory\n");
                 exit(71);
             }
 
-            fullLine = temp;
-            memcpy(fullLine + fullLineLength, line, lineLength);
-            fullLineLength += lineLength;
+            statement = temp;
+            memcpyAndAppendNul(statement + statementLength, line, lineLength);
+            statementLength += lineLength;
 
             linenoiseHistoryAdd(line);
             linenoiseHistorySave("history.txt");
         }
 
-        dictuInterpret(vm, "repl", fullLine);
+        dictuInterpret(vm, "repl", statement);
 
         free(line);
-        free(fullLine);
+        free(statement);
     }
 }
 
