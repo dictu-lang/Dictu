@@ -6,8 +6,8 @@ set(libraries)
 set(INCLUDE_DIR include/)
 
 # Remove CLI files
-list(FILTER sources EXCLUDE REGEX "(main|linenoise|utf8).c")
-list(FILTER headers EXCLUDE REGEX "(linenoise|utf8).h")
+list(FILTER sources EXCLUDE REGEX "(main|stringbuf|linenoise(-win32)?|utf8).c")
+list(FILTER headers EXCLUDE REGEX "(linenoise|stringbuf|utf8).h")
 
 find_library(SQLITE_LIB SQLite3)
 set(THREADS)
@@ -45,6 +45,7 @@ if(WIN32)
     # ws2_32 is required for winsock2.h to work correctly
     list(APPEND libraries ws2_32 bcrypt)
 else()
+    list(FILTER sources EXCLUDE REGEX "linenoise-win32.c")
     list(APPEND libraries m)
 endif()
 

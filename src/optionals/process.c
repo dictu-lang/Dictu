@@ -103,7 +103,7 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
     CloseHandle(childOutWrite);
     FREE_ARRAY(vm, char, args, len);
 
-    int dwRead;
+    DWORD dwRead;
     int size = 1024;
     char* output = ALLOCATE(vm, char, size);
     char buffer[1024];
