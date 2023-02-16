@@ -26,6 +26,8 @@ when you leave the with scope automatically. Note, the path when opening files i
 | --------- | -------------------------------------------------------------------------------------------------------------------------- |
 | r         | Opens a file for reading, the file must exist already.                                                                     |
 | w         | Opens a file for writing, if a file does not exist one is created, else existing file is overwritten.                      |
+| rb        | Opens a file for reading binary, the file must exist already.                                                              |
+| wb        | Opens a file for writing in binary mode, if a file does not exist one is created, else existing file is overwritten.       |
 | a         | Opens a file for appending, if a file does not exist one is created, else appends text to the end of a file.               |
 | r+        | Opens a file for updating (read + write), the file must exist already.                                                     |
 | w+        | Opens a file for updating (read + write), if a file does not exist one is created, else existing file is overwritten       |
@@ -57,6 +59,8 @@ with("test.txt", "w") {
 
 There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character.
 
+`readline()` can also take an optional argument for the buffer size.
+
 ```cs
 // Read entire file
 with("test.txt", "r") {
@@ -71,6 +75,14 @@ with("test.txt", "r") {
     // When you reach the end of the file, nil is returned
     while((line = file.readLine()) != nil) {
         print(line);
+    }
+}
+
+with("test.txt", "r") {
+    var line;
+    // When you reach the end of the file, nil is returned
+    while((line = file.readLine(10)) != nil) {
+        print(line); // Will only read 10
     }
 }
 ```
