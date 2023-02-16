@@ -15,12 +15,18 @@ static Value writeFile(DictuVM *vm, int argCount, Value *args) {
     ObjFile *file = AS_FILE(args[0]);
     ObjString *string = AS_STRING(args[1]);
 
-    if (strcmp(file->openType, "r") == 0) {
+    if (strcmp(file->openType, "r") == 0 || strcmp(file->openType, "rb") == 0) {
         runtimeError(vm, "File is not writable!");
         return EMPTY_VAL;
     }
 
-    int charsWrote = fprintf(file->file, "%s", string->chars);
+    int charsWrote = 0;
+
+    if (strcmp(file->openType, "wb") == 0) {
+        charsWrote = fwrite(string->chars, 1, string->length, file->file);
+    } else {
+        charsWrote = fprintf(file->file, "%s", string->chars);
+    }
     fflush(file->file);
 
     return NUMBER_VAL(charsWrote);
@@ -83,20 +89,35 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     buffer[bytesRead] = '\0';
+    
     return OBJ_VAL(takeString(vm, buffer, bytesRead));
 }
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "readLine() takes no arguments (%d given)", argCount);
+    if (argCount > 1) {
+        runtimeError(vm, "readLine() takes at most 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    // TODO: This could be better
-    char line[4096];
+    int readLineBufferSize = 4096;
+
+    if (argCount == 1) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "readLine() argument must be a number");
+            return EMPTY_VAL;
+        }
+
+        readLineBufferSize = AS_NUMBER(args[1]) + 1;
+    }
+
+#ifdef _WIN32
+    char *line = ALLOCATE(vm, char, readLineBufferSize);
+#else 
+    char line[readLineBufferSize]; 
+#endif
 
     ObjFile *file = AS_FILE(args[0]);
-    if (fgets(line, 4096, file->file) != NULL) {
+    if (fgets(line, readLineBufferSize, file->file) != NULL) {
         int lineLength = strlen(line);
         // Remove newline char
         if (line[lineLength - 1] == '\n') {
@@ -105,6 +126,10 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
         }
         return OBJ_VAL(copyString(vm, line, lineLength));
     }
+
+#ifdef _WIN32
+    FREE(vm, char, line);
+#endif 
 
     return NIL_VAL;
 }
