@@ -71,7 +71,7 @@ jobs:
       matrix:
         os: [windows-2022, windows-2019]
 
-       steps:
+    steps:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
