@@ -2,9 +2,9 @@
 "import System;\n" \
 "\n" \
 "abstract class UnitTest {\n" \
-"    var METHOD_NAME_PADDING = '    ';\n" \
-"    var RESULTS_PADDING     = '    ';\n" \
-"    var ASSERTION_PADDING   = '         ';\n" \
+"    const METHOD_NAME_PADDING = '    ';\n" \
+"    const RESULTS_PADDING     = '    ';\n" \
+"    const ASSERTION_PADDING   = '         ';\n" \
 "    var forceOnlyFailures   = false;\n" \
 "    var forceExitOnFailure  = false;\n" \
 "\n" \

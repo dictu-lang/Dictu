@@ -170,6 +170,14 @@ Value createDatetimeModule(DictuVM *vm) {
     defineNative(vm, &module->values, "strptime", strptimeNative);
     #endif
 
+    /**
+     * Define Datetime properties
+     */
+    defineNativeProperty(vm, &module->values, "SECONDS_IN_MINUTE", NUMBER_VAL(60));
+    defineNativeProperty(vm, &module->values, "SECONDS_IN_HOUR", NUMBER_VAL(3600));
+    defineNativeProperty(vm, &module->values, "SECONDS_IN_DAY", NUMBER_VAL(86400));
+    defineNativeProperty(vm, &module->values, "SECONDS_IN_WEEK", NUMBER_VAL(604800));
+
     pop(vm);
     pop(vm);
 

@@ -1,0 +1,83 @@
+/**
+ * parser.du
+ *
+ * Testing the Argparse.Parser methods
+ */
+import System;
+
+from UnitTest import UnitTest;
+from Argparse import Parser;
+
+System.argv.extend([
+    "--number", "7",
+    "-n", "8080",
+    "-s", "string",
+    "-b",
+    "-l", "adsf,qwer",
+    "--port", "8080"
+]);
+
+class TestArgparser < UnitTest {
+    private parser;
+
+    setUp() {
+        this.parser = Parser("parser_test", "Test Program", "");
+    }
+
+    testNewParser() {
+        this.assertNotNil(this.parser);
+    }
+
+    private addFlagCheck(res) {
+        this.assertType(res, "result");
+        this.assertNotNil(res);
+        this.assertTruthy(res.success());
+    }
+
+    testAddString() {
+        this.parser.addString("-s", "string arg", false);
+        const res = this.parser.parse();
+        const args = res.unwrap();
+        this.addFlagCheck(res);
+        this.assertNotNil(args.s);
+    }
+
+    testAddNumber() {
+        this.parser.addNumber("-n", "number arg", true);
+        const res = this.parser.parse();
+        const args = res.unwrap();
+        this.addFlagCheck(res);
+        this.assertNotNil(args.n);
+    }
+
+    testAddBool() {
+        this.parser.addBool("-b", "bool arg", true, "bool");
+        const res = this.parser.parse();
+        this.addFlagCheck(res);
+        const args = res.unwrap();
+        this.assertNotNil(args.bool);
+    }
+
+    testAddLongflag() {
+        this.parser.addNumber("--port", "tcp port to listen on", true);
+        const res = this.parser.parse();
+        this.addFlagCheck(res);
+        const args = res.unwrap();
+        this.assertNotNil(args.port);
+    }
+
+    testAddList() {
+        this.parser.addString("-l", "list arg", true);
+        const res = this.parser.parse();
+        this.addFlagCheck(res);
+        const args = res.unwrap();
+        this.assertNotNil(args.l);
+    }
+
+    testUsage() {
+        const usage = this.parser.usage();
+        this.assertNotEquals(usage, "");
+    }
+}
+
+TestArgparser().run();

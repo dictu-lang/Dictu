@@ -11,82 +11,77 @@
 #include "../include/dictu_include.h"
 #include "argparse.h"
 
-#ifndef DISABLE_LINENOISE
-#include "linenoise.h"
-#include "encodings/utf8.h"
+#include "linenoise/linenoise.h"
 
-static bool replCountBraces(char *line) {
-    int leftBraces = 0;
-    int rightBraces = 0;
-    bool inString = false;
+static int matchStringLiteral(char* line, int i)
+{
+    char quote = line[i];
+    
+    if (quote != '\'' && quote != '"') {
+        return i; // not at beginning of string, return same index
+    }
+    
+    while (line[++i]) {
+        if (line[i] == '\\') {
+            char skipped = line[++i];
+            
+            if (skipped == '\0') {
+                return -1; // string not closed
+            }
+        } else if (line[i] == quote) {
+            return i; // return index of last character of string
+        }
+    }
+    
+    return -1; // string not closed
+}
+
+static bool matchBraces(char *line) {
+    int braceLevel = 0;
 
     for (int i = 0; line[i]; i++) {
-        if (line[i] == '\'' || line[i] == '"') {
-            inString = !inString;
+        i = matchStringLiteral(line, i);
+        
+        if (i == -1) {
+            return false;
         }
-
-        if (inString) {
-            continue;
-        }
-
-        if (line[i] == '{') {
-            leftBraces++;
+        
+        if (line[i] == '\0') {
+            break;
+        } else if (line[i] == '{') {
+            braceLevel++;
         } else if (line[i] == '}') {
-            rightBraces++;
+            braceLevel--;
+        }
+        
+        if (braceLevel < 0) {
+            return true; // closed brace before opening, end line now
         }
     }
 
-    return leftBraces == rightBraces;
+    return braceLevel == 0;
 }
 
-static bool replCountQuotes(char *line) {
-    int singleQuotes = 0;
-    int doubleQuotes = 0;
-    char quote = '\0';
-
-    for (int i = 0; line[i]; i++) {
-        if (line[i] == '\'' && quote != '"') {
-            singleQuotes++;
-
-            if (quote == '\0') {
-                quote = '\'';
-            }
-        } else if (line[i] == '"' && quote != '\'') {
-            doubleQuotes++;
-            if (quote == '\0') {
-                quote = '"';
-            }
-        } else if (line[i] == '\\') {
-            line++;
-        }
-    }
-
-    return singleQuotes % 2 == 0 && doubleQuotes % 2 == 0;
+static void memcpyAndAppendNul(char* dst, char* src, int len)
+{
+    memcpy(dst, src, len);
+    dst[len] = '\0';
 }
-#endif
 
 static void repl(DictuVM *vm) {
     printf(DICTU_STRING_VERSION);
     char *line;
-
-    #ifndef DISABLE_LINENOISE
-
-    linenoiseSetEncodingFunctions(
-            linenoiseUtf8PrevCharLen,
-            linenoiseUtf8NextCharLen,
-            linenoiseUtf8ReadCode);
-
     linenoiseHistoryLoad("history.txt");
 
     while((line = linenoise(">>> ")) != NULL) {
-        int fullLineLength = strlen(line);
-        char *fullLine = malloc(sizeof(char) * (fullLineLength + 1));
-        snprintf(fullLine, fullLineLength + 1, "%s", line);
+        int statementLength = strlen(line);
+        char *statement = malloc(sizeof(char) * (statementLength + 1));
+        memcpyAndAppendNul(statement, line, statementLength);
 
         linenoiseHistoryAdd(line);
         linenoiseHistorySave("history.txt");
 
-        while (!replCountBraces(fullLine) || !replCountQuotes(fullLine)) {
+        while (!matchBraces(statement)) {
             free(line);
             line = linenoise("... ");
 
@@ -95,69 +90,27 @@ static void repl(DictuVM *vm) {
             }
 
             int lineLength = strlen(line);
-            char *temp = realloc(fullLine, sizeof(char) * fullLineLength + lineLength);
+            statement[statementLength++] = '\n'; // keep newline characters between lines
+            char *temp = realloc(statement, sizeof(char) * (statementLength + lineLength + 1));
 
             if (temp == NULL) {
                 printf("Unable to allocate memory\n");
                 exit(71);
             }
 
-            fullLine = temp;
-            memcpy(fullLine + fullLineLength, line, lineLength);
-            fullLineLength += lineLength;
+            statement = temp;
+            memcpyAndAppendNul(statement + statementLength, line, lineLength);
+            statementLength += lineLength;
 
             linenoiseHistoryAdd(line);
             linenoiseHistorySave("history.txt");
         }
 
-        dictuInterpret(vm, "repl", fullLine);
+        dictuInterpret(vm, "repl", statement);
 
         free(line);
-        free(fullLine);
+        free(statement);
     }
-    #else
-    #define BUFFER_SIZE 8
-    line = calloc(BUFFER_SIZE, sizeof(char));
-    if (line == NULL) {
-        printf("Unable to allocate memory\n");
-        exit(71);
-    }
-    size_t lineLength = 0;
-    size_t lineMemory = BUFFER_SIZE;
-
-    while (true) {
-        printf(">>> ");
-
-        char buffer[BUFFER_SIZE];
-        while (fgets(buffer, BUFFER_SIZE, stdin) != NULL) {
-            while (lineLength + BUFFER_SIZE > lineMemory) {
-                lineMemory *= 2;
-                line = realloc(line, lineMemory);
-                if (line == NULL) {
-                    printf("Unable to allocate memory\n");
-                    exit(71);
-                }
-            }
-            strcat(line, buffer);
-            lineLength += BUFFER_SIZE;
-            if (strlen(buffer) != BUFFER_SIZE - 1 || buffer[BUFFER_SIZE-2] == '\n') {
-                break;
-            }
-        }
-
-        if (line[0] == '\0') {
-            printf("\n");
-            break;
-        }
-
-        dictuInterpret(vm, "repl", line);
-        lineLength = 0;
-        line[0] = '\0';
-    }
-
-    #undef BUFFER_SIZE
-    free(line);
-    #endif
 }
 
 static char *readFile(const char *path) {
@@ -221,7 +174,7 @@ int main(int argc, char *argv[]) {
     };
 
     struct argparse argparse;
-    argparse_init(&argparse, options, usage, 0);
+    argparse_init(&argparse, options, usage, ARGPARSE_STOP_AT_NON_OPTION);
     argc = argparse_parse(&argparse, argc, (const char **)argv);
 
     if (version) {

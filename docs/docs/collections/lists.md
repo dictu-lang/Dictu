@@ -61,7 +61,7 @@ myList.push(10); // [10]
 myList.push(11); // [10, 11]
 ```
 
-#### list.insert(value, number)
+#### list.insert(value, Number)
 
 To insert a value into a list at a given index without replacing the value use .insert().
 
@@ -84,7 +84,7 @@ x + [11, 12];
 print(x); // [10, 11, 12]
 ```
 
-#### list.extend(list)
+#### list.extend(List)
 
 Similar to the + operator however this mutates the list the method is called on rather than returning a new list.
 
@@ -99,7 +99,7 @@ x.extend([1, 2, 3]);
 print(x); // [1, 2, 3, 1, 2, 3]
 ```
 
-### list.toString()
+### list.toString() -> String
 
 Converts a list to a string.
 
@@ -107,7 +107,7 @@ Converts a list to a string.
 ["1", 11].toString();        // ['1', 11]
 ["1", [11, "1"]].toString(); // ['1', [11, '1']]
 ```
-### list.len()
+### list.len() -> Number
 
 Returns the length of the given list.
 
@@ -115,7 +115,7 @@ Returns the length of the given list.
 [1, 2, 3].len(); // 3
 ```
 
-### list.toBool()
+### list.toBool() -> Boolean
 
 Converts a list to a boolean. A list is a "truthy" value when it has a length greater than 0.
 
@@ -125,7 +125,7 @@ Converts a list to a boolean. A list is a "truthy" value when it has a length gr
 [[]].toBool(); // true
 ```
 
-### list.contains(value)
+### list.contains(value) -> Boolean
 
 To check if a value contains within a list we use `.contains()`
 
@@ -135,7 +135,7 @@ myList.contains(2); // true
 myList.contains(10); // false
 ```
 
-### list.join(string: delimiter -> optional)
+### list.join(String: delimiter -> Optional) -> String
 
 To convert a list of elements to a string use `.join()` to concatenate elements together by a given delimiter.
 If a delimiter is not supplied `", "` is the default. Attempting to join an empty list will return an empty string.
@@ -165,7 +165,7 @@ myList.remove(1);
 print(myList); // [2]
 ```
 
-### list.pop(number: index -> optional)
+### list.pop(Number: index -> Optional) -> value
 
 To remove a value from a list, with an optional index, use `.pop()`
 
@@ -190,7 +190,7 @@ print(myList); // [4, 3, 2, 1]
 ```
 
 ### Copying lists
-#### list.copy()
+#### list.copy() -> List
 
 When you are working with a mutable datatype taking a reference of a list when creating a new variable will modify the original list.
 ```cs
@@ -208,7 +208,8 @@ print(list1); // [1, 2]
 print(list2); // [10, 2]
 ```
 
-#### list.deepCopy()
+#### list.deepCopy() -> List
+
 To get around this, we can deepCopy the list.
 ```cs
 var list1 = [[1, 2]];
@@ -233,7 +234,7 @@ list1.sort();
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 ```
 
-### list.forEach(func)
+### list.forEach(Func)
 
 To run a function on every element in a list we use `.forEach`. The callback function
 passed to `.forEach` expects one parameter which will be the current value.
@@ -246,7 +247,7 @@ myList.forEach(def (value) => {
 });
 ```
 
-### list.map(func)
+### list.map(Func) -> List
 
 Similar to `.foreach`, `.map` will run a function for each element within the list, however
 the difference is that `.map` returns a new list of values generated from the callback function.
@@ -257,7 +258,7 @@ parameter which is the current item in the list.
 print([1, 2, 3, 4, 5].map(def (x) => x * 2)); // [2, 4, 6, 8, 10]
 ```
 
-### list.filter(func)
+### list.filter(Func) -> List
 
 To filter out values within a list we use `.filter()`. Filter expects a single parameter which is a callback
 and if the callback returns a truthy value it will be appended to the list. The callback itself also expects one
@@ -269,7 +270,7 @@ Note: `.filter()` returns a new list.
 print([1, 2, 3, 4, 5].filter(def (x) => x > 2)); // [3, 4, 5]
 ```
 
-### list.reduce(func, value: initial -> optional)
+### list.reduce(Func, value: initial -> Optional) -> List
 
 To reduce a list down to a single value we use `.reduce()`. Reduce expects at least one parameter which is a callback
 that will be executed on each item of the list. The value of the callback function is returned and saved for the next
@@ -285,7 +286,7 @@ By default the initial value for `.reduce()` is 0, however we can change this to
 print(["Dictu ", "is", " great!"].reduce(def (accumulate, element) => accumulate + element, "")); // 'Dictu is great!'
 ```
 
-### list.find(func, number: start -> optional, number: end -> optional)
+### list.find(Func, Number: start -> Optional, Number: end -> Optional) -> List
 
 To find a single item within a list we use `.find()`. Find will search through each item in the list and as soon as the
 callback returns a truthy value, the item that satisfied the callback is returned, if none of the items satisfy the callback
@@ -299,7 +300,7 @@ print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2)); // 4
 print([1, 2, 3, 4, 5, 6].find(def (item) => item % 2 == 0, 2, 3)); // nil
 ```
 
-### list.findIndex(func, number: start -> optional, number: end -> optional)
+### list.findIndex(Func, Number: start -> Optional, Number: end -> Optional) -> Number
 
 To find a single item within a list we use `.findIndex()`. Find will search through each item in the list and as soon as the
 callback returns a truthy value, the index at which the item that satisfied the callback is returned, if none of the items satisfy the callback
@@ -311,4 +312,15 @@ Note: The first item to satisfy the callback is returned.
 print([1, 2, 3].findIndex(def (item) => item == 2)); // 1
 print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2)); // 3
 print([1, 2, 3, 4, 5, 6].findIndex(def (item) => item % 2 == 0, 2, 3)); // nil
+```
+
+### list.splice(Number, Number, List) -> List
+
+Splice provides a means of changing the contents of a list by removing or replacing existing elements and/or adding new elements and returns a new list reflecting the changes.
+
+```cs
+[1, 2, 3, 4, 5].splice(1, 0, [100]); // [1, 100, 2, 3, 4, 5]
+[1, 2, 3, 4, 5].splice(1, 1, [100]); // [1, 100, 3, 4, 5]
+[1, 2, 3, 4, 5].splice(1, 2, [100]); // [1, 100, 4, 5]
+[1, 2, 3, 4, 5].splice(3, 0, [100, 101, 102]); // [1, 2, 3, 100, 101, 102, 4, 5]
 ```

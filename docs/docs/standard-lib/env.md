@@ -24,7 +24,7 @@ To make use of the Env module an import is required.
 import Env;
 ```
 
-### Env.get(string, string: defaultValue -> optional)
+### Env.get(String, String: defaultValue -> Optional) -> ?String
 
 Get an environment variable. `.get()` will return a string if a valid environment variable is found otherwise nil.
 
@@ -36,7 +36,7 @@ Env.get("valid key"); // "value"
 Env.get("bad key!", "default value!!!"); // "default value!!!"
 ```
 
-### Env.set(string, value)
+### Env.set(String, ?String)
 
 Change or add an environment variable. You can clear an environment variable by passing a `nil` value.
 When setting an environment variable the key must be a string and the value must be either a string or nil.
@@ -58,7 +58,7 @@ Note: This is not available on Windows systems.
 Env.clearAll();
 ```
 
-### Env.readFile(string: path -> optional)
+### Env.readFile(String: path -> Optional) -> Result
 
 To read environment variables from a file this helper method is provided.
 By default it will attempt to read `.env` unless a different path is supplied.

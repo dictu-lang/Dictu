@@ -122,7 +122,7 @@ class SomeClass {
 SomeClass().printMessage(); // Hello!
 ```
 
-### toString
+### toString() -> String
 
 Classes and instances can both be converted to a string using the toString method. If you want a different string
 representation for an object you can overload the toString method in your class.
@@ -148,7 +148,7 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
-### methods
+### methods() -> List
 
 Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This
 will return a list of strings, where the strings are the names of all public methods stored within a class.
@@ -205,7 +205,7 @@ var myObject = Test();
 print(myObject.x); // 10
 ```
 
-### hasAttribute
+### hasAttribute(String) -> Boolean
 
 Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing an attribute that may not be there, you should check
 if the object has the given attribute. This is done via `hasAttribute`.
@@ -226,7 +226,7 @@ print(myObject.hasAttribute("y")); // false
 print(myObject.z); // Undefined property 'z'.
 ```
 
-### getAttribute
+### getAttribute(String) -> value
 
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
@@ -247,7 +247,7 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
-### getAttributes
+### getAttributes() -> List
 
 The `getAttributes` method returns all public attributes on the given instance of a class.
 
@@ -262,7 +262,7 @@ var myObject = Test();
 print(myObject.getAttributes()); // ["x"]
 ```
 
-### setAttribute
+### setAttribute(String, value)
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
 
@@ -571,7 +571,7 @@ print(myObject.x); // 100
 
 To get around this, instances have two methods, obj.copy() and obj.deepCopy().
 
-### obj.copy()
+### obj.copy() -> value
 
 This method will take a shallow copy of the object, and create a new copy of the instance. Mutable types are still references
 and will mutate on both new and old if changed. See obj.deepCopy() to avoid this.
@@ -594,7 +594,7 @@ myNewObject.obj.x = 100;
 print(myObject.obj.x); // 100
 ```
 
-### obj.deepCopy()
+### obj.deepCopy() -> value
 
 This method will take a deep copy of the object, and create a new copy of the instance. The difference with deepCopy()
 is if the object contains references to any mutable datatypes these will also be copied and returned as new values meaning,
@@ -620,7 +620,7 @@ print(myObject.obj.x); // 10
 
 ## Checking instance types
 
-### instance.isInstance(class)
+### instance.isInstance(Class) -> Boolean
 
 Checking if an instance is of a given class is made very simple with the `isInstance` method. This method takes in a class as an 
 argument and returns a boolean based on whether or not the object was instantiated from the given class. Since classes can inherit other
@@ -649,8 +649,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes that by themselves have no impact.
-They, however, can provide user defined changes at runtime to given classes.
+Annotations are metadata that are applied to classes and methods that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
@@ -659,25 +658,41 @@ class AnnotatedClass {
 }
 ```
 
-Annotations are accessed via the `.annotations` property available on all classes. If annotations
-are preset a dictionary is returned, otherwise the `.annotations` property is `nil`.
+```cs
+class ClassWithMethodAnnotation {
+    init() {}
+
+    @MethodAnnotation
+    method() {}
+}
+```
+
+Annotations are access via the `.classAnnotations` and `.methodAnnotations` proprties available on all classes.
+
+For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+
+For method annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 ```cs
-print(AnnotatedClass.annotations); // {"Annotation": nil}
+print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
+```
+
+```cs
+print(ClassWithMethodAnnotation.methodAnnotations); // {"method": {"MethodAnnotation": nil}}
 ```
 
 Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
 
-```
+```cs
 @Annotation("Some extra value!")
 class AnnotatedClass {
 
 }
 
-print(AnnotatedClass.annotations); // {"Annotation": "Some extra value!"}
+print(AnnotatedClass.classAnnotations); // {"Annotation": "Some extra value!"}
 ```
 
-Multiple annotations can be supplied to classes.
+Multiple annotations can be supplied to classes and methods.
 
 ```cs
 @Annotation
@@ -685,7 +700,10 @@ Multiple annotations can be supplied to classes.
 @SomeOtherAnnotation
 class AnnotatedClass {
 
+    @MethodAnnotation
+    @AnotherMethodAnnotation(10)
+    @SomeOtherMethodAnnotation("another one")
+    method() {}
+
 }
 ```
-
-**Note**: Annotations are not available on methods.

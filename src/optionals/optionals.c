@@ -1,25 +1,29 @@
 #include "optionals.h"
 
 BuiltinModules modules[] = {
-        {"Math", &createMathsModule, false},
-        {"Env", &createEnvModule, true},
-        {"JSON", &createJSONModule, false},
-        {"Log", &createLogModule, false},
-        {"Path", &createPathModule, false},
-        {"Datetime", &createDatetimeModule, false},
-        {"Socket", &createSocketModule, false},
-        {"Random", &createRandomModule, false},
-        {"Base64", &createBase64Module, false},
-        {"Hashlib", &createHashlibModule, false},
-        {"Sqlite", &createSqliteModule, false},
-        {"Process", &createProcessModule, false},
-        {"System", &createSystemModule, false},
-        {"Term", &createTermModule, false},
-        {"UnitTest", &createUnitTestModule, true},
-        {"Inspect", &createInspectModule, false},
-        {"Object", &createObjectModule, true},
+    {"Argparse", &createArgParseModule, false},
+    {"Math", &createMathsModule, false},
+    {"Env", &createEnvModule, true},
+    {"JSON", &createJSONModule, false},
+    {"Log", &createLogModule, false},
+    {"Path", &createPathModule, false},
+    {"Datetime", &createDatetimeModule, false},
+    {"Socket", &createSocketModule, false},
+    {"Random", &createRandomModule, false},
+    {"Base64", &createBase64Module, false},
+    {"Hashlib", &createHashlibModule, false},
+    {"Sqlite", &createSqliteModule, false},
+    {"Process", &createProcessModule, false},
+    {"System", &createSystemModule, false},
+    {"Term", &createTermModule, false},
+#ifndef DISABLE_UUID
+    {"UUID", &createUuidModule, false},
+#endif
+    {"UnitTest", &createUnitTestModule, true},
+    {"Inspect", &createInspectModule, false},
+    {"Object", &createObjectModule, true},
 #ifndef DISABLE_HTTP
-        {"HTTP", &createHTTPModule, true},
+    {"HTTP", &createHTTPModule, true},
 #endif
         {NULL, NULL, false}
 };

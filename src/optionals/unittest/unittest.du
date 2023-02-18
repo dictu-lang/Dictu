@@ -2,9 +2,9 @@ import Inspect;
 import System;
 
 abstract class UnitTest {
-    var METHOD_NAME_PADDING = '    ';
-    var RESULTS_PADDING     = '    ';
-    var ASSERTION_PADDING   = '         ';
+    const METHOD_NAME_PADDING = '    ';
+    const RESULTS_PADDING     = '    ';
+    const ASSERTION_PADDING   = '         ';
     var forceOnlyFailures   = false;
     var forceExitOnFailure  = false;
 

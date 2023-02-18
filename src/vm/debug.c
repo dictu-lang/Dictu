@@ -292,6 +292,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_METHOD", chunk, offset);
         case OP_DEFINE_CLASS_ANNOTATIONS:
             return constantInstruction("OP_DEFINE_CLASS_ANNOTATIONS", chunk, offset);
+        case OP_DEFINE_METHOD_ANNOTATIONS:
+            return constantInstruction("OP_DEFINE_METHOD_ANNOTATIONS", chunk, offset);
         case OP_ENUM:
             return constantInstruction("OP_ENUM", chunk, offset);
         case OP_SET_ENUM_VALUE:

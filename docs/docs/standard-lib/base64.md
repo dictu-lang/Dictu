@@ -23,7 +23,7 @@ To make use of the Base64 module an import is required.
 import Base64;
 ```
 
-### Base64.encode(string)
+### Base64.encode(String) -> String
 
 Base64 encode a given string.
 
@@ -31,7 +31,7 @@ Base64 encode a given string.
 Base64.encode("test"); // 'dGVzdA=='
 ```
 
-### Base64.decode(string)
+### Base64.decode(String) -> String
 
 Base64 decode a given string.
 

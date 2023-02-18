@@ -123,6 +123,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
+    vm->annotationString = copyString(vm, "__annotatedMethodName", 21);
 
     // Native functions
     defineAllNatives(vm);
@@ -1133,9 +1134,15 @@ static DictuInterpretResult run(DictuVM *vm) {
                         klass = klass->superclass;
                     }
 
-                    if (strcmp(name->chars, "annotations") == 0) {
+                    if (strcmp(name->chars, "classAnnotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
+                        push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
+                        DISPATCH();
+                    }
+                    
+                    if (strcmp(name->chars, "methodAnnotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->methodAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->methodAnnotations));
                         DISPATCH();
                     }
 
@@ -2161,7 +2168,16 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            klass->annotations = dict;
+            klass->classAnnotations = dict;
+
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            klass->methodAnnotations = dict;
 
             DISPATCH();
         }

@@ -8,7 +8,7 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends build-essential \
 	&& apt-get update \
 	&& apt-get install -y --reinstall ca-certificates \
-	&& apt-get install -y --no-install-recommends git cmake libcurl4-gnutls-dev \
+	&& apt-get install -y --no-install-recommends git cmake libcurl4-gnutls-dev uuid-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/dictu-lang/Dictu.git

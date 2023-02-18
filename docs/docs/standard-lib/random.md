@@ -25,7 +25,7 @@ To make use of the Random module an import is required.
 import Random;
 ```
 
-### Random.random()
+### Random.random() -> Number
 
 Return a random decimal between 0 and 1.
 
@@ -34,7 +34,7 @@ Random.random(); // 0.314
 Random.random(); // 0.271
 ```
 
-### Random.range(number: lowest, number: highest)
+### Random.range(Number: lowest, Number: highest) -> Number
 
 Returns a random integer between the lowest and highest inputs where both are inclusive.
 
@@ -44,7 +44,7 @@ Random.range(1, 5); // 4
 Random.range(0, 2); // 1
 ```
 
-### Random.select(list)
+### Random.select(List) -> value
 
 Returns a value randomly selected from the list.
 

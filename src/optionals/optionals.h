@@ -2,6 +2,7 @@
 #define dictu_optionals_h
 
 #include "../vm/util.h"
+#include "argparse/argparse.h"
 #include "math.h"
 #include "env/env.h"
 #include "system.h"
@@ -19,6 +20,7 @@
 #include "process.h"
 #include "inspect.h"
 #include "term.h"
+#include "uuid.h"
 #include "object/object.h"
 #include "unittest/unittest.h"
 
