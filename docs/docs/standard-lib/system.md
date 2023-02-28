@@ -59,15 +59,24 @@ It can take an optional number argument that specifies the mode. If a mode is no
 The actual permissions is modified by the process umask, which typically is S_IWGRP\|S_IWOTH (octal 022).
 
 ```cs
-var
-  S_IRWXU = System.S_IRWXU,
-  S_IRGRP = System.S_IRGRP,
-  S_IXGRP = System.S_IXGRP,
-  S_IROTH = System.S_IROTH,
-  S_IXOTH = System.S_IXOTH;
+const
+    S_IRWXU = System.S_IRWXU,
+    S_IRGRP = System.S_IRGRP,
+    S_IXGRP = System.S_IXGRP,
+    S_IROTH = System.S_IROTH,
+    S_IXOTH = System.S_IXOTH;
 
 System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 ```
+
+### System.mkdirAll(String, Number: mode -> Optional) -> Result<Nil>
+
+Make all directories for a given path.
+Returns a Result type and on success will unwrap nil.
+
+It can take an optional number argument that specifies the mode. If a mode is not passed, the directory will be created with `0777` permissions.
+
+The actual permissions is modified by the process umask, which typically is S_IWGRP\|S_IWOTH (octal 022).
 
 ### System.access(String, Number) -> Result<Nil>
 
