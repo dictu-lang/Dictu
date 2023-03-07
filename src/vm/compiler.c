@@ -2259,7 +2259,14 @@ static void breakStatement(Compiler *compiler) {
     for (int i = compiler->localCount - 1;
          i >= 0 && compiler->locals[i].depth > compiler->loop->scopeDepth;
          i--) {
-        emitByte(compiler, OP_POP);
+        if(compiler->locals[i].isUpvalue)
+        {
+            emitByte(compiler, OP_CLOSE_UPVALUE);
+        }
+        else
+        {
+            emitByte(compiler, OP_POP);
+        }
     }
 
     emitJump(compiler, OP_BREAK);
@@ -2276,7 +2283,14 @@ static void continueStatement(Compiler *compiler) {
     for (int i = compiler->localCount - 1;
          i >= 0 && compiler->locals[i].depth > compiler->loop->scopeDepth;
          i--) {
-        emitByte(compiler, OP_POP);
+        if(compiler->locals[i].isUpvalue)
+        {
+            emitByte(compiler, OP_CLOSE_UPVALUE);
+        }
+        else
+        {
+            emitByte(compiler, OP_POP);
+        }
     }
 
     // Jump to top of current innermost loop.
