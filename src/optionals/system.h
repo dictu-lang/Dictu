@@ -21,6 +21,7 @@
 #endif
 
 #include "optionals.h"
+#include "../vm/common.h"
 #include "../vm/vm.h"
 #include "../vm/memory.h"
 
