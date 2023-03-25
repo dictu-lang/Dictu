@@ -10,7 +10,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt upgrade -y && \
     apt install -y --no-install-recommends \
         build-essential \
-        git cmake \
+        git \
+        cmake \
         libcurl4-gnutls-dev \
         uuid-dev \
         ca-certificates && \
