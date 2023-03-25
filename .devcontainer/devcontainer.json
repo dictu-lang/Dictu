@@ -1,3 +1,29 @@
 {
-
+    "name": "Dictu",
+    "dockerFile": "Dockerfile",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "args": {}
+    },
+    "hostRequirements": {
+        "cpus": 1,
+        "memory": "512mb",
+        "storage": "1gb"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "files.exclude": {
+                    "**/LICENSE": true,
+                    "**/CODE_OF_CONDUCT.md": true
+                }
+            },
+            "extensions": [
+                "vscode-icons-team.vscode-icons",
+                "visualstudioexptteam.vscodeintellicode"
+            ]
+        }
+    },
+    "remoteUser": "vscode"
 }
