@@ -22,6 +22,6 @@ RUN git clone https://github.com/dictu-lang/Dictu.git && \
 	cmake --build ./build && \
 	./dictu tests/runTests.du && \
 	cp dictu /usr/bin/ && \
-	&& rm -rf * 
+	rm -rf * 
 
 USER root
