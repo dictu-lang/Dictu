@@ -69,7 +69,7 @@ To insert a value into a list at a given index without replacing the value use .
 var x = [10, 12];
 
 // Can insert to a list. This will not replace the value.
-myList.insert(11, 1); // [10, 11, 12]
+x.insert(11, 1); // [10, 11, 12]
 ```
 
 #### + Operator
