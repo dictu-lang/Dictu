@@ -2350,8 +2350,8 @@ static void switchStatement(Compiler *compiler) {
 
     } while(match(compiler, TOKEN_CASE));
 
+    emitByte(compiler, OP_POP); // expression.
     if (match(compiler,TOKEN_DEFAULT)){
-        emitByte(compiler, OP_POP); // expression.
         consume(compiler, TOKEN_COLON, "Expect ':' after default.");
         statement(compiler);
     }
