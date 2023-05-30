@@ -51,15 +51,27 @@ print(fibonacci(10));
 More [here.](https://github.com/Jason2605/Dictu/tree/develop/examples)
 
 ## Running Dictu
+
 Dictu requires that you have CMake installed and it is at least version 3.16.3.
 
-### CMake
+### Using CMake (at least version 3.16.3 or greater)
+
 ```bash
 $ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
-$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build 
-$ cmake --build ./build
-$ ./dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -B ./build
+$ cmake --build ./build # on Windows add "--config Release" here to get a Release build
+$ ./dictu # on Windows the executable is ".\Release\dictu.exe"
+```
+
+### Using CMake presets (version 3.21.0 or greater)
+
+```bash
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake --preset release
+$ cmake --build --preset release
+$ ./dictu # on Windows the executable is ".\Release\dictu.exe"
 ```
 
 #### Compiling without HTTP
@@ -67,12 +79,24 @@ $ ./dictu
 The HTTP class within Dictu requires [cURL](https://curl.haxx.se/) to be installed when building the interpreter. If you wish to
 build Dictu without cURL, and in turn the HTTP class, build with the `DISABLE_HTTP` flag.
 
+##### Without CMake presets (at least version 3.16.3 or greater)
+
 ```bash
 $ git clone -b master https://github.com/dictu-lang/Dictu.git
 $ cd Dictu
 $ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_HTTP=1 -B ./build 
-$ cmake --build ./build
-$ ./dictu
+$ cmake --build ./build # on Windows add "--config Release" here to get a Release build
+$ ./dictu # on Windows the executable is ".\Release\dictu.exe"
+```
+
+##### CMake presets (version 3.21.0 or greater)
+
+```bash
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake --preset release-nohttp
+$ cmake --build --preset release
+$ ./dictu # on Windows add "--config Release" here to get a Release build
 ```
 
 ### Docker Installation
