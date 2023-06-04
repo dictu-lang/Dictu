@@ -30,6 +30,16 @@
         "DISABLE_HTTP": true
       },
       "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "release-vcpkg",
+      "displayName": "Release configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_VCPKG": true
+      },
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     }
   ],
   "buildPresets": [
@@ -46,6 +56,13 @@
       "cleanFirst": true,
       "configurePreset": "debug",
       "configuration": "debug"
+    },
+    {
+      "name": "release-vcpkg",
+      "jobs": 4,
+      "cleanFirst": true,
+      "configurePreset": "release-vcpkg",
+      "configuration": "release"
     }
   ]
 }
