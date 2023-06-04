@@ -99,6 +99,34 @@ $ cmake --build --preset release
 $ ./dictu # on Windows add "--config Release" here to get a Release build
 ```
 
+#### Compiling with VCPKG
+
+This project includes support for the VCPKG C/C++ package manager in [manifest mode](https://learn.microsoft.com/en-us/vcpkg/users/manifests).
+To enable VCPKG support, the `VCPKG_ROOT` environmental variable must be set to the path of a check-out and bootstrapped
+[vcpkg repository](https://github.com/microsoft/vcpkg) on the compiling machine, and the `ENABLE_VCPKG` cmake flag must be set.
+
+Compiling with VCPKG will enable certain features of Dictu that requires external library features to be automatically pulled and compiled.
+
+##### Without CMake presets (at least version 3.16.3 or greater)
+
+```bash
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_VCPKG=1 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake -B ./build
+$ cmake --build ./build # on Windows add "--config Release" here to get a Release build
+$ ./dictu # on Windows the executable is ".\Release\dictu.exe"
+```
+
+##### CMake presets (version 3.21.0 or greater)
+
+```bash
+$ git clone -b master https://github.com/dictu-lang/Dictu.git
+$ cd Dictu
+$ cmake --preset release-vcpkg
+$ cmake --build --preset release-vcpkg
+$ ./dictu # on Windows add "--config Release" here to get a Release build
+```
+
 ### Docker Installation
 
 Refer to [Dictu Docker](https://github.com/dictu-lang/Dictu/blob/develop/Docker/README.md)
