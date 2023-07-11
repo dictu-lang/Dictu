@@ -19,7 +19,7 @@ static Chunk *currentChunk(Compiler *compiler) {
     return &compiler->function->chunk;
 }
 
-static void errorAt(Parser *parser, Token *token, const char *message) {
+static void errorAt(Parser *parser, LangToken *token, const char *message) {
     if (parser->panicMode) return;
     parser->panicMode = true;
 
@@ -67,7 +67,7 @@ static void recede(Parser *parser){
     }
 }
 
-static void consume(Compiler *compiler, TokenType type, const char *message) {
+static void consume(Compiler *compiler, LangTokenType type, const char *message) {
     if (compiler->parser->current.type == type) {
         advance(compiler->parser);
         return;
@@ -76,11 +76,11 @@ static void consume(Compiler *compiler, TokenType type, const char *message) {
     errorAtCurrent(compiler->parser, message);
 }
 
-static bool check(Compiler *compiler, TokenType type) {
+static bool check(Compiler *compiler, LangTokenType type) {
     return compiler->parser->current.type == type;
 }
 
-static bool match(Compiler *compiler, TokenType type) {
+static bool match(Compiler *compiler, LangTokenType type) {
     if (!check(compiler, type)) return false;
     advance(compiler->parser);
     return true;
@@ -275,11 +275,11 @@ static void statement(Compiler *compiler);
 
 static void declaration(Compiler *compiler);
 
-static ParseRule *getRule(TokenType type);
+static ParseRule *getRule(LangTokenType type);
 
 static void parsePrecedence(Compiler *compiler, Precedence precedence);
 
-static uint8_t identifierConstant(Compiler *compiler, Token *name) {
+static uint8_t identifierConstant(Compiler *compiler, LangToken *name) {
     ObjString *string = copyString(compiler->parser->vm, name->start, name->length);
     Value indexValue;
     if (tableGet(&compiler->stringConstants, string, &indexValue)) {
@@ -291,12 +291,12 @@ static uint8_t identifierConstant(Compiler *compiler, Token *name) {
     return index;
 }
 
-static bool identifiersEqual(Token *a, Token *b) {
+static bool identifiersEqual(LangToken *a, LangToken *b) {
     if (a->length != b->length) return false;
     return memcmp(a->start, b->start, a->length) == 0;
 }
 
-static int resolveLocal(Compiler *compiler, Token *name, bool inFunction) {
+static int resolveLocal(Compiler *compiler, LangToken *name, bool inFunction) {
     // Look it up in the local scopes. Look in reverse order so that the
     // most nested variable is found first and shadows outer ones.
     for (int i = compiler->localCount - 1; i >= 0; i--) {
@@ -345,7 +345,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal, bool cons
 // If the name is found outside of the immediately enclosing function,
 // this will flatten the closure and add upvalues to all of the
 // intermediate functions so that it gets walked down to this one.
-static int resolveUpvalue(Compiler *compiler, Token *name) {
+static int resolveUpvalue(Compiler *compiler, LangToken *name) {
     // If we are at the top level, we didn't find it.
     if (compiler->enclosing == NULL) return -1;
 
@@ -374,7 +374,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
     return -1;
 }
 
-static void addLocal(Compiler *compiler, Token name) {
+static void addLocal(Compiler *compiler, LangToken name) {
     if (compiler->localCount == UINT8_COUNT) {
         error(compiler->parser, "Too many local variables in function.");
         return;
@@ -392,13 +392,13 @@ static void addLocal(Compiler *compiler, Token name) {
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler, Token *name) {
+static void declareVariable(Compiler *compiler, LangToken *name) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
-    // Token *name = &compiler->parser->previous;
+    // LangToken *name = &compiler->parser->previous;
     for (int i = compiler->localCount - 1; i >= 0; i--) {
         Local *local = &compiler->locals[i];
         if (local->depth != -1 && local->depth < compiler->scopeDepth) break;
@@ -466,7 +466,7 @@ static int argumentList(Compiler *compiler, bool *unpack) {
     return argCount;
 }
 
-static void and_(Compiler *compiler, Token previousToken, bool canAssign) {
+static void and_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
 
@@ -487,7 +487,7 @@ static void and_(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static bool foldBinary(Compiler *compiler, TokenType operatorType) {
+static bool foldBinary(Compiler *compiler, LangTokenType operatorType) {
 #define FOLD(operator)                                                         \
     do {                                                                       \
         Chunk *chunk = currentChunk(compiler);                                 \
@@ -561,15 +561,15 @@ static bool foldBinary(Compiler *compiler, TokenType operatorType) {
 #undef FOLD_FUNC
 }
 
-static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
+static void binary(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(canAssign);
 
-    TokenType operatorType = compiler->parser->previous.type;
+    LangTokenType operatorType = compiler->parser->previous.type;
 
     ParseRule *rule = getRule(operatorType);
     parsePrecedence(compiler, (Precedence) (rule->precedence + 1));
 
-    TokenType currentToken = compiler->parser->previous.type;
+    LangTokenType currentToken = compiler->parser->previous.type;
 
     // Attempt constant fold.
     if ((previousToken.type == TOKEN_NUMBER) &&
@@ -630,7 +630,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
-static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
+static void ternary(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
     // Jump to the else branch if the condition is false.
@@ -653,7 +653,7 @@ static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static void call(Compiler *compiler, Token previousToken, bool canAssign) {
+static void call(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
     bool unpack = false;
@@ -664,20 +664,20 @@ static void call(Compiler *compiler, Token previousToken, bool canAssign) {
     emitByte(compiler, unpack);
 }
 
-static bool privatePropertyExists(Token name, Compiler *compiler) {
+static bool privatePropertyExists(LangToken name, Compiler *compiler) {
     ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
     Value _;
 
     return tableGet(&compiler->class->privateVariables, string, &_);
 }
 
-static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
+static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-    Token identifier = compiler->parser->previous;
+    LangToken identifier = compiler->parser->previous;
 
     if (match(compiler, TOKEN_LEFT_PAREN)) {
         bool unpack = false;
@@ -781,7 +781,7 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
-static void chain(Compiler *compiler, Token previousToken, bool canAssign) {
+static void chain(Compiler *compiler, LangToken previousToken, bool canAssign) {
     // If the operand is not nil we want to stop, otherwise continue
     int endJump = emitJump(compiler, OP_JUMP_IF_NIL);
 
@@ -988,7 +988,7 @@ static void number(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, parseNumber(compiler, canAssign));
 }
 
-static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
+static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
 
@@ -1131,7 +1131,7 @@ static void dict(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
 
-static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
+static void subscript(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     // slice with no initial index [1, 2, 3][:100]
     if (match(compiler, TOKEN_COLON)) {
@@ -1215,7 +1215,7 @@ static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
     }
 }
 
-static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
+static void namedVariable(Compiler *compiler, LangToken name, bool canAssign) {
     uint8_t getOp, setOp;
     int arg = resolveLocal(compiler, &name, false);
     if (arg != -1) {
@@ -1292,8 +1292,8 @@ static void variable(Compiler *compiler, bool canAssign) {
     namedVariable(compiler, compiler->parser->previous, canAssign);
 }
 
-static Token syntheticToken(const char *text) {
-    Token token;
+static LangToken syntheticToken(const char *text) {
+    LangToken token;
     token.start = text;
     token.length = (int) strlen(text);
     return token;
@@ -1377,8 +1377,8 @@ static void useStatement(Compiler *compiler) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after use statement.");
 }
 
-static bool foldUnary(Compiler *compiler, TokenType operatorType) {
-    TokenType valueToken = compiler->parser->previous.type;
+static bool foldUnary(Compiler *compiler, LangTokenType operatorType) {
+    LangTokenType valueToken = compiler->parser->previous.type;
 
     switch (operatorType) {
         case TOKEN_NOT: {
@@ -1415,7 +1415,7 @@ static bool foldUnary(Compiler *compiler, TokenType operatorType) {
 static void unary(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    TokenType operatorType = compiler->parser->previous.type;
+    LangTokenType operatorType = compiler->parser->previous.type;
     parsePrecedence(compiler, PREC_UNARY);
 
     // Constant fold.
@@ -1527,7 +1527,7 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     prefixRule(compiler, canAssign);
 
     while (precedence <= getRule(parser->current.type)->precedence) {
-        Token token = compiler->parser->previous;
+        LangToken token = compiler->parser->previous;
         advance(parser);
         ParseInfixFn infixRule = getRule(parser->previous.type)->infix;
         infixRule(compiler, token, canAssign);
@@ -1540,7 +1540,7 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     }
 }
 
-static ParseRule *getRule(TokenType type) {
+static ParseRule *getRule(LangTokenType type) {
     return &rules[type];
 }
 
@@ -1564,7 +1564,7 @@ static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler, bool private, Token *identifier, bool *hasAnnotation) {
+static void method(Compiler *compiler, bool private, LangToken *identifier, bool *hasAnnotation) {
     AccessLevel level = ACCESS_PUBLIC;
     FunctionType type;
 
@@ -1982,7 +1982,7 @@ static void funDeclaration(Compiler *compiler) {
 
 static void varDeclaration(Compiler *compiler, bool constant) {
     if (match(compiler, TOKEN_LEFT_BRACKET)) {
-        Token variables[255];
+        LangToken variables[255];
         int varCount = 0;
 
         do {
@@ -2029,9 +2029,9 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 }
 
 static void expressionStatement(Compiler *compiler) { 
-    Token previous = compiler->parser->previous;
+    LangToken previous = compiler->parser->previous;
     advance(compiler->parser);
-    TokenType t = compiler->parser->current.type;
+    LangTokenType t = compiler->parser->current.type;
 
     for (int i = 0; i < compiler->parser->current.length; ++i) {
         backTrack(&compiler->parser->scanner);
@@ -2394,7 +2394,7 @@ static void withStatement(Compiler *compiler) {
 
 static void checkForFileHandle(Compiler *compiler) {
     if (compiler->withBlock) {
-        Token token = syntheticToken("file");
+        LangToken token = syntheticToken("file");
         int local = resolveLocal(compiler, &token, true);
 
         if (local != -1) {
@@ -2483,7 +2483,7 @@ static void fromImportStatement(Compiler *compiler) {
         emitByte(compiler, OP_POP);
 
         uint8_t variables[255];
-        Token tokens[255];
+        LangToken tokens[255];
         int varCount = 0;
 
         do {
@@ -2534,7 +2534,7 @@ static void fromImportStatement(Compiler *compiler) {
         }
 
         uint8_t variables[255];
-        Token tokens[255];
+        LangToken tokens[255];
         int varCount = 0;
 
         do {
@@ -2605,8 +2605,8 @@ static void whileStatement(Compiler *compiler) {
 
 static void unpackListStatement(Compiler *compiler){
     int varCount = 0;
-    Token variables[255];
-    Token previous=compiler->parser->previous;
+    LangToken variables[255];
+    LangToken previous=compiler->parser->previous;
     do {
         if(!check(compiler,TOKEN_IDENTIFIER)){
             if(varCount>0){
@@ -2648,7 +2648,7 @@ static void unpackListStatement(Compiler *compiler){
 
 
     for(int i=varCount-1;i>-1;i--){
-        Token token=variables[i];
+        LangToken token=variables[i];
     
         uint8_t setOp;
         int arg = resolveLocal(compiler, &token, false);
@@ -2751,8 +2751,8 @@ static void statement(Compiler *compiler) {
         unpackListStatement(compiler);
     } else if (match(compiler, TOKEN_LEFT_BRACE)) {
         Parser *parser = compiler->parser;
-        Token previous = parser->previous;
-        Token curtok = parser->current;
+        LangToken previous = parser->previous;
+        LangToken curtok = parser->current;
 
         // Advance the parser to the next token
         advance(parser);

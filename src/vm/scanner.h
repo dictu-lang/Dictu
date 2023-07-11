@@ -45,14 +45,14 @@ typedef enum {
     TOKEN_WITH, TOKEN_EOF, TOKEN_IMPORT, TOKEN_FROM,
     TOKEN_ERROR
 
-} TokenType;
+} LangTokenType;
 
 typedef struct {
-    TokenType type;
+    LangTokenType type;
     const char *start;
     int length;
     int line;
-} Token;
+} LangToken;
 
 typedef struct {
     const char *start;
@@ -65,6 +65,6 @@ void initScanner(Scanner *scanner, const char *source);
 
 void backTrack(Scanner *scanner);
 
-Token scanToken(Scanner *scanner);
+LangToken scanToken(Scanner *scanner);
 
 #endif
