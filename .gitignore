@@ -29,3 +29,5 @@ dictu.pdb
 test1.du
 \.vscode/
 /.env
+/vcpkg_installed
+/Release
