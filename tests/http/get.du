@@ -10,7 +10,7 @@ import HTTP;
 
 class TestHttpGet < UnitTest {
     testHttpGet() {
-        var response = HTTP.get("http://httpbin.org/get", [], 20);
+        var response = HTTP.get("http://httpbin.org/get", [], 60);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
@@ -21,7 +21,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpsGet() {
-        var response = HTTP.get("https://httpbin.org/get", [], 20);
+        var response = HTTP.get("https://httpbin.org/get", [], 60);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
@@ -32,7 +32,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpsHeaders() {
-        var response = HTTP.get("https://httpbin.org/get", ["Header: test"], 20);
+        var response = HTTP.get("https://httpbin.org/get", ["Header: test"], 60);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
@@ -49,7 +49,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpGzip() {
-        var response = HTTP.get("https://httpbin.org/gzip");
+        var response = HTTP.get("https://httpbin.org/gzip", [], 60);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
