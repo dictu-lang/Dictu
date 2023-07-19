@@ -260,7 +260,7 @@ int bigint_raw_mul_word_add(
     int i;
     bigint_word carry = 0;
 
-    for (int i = 0; i < n; i++){
+    for (i = 0; i < n; i++){
         bigint_word src_word = src[i];
         bigint_word dst_word = bigint_word_mul_lo(src_word, factor);
         carry  = bigint_word_add_get_carry(&dst_word, dst_word, carry);
