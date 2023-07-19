@@ -10,7 +10,7 @@ import HTTP;
 
 class TestHttpGet < UnitTest {
     testHttpGet() {
-        var response = HTTP.get("https://reqres.in/api/users/2");
+        var response = HTTP.get("http://httpbin.org/get", [], 20);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
@@ -21,7 +21,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpsGet() {
-        var response = HTTP.get("https://reqres.in/api/users/2");
+        var response = HTTP.get("https://httpbin.org/get", [], 20);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
@@ -32,7 +32,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpsHeaders() {
-        var response = HTTP.get("https://reqres.in/api/users/2", ["Header: test"]);
+        var response = HTTP.get("https://httpbin.org/get", ["Header: test"], 20);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
