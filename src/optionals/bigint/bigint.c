@@ -88,14 +88,12 @@ bigint_word bigint_word_from_char(char c){
 }
 
 int bigint_word_bitlength(bigint_word a){
-    int i;
-    for (i = BIGINT_WORD_BITS - 1; i >= 0; i--) if ((a >> i) & 1) return i + 1;
+    for (int i = BIGINT_WORD_BITS - 1; i >= 0; i--) if ((a >> i) & 1) return i + 1;
     return 0;
 }
 
 int bigint_word_count_trailing_zeros(bigint_word a){
-    int i;
-    for (i = 0; i < (int)BIGINT_WORD_BITS; i++) if ((a >> i) & 1) return i;
+    for (int i = 0; i < (int)BIGINT_WORD_BITS; i++) if ((a >> i) & 1) return i;
     return BIGINT_WORD_BITS;
 }
 
@@ -146,13 +144,11 @@ int bigint_raw_cmp_abs(
     const bigint_word *a, int na,
     const bigint_word *b, int nb
 ){
-    int i;
-
     if (na > nb) return +1;
     if (na < nb) return -1;
 
     BIGINT_ASSERT(na, ==, nb);
-    for (i = na - 1; i >= 0; i--){
+    for (int i = na - 1; i >= 0; i--){
         if (a[i] < b[i]) return -1;
         if (a[i] > b[i]) return +1;
     }
@@ -264,7 +260,7 @@ int bigint_raw_mul_word_add(
     int i;
     bigint_word carry = 0;
 
-    for (i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         bigint_word src_word = src[i];
         bigint_word dst_word = bigint_word_mul_lo(src_word, factor);
         carry  = bigint_word_add_get_carry(&dst_word, dst_word, carry);
@@ -872,20 +868,19 @@ bigint* bigint_div_mod_half_word(
     bigint_word *dst_remainder,
     bigint_word denominator
 ){
-    int i, j;
     bigint_word parts[2], div_word, mod_word, remainder = 0;
 
     BIGINT_ASSERT(denominator, !=, 0);
     BIGINT_ASSERT(denominator, <=, BIGINT_HALF_WORD_MAX);
 
-    for (i = dst->size - 1; i >= 0; i--){
+    for (int i = dst->size - 1; i >= 0; i--){
         bigint_word dst_word = 0;
         bigint_word src_word = dst->words[i];
         parts[1] = BIGINT_WORD_LO(src_word);
         parts[0] = BIGINT_WORD_HI(src_word);
 
         /* divide by denominator twice, keeping remainder in mind */
-        for (j = 0; j < 2; j++){
+        for (int j = 0; j < 2; j++){
             remainder <<= BIGINT_WORD_BITS / 2;
             remainder |= parts[j];
 
@@ -1128,12 +1123,11 @@ void bigint_reorder_longer_shorter(const bigint **a, const bigint **b){
 }
 
 bigint* bigint_and(bigint *r, const bigint *a, const bigint *b){
-    int i;
     bigint_reorder_longer_shorter(&a, &b);
     if (!bigint_cpy(r, b)) return NULL;
     r->neg &= a->neg;
 
-    for (i = b->size - 1; i >= 0; i--){
+    for (int i = b->size - 1; i >= 0; i--){
         r->words[i] &= a->words[i];
     }
 
@@ -1141,12 +1135,11 @@ bigint* bigint_and(bigint *r, const bigint *a, const bigint *b){
 }
 
 bigint* bigint_or(bigint *r, const bigint *a, const bigint *b){
-    int i;
     bigint_reorder_longer_shorter(&a, &b);
     if (!bigint_cpy(r, a)) return NULL;
     r->neg |= a->neg;
 
-    for (i = b->size - 1; i >= 0; i--){
+    for (int i = b->size - 1; i >= 0; i--){
         r->words[i] |= b->words[i];
     }
 
@@ -1154,12 +1147,11 @@ bigint* bigint_or(bigint *r, const bigint *a, const bigint *b){
 }
 
 bigint* bigint_xor(bigint *r, const bigint *a, const bigint *b){
-    int i;
     bigint_reorder_longer_shorter(&a, &b);
     if (!bigint_cpy(r, a)) return NULL;
     r->neg ^= a->neg;
 
-    for (i = b->size - 1; i >= 0; i--){
+    for (int i = b->size - 1; i >= 0; i--){
         r->words[i] ^= b->words[i];
     }
 
