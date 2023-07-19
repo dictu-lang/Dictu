@@ -1,0 +1,27 @@
+/**
+ * divide.du
+ *
+ * Testing the BigInt divide function.
+ *
+ * .divide() returns a Result value containing the quotiant.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntDivide < UnitTest {
+    testBigIntDivide() {
+        const bi1 = BigInt.new(9999);
+        const bi2 = BigInt.new(33);
+        const bi3 = BigInt.new(303);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi3);
+        const sum = bi1.unwrap().divide(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
+    }
+}
+
+TestBigIntDivide().run();

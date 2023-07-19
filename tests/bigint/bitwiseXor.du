@@ -1,0 +1,24 @@
+/**
+ * bitwiseXOr.du
+ *
+ * Testing the BigInt bitwiseXor function.
+ *
+ * .bitwiseXor() returns a Result containing the value of `bigIntVal1 ^ bigIntVal2`.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntBitwiseXor < UnitTest {
+    testBigIntBitwiseXor() {
+        const bi1 = BigInt.new(2157634);
+        const bi2 = BigInt.new(345);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi1.unwrap().bitwiseXor(bi2.unwrap()));
+        this.assertError(bi1.unwrap().bitwiseXor());
+    }
+}
+
+TestBigIntBitwiseXor().run();

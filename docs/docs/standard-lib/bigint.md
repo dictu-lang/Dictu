@@ -54,6 +54,7 @@ Returns a Number value of either 0 indicating the 2 BigInts compared are the sam
 const bi1 = BigInt.new(10).unwrap();
 const bi2 = BigInt.new(10).unwrap();
 const value = bi1.compare(bi2);
+
 print(value);
 // 0
 ```
@@ -72,7 +73,7 @@ print(value);
 
 ### bigIntVal.abs() -> Result<BigInt>
 
-Returns a Result value whose value is the absolute value of the BigInt.
+Returns a Result containing the absolute value of the BigInt.
 
 ```cs
 const bi = BigInt.new(10).unwrap();
@@ -82,14 +83,101 @@ print(value);
 // 10
 ```
 
-### bigIntVal.bitwiseAnd() -> Result<BigInt>
+### bigIntVal1.bitwiseAnd() -> Result<BigInt>
 
-Returns a Result value whose value is the absolute value of the BigInt.
+Returns a Result containing the value of `bigIntVal1 & bigIntVal2`.
+
+```cs
+const bi1 = BigInt.new(102216).unwrap();
+const bi2 = BigInt.new(8909).unwrap();
+
+const value = bi1.bitwiseAnd(bi2);
+print(value);
+// 584
+```
+
+### bigIntVal1.bitwiseOr() -> Result<BigInt>
+
+Returns a Result containing the value of `bigIntVal1 | bigIntVal2`.
+
+```cs
+const bi1 = BigInt.new(102216).unwrap();
+const bi2 = BigInt.new(8909).unwrap();
+
+const value = bi1.bitwiseOr(bi2);
+print(value);
+// 110541
+```
+
+### bigIntVal1.bitwiseXor() -> Result<BigInt>
+
+Returns a Result containing the value of `bigIntVal1 ^ bigIntVal2`.
+
+```cs
+const bi1 = BigInt.new(102216).unwrap();
+const bi2 = BigInt.new(8909).unwrap();
+
+const value = bi1.bitwiseXor(bi2);
+print(value);
+// 109957
+```
+
+### bigIntVal.add() -> Result<BigInt>
+
+Returns a Result value containing the sum.
 
 ```cs
 const bi = BigInt.new(10).unwrap();
 
-const value = bi1.abs();
+const value = bi1.add();
+print(value);
+// 10
+```
+
+### bigIntVal.subtract() -> Result<BigInt>
+
+Returns a Result value containing the difference.
+
+```cs
+const bi = BigInt.new(10).unwrap();
+
+const value = bi1.subtract();
+print(value);
+// 10
+```
+
+### bigIntVal.multiply() -> Result<BigInt>
+
+Returns a Result value containing the product.
+
+```cs
+const bi = BigInt.new(10).unwrap();
+
+const value = bi1.multiply();
+print(value);
+// 10
+```
+
+### bigIntVal.divide() -> Result<BigInt>
+
+Returns a Result value containing the quotiant.
+
+```cs
+const bi = BigInt.new(10).unwrap();
+
+const value = bi1.divide();
+print(value);
+// 10
+```
+
+### bigIntVal.modulo() -> Result<BigInt>
+
+Returns a Result value containing the remainder.
+
+```cs
+const bi = BigInt.new(10).unwrap();
+
+const value = bi1.modulo();
 print(value);
 // 10
 ```

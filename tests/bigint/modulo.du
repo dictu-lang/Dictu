@@ -1,0 +1,27 @@
+/**
+ * modulo.du
+ *
+ * Testing the BigInt modulo function.
+ *
+ * .modulo() returns a Result value containing the remainder.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntModulo < UnitTest {
+    testBigIntModulo() {
+        const bi1 = BigInt.new(9999);
+        const bi2 = BigInt.new(33);
+        const bi3 = BigInt.new(0);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi3);
+        const sum = bi1.unwrap().modulo(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
+    }
+}
+
+TestBigIntModulo().run();
