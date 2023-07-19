@@ -49,7 +49,7 @@ class TestHttpGet < UnitTest {
     }
 
     testHttpGzip() {
-        var response = HTTP.get("https://httpbin.org/gzip", [], 60);
+        var response = HTTP.get("https://httpbin.org/gzip", [], 90);
         this.assertTruthy(response.success());
 
         response = response.unwrap();
