@@ -1,0 +1,62 @@
+import Queue;
+
+{ // main
+    var queue = Queue.new(100).unwrap();
+    print(queue.isFull());
+    print(queue.isEmpty());
+    print(queue.size());
+    queue.push(661);
+    queue.push(662);
+    queue.push(663);
+    queue.push(664);
+    queue.push(665);
+    print(queue.isEmpty());
+    print("pop: {}".format(queue.pop().unwrap()));
+    print("pop: {}".format(queue.pop().unwrap()));
+    print("pop: {}".format(queue.pop().unwrap()));
+    print("pop: {}".format(queue.pop().unwrap()));
+    print("peak: {}".format(queue.peek().unwrap()));
+    print(queue.isEmpty());
+
+    var q = Queue.new(100).unwrap();
+    print(q.isFull());
+    print(q.isEmpty());
+    print(q.size());
+    q.push("asdf");
+    q.push("1234");
+    q.push("0987");
+    q.push("poiu");
+    q.push("mnbv");
+    print(q.isEmpty());
+    print("pop: {}".format(q.pop().unwrap()));
+    print("pop: {}".format(q.pop().unwrap()));
+    print("pop: {}".format(q.pop().unwrap()));
+    print("pop: {}".format(q.pop().unwrap()));
+    print("peak: {}".format(q.peek().unwrap()));
+    print(q.isEmpty());
+
+    class Person {
+        init(id="") {
+            this.id = id;
+        }
+    }
+
+    var q3 = Queue.new(100).unwrap();
+    print(q3.isFull());
+    print(q3.isEmpty());
+    print(q3.size());
+    q3.push(Person("1"));
+    q3.push(Person("2"));
+    q3.push(Person("3"));
+    q3.push(Person("4"));
+    q3.push(Person("5"));
+    print(q3.isEmpty());
+    print("pop: {}".format(q3.pop().unwrap().id));
+    print("pop: {}".format(q3.pop().unwrap().id));
+    print("pop: {}".format(q3.pop().unwrap().id));
+    print("pop: {}".format(q3.pop().unwrap().id));
+    print("peak: {}".format(q3.peek().unwrap().id));
+    print(q3.isEmpty());
+    print("pop: {}".format(q3.pop().unwrap().id));
+    print(q3.isEmpty());
+}

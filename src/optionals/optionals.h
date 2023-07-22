@@ -21,6 +21,7 @@
 #include "inspect.h"
 #include "term.h"
 #include "uuid.h"
+#include "queue.h"
 #include "object/object.h"
 #include "unittest/unittest.h"
 

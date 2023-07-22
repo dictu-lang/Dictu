@@ -1,0 +1,54 @@
+/**
+ * queue.du
+ *
+ * Testing the Queue module.
+ *
+ */
+from UnitTest import UnitTest;
+
+import Queue;
+
+class TestQueue < UnitTest {
+    const queueSize = 5;
+
+    setUp() {
+        this.queue = Queue.new(this.queueSize);
+    }
+
+    testQueueNew() {
+        this.assertSuccess(this.queue);
+        this.assertNotNil(this.queue.unwrap());
+    }
+
+    testQueuePush() {
+        const res = this.queue.unwrap().push(28);
+        this.assertSuccess(res);
+    }
+
+    testQueuePop() {
+        const testValue = 28;
+        this.queue.unwrap().push(testValue);
+        const res = this.queue.unwrap().pop();
+        this.assertSuccess(res);
+        this.assertEquals(res.unwrap(), testValue);
+    }
+
+    testQueueSize() {
+        this.assertEquals(this.queue.unwrap().size(), this.queueSize);
+    }
+
+    testQueueIsEmpty() {
+        this.assertTruthy(this.queue.unwrap().isEmpty());
+        this.queue.unwrap().push(28);
+        this.assertFalsey(this.queue.unwrap().isEmpty());
+    }
+
+    testQueueIsFill() {
+        this.assertFalsey(this.queue.unwrap().isFull());
+        [1, 2, 3, 4, 5].map(def (x) => this.queue.unwrap().push(x));
+        this.assertTruthy(this.queue.unwrap().isFull());
+    }
+}
+
+
+TestQueue().run();

@@ -1,0 +1,8 @@
+/**
+ * import.du
+ *
+ * General import file for Queue methods.
+ */
+
+import "queue.du";
+
