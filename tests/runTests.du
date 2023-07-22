@@ -4,6 +4,7 @@ UnitTest.forceOnlyFailures = true;
 
 import "argparse/import.du";
 import "bool/import.du";
+import "queue/import.du";
 import "nil/import.du";
 import "number/import.du";
 import "strings/import.du";
@@ -32,7 +33,6 @@ import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
 import "inspect/import.du";
-import "queue/import.du";
 
 if (isDefined("HTTP")) {
     import "http/import.du";
