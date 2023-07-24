@@ -21,7 +21,7 @@ parent: Standard Library
 To make use of the Argparse module an import is required.
 
 ```cs
-from Argparse import Parse;
+from Argparse import Parser;
 ```
 
 ### New Parser(String, String, String) -> Parser
