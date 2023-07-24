@@ -6,7 +6,7 @@
 
 typedef struct {
     void **dq;
-    int size;
+    int cap;
     int front;
     int rear;
     int count;
@@ -36,7 +36,7 @@ static Value queueIsFull(DictuVM *vm, int argCount, Value *args) {
     }
 
     Queue *queue = AS_QUEUE(args[0]);
-    bool isFull = queue->size == queue->count;
+    bool isFull = queue->cap == queue->count;
 
     return BOOL_VAL(isFull);
 }
@@ -53,15 +53,26 @@ static Value queueIsEmpty(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL(isFull);
 }
 
-static Value queueSize(DictuVM *vm, int argCount, Value *args) {
+static Value queueCap(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "size() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "cap() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     Queue *queue = AS_QUEUE(args[0]);
 
-    return NUMBER_VAL(queue->size);
+    return NUMBER_VAL(queue->cap);
+}
+
+static Value queueLen(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Queue *queue = AS_QUEUE(args[0]);
+
+    return NUMBER_VAL(queue->count);
 }
 
 static Value queuePeek(DictuVM *vm, int argCount, Value *args) {
@@ -84,8 +95,8 @@ static Value queuePush(DictuVM *vm, int argCount, Value *args) {
 
     Queue *queue = AS_QUEUE(args[0]);
 
-    if (queue->size != queue->count) {
-        if(queue->rear == queue->size-1) {
+    if (queue->cap != queue->count) {
+        if(queue->rear == queue->cap-1) {
             queue->rear = -1;            
         }
 
@@ -111,7 +122,7 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
 
     void *data = queue->dq[queue->front++];
 
-    if(queue->front == queue->size) {
+    if(queue->front == queue->cap) {
         queue->front = 0;
     }
 
@@ -132,7 +143,8 @@ ObjAbstract* newQueueObj(DictuVM *vm) {
      */
     defineNative(vm, &abstract->values, "isEmpty", queueIsEmpty);
     defineNative(vm, &abstract->values, "isFull", queueIsFull);
-    defineNative(vm, &abstract->values, "size", queueSize);
+    defineNative(vm, &abstract->values, "cap", queueCap);
+    defineNative(vm, &abstract->values, "cap", queueCap);
     defineNative(vm, &abstract->values, "peek",  queuePeek);
     defineNative(vm, &abstract->values, "push", queuePush);
     defineNative(vm, &abstract->values, "pop", queuePop);
@@ -154,15 +166,15 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    double size = AS_NUMBER(args[0]);
-    if (size == 0) {
-        return newResultError(vm, "error: size must be greater than 0");
+    double cap = AS_NUMBER(args[0]);
+    if (cap == 0) {
+        return newResultError(vm, "error: capacity must be greater than 0");
     }
 
     ObjAbstract *abstract = newQueueObj(vm);
     Queue *queue = abstract->data;
-    queue->dq = ALLOCATE(vm, void*, size);
-    queue->size = size;
+    queue->dq = ALLOCATE(vm, void*, cap);
+    queue->cap = cap;
     queue->front = 0;
     queue->rear = -1;
     abstract->data = queue;
