@@ -10,7 +10,7 @@ import Queue;
 
 class TestQueue < UnitTest {
     const queueCap = 5;
-    const testValue = 28;
+    const testValue = "asdf1234";
 
     setUp() {
         this.queue = Queue.new(this.queueCap);
@@ -22,7 +22,7 @@ class TestQueue < UnitTest {
     }
 
     testQueuePush() {
-        const res = this.queue.unwrap().push(28);
+        const res = this.queue.unwrap().push(testValue);
         this.assertSuccess(res);
     }
 
@@ -44,7 +44,7 @@ class TestQueue < UnitTest {
 
     testQueueIsEmpty() {
         this.assertTruthy(this.queue.unwrap().isEmpty());
-        this.queue.unwrap().push(28);
+        this.queue.unwrap().push(testValue);
         this.assertFalsey(this.queue.unwrap().isEmpty());
     }
 
