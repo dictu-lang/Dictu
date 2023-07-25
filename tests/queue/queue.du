@@ -9,10 +9,11 @@ from UnitTest import UnitTest;
 import Queue;
 
 class TestQueue < UnitTest {
-    const queueSize = 5;
+    const queueCap = 5;
+    const testValue = 28;
 
     setUp() {
-        this.queue = Queue.new(this.queueSize);
+        this.queue = Queue.new(this.queueCap);
     }
 
     testQueueNew() {
@@ -26,15 +27,19 @@ class TestQueue < UnitTest {
     }
 
     testQueuePop() {
-        const testValue = 28;
-        this.queue.unwrap().push(testValue);
+        this.queue.unwrap().push(this.testValue);
         const res = this.queue.unwrap().pop();
         this.assertSuccess(res);
-        this.assertEquals(res.unwrap(), testValue);
+        this.assertEquals(res.unwrap(), this.testValue);
     }
 
-    testQueueSize() {
-        this.assertEquals(this.queue.unwrap().size(), this.queueSize);
+    testQueueCap() {
+        this.assertEquals(this.queue.unwrap().cap(), this.queueCap);
+    }
+
+    testQueueLen() {
+        this.queue.unwrap().push(this.testValue);
+        this.assertEquals(this.queue.unwrap().len(), 1);
     }
 
     testQueueIsEmpty() {

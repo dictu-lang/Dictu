@@ -55,15 +55,26 @@ print(value);
 // some_value
 ```
 
-### Queue.size() -> Number
+### Queue.cap() -> Number
 
-Returns a Number value of the size of the queue.
+Returns a Number value of the capacity of the queue.
 
 ```cs
 const queue = Queue.new(10).unwrap();
-const size = queue.size();
-print(size);
+const cap = queue.cap();
+print(cap);
 // 10
+```
+
+### Queue.len() -> Number
+
+Returns a Number value of the length of the queue.
+
+```cs
+const queue = Queue.new(10).unwrap();
+const len = queue.len();
+print(len);
+// 0
 ```
 
 ### Queue.isEmpty() -> Bool

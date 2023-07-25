@@ -105,8 +105,6 @@ static Value queuePush(DictuVM *vm, int argCount, Value *args) {
 
         queue->dq[++queue->rear] = data;
         queue->count++;
-
-        return newResultSuccess(vm, NIL_VAL);
     }
 
     return newResultSuccess(vm, NIL_VAL);
@@ -122,7 +120,7 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
 
     void *data = queue->dq[queue->front++];
 
-    if(queue->front == queue->cap) {
+    if (queue->front == queue->cap) {
         queue->front = 0;
     }
 
@@ -144,7 +142,7 @@ ObjAbstract* newQueueObj(DictuVM *vm) {
     defineNative(vm, &abstract->values, "isEmpty", queueIsEmpty);
     defineNative(vm, &abstract->values, "isFull", queueIsFull);
     defineNative(vm, &abstract->values, "cap", queueCap);
-    defineNative(vm, &abstract->values, "cap", queueCap);
+    defineNative(vm, &abstract->values, "len", queueLen);
     defineNative(vm, &abstract->values, "peek",  queuePeek);
     defineNative(vm, &abstract->values, "push", queuePush);
     defineNative(vm, &abstract->values, "pop", queuePop);
@@ -172,6 +170,8 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjAbstract *abstract = newQueueObj(vm);
+    push(vm, OBJ_VAL(abstract));
+    
     Queue *queue = abstract->data;
     queue->dq = ALLOCATE(vm, void*, cap);
     queue->cap = cap;
@@ -179,7 +179,6 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     queue->rear = -1;
     abstract->data = queue;
 
-    push(vm, OBJ_VAL(abstract));
     Value success = newResultSuccess(vm, OBJ_VAL(abstract));
     pop(vm);
 
