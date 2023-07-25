@@ -22,7 +22,7 @@ class TestQueue < UnitTest {
     }
 
     testQueuePush() {
-        const res = this.queue.unwrap().push(testValue);
+        const res = this.queue.unwrap().push(this.testValue);
         this.assertSuccess(res);
     }
 
@@ -44,7 +44,7 @@ class TestQueue < UnitTest {
 
     testQueueIsEmpty() {
         this.assertTruthy(this.queue.unwrap().isEmpty());
-        this.queue.unwrap().push(testValue);
+        this.queue.unwrap().push(this.testValue);
         this.assertFalsey(this.queue.unwrap().isEmpty());
     }
 
