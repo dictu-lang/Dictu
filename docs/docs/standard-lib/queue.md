@@ -36,7 +36,7 @@ print(bi);
 
 ### Queue.push() -> Result<Queue>
 
-Returns a Result value with a `Nil` on success.
+Returns a Result value with a `Nil` on success. The capacity will be increased as necessary.
 
 ```cs
 const queue = Queue.new(10).unwrap();
@@ -45,7 +45,7 @@ queue.push("some_value");
 
 ### Queue.pop() -> Result<Queue>
 
-Returns a Result value with the expected value on success or `Nil` on faiure.
+Returns a Result value with the expected value on success or `Nil` on faiure. The capacity will be decreased as necessary.
 
 ```cs
 const queue = Queue.new(10).unwrap();
@@ -57,7 +57,7 @@ print(value);
 
 ### Queue.cap() -> Number
 
-Returns a Number value of the capacity of the queue.
+Returns a Number value of the capacity of the queue. The capacity is the overall size of the queue.
 
 ```cs
 const queue = Queue.new(10).unwrap();
@@ -68,7 +68,7 @@ print(cap);
 
 ### Queue.len() -> Number
 
-Returns a Number value of the length of the queue.
+Returns a Number value of the length of the queue. The length represents the number of items in the queue.
 
 ```cs
 const queue = Queue.new(10).unwrap();
