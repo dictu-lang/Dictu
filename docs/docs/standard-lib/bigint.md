@@ -5,7 +5,7 @@ nav_order: 20
 parent: Standard Library
 ---
 
-# UUID
+# BigInt
 {: .no_toc }
 
 ## Table of contents
@@ -18,7 +18,7 @@ parent: Standard Library
 
 ## BigInt
 
-To make use of the UUID module an import is required.
+To make use of the BigInt module an import is required.
 
 ```cs
 import BigInt;
