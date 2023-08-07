@@ -16,7 +16,7 @@ typedef struct {
 
 void freeQueue(DictuVM *vm, ObjAbstract *abstract) {
     Queue *queue = (Queue*)abstract->data;
-    FREE(vm, Value, queue->dq);
+    FREE_ARRAY(vm, Value, queue->dq, queue->capacity);
     FREE(vm, Queue, abstract->data);
 }
 
@@ -182,7 +182,7 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     queue->capacity = capacity;
     queue->front = 0;
     queue->rear = -1;
-    abstract->data = queue;
+    queue->count = 0;
 
     Value success = newResultSuccess(vm, OBJ_VAL(abstract));
     pop(vm);
