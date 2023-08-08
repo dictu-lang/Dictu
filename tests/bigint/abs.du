@@ -12,7 +12,7 @@ import BigInt;
 
 class TestBigIntAbs < UnitTest {
     testBigIntAbs() {
-        const bi1 = BigInt.new(2157634);
+        const bi1 = BigInt.new(2157639);
         this.assertSuccess(bi1);
         this.assertSuccess(bi1.unwrap().abs());
     }
