@@ -23,7 +23,7 @@ class TestQueue < UnitTest {
     }
 
     testQueueNewWithSize() {
-        const queue = Queue.newWithSize(100);
+        const queue = Queue.newWithSize(this.queueCap);
         this.assertSuccess(queue);
         this.assertNotNil(this.queue.unwrap());
     }
@@ -42,8 +42,8 @@ class TestQueue < UnitTest {
     testQueueCap() {
         this.assertEquals(this.queue.unwrap().cap(), this.defaultQueueSize);
 
-        const queue = Queue.newWithSize(100);
-        this.assertEquals(queue.unwrap().cap(), 100);
+        const queue = Queue.newWithSize(this.queueCap);
+        this.assertEquals(queue.unwrap().cap(), this.queueCap);
     }
 
     testQueueLen() {
