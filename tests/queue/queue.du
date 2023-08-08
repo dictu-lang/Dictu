@@ -9,11 +9,12 @@ from UnitTest import UnitTest;
 import Queue;
 
 class TestQueue < UnitTest {
+    const defaultQueueSize = 8;
     const queueCap = 5;
     const testValue = "asdf1234";
 
     setUp() {
-        this.queue = Queue.new(this.queueCap);
+        this.queue = Queue.new();
     }
 
     testQueueNew() {
@@ -21,20 +22,28 @@ class TestQueue < UnitTest {
         this.assertNotNil(this.queue.unwrap());
     }
 
+    testQueueNewWithSize() {
+        const queue = Queue.newWithSize(100);
+        this.assertSuccess(queue);
+        this.assertNotNil(this.queue.unwrap());
+    }
+
     testQueuePush() {
         const res = this.queue.unwrap().push(this.testValue);
-        this.assertSuccess(res);
+        this.assertNil(res);
     }
 
     testQueuePop() {
         this.queue.unwrap().push(this.testValue);
         const res = this.queue.unwrap().pop();
-        this.assertSuccess(res);
-        this.assertEquals(res.unwrap(), this.testValue);
+        this.assertEquals(res, this.testValue);
     }
 
     testQueueCap() {
-        this.assertEquals(this.queue.unwrap().cap(), this.queueCap);
+        this.assertEquals(this.queue.unwrap().cap(), this.defaultQueueSize);
+
+        const queue = Queue.newWithSize(100);
+        this.assertEquals(queue.unwrap().cap(), 100);
     }
 
     testQueueLen() {
@@ -50,36 +59,36 @@ class TestQueue < UnitTest {
 
     testQueueIsFill() {
         this.assertFalsey(this.queue.unwrap().isFull());
-        [1, 2, 3, 4, 5].map(def (x) => this.queue.unwrap().push(x));
+        [1, 2, 3, 4, 5, 6, 7, 8].map(def (x) => this.queue.unwrap().push(x));
         this.assertTruthy(this.queue.unwrap().isFull());
     }
 
     testQueueGrow() {
-        [1, 2, 3, 4, 5].map(def (x) => this.queue.unwrap().push(x));
+        [1, 2, 3, 4, 5, 6, 7, 8].map(def (x) => this.queue.unwrap().push(x));
         this.assertTruthy(this.queue.unwrap().isFull());
         this.queue.unwrap().push(this.testValue);
         this.assertFalsey(this.queue.unwrap().isFull());
-        this.assertEquals(this.queue.unwrap().cap(), 8);
-        [1, 2, 3, 4, 5].map(def (x) => this.queue.unwrap().push(x));
-        this.assertFalsey(this.queue.unwrap().isFull());
         this.assertEquals(this.queue.unwrap().cap(), 16);
+        [1, 2, 3, 4, 5, 6, 7, 8].map(def (x) => this.queue.unwrap().push(x));
+        this.assertFalsey(this.queue.unwrap().isFull());
+        this.assertEquals(this.queue.unwrap().cap(), 32);
     }
 
     testQueueShrink() {
-        this.assertEquals(this.queue.unwrap().cap(), 5);
+        this.assertEquals(this.queue.unwrap().cap(), this.defaultQueueSize);
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(def (x) => this.queue.unwrap().push(x));
         this.assertEquals(this.queue.unwrap().cap(), 32);
         const res = this.queue.unwrap().pop();
-        this.assertSuccess(res);
+        this.assertEquals(res, 0);
+        this.assertEquals(this.queue.unwrap().cap(), 32);
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
+        this.queue.unwrap().pop();
         this.assertEquals(this.queue.unwrap().cap(), 16);
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.queue.unwrap().pop();
-        this.assertEquals(this.queue.unwrap().cap(), 8);
     }
 }
 

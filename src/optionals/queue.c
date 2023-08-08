@@ -13,6 +13,7 @@ typedef struct {
 } Queue;
 
 #define AS_QUEUE(v) ((Queue*)AS_ABSTRACT(v)->data)
+#define DEFAULT_QUEUE_CAPACITY 8
 
 void freeQueue(DictuVM *vm, ObjAbstract *abstract) {
     Queue *queue = (Queue*)abstract->data;
@@ -100,14 +101,14 @@ static Value queuePush(DictuVM *vm, int argCount, Value *args) {
         queue->dq = GROW_ARRAY(vm, queue->dq, Value, oldCapacity, queue->capacity);
     }
 
-    if(queue->rear == queue->capacity-1) {
+    if (queue->rear == queue->capacity-1) {
         queue->rear = -1;            
     }
 
     queue->dq[++queue->rear] = args[1];
     queue->count++;
 
-    return newResultSuccess(vm, NIL_VAL);
+    return NIL_VAL;
 }
 
 static Value queuePop(DictuVM *vm, int argCount, Value *args) {
@@ -118,6 +119,11 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
 
     Queue *queue = AS_QUEUE(args[0]);
 
+    if (queue->count == 0) {
+        runtimeError(vm, "pop() called on an empty queue");
+        return EMPTY_VAL;
+    }
+
     Value data = queue->dq[queue->front++];
 
     if (queue->front == queue->capacity) {
@@ -126,13 +132,13 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
 
     queue->count--;
 
-    if (queue->count < queue->capacity) {
+    if (queue->count < queue->capacity / 2 && queue->capacity > DEFAULT_QUEUE_CAPACITY) {
         int oldCapacity = queue->capacity;
         queue->capacity = SHRINK_CAPACITY(oldCapacity);
         queue->dq = SHRINK_ARRAY(vm, queue->dq, Value, oldCapacity, queue->capacity);
     }
 
-    return newResultSuccess(vm, data);
+    return data;
 }
 
 ObjAbstract* newQueueObj(DictuVM *vm) {
@@ -158,14 +164,42 @@ ObjAbstract* newQueueObj(DictuVM *vm) {
     return abstract;
 }
 
+static void buildQueue(DictuVM *vm, Queue *queue, double size) {
+    queue->dq = ALLOCATE(vm, Value, DEFAULT_QUEUE_CAPACITY);
+    queue->capacity = size;
+    queue->front = 0;
+    queue->rear = -1;
+    queue->count = 0;
+}
+
 static Value newQueue(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 0) {
+        runtimeError(vm, "new() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjAbstract *abstract = newQueueObj(vm);
+    push(vm, OBJ_VAL(abstract));
+    
+    Queue *queue = abstract->data;
+    buildQueue(vm, queue, DEFAULT_QUEUE_CAPACITY);
+
+    Value success = newResultSuccess(vm, OBJ_VAL(abstract));
+    pop(vm);
+
+    return success;
+}
+
+static Value newQueueWithSize(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "new() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "newWithSize() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "new() argument must be a numbers");
+        runtimeError(vm, "newWithSize() argument must be a numbers");
         return EMPTY_VAL;
     }
 
@@ -178,11 +212,7 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(abstract));
     
     Queue *queue = abstract->data;
-    queue->dq = ALLOCATE(vm, Value, capacity);
-    queue->capacity = capacity;
-    queue->front = 0;
-    queue->rear = -1;
-    queue->count = 0;
+    buildQueue(vm, queue, capacity);
 
     Value success = newResultSuccess(vm, OBJ_VAL(abstract));
     pop(vm);
@@ -200,6 +230,7 @@ Value createQueueModule(DictuVM *vm) {
      * Define Queue methods
      */
     defineNative(vm, &module->values, "new", newQueue);
+    defineNative(vm, &module->values, "newWithSize", newQueueWithSize);
 
     pop(vm);
     pop(vm);
