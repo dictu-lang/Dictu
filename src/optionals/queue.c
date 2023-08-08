@@ -164,14 +164,6 @@ ObjAbstract* newQueueObj(DictuVM *vm) {
     return abstract;
 }
 
-// static void buildQueue(DictuVM *vm, Queue *queue, double size) {
-//     queue->dq = ALLOCATE(vm, Value, DEFAULT_QUEUE_CAPACITY);
-//     queue->capacity = size;
-//     queue->front = 0;
-//     queue->rear = -1;
-//     queue->count = 0;
-// }
-
 static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -184,7 +176,7 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(abstract));
     
     Queue *queue = abstract->data;
-    //buildQueue(vm, queue, DEFAULT_QUEUE_CAPACITY);
+
     queue->dq = ALLOCATE(vm, Value, DEFAULT_QUEUE_CAPACITY);
     queue->capacity = DEFAULT_QUEUE_CAPACITY;
     queue->front = 0;
@@ -217,7 +209,7 @@ static Value newQueueWithSize(DictuVM *vm, int argCount, Value *args) {
     push(vm, OBJ_VAL(abstract));
     
     Queue *queue = abstract->data;
-    //buildQueue(vm, queue, capacity);
+
     queue->dq = ALLOCATE(vm, Value, capacity);
     queue->capacity = capacity;
     queue->front = 0;
