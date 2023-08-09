@@ -84,7 +84,7 @@ static Value queuePeek(DictuVM *vm, int argCount, Value *args) {
 
     Queue *queue = AS_QUEUE(args[0]);
     
-    return newResultSuccess(vm, queue->dq[queue->front]);
+    return queue->dq[queue->front];
 }
 
 static Value queuePush(DictuVM *vm, int argCount, Value *args) {
@@ -183,10 +183,9 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
     queue->rear = -1;
     queue->count = 0;
 
-    Value success = newResultSuccess(vm, OBJ_VAL(abstract));
     pop(vm);
 
-    return success;
+    return OBJ_VAL(abstract);
 }
 
 static Value newQueueWithSize(DictuVM *vm, int argCount, Value *args) {

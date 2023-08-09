@@ -24,19 +24,19 @@ To make use of the Queue module an import is required.
 import Queue;
 ```
 
-### Queue.new() -> Result<Queue>
+### Queue.new() -> Queue
 
-Returns a Result value with a Queue with the default size of 8 or an error.
+Returns a Queue value with the default size of 8.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 print(queue);
 // <Queue>
 ```
 
 ### Queue.newWithSize(Number) -> Result<Queue>
 
-Returns a Result value with a Queue initialized to the given size.
+Returns a Result value with a Queue initialized to the given size. An error Result is returned if the given capacity is less than 0.
 
 ```cs
 const queue = Queue.newWithSize(10).unwrap();
@@ -44,23 +44,35 @@ print(queue);
 // <Queue>
 ```
 
-### Queue.push(Any) -> Result<Queue>
+### Queue.push(Any) -> Nil
 
 Adds the given argument to the queue and resizes the queue if necessary.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 queue.push("some_value");
 ```
 
-### Queue.pop() -> Result<Queue>
+### Queue.pop() -> Value
 
-Returns a Result value with the expected value on success or `Nil` on faiure. The capacity will be decreased as necessary.
+Returns the value at the front of the queue. The capacity will be decreased if necessary.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 queue.push("some_value");
 const value = queue.pop();
+print(value);
+// some_value
+```
+
+### Queue.peek() -> Value
+
+Returns the value at the front of the queue without removing the value.
+
+```cs
+const queue = Queue.new();
+queue.push("some_value");
+const value = queue.peek();
 print(value);
 // some_value
 ```
@@ -70,7 +82,7 @@ print(value);
 Returns a Number value of the capacity of the queue. The capacity is the overall size of the queue.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 const cap = queue.cap();
 print(cap);
 // 8
@@ -81,7 +93,7 @@ print(cap);
 Returns a Number value of the length of the queue. The length represents the number of items in the queue.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 const len = queue.len();
 print(len);
 // 0
@@ -92,7 +104,7 @@ print(len);
 Returns a Bool value indicating whether the queue is empty or not.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 const res = queue.isEmpty();
 print(res);
 // true
@@ -103,7 +115,7 @@ print(res);
 Returns a Bool value indicating whether the queue is empty or not.
 
 ```cs
-const queue = Queue.new().unwrap();
+const queue = Queue.new();
 const res = queue.isFull();
 print(res);
 // false

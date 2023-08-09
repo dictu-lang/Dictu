@@ -1,38 +1,38 @@
 import Queue;
 
 { // main
-    var queue = Queue.new(100).unwrap();
+    var queue = Queue.new();
     print(queue.isFull());
     print(queue.isEmpty());
-    print(queue.size());
+    print(queue.len());
     queue.push(661);
     queue.push(662);
     queue.push(663);
     queue.push(664);
     queue.push(665);
     print(queue.isEmpty());
-    print("pop: {}".format(queue.pop().unwrap()));
-    print("pop: {}".format(queue.pop().unwrap()));
-    print("pop: {}".format(queue.pop().unwrap()));
-    print("pop: {}".format(queue.pop().unwrap()));
-    print("peak: {}".format(queue.peek().unwrap()));
+    print("pop: {}".format(queue.pop()));
+    print("pop: {}".format(queue.pop()));
+    print("pop: {}".format(queue.pop()));
+    print("pop: {}".format(queue.pop()));
+    print("peak: {}".format(queue.peek()));
     print(queue.isEmpty());
 
-    var q = Queue.new(100).unwrap();
+    var q = Queue.newWithSize(100).unwrap();
     print(q.isFull());
     print(q.isEmpty());
-    print(q.size());
+    print(q.len());
     q.push("asdf");
     q.push("1234");
     q.push("0987");
     q.push("poiu");
     q.push("mnbv");
     print(q.isEmpty());
-    print("pop: {}".format(q.pop().unwrap()));
-    print("pop: {}".format(q.pop().unwrap()));
-    print("pop: {}".format(q.pop().unwrap()));
-    print("pop: {}".format(q.pop().unwrap()));
-    print("peak: {}".format(q.peek().unwrap()));
+    print("pop: {}".format(q.pop()));
+    print("pop: {}".format(q.pop()));
+    print("pop: {}".format(q.pop()));
+    print("pop: {}".format(q.pop()));
+    print("peak: {}".format(q.peek()));
     print(q.isEmpty());
 
     class Person {
@@ -41,22 +41,23 @@ import Queue;
         }
     }
 
-    var q3 = Queue.new(100).unwrap();
+    var q3 = Queue.new();
     print(q3.isFull());
     print(q3.isEmpty());
-    print(q3.size());
+    print(q3.len());
+    print(q3.cap());
     q3.push(Person("1"));
     q3.push(Person("2"));
     q3.push(Person("3"));
     q3.push(Person("4"));
     q3.push(Person("5"));
     print(q3.isEmpty());
-    print("pop: {}".format(q3.pop().unwrap().id));
-    print("pop: {}".format(q3.pop().unwrap().id));
-    print("pop: {}".format(q3.pop().unwrap().id));
-    print("pop: {}".format(q3.pop().unwrap().id));
-    print("peak: {}".format(q3.peek().unwrap().id));
+    print("pop: {}".format(q3.pop().id));
+    print("pop: {}".format(q3.pop().id));
+    print("pop: {}".format(q3.pop().id));
+    print("pop: {}".format(q3.pop().id));
+    print("peak: {}".format(q3.peek().id));
     print(q3.isEmpty());
-    print("pop: {}".format(q3.pop().unwrap().id));
+    print("pop: {}".format(q3.pop().id));
     print(q3.isEmpty());
 }
