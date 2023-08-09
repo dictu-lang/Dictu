@@ -26,7 +26,7 @@ import BigInt;
 
 ### BigInt.new() -> Result<BigInt>
 
-Returns a Result value with a BigInt or an error. `BigInt.new()` takes 0 or 1 argument of either Number or String. If no argument is given, the returned BigInt value is set to 0.
+Returns a Result value with a BigInt or an error. Takes 0 or 1 argument of either Number or String. If no argument is given, the returned BigInt value is set to 0.
 
 ```cs
 const bi = BigInt.new().unwrap();
