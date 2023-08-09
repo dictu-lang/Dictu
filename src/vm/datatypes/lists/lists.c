@@ -304,7 +304,6 @@ static Value copyListDeep(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(list);
 }
 
-
 static int partition(ObjList* arr, int start, int end) {
     int pivot_index = (int)floor(start + end) / 2;
 
