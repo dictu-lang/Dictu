@@ -44,7 +44,7 @@ print(queue);
 // <Queue>
 ```
 
-### Queue.push(Any) -> Nil
+### Queue.push(Value) -> Nil
 
 Adds the given value to the queue and resizes the queue if necessary.
 
