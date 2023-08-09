@@ -46,7 +46,7 @@ print(queue);
 
 ### Queue.push(Any) -> Nil
 
-Adds the given argument to the queue and resizes the queue if necessary.
+Adds the given value to the queue and resizes the queue if necessary.
 
 ```cs
 const queue = Queue.new();
