@@ -178,7 +178,7 @@ static Value unwrapBigInt(Value val) {
 
 static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        return newResultError(vm, "error: wrong number of arguments");
+        runtimeError(vm, "wrong number of arguments");
     }
 
     if (argCount == 0) {
@@ -222,7 +222,7 @@ static Value handleLongOrUnwrapError(DictuVM *vm, bool argIsLong) {
 
 static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const bigint*, const bigint*)) {
     if (argCount != 1) {
-        return newResultError(vm, "error: wrong number of arguments");
+        runtimeError(vm, "wrong number of arguments");
     }
 
     bool argIsLong;
@@ -270,7 +270,7 @@ static Value applyOp0ArgToReturn(DictuVM *vm, int argCount, Value *args, bigint*
 
 static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, bigint* (*op)(bigint*, const bigint*, const bigint*)) {
     if (argCount != 1) {
-        return newResultError(vm, "error: wrong number of arguments");
+        runtimeError(vm, "wrong number of arguments");
     }
 
     bool argIsLong;

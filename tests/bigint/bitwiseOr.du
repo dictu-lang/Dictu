@@ -17,7 +17,6 @@ class TestBigIntBitwiseOr < UnitTest {
         this.assertSuccess(bi1);
         this.assertSuccess(bi2);
         this.assertSuccess(bi1.unwrap().bitwiseOr(bi2.unwrap()));
-        this.assertError(bi1.unwrap().bitwiseOr());
     }
 }
 

@@ -17,7 +17,6 @@ class TestBigIntBitwiseXor < UnitTest {
         this.assertSuccess(bi1);
         this.assertSuccess(bi2);
         this.assertSuccess(bi1.unwrap().bitwiseXor(bi2.unwrap()));
-        this.assertError(bi1.unwrap().bitwiseXor());
     }
 }
 
