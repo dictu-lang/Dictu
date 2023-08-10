@@ -1146,6 +1146,12 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
+                    if (strcmp(name->chars, "attributeAnnotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->attributeAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->attributeAnnotations));
+                        DISPATCH();
+                    }
+
                     RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
                 }
 
@@ -2178,6 +2184,15 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
             klass->methodAnnotations = dict;
+
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_ATTRIBUTE_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            klass->attributeAnnotations = dict;
 
             DISPATCH();
         }
