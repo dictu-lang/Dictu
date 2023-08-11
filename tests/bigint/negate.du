@@ -1,0 +1,22 @@
+/**
+ * negate.du
+ *
+ * Testing the BigInt negate function.
+ *
+ * .negate() returns a Result value that unwraps to the negated 
+ * BigInt value.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntNegate < UnitTest {
+    testBigIntNegate() {
+        const bi1 = BigInt.new(2157634);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi1.unwrap().negate());
+    }
+}
+
+TestBigIntNegate().run();
