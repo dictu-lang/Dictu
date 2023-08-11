@@ -41,7 +41,7 @@ print(bi);
 ```
 
 ```cs
-const bi = BigInt.new("678").unwrap();
+const bi = BigInt.new("678").unwrap(); 
 print(bi);
 // 678
 ```
