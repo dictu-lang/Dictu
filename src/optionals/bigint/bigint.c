@@ -1,9 +1,9 @@
-#include "bigint.h"
-
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "bigint.h"
 
 #define BIGINT_ASSERT(a, op, b) assert((a) op (b));
 

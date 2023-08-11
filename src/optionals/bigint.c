@@ -144,7 +144,7 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bi) {
      */
     defineNative(vm, &abstract->values, "compare",     &compare);
     defineNative(vm, &abstract->values, "negate",      &arithNeg);
-    defineNative(vm, &abstract->values, "absoluteVal", &arithAbs);
+    defineNative(vm, &abstract->values, "abs",         &arithAbs);
     defineNative(vm, &abstract->values, "bitwiseAnd",  &bitwiseAnd);
     defineNative(vm, &abstract->values, "bitwiseOr",   &bitwiseOr);
     defineNative(vm, &abstract->values, "bitwiseXor",  &bitwiseXor);
@@ -183,9 +183,11 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 0) {
         return newBigIntValue(vm, bigIntFromLong(vm, 0));
-    } else if (IS_NUMBER(args[0])) {
+    }
+    if (IS_NUMBER(args[0])) {
         return newBigIntValue(vm, bigIntFromLong(vm, args[0]));
-    } else if (IS_STRING(args[0])) {
+    }
+    if (IS_STRING(args[0])) {
         return newBigIntValue(vm, bigIntFromIntString(vm, args[0]));
     }
 
@@ -213,9 +215,9 @@ static bool handleLongOrUnwrap(Value arg, bigint* tmp, Value* val, bool* argIsLo
 static Value handleLongOrUnwrapError(DictuVM *vm, bool argIsLong) {
     if (argIsLong) {
         return newResultError(vm, "error: invalid argument");
-    } else {
-        return newResultError(vm, "error: operation error");
     }
+    
+    return newResultError(vm, "error: operation error");
 }
 
 static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const bigint*, const bigint*)) {
@@ -246,9 +248,9 @@ static Value dealWithReturn(DictuVM *vm,  BigIntData* bi, bigint* ptr) {
 
     if (ptr == NULL) {
         return newResultError(vm, "error: operation error");
-    } else {
-        return newBigIntValue(vm, bi);
     }
+    
+    return newBigIntValue(vm, bi);
 }
 
 static Value applyOp0ArgToReturn(DictuVM *vm, int argCount, Value *args, bigint* (*op)(bigint*)) {
@@ -315,7 +317,7 @@ Value createBigIntModule(DictuVM *vm) {
     /**
      * Define BigInt methods
      */
-    defineNative(vm, &module->values, "bigint", newBigInt);
+    defineNative(vm, &module->values, "new", newBigInt);
 
     pop(vm);
     pop(vm);
