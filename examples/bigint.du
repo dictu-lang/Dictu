@@ -1,0 +1,16 @@
+import BigInt;
+
+{ // main
+    const bi1 = BigInt.new("9").unwrap();
+    const bi2 = BigInt.new(8987657899).unwrap();
+    print(bi1.compare(bi2)); -1
+
+    print(bi1.negate().unwrap()); // -9
+    print(bi1); // 9
+    print(bi1.abs().unwrap()); // 9
+
+    print(bi1.bitwiseAnd(bi2).unwrap()); // 9
+    print(bi1.bitwiseOr(bi2).unwrap()); // 397723307
+
+    print(bi1.divide(4).unwrap()); // 2
+}

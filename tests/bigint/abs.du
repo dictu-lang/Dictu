@@ -1,0 +1,21 @@
+/**
+ * abs.du
+ *
+ * Testing the BigInt abs function.
+ *
+ * .abs() returns a Result containing the absolute value of the BigInt.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntAbs < UnitTest {
+    testBigIntAbs() {
+        const bi1 = BigInt.new(2157639);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi1.unwrap().abs());
+    }
+}
+
+TestBigIntAbs().run();

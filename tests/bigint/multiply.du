@@ -1,0 +1,27 @@
+/**
+ * multiply.du
+ *
+ * Testing the BigInt multiply function.
+ *
+ * .multiply() returns a Result value containing the product.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntMultiply < UnitTest {
+    testBigIntMultiply() {
+        const bi1 = BigInt.new(9999);
+        const bi2 = BigInt.new(100);
+        const bi3 = BigInt.new(999900);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi3);
+        const sum = bi1.unwrap().multiply(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
+    }
+}
+
+TestBigIntMultiply().run();
