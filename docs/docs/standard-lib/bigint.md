@@ -24,7 +24,7 @@ To make use of the BigInt module an import is required.
 import BigInt;
 ```
 
-### BigInt.new() -> Result<BigInt>
+### BigInt.new() -> Result\<BigInt>
 
 Returns a Result value with a BigInt or an error. Takes 0 or 1 argument of either Number or String. If no argument is given, the returned BigInt value is set to 0.
 
@@ -59,7 +59,7 @@ print(value);
 // 0
 ```
 
-### bigIntVal.negate() -> Result<BigInt>
+### bigIntVal.negate() -> Result\<BigInt>
 
 Returns a Result value that unwraps to the negated BigInt value.
 
@@ -71,7 +71,7 @@ print(value);
 // -10
 ```
 
-### bigIntVal.abs() -> Result<BigInt>
+### bigIntVal.abs() -> Result\<BigInt>
 
 Returns a Result containing the absolute value of the BigInt.
 
@@ -83,7 +83,7 @@ print(value);
 // 10
 ```
 
-### bigIntVal1.bitwiseAnd() -> Result<BigInt>
+### bigIntVal1.bitwiseAnd() -> Result\<BigInt>
 
 Returns a Result containing the value of `bigIntVal1 & bigIntVal2`.
 
@@ -96,7 +96,7 @@ print(value);
 // 584
 ```
 
-### bigIntVal1.bitwiseOr() -> Result<BigInt>
+### bigIntVal1.bitwiseOr() -> Result\<BigInt>
 
 Returns a Result containing the value of `bigIntVal1 | bigIntVal2`.
 
@@ -109,7 +109,7 @@ print(value);
 // 110541
 ```
 
-### bigIntVal1.bitwiseXor() -> Result<BigInt>
+### bigIntVal1.bitwiseXor() -> Result\<BigInt>
 
 Returns a Result containing the value of `bigIntVal1 ^ bigIntVal2`.
 
@@ -122,7 +122,7 @@ print(value);
 // 109957
 ```
 
-### bigIntVal.add() -> Result<BigInt>
+### bigIntVal.add() -> Result\<BigInt>
 
 Returns a Result value containing the sum.
 
@@ -134,7 +134,7 @@ print(value);
 // 10
 ```
 
-### bigIntVal.subtract() -> Result<BigInt>
+### bigIntVal.subtract() -> Result\<BigInt>
 
 Returns a Result value containing the difference.
 
@@ -146,7 +146,7 @@ print(value);
 // 10
 ```
 
-### bigIntVal.multiply() -> Result<BigInt>
+### bigIntVal.multiply() -> Result\<BigInt>
 
 Returns a Result value containing the product.
 
@@ -158,7 +158,7 @@ print(value);
 // 10
 ```
 
-### bigIntVal.divide() -> Result<BigInt>
+### bigIntVal.divide() -> Result\<BigInt>
 
 Returns a Result value containing the quotiant.
 
@@ -170,7 +170,7 @@ print(value);
 // 10
 ```
 
-### bigIntVal.modulo() -> Result<BigInt>
+### bigIntVal.modulo() -> Result\<BigInt>
 
 Returns a Result value containing the remainder.
 

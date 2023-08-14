@@ -34,7 +34,7 @@ print(queue);
 // <Queue>
 ```
 
-### Queue.newWithSize(Number) -> Result<Queue>
+### Queue.newWithSize(Number) -> Result\<Queue>
 
 Returns a Result value with a Queue initialized to the given size. An error Result is returned if the given capacity is less than 0.
 

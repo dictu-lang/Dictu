@@ -24,7 +24,7 @@ To make use of the JSON module an import is required.
 import JSON;
 ```
 
-### JSON.parse(String) -> Result<Any>
+### JSON.parse(String) -> Result\<Value>
 
 Parses a JSON string and turns it into a valid Dictu datatype.
 Returns a Result type and unwraps to <any> datatype.
