@@ -1,0 +1,10 @@
+import Object;
+
+
+class Person {
+    init(var name, var age, var sex) {}
+}
+
+print("{}\n".format(Object.hash("asdf1234")));
+print("{}\n".format(Object.hash(1234)));
+print("{}\n".format(Object.hash(Person("John Smith", 18, "male"))));
