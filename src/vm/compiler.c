@@ -165,7 +165,7 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->withBlock = false;
     compiler->classAnnotations = NULL;
     compiler->methodAnnotations = NULL;
-    compiler->attributeAnnotations = NULL;
+    compiler->variableAnnotations = NULL;
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -1610,23 +1610,10 @@ static void method(Compiler *compiler, bool private, LangToken *identifier, bool
 
         Value existingDict;
         dictGet(compiler->methodAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
-        ObjString *methodKey = copyString(vm, compiler->parser->previous.start, compiler->parser->previous.length);
-        push(vm, OBJ_VAL(methodKey));
-        dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodKey), existingDict);
+        ObjString *methodName = AS_STRING(currentChunk(compiler)->constants.values[constant]);
+        dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), existingDict);
         dictDelete(vm, compiler->methodAnnotations, OBJ_VAL(vm->annotationString));
 
-//        for (int i = 0; i <= compiler->methodAnnotations->capacityMask; i++) {
-//            DictItem *entry = &compiler->methodAnnotations->entries[i];
-//            if (IS_EMPTY(entry->key)) {
-//                continue;
-//            }
-//
-//            if (OBJ_VAL(vm->annotationString) == entry->key) {
-//
-//
-//                break;
-//            }
-//        }
         *hasAnnotation = false;
     }
 
@@ -1654,8 +1641,6 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
-    //classCompiler->classAnnotations = NULL;
-    //classCompiler->methodAnnotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
 }
@@ -1676,10 +1661,10 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
         compiler->methodAnnotations = NULL;
     }
 
-    if (compiler->attributeAnnotations != NULL) {
-        int attributeAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->attributeAnnotations));
-        emitBytes(compiler, OP_DEFINE_ATTRIBUTE_ANNOTATIONS, attributeAnnotationsConstant);
-        compiler->attributeAnnotations = NULL;
+    if (compiler->variableAnnotations != NULL) {
+        int variableAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->variableAnnotations));
+        emitBytes(compiler, OP_DEFINE_VARIABLE_ANNOTATIONS, variableAnnotationsConstant);
+        compiler->variableAnnotations = NULL;
     }
 }
 
@@ -1731,15 +1716,15 @@ static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
     } while (match(compiler, TOKEN_AT));
 }
 
-static void parseAttributeAnnotations(Compiler *compiler) {
+static void parseVariableAnnotations(Compiler *compiler) {
     DictuVM *vm = compiler->parser->vm;
-    if (compiler->attributeAnnotations == NULL) {
-        compiler->attributeAnnotations = newDict(vm);
+    if (compiler->variableAnnotations == NULL) {
+        compiler->variableAnnotations = newDict(vm);
     }
 
     ObjDict *annotationDict = newDict(vm);
     push(vm, OBJ_VAL(annotationDict));
-    dictSet(vm, compiler->attributeAnnotations, OBJ_VAL(vm->annotationString), OBJ_VAL(annotationDict));
+    dictSet(vm, compiler->variableAnnotations, OBJ_VAL(vm->annotationString), OBJ_VAL(annotationDict));
     pop(vm);
 
     parseAnnotations(compiler, annotationDict);
@@ -1774,6 +1759,12 @@ static bool isAttributeAnnotation(Compiler *compiler) {
 
     do {
         consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+
+        if (match(compiler, TOKEN_LEFT_PAREN)) {
+            do {
+                advance(compiler->parser);
+            } while (check(compiler, TOKEN_RIGHT_PAREN));
+        }
     } while (match(compiler, TOKEN_AT));
 
     bool isAttribute = check(compiler, TOKEN_VAR) || check(compiler, TOKEN_CONST);
@@ -1809,9 +1800,9 @@ static void parseClassBody(Compiler *compiler) {
                 ObjString *varName = AS_STRING(currentChunk(compiler)->constants.values[name]);
 
                 Value existingDict;
-                dictGet(compiler->attributeAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
-                dictSet(vm, compiler->attributeAnnotations, OBJ_VAL(varName), existingDict);
-                dictDelete(vm, compiler->attributeAnnotations, OBJ_VAL(vm->annotationString));
+                dictGet(compiler->variableAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
+                dictSet(vm, compiler->variableAnnotations, OBJ_VAL(varName), existingDict);
+                dictDelete(vm, compiler->variableAnnotations, OBJ_VAL(vm->annotationString));
 
                 hasAnnotation = false;
             }
@@ -1830,9 +1821,9 @@ static void parseClassBody(Compiler *compiler) {
                 ObjString *varName = AS_STRING(currentChunk(compiler)->constants.values[name]);
 
                 Value existingDict;
-                dictGet(compiler->attributeAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
-                dictSet(vm, compiler->attributeAnnotations, OBJ_VAL(varName), existingDict);
-                dictDelete(vm, compiler->attributeAnnotations, OBJ_VAL(vm->annotationString));
+                dictGet(compiler->variableAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
+                dictSet(vm, compiler->variableAnnotations, OBJ_VAL(varName), existingDict);
+                dictDelete(vm, compiler->variableAnnotations, OBJ_VAL(vm->annotationString));
 
                 hasAnnotation = false;
             }
@@ -1841,7 +1832,7 @@ static void parseClassBody(Compiler *compiler) {
         } else if (match(compiler, TOKEN_AT)) {
             hasAnnotation = true;
             if (isAttributeAnnotation(compiler)) {
-                parseAttributeAnnotations(compiler);
+                parseVariableAnnotations(compiler);
             } else {
                 parseMethodAnnotations(compiler);
             }
@@ -2144,7 +2135,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_MULTI_CASE:
         case OP_DEFINE_CLASS_ANNOTATIONS:
         case OP_DEFINE_METHOD_ANNOTATIONS:
-        case OP_DEFINE_ATTRIBUTE_ANNOTATIONS:
+        case OP_DEFINE_VARIABLE_ANNOTATIONS:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
@@ -2877,7 +2868,7 @@ void grayCompilerRoots(DictuVM *vm) {
 
         grayObject(vm, (Obj *) compiler->classAnnotations);
         grayObject(vm, (Obj *) compiler->methodAnnotations);
-        grayObject(vm, (Obj *) compiler->attributeAnnotations);
+        grayObject(vm, (Obj *) compiler->variableAnnotations);
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;

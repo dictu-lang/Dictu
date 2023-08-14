@@ -649,7 +649,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes and methods that by themselves have no impact. They, however, can provide user defined changes at runtime.
+Annotations are metadata that are applied to classes, methods and class variables that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
@@ -660,6 +660,9 @@ class AnnotatedClass {
 
 ```cs
 class ClassWithMethodAnnotation {
+    @ClassVarAnnotation
+    var someVariable = 10;
+
     init() {}
 
     @MethodAnnotation
@@ -667,7 +670,7 @@ class ClassWithMethodAnnotation {
 }
 ```
 
-Annotations are access via the `.classAnnotations` and `.methodAnnotations` proprties available on all classes.
+Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.variableAnnotations` properties available on all classes.
 
 For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 

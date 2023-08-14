@@ -123,7 +123,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
-    vm->annotationString = copyString(vm, "__annotatedMethodName", 21);
+    vm->annotationString = copyString(vm, "__annotationName", 16);
 
     // Native functions
     defineAllNatives(vm);
@@ -1146,9 +1146,9 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    if (strcmp(name->chars, "attributeAnnotations") == 0) {
+                    if (strcmp(name->chars, "variableAnnotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, klassStore->attributeAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->attributeAnnotations));
+                        push(vm, klassStore->variableAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->variableAnnotations));
                         DISPATCH();
                     }
 
@@ -2188,11 +2188,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(DEFINE_ATTRIBUTE_ANNOTATIONS): {
+        CASE_CODE(DEFINE_VARIABLE_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            klass->attributeAnnotations = dict;
+            klass->variableAnnotations = dict;
 
             DISPATCH();
         }
