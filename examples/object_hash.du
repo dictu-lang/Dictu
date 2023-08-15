@@ -5,7 +5,7 @@ class Person {
     init(var name, var age) {}
 }
 
-print("String: {}".format(Object.hash("asdf1234")));
+print("String: {}".format(Object.hash("Dictu")));
 print("Number: {}".format(Object.hash(1234)));
 print("List: {}".format(Object.hash([1, 2, 3, 4, 5])));
 print("Set: {}".format(Object.hash(set(1, 2, 3, 4, 5))));
