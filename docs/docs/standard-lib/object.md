@@ -51,3 +51,11 @@ class Test {}
 
 Object.createFrom("Test").unwrap(); // <Test instance>
 ```
+
+### Object.hash() -> String
+
+This method will return a string of the object's hash value.
+
+```cs
+Object.hash("Dictu");
+```
