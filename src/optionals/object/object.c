@@ -53,10 +53,10 @@ static Value objectHash(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "hash() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
-    
-    unsigned long long v = (unsigned long long)args[0];
 
-    return valueToNum(v);
+    char str[64];
+    sprintf(str, "%llu", args[0]);
+    return OBJ_VAL(copyString(vm, str, 64));
 }
 
 Value createObjectModule(DictuVM *vm) {

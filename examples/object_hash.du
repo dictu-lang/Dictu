@@ -2,9 +2,12 @@ import Object;
 
 
 class Person {
-    init(var name, var age, var sex) {}
+    init(var name, var age) {}
 }
 
-print("{}\n".format(Object.hash("asdf1234")));
-print("{}\n".format(Object.hash(1234)));
-print("{}\n".format(Object.hash(Person("John Smith", 18, "male"))));
+print("String: {}".format(Object.hash("asdf1234")));
+print("Number: {}".format(Object.hash(1234)));
+print("List: {}".format(Object.hash([1, 2, 3, 4, 5])));
+print("Set: {}".format(Object.hash(set(1, 2, 3, 4, 5))));
+print("Dict: {}".format(Object.hash({"key": "value"})));
+print("Class: {}".format(Object.hash(Person("John Smith", 18))));
