@@ -649,7 +649,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes and methods that by themselves have no impact. They, however, can provide user defined changes at runtime.
+Annotations are metadata that are applied to classes, methods and class variables and constants that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
@@ -660,6 +660,13 @@ class AnnotatedClass {
 
 ```cs
 class ClassWithMethodAnnotation {
+    @ClassVarAnnotation
+    var someVariable = 10;
+
+    // This will be available in `.fieldAnnotations`
+    @ClassConstVariable
+    const y = 10;
+
     init() {}
 
     @MethodAnnotation
@@ -667,11 +674,13 @@ class ClassWithMethodAnnotation {
 }
 ```
 
-Annotations are access via the `.classAnnotations` and `.methodAnnotations` proprties available on all classes.
+Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.fieldAnnotations` properties available on all classes.
 
 For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 For method annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+
+For class variables and class constants, the returned data structure is also a dictionary, however the keys are the variable/constant names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 ```cs
 print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
