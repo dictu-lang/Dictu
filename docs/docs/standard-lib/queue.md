@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Queue
-nav_order: 20
+nav_order: 22
 parent: Standard Library
 ---
 
