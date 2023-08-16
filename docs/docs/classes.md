@@ -649,7 +649,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes, methods and class variables that by themselves have no impact. They, however, can provide user defined changes at runtime.
+Annotations are metadata that are applied to classes, methods and class variables and constants that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
