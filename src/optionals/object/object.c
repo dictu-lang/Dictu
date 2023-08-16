@@ -48,6 +48,17 @@ static Value objectGetClassRefInternal(DictuVM *vm, int argCount, Value *args) {
     return objectGetClassRefImpl(vm, argCount, args, true);
 }
 
+static Value objectHash(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "hash() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char str[21];
+    sprintf(str, "%llu", (unsigned long long)args[0]);
+    return OBJ_VAL(copyString(vm, (char *)str, 21));
+}
+
 Value createObjectModule(DictuVM *vm) {
     ObjClosure *closure = compileModuleToClosure(vm, "Object", DICTU_OBJECT_SOURCE);
 
@@ -62,6 +73,7 @@ Value createObjectModule(DictuVM *vm) {
      */
     defineNative(vm, &closure->function->module->values, "__getClassRef", objectGetClassRefInternal);
     defineNative(vm, &closure->function->module->values, "getClassRef", objectGetClassRef);
+    defineNative(vm, &closure->function->module->values, "hash", objectHash);
 
     pop(vm);
 
