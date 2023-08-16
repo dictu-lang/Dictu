@@ -79,28 +79,28 @@ class TestClassAnnotations < UnitTest {
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['NilAnnotation'], nil);
     }
 
-    testClassVarAnnotations() {
-        this.assertEquals(AnnotatedClassVars.variableAnnotations.len(), 2);
-
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable'].len(), 6);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['EmptyAnnotation'], nil);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['TrueAnnotation'], true);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['FalseAnnotation'], false);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['NumberAnnotation'], 10);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['DecimalNumberAnnotation'], 10.5);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classVariable']['NilAnnotation'], nil);
-
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant'].len(), 6);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['EmptyAnnotation'], nil);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['TrueAnnotation'], true);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['FalseAnnotation'], false);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['NumberAnnotation'], 10);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['DecimalNumberAnnotation'], 10.5);
-        this.assertEquals(AnnotatedClassVars.variableAnnotations['classConstant']['NilAnnotation'], nil);
-    }
-
     testInitAnnotation() {
         this.assertEquals(WithAnnotatedInit.methodAnnotations['init']['InitAnnotation'], nil);
+    }
+
+    testClassVarAnnotations() {
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations.len(), 2);
+
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable'].len(), 6);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['EmptyAnnotation'], nil);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['TrueAnnotation'], true);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['FalseAnnotation'], false);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['NumberAnnotation'], 10);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['DecimalNumberAnnotation'], 10.5);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['NilAnnotation'], nil);
+
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant'].len(), 6);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['EmptyAnnotation'], nil);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['TrueAnnotation'], true);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['FalseAnnotation'], false);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['NumberAnnotation'], 10);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['DecimalNumberAnnotation'], 10.5);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['NilAnnotation'], nil);
     }
 }
 

@@ -663,7 +663,7 @@ class ClassWithMethodAnnotation {
     @ClassVarAnnotation
     var someVariable = 10;
 
-    // This will be available in `.variableAnnotations`
+    // This will be available in `.fieldAnnotations`
     @ClassConstVariable
     const y = 10;
 
@@ -674,7 +674,7 @@ class ClassWithMethodAnnotation {
 }
 ```
 
-Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.variableAnnotations` properties available on all classes.
+Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.fieldAnnotations` properties available on all classes.
 
 For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 

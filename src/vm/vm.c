@@ -1146,9 +1146,9 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    if (strcmp(name->chars, "variableAnnotations") == 0) {
+                    if (strcmp(name->chars, "fieldAnnotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, klassStore->variableAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->variableAnnotations));
+                        push(vm, klassStore->fieldAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->fieldAnnotations));
                         DISPATCH();
                     }
 
@@ -2188,11 +2188,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(DEFINE_VARIABLE_ANNOTATIONS): {
+        CASE_CODE(DEFINE_FIELD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            klass->variableAnnotations = dict;
+            klass->fieldAnnotations = dict;
 
             DISPATCH();
         }

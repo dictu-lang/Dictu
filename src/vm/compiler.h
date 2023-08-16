@@ -103,7 +103,7 @@ typedef struct Compiler {
     bool withBlock;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
-    ObjDict *variableAnnotations;
+    ObjDict *fieldAnnotations;
 } Compiler;
 
 typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);
