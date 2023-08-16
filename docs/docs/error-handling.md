@@ -26,7 +26,7 @@ error message. This wrapped value *must* be unwrapped before accessing it.
 Note, if returning a Result type from a function there is nothing in the interpreter
 that will enforce both Success and Error types can be returned, or even that these are the only
 types that can be returned, however it is very much recommended that if you return a Result type
-from a function, this is the only type you ever return - this will made handling a result type
+from a function, this is the only type you ever return - this will make handling a result type
 much easier for the caller.
 
 #### Success

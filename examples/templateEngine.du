@@ -2,8 +2,8 @@ import System;
 
 // Template is a simple template rendering engine.
 class Template {
-    var LEFT_BRACE = "{";
-    var RIGHT_BRACE = "}";
+    var leftBrace = "{";
+    var rightBrace = "}";
 
     init(private tmpl, private klass) {}
 
@@ -17,9 +17,9 @@ class Template {
         classAttrs.forEach(def(attr) => {
             const attrVal = this.klass.getAttribute(attr);
             const tmplField = "{}{}{}".format(
-                Template.LEFT_BRACE,
+                Template.leftBrace,
                 attr,
-                Template.RIGHT_BRACE
+                Template.rightBrace
             );
 
             if (rendered.contains(tmplField)) {

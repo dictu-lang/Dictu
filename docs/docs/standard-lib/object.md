@@ -52,9 +52,11 @@ class Test {}
 Object.createFrom("Test").unwrap(); // <Test instance>
 ```
 
-### Object.hash() -> String
+### Object.hash(Value) -> String
 
 This method will return a string of the object's hash value.
+
+**NOTE** Strings, Booleans, Nil will always return the same value since these values are interned.
 
 ```cs
 Object.hash("Dictu");

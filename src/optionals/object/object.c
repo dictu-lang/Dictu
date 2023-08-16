@@ -54,9 +54,9 @@ static Value objectHash(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char str[64];
+    char str[21];
     sprintf(str, "%llu", (unsigned long long)args[0]);
-    return OBJ_VAL(copyString(vm, (char *)str, 64));
+    return OBJ_VAL(copyString(vm, (char *)str, 21));
 }
 
 Value createObjectModule(DictuVM *vm) {
