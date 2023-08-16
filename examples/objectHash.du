@@ -13,3 +13,4 @@ print("List: {}".format(Object.hash([1, 2, 3, 4, 5])));
 print("Set: {}".format(Object.hash(set(1, 2, 3, 4, 5))));
 print("Dict: {}".format(Object.hash({"key": "value"})));
 print("Class: {}".format(Object.hash(Person("John Smith", 18))));
+ 
