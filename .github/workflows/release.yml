@@ -31,7 +31,7 @@ jobs:
     - name: Release
       uses: SierraSoftworks/gh-releases@v1.0.7
       with:
-        token: ${{ secrets.TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         overwrite: 'true'
         files: |
           dictu-linux-x86_64
