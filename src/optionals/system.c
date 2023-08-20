@@ -250,7 +250,64 @@ static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     int retval = MKDIR(dir, mode);
+    if (retval < 0) {
+        ERROR_RESULT;
+    }
 
+    return newResultSuccess(vm, NIL_VAL);
+}
+
+static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount == 0 || argCount > 2) {
+        runtimeError(vm, "mkdirAll() takes 1 or 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "mkdirAll() first argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *dir = AS_CSTRING(args[0]);
+
+    int mode = 0777;
+
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "mkdirAll() second argument must be a number");
+            return EMPTY_VAL;
+        }
+
+        mode = AS_NUMBER(args[1]);
+    }
+
+    char tmp[256];
+    char *p = NULL;
+    size_t len;
+
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+
+    len = strlen(tmp);
+    if (tmp[len - 1] == DIR_SEPARATOR) {
+        tmp[len - 1] = 0;
+    }
+
+    int retval;
+
+    for (p = tmp + 1; *p; p++) {
+        if (*p == DIR_SEPARATOR) {
+            *p = 0;
+
+            retval = MKDIR(tmp, mode);
+            if (retval < 0) {
+                ERROR_RESULT;
+            }
+
+            *p = '/';
+        }
+    }
+
+    retval = MKDIR(tmp, mode);
     if (retval < 0) {
         ERROR_RESULT;
     }
@@ -557,6 +614,7 @@ Value createSystemModule(DictuVM *vm) {
 #endif
     defineNative(vm, &module->values, "rmdir", rmdirNative);
     defineNative(vm, &module->values, "mkdir", mkdirNative);
+    defineNative(vm, &module->values, "mkdirAll", mkdirAllNative);
 #ifdef HAS_ACCESS
     defineNative(vm, &module->values, "access", accessNative);
 #endif

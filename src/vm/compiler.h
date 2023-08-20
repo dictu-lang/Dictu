@@ -27,7 +27,7 @@ typedef enum {
 
 typedef struct {
     // The name of the local variable.
-    Token name;
+    LangToken name;
 
     // The depth in the scope chain that this variable was declared at.
     // Zero is the outermost scope--parameters for a method, or the first
@@ -58,13 +58,11 @@ typedef struct {
 
 typedef struct ClassCompiler {
     struct ClassCompiler *enclosing;
-    Token name;
+    LangToken name;
     bool hasSuperclass;
     bool staticMethod;
     bool abstractClass;
     Table privateVariables;
-    ObjDict *classAnnotations;
-    ObjDict *methodAnnotations;
 } ClassCompiler;
 
 typedef struct Loop {
@@ -78,8 +76,8 @@ typedef struct Loop {
 typedef struct {
     DictuVM *vm;
     Scanner scanner;
-    Token current;
-    Token previous;
+    LangToken current;
+    LangToken previous;
     bool hadError;
     bool panicMode;
     ObjModule *module;
@@ -105,10 +103,11 @@ typedef struct Compiler {
     bool withBlock;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
+    ObjDict *fieldAnnotations;
 } Compiler;
 
 typedef void (*ParsePrefixFn)(Compiler *compiler, bool canAssign);
-typedef void (*ParseInfixFn)(Compiler *compiler, Token previousToken, bool canAssign);
+typedef void (*ParseInfixFn)(Compiler *compiler, LangToken previousToken, bool canAssign);
 
 typedef struct {
     ParsePrefixFn prefix;

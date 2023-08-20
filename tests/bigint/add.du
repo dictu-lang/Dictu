@@ -1,0 +1,27 @@
+/**
+ * add.du
+ *
+ * Testing the BigInt add function.
+ *
+ * .add() returns a Result value containing the sum.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntAdd < UnitTest {
+    testBigIntAdd() {
+        const bi1 = BigInt.new(900);
+        const bi2 = BigInt.new(10000);
+        const bi3 = BigInt.new(10900);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi3);
+        const sum = bi1.unwrap().add(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
+    }
+}
+
+TestBigIntAdd().run();

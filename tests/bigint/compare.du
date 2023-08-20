@@ -1,0 +1,33 @@
+/**
+ * compare.du
+ *
+ * Testing the BigInt compare function.
+ *
+ * .compare() returns a Number value of either 0 indicating the
+ * 2 BigInts compared are the same and 1 if the 2 values are different.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntCompare < UnitTest {
+    testBigIntCompareEqual() {
+        const bi1 = BigInt.new();
+        const bi2 = BigInt.new();
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
+    testBigIntCompareNotEqual() {
+        const bi1 = BigInt.new();
+        const bi2 = BigInt.new("908");
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertNotEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), -1);
+    }
+}
+
+TestBigIntCompare().run();

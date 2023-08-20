@@ -30,8 +30,8 @@ const PKG_FORMATS = ["deb", "rpm", "apk"],
     PKG_FORMATS.forEach(def(pkgFmt) => {
         print("Creating {}...".format(pkgFmt));
 
-        Process.run(["nfpm", "pkg", "-f", "ops/nfpm.yaml", "--packager", pkgFmt, "--target", "build"], true).match(
-            def(_) => _,
+        Process.run(["nfpm", "pkg", "-f", "ops/nfpm.yaml", "--packager", pkgFmt, "--target", "build"]).match(
+            def(result) => print(result),
             def(error) => {
                 print(error);
                 System.exit(1);  

@@ -1,0 +1,68 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "release",
+      "displayName": "Release configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "release-nohttp",
+      "displayName": "Release configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "DISABLE_HTTP": true
+      },
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "release-vcpkg",
+      "displayName": "Release configuration",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_VCPKG": true
+      },
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release",
+      "jobs": 4,
+      "cleanFirst": true,
+      "configurePreset": "release",
+      "configuration": "release"
+    },
+    {
+      "name": "debug",
+      "jobs": 4,
+      "cleanFirst": true,
+      "configurePreset": "debug",
+      "configuration": "debug"
+    },
+    {
+      "name": "release-vcpkg",
+      "jobs": 4,
+      "cleanFirst": true,
+      "configurePreset": "release-vcpkg",
+      "configuration": "release"
+    }
+  ]
+}

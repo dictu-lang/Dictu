@@ -12,6 +12,7 @@ BuiltinModules modules[] = {
     {"Random", &createRandomModule, false},
     {"Base64", &createBase64Module, false},
     {"Hashlib", &createHashlibModule, false},
+    {"Queue", &createQueueModule, false},
     {"Sqlite", &createSqliteModule, false},
     {"Process", &createProcessModule, false},
     {"System", &createSystemModule, false},
@@ -25,7 +26,8 @@ BuiltinModules modules[] = {
 #ifndef DISABLE_HTTP
     {"HTTP", &createHTTPModule, true},
 #endif
-        {NULL, NULL, false}
+    {"BigInt", &createBigIntModule, false},
+    {NULL, NULL, false}
 };
 
 Value importBuiltinModule(DictuVM *vm, int index) {

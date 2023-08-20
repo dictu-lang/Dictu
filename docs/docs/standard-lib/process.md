@@ -38,7 +38,7 @@ Process.exec(["ls", "-la"]);
 
 ### Process.run(List, Boolean: captureOutput -> Optional) -> Result<Nil>
 
-Similar to `.run()` except this **will** wait for the external process to finish executing.
+Similar to `.exec()` except this **will** wait for the external process to finish executing.
 
 `.run()` expects a list as a parameter which is the command and any arguments for the command as individual list elements,
 and it will return a Result that unwraps to `nil` on success.

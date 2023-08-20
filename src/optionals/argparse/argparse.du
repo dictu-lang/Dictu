@@ -6,15 +6,12 @@ class Args {
 }
 
 class Parser {
-    private name;
-    private desc;
-    private userUsage;
     private args;
 
     var preArgs = [];
     var required = [];
 
-    init(var name, var desc, var userUsage) {
+    init(private name, private desc, private userUsage) {
         this.args = Args(name, desc);
     }
 

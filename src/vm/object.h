@@ -223,10 +223,11 @@ typedef struct sObjClass {
     Table publicMethods;
     Table privateMethods;
     Table abstractMethods;
-    Table publicProperties;
-    Table publicConstantProperties;
+    Table variables;
+    Table constants;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
+    ObjDict *fieldAnnotations;
     ClassType type;
 } ObjClass;
 
@@ -239,8 +240,8 @@ typedef struct sObjEnum {
 typedef struct {
     Obj obj;
     ObjClass *klass;
-    Table privateFields;
-    Table publicFields;
+    Table privateAttributes;
+    Table publicAttributes;
 } ObjInstance;
 
 typedef struct {

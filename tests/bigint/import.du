@@ -1,0 +1,18 @@
+/**
+* import.du
+*
+* General import file for all the function tests
+*/
+
+import "new.du";
+import "compare.du";
+import "negate.du";
+import "bitwiseAnd.du";
+import "bitwiseOr.du";
+import "bitwiseXor.du";
+import "abs.du";
+import "add.du";
+import "subtract.du";
+import "multiply.du";
+import "divide.du";
+import "modulo.du";

@@ -21,7 +21,7 @@ parent: Standard Library
 To make use of the Argparse module an import is required.
 
 ```cs
-from Argparse import Parse;
+from Argparse import Parser;
 ```
 
 ### New Parser(String, String, String) -> Parser
@@ -64,7 +64,7 @@ To add a new list argument, call the method below with at least the 3 required a
 parser.addList("-u", "active users", true, "users");
 ```
 
-### Parser.parse() -> Result<Dict>
+### Parser.parse() -> Result\<Dict>
 
 The `parse` method needs to be called to process the given flags against the configured flags. `parse` returns a `Result` value that, on success, will need to be unwrapped to access an instance of the `Args` class.
 

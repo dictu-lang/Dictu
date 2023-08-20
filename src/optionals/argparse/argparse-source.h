@@ -6,15 +6,12 @@
 "}\n" \
 "\n" \
 "class Parser {\n" \
-"    private name;\n" \
-"    private desc;\n" \
-"    private userUsage;\n" \
 "    private args;\n" \
 "\n" \
 "    var preArgs = [];\n" \
 "    var required = [];\n" \
 "\n" \
-"    init(var name, var desc, var userUsage) {\n" \
+"    init(private name, private desc, private userUsage) {\n" \
 "        this.args = Args(name, desc);\n" \
 "    }\n" \
 "\n" \
