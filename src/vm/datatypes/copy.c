@@ -68,10 +68,10 @@ ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {
     push(vm, OBJ_VAL(instance));
 
     if (shallow) {
-        tableAddAll(vm, &oldInstance->publicFields, &instance->publicFields);
+        tableAddAll(vm, &oldInstance->publicAttributes, &instance->publicAttributes);
     } else {
-        for (int i = 0; i <= oldInstance->publicFields.capacityMask; i++) {
-            Entry *entry = &oldInstance->publicFields.entries[i];
+        for (int i = 0; i <= oldInstance->publicAttributes.capacityMask; i++) {
+            Entry *entry = &oldInstance->publicAttributes.entries[i];
             if (entry->key != NULL) {
                 Value val = entry->value;
 
@@ -85,13 +85,13 @@ ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {
 
                 // Push to stack to avoid GC
                 push(vm, val);
-                tableSet(vm, &instance->publicFields, entry->key, val);
+                tableSet(vm, &instance->publicAttributes, entry->key, val);
                 pop(vm);
             }
         }
 
-        for (int i = 0; i <= oldInstance->privateFields.capacityMask; i++) {
-            Entry *entry = &oldInstance->privateFields.entries[i];
+        for (int i = 0; i <= oldInstance->privateAttributes.capacityMask; i++) {
+            Entry *entry = &oldInstance->privateAttributes.entries[i];
             if (entry->key != NULL) {
                 Value val = entry->value;
 
@@ -105,7 +105,7 @@ ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {
 
                 // Push to stack to avoid GC
                 push(vm, val);
-                tableSet(vm, &instance->privateFields, entry->key, val);
+                tableSet(vm, &instance->privateAttributes, entry->key, val);
                 pop(vm);
             }
         }

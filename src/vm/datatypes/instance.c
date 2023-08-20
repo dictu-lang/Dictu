@@ -32,7 +32,7 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     Value _; // Unused variable
-    if (tableGet(&instance->publicFields, AS_STRING(value), &_)) {
+    if (tableGet(&instance->publicAttributes, AS_STRING(value), &_)) {
         return TRUE_VAL;
     }
 
@@ -40,15 +40,15 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
         return TRUE_VAL;
     }
 
-    // Check class for properties
+    // Check class for attributes
     ObjClass *klass = instance->klass;
 
     while (klass != NULL) {
-        if (tableGet(&klass->publicConstantProperties, AS_STRING(value), &value)) {
+        if (tableGet(&klass->constants, AS_STRING(value), &value)) {
             return TRUE_VAL;
         }
 
-        if (tableGet(&klass->publicProperties, AS_STRING(value), &value)) {
+        if (tableGet(&klass->variables, AS_STRING(value), &value)) {
             return TRUE_VAL;
         }
 
@@ -80,7 +80,7 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     ObjInstance *instance = AS_INSTANCE(args[0]);
 
     Value value;
-    if (tableGet(&instance->publicFields, AS_STRING(key), &value)) {
+    if (tableGet(&instance->publicAttributes, AS_STRING(key), &value)) {
         return value;
     }
 
@@ -94,7 +94,7 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     ObjClass *klass = instance->klass;
 
     while (klass != NULL) {
-        if (tableGet(&klass->publicProperties, AS_STRING(key), &value)) {
+        if (tableGet(&klass->variables, AS_STRING(key), &value)) {
             return value;
         }
 
@@ -102,6 +102,16 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     return defaultValue;
+}
+
+static bool exists(ObjList *list, ObjString *search) {
+    for (int i = 0; i < list->values.count; ++i) {
+        if (valuesEqual(list->values.values[i], OBJ_VAL(search))) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
@@ -115,50 +125,70 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     ObjDict *dict = newDict(vm);
     push(vm, OBJ_VAL(dict));
 
-    ObjList *classVariables = newList(vm);
-    push(vm, OBJ_VAL(classVariables));
+    ObjList *fields = newList(vm);
+    push(vm, OBJ_VAL(fields));
 
     ObjClass *klass = instance->klass;
 
     // Walk the inheritance chain
     while (klass != NULL) {
-        for (int i = 0; i < klass->publicProperties.capacityMask + 1; i++) {
-            if (klass->publicProperties.entries[i].key == NULL) {
+        for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+            if (klass->variables.entries[i].key == NULL) {
                 continue;
             }
 
-            writeValueArray(vm, &classVariables->values, OBJ_VAL(klass->publicProperties.entries[i].key));
+            if (exists(fields, klass->variables.entries[i].key)) {
+                continue;
+            }
+
+            writeValueArray(vm, &fields->values, OBJ_VAL(klass->variables.entries[i].key));
+        }
+
+        for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+            if (klass->constants.entries[i].key == NULL) {
+                continue;
+            }
+
+            if (exists(fields, klass->constants.entries[i].key)) {
+                continue;
+            }
+
+            writeValueArray(vm, &fields->values, OBJ_VAL(klass->constants.entries[i].key));
         }
 
         klass = klass->superclass;
     }
 
-    ObjString *cv = copyString(vm, "classVariables", 14);
+    ObjString *cv = copyString(vm, "fields", 6);
     push(vm, OBJ_VAL(cv));
 
-    dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(classVariables));
+    dictSet(vm, dict, OBJ_VAL(cv), OBJ_VAL(fields));
 
-    pop(vm); // "classVariables" string
-    pop(vm); // "classVariables" list
+    pop(vm); // "fields" string
+    pop(vm); // "fields" list
 
-    ObjList *properties = newList(vm);
-    push(vm, OBJ_VAL(properties));
+    ObjList *attributes = newList(vm);
+    push(vm, OBJ_VAL(attributes));
     
-    for (int i = 0; i < instance->publicFields.capacityMask + 1; i++) {
-        if (instance->publicFields.entries[i].key == NULL) {
+    for (int i = 0; i < instance->publicAttributes.capacityMask + 1; i++) {
+        if (instance->publicAttributes.entries[i].key == NULL) {
             continue;
         }
 
-        writeValueArray(vm, &properties->values, OBJ_VAL(instance->publicFields.entries[i].key));
+        if (exists(attributes, instance->publicAttributes.entries[i].key)) {
+            continue;
+        }
+
+        writeValueArray(vm, &attributes->values, OBJ_VAL(instance->publicAttributes.entries[i].key));
     }
 
-    ObjString *pv = copyString(vm, "properties", 10);
+    ObjString *pv = copyString(vm, "attributes", 10);
     push(vm, OBJ_VAL(pv));
 
-    dictSet(vm, dict, OBJ_VAL(pv), OBJ_VAL(properties));
+    dictSet(vm, dict, OBJ_VAL(pv), OBJ_VAL(attributes));
 
-    pop(vm); // "properties" string
-    pop(vm); // "properties" list
+    pop(vm); // "attributes" string
+    pop(vm); // "attributes" list
 
     ObjList *methods = newList(vm);
     push(vm, OBJ_VAL(methods));
@@ -198,7 +228,7 @@ static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjInstance *instance = AS_INSTANCE(args[0]);
-    tableSet(vm, &instance->publicFields, AS_STRING(key), value);
+    tableSet(vm, &instance->publicAttributes, AS_STRING(key), value);
 
     return NIL_VAL;
 }

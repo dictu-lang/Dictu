@@ -11,7 +11,7 @@ class Template {
     // matches the fields in the class to the template
     // fields and replaces them with the class values.
     render() {
-        const classAttrs = this.klass.getAttributes()["properties"];
+        const classAttrs = this.klass.getAttributes()["attributes"];
         var rendered = this.tmpl;
 
         classAttrs.forEach(def(attr) => {
