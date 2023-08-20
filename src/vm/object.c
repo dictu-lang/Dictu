@@ -67,8 +67,8 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->abstractMethods);
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
-    initTable(&klass->publicProperties);
-    initTable(&klass->publicConstantProperties);
+    initTable(&klass->variables);
+    initTable(&klass->constants);
     klass->classAnnotations = NULL;
     klass->methodAnnotations = NULL;
     klass->fieldAnnotations = NULL;
@@ -76,7 +76,7 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     push(vm, OBJ_VAL(klass));
     ObjString *nameString = copyString(vm, "_name", 5);
     push(vm, OBJ_VAL(nameString));
-    tableSet(vm, &klass->publicConstantProperties, nameString, OBJ_VAL(name));
+    tableSet(vm, &klass->constants, nameString, OBJ_VAL(name));
     pop(vm);
     pop(vm);
 
@@ -127,13 +127,13 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
 ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
-    initTable(&instance->publicFields);
-    initTable(&instance->privateFields);
+    initTable(&instance->publicAttributes);
+    initTable(&instance->privateAttributes);
 
     push(vm, OBJ_VAL(instance));
     ObjString *classString = copyString(vm, "_class", 6);
     push(vm, OBJ_VAL(classString));
-    tableSet(vm, &instance->publicFields, classString, OBJ_VAL(klass));
+    tableSet(vm, &instance->publicAttributes, classString, OBJ_VAL(klass));
     pop(vm);
     pop(vm);
 

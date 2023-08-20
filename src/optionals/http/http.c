@@ -377,17 +377,17 @@ static ObjInstance *endRequest(DictuVM *vm, CURL *curl, Response response, bool 
 
     ObjString *string = copyString(vm, "content", 7);
     push(vm, OBJ_VAL(string));
-    tableSet(vm, &responseInstance->publicFields, string, OBJ_VAL(content));
+    tableSet(vm, &responseInstance->publicAttributes, string, OBJ_VAL(content));
     pop(vm);
 
     string = copyString(vm, "headers", 7);
     push(vm, OBJ_VAL(string));
-    tableSet(vm, &responseInstance->publicFields, string, OBJ_VAL(response.headers));
+    tableSet(vm, &responseInstance->publicAttributes, string, OBJ_VAL(response.headers));
     pop(vm);
 
     string = copyString(vm, "statusCode", 10);
     push(vm, OBJ_VAL(string));
-    tableSet(vm, &responseInstance->publicFields, string, NUMBER_VAL(response.statusCode));
+    tableSet(vm, &responseInstance->publicAttributes, string, NUMBER_VAL(response.statusCode));
     pop(vm);
 
     // Pop instance

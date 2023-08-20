@@ -37,8 +37,8 @@ A big part of the OOP paradigm is encapsulation, the fact that the outside inter
 internal to the class do not need to be known to the user of the interface. Dictu manages this concept much the same as other languages 
 through access levels. Unlike other languages, Dictu only has two access levels, `public` or `private`. If a method or instance variable
 is marked as `private` it is only accessible from within the class itself. To mark an instance variable as private it can be done in two
-ways, via [implicit properties](#implicit-properties) or by marking the property as private (note this must be done before defining the
-property otherwise it will be publically visible). To mark a method as private, preface the name with `private`.
+ways, via [implicit attributes](#implicit-attributes) or by marking the attribute as private (note this must be done before defining the
+attribute otherwise it will be publicly visible). To mark a method as private, preface the name with `private`.
 
 ```js
 class SomeClass {
@@ -54,7 +54,7 @@ class SomeClass {
 }
 
 print(SomeClass(10).getX()); // 10
-print(SomeClass(10).x); // Cannot access private property 'x' on 'SomeClass' instance.
+print(SomeClass(10).x); // Cannot access private attribute 'x' on 'SomeClass' instance.
 ```
 
 ## Constructor
@@ -72,9 +72,9 @@ class SomeClass {
 SomeClass("Object created!"); // Object created!
 ```
 
-### Implicit properties
+### Implicit Attributes
 
-Dictu actually has a way to define properties on the object without explicitly setting each variable passed into the constructor on the object through `this`.
+Dictu actually has a way to define attributes on the object without explicitly setting each variable passed into the constructor on the object through `this`.
 If `var` is used the instance variable has public visibility, if `private` is used the instance variable has private visibility.
 
 ```cs
@@ -92,8 +92,8 @@ The `var` or `private` keywords are optional on the constructor parameters, and 
 ```cs
 class SomeClass {
     init(var a, b, c, var d, private e) {
-        // b and c are not set as instance properties
-        // e is set as a private property
+        // b and c are not set as instance attributes
+        // e is set as a private attribute
     }
 }
 
@@ -223,10 +223,10 @@ var myObject = Test();
 print(myObject.hasAttribute("x")); // true
 print(myObject.hasAttribute("y")); // false
 
-print(myObject.z); // Undefined property 'z'.
+print(myObject.z); // Undefined attribute 'z'.
 ```
 
-### getAttribute(String) -> value
+### getAttribute(String) -> Value
 
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
@@ -247,9 +247,9 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
-### getAttributes() -> List
+### getAttributes() -> Dict
 
-The `getAttributes` method returns all public attributes on the given instance of a class.
+The `getAttributes` method returns all class variables / constants, public methods and public properties.
 
 ```cs
 class Test {
@@ -259,14 +259,14 @@ class Test {
 }
 
 var myObject = Test();
-print(myObject.getAttributes()); // ["x"]
+print(myObject.getAttributes()); // {"fields": [], "methods": ["init"], "attributes": ["_class", "x"]}
 ```
 
-### setAttribute(String, value)
+### setAttribute(String, Value)
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
 
-Note: Will set a property with public visibility.
+Note: Will set a attribute with public visibility.
 
 ```cs
 class Test {
@@ -282,10 +282,10 @@ print(myObject.x); // 100
 
 ### Optional Chaining
 
-Optional chaining allows you to read a property or method of an instance without explicitly having to check for `nil` before
+Optional chaining allows you to read a attribute or method of an instance without explicitly having to check for `nil` before
 attempting to access.
 
-**Note:** If the left hand value is not nil the property / method **must** still exist when attempting to access otherwise a runtime error will occur.
+**Note:** If the left hand value is not nil the attribute / method **must** still exist when attempting to access otherwise a runtime error will occur.
 
 ```js
 class Test {
@@ -303,8 +303,8 @@ class Test {
 // Here there is no explicit nil check.
 print(Test().someMethod()?.someOtherMethod()); // nil
 
-// If the operand is not nil the method / property must exist  
-print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
+// If the operand is not nil the method / attribute must exist  
+print(Test()?.unknownMethod()); // Undefined attribute 'unknownMethod'.
 ```
 
 ### _class
