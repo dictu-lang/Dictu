@@ -32,7 +32,7 @@ char *queueToString(ObjAbstract *abstract) {
 
 static Value queueIsFull(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "size() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "isFull() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -44,7 +44,7 @@ static Value queueIsFull(DictuVM *vm, int argCount, Value *args) {
 
 static Value queueIsEmpty(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "empty() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "isEmpty() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
