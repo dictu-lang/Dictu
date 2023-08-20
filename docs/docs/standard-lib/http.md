@@ -93,14 +93,14 @@ httpClient.post("https://httpbin.org/post", {"test": 10});
 ### Response
 
 Both HTTP.get(), HTTP.post(), httpClient.get(), and httpClient.post() return a Result that unwraps a Response object on success, or nil on error.
-The Response object returned has 3 public properties, "content", "headers" and "statusCode". "content" is the actual content returned from the
+The Response object returned has 3 public attributes, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
 
 #### Quick Reference Table
-##### Properties
+##### Attributes
 
-| Property   | Description                                       |
+| Attribute  | Description                                       |
 | ---------- | ------------------------------------------------- |
 | content    | Raw string content returned from the HTTP request |
 | headers    | A list of headers returned from the HTTP request  |
@@ -108,9 +108,9 @@ the response
 
 ##### Methods
 
-| Method | Description                          |
-| ------ | ------------------------------------ |
-| json   | Convert the content property to JSON |
+| Method | Description                           |
+| ------ | ------------------------------------- |
+| json   | Convert the content attribute to JSON |
 
 Example response from [httpbin.org](https://httpbin.org)
 

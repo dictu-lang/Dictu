@@ -210,7 +210,7 @@ print(myObject.x); // 10
 Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing an attribute that may not be there, you should check
 if the object has the given attribute. This is done via `hasAttribute`.
 
-Note: Will only check properties with public visibility.
+Note: Will only check attributes with public visibility.
 
 ```cs
 class Test {
@@ -231,7 +231,7 @@ print(myObject.z); // Undefined attribute 'z'.
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
 
-Note: Will only retrieve properties with public visibility.
+Note: Will only retrieve attributes with public visibility.
 
 ```cs
 class Test {
@@ -249,7 +249,7 @@ print(myObject.getAttribute("y")); // nil
 
 ### getAttributes() -> Dict
 
-The `getAttributes` method returns all class variables / constants, public methods and public properties.
+The `getAttributes` method returns all class variables / constants, public methods and public attributes.
 
 ```cs
 class Test {
@@ -259,7 +259,7 @@ class Test {
 }
 
 var myObject = Test();
-print(myObject.getAttributes()); // {"fields": [], "methods": ["init"], "attributes": ["_class", "x"]}
+print(myObject.getAttributes()); // {"fields": ["_name"], "methods": ["init"], "attributes": ["_class", "x"]}
 ```
 
 ### setAttribute(String, Value)
@@ -674,7 +674,7 @@ class ClassWithMethodAnnotation {
 }
 ```
 
-Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.fieldAnnotations` properties available on all classes.
+Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.fieldAnnotations` attributes available on all classes.
 
 For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
