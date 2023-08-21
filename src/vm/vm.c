@@ -141,12 +141,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     declareInstanceMethods(vm);
     declareResultMethods(vm);
 
-    /**
-     * Native classes which are not required to be
-     * imported. For imported modules see optionals.c
-     */
-    createCModule(vm);
-
     if (vm->repl) {
         vm->replVar = copyString(vm, "_", 1);
     }
