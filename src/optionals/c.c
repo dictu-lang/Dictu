@@ -273,7 +273,6 @@ Value createCModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "EHWPOISON", NUMBER_VAL(EHWPOISON));
 #endif
 
-    //tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
 
