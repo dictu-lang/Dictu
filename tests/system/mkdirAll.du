@@ -29,7 +29,32 @@ class TestSystemMkdirAll < UnitTest {
         this.assertFalsey(System.mkdirAll(sysTestDir, perm[0755]).success());
         this.assertEquals(System.mkdirAll(sysTestDir, perm[0755]).unwrapError(), "File exists");
         this.assertTruthy(System.rmdir(sysTestDir).success());
-        this.assertTruthy(System.rmdir(sysTestDir.split(Path.dirSeparator)[0]).success());
+        this.assertTruthy(System.rmdir(sysTestDir.split("/")[0]).success());
+        this.assertFalsey(System.rmdir(sysTestDir).success()); // Directory doesn't exist
+        this.assertEquals(System.rmdir(sysTestDir).unwrapError(), "No such file or directory");
+    }
+
+    testSystemMkdirAllBackSlash() {
+        if (System.platform != "windows") {
+            return;
+        }
+
+        const
+            S_IRWXU = System.S_IRWXU,
+            S_IRGRP = System.S_IRGRP,
+            S_IXGRP = System.S_IXGRP,
+            S_IROTH = System.S_IROTH,
+            S_IXOTH = System.S_IXOTH;
+
+        const perm = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
+
+        const sysTestDir = "test_dir\\sub_dir";
+
+        this.assertTruthy(System.mkdirAll(sysTestDir, perm[0755]).success());
+        this.assertFalsey(System.mkdirAll(sysTestDir, perm[0755]).success());
+        this.assertEquals(System.mkdirAll(sysTestDir, perm[0755]).unwrapError(), "File exists");
+        this.assertTruthy(System.rmdir(sysTestDir).unwrap());
+        this.assertTruthy(System.rmdir(sysTestDir.split("\\")[0]).success());
         this.assertFalsey(System.rmdir(sysTestDir).success()); // Directory doesn't exist
         this.assertEquals(System.rmdir(sysTestDir).unwrapError(), "No such file or directory");
     }

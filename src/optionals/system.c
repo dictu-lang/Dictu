@@ -288,14 +288,14 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
     snprintf(tmp, sizeof(tmp), "%s", dir);
 
     len = strlen(tmp);
-    if (tmp[len - 1] == DIR_SEPARATOR) {
+    if (tmp[len - 1] == '/' || tmp[len - 1] == '\\') {
         tmp[len - 1] = 0;
     }
 
     int retval;
 
     for (p = tmp + 1; *p; p++) {
-        if (*p == DIR_SEPARATOR) {
+        if (*p == '/' || *p == '\\') {
             *p = 0;
 
             retval = MKDIR(tmp, mode);
