@@ -844,6 +844,28 @@ static DictuInterpretResult run(DictuVM *vm) {
           vm->stackTop[-1] = valueType(func(a, b));                                                       \
         } while (false)
 
+    #define STRING_COMPARE(op)                                                                            \
+        do {                                                                                              \
+            ObjString *secondString = AS_STRING(pop(vm));                                                 \
+            ObjString *firstString = AS_STRING(peek(vm, 0));                                              \
+                                                                                                          \
+            int i;                                                                                        \
+                                                                                                          \
+            for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {           \
+                if (firstString->chars[i] op secondString->chars[i]) {                                   \
+                    vm->stackTop[-1] = TRUE_VAL;                                                          \
+                    break;                                                                                \
+                }                                                                                         \
+            }                                                                                             \
+                                                                                                          \
+            if (firstString->chars[i] != '\0') {                                                          \
+                vm->stackTop[-1] = TRUE_VAL;                                                              \
+                break;\
+            }                                                                                             \
+                                                                                                          \
+            vm->stackTop[-1] = FALSE_VAL;                                                                 \
+        } while (false)
+
     #define STORE_FRAME frame->ip = ip
 
     #define RUNTIME_ERROR(...)                                              \
@@ -1420,13 +1442,25 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >, double);
-            DISPATCH();
+        CASE_CODE(GREATER): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                STRING_COMPARE(>);
+            } else {
+                BINARY_OP(BOOL_VAL, >, double);
+            }
 
-        CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <, double);
             DISPATCH();
+        }
+
+        CASE_CODE(LESS): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                STRING_COMPARE(<);
+            } else {
+                BINARY_OP(BOOL_VAL, <, double);
+            }
+
+            DISPATCH();
+        }
 
         CASE_CODE(ADD): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
