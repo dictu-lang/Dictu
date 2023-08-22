@@ -844,7 +844,7 @@ static DictuInterpretResult run(DictuVM *vm) {
           vm->stackTop[-1] = valueType(func(a, b));                                                       \
         } while (false)
 
-    #define STRING_COMPARE(op)                                                                            \
+    #define STRING_COMPARE(op, string)                                                                            \
         do {                                                                                              \
             ObjString *secondString = AS_STRING(pop(vm));                                                 \
             ObjString *firstString = AS_STRING(peek(vm, 0));                                              \
@@ -852,15 +852,15 @@ static DictuInterpretResult run(DictuVM *vm) {
             int i;                                                                                        \
                                                                                                           \
             for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {           \
-                if (firstString->chars[i] op secondString->chars[i]) {                                   \
+                if (firstString->chars[i] op secondString->chars[i]) {                                    \
                     vm->stackTop[-1] = TRUE_VAL;                                                          \
                     break;                                                                                \
                 }                                                                                         \
             }                                                                                             \
                                                                                                           \
-            if (firstString->chars[i] != '\0') {                                                          \
+            if (string->chars[i] != '\0') {                                                         \
                 vm->stackTop[-1] = TRUE_VAL;                                                              \
-                break;\
+                break;                                                                                    \
             }                                                                                             \
                                                                                                           \
             vm->stackTop[-1] = FALSE_VAL;                                                                 \
@@ -1444,7 +1444,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(GREATER): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                STRING_COMPARE(>);
+                STRING_COMPARE(>, firstString);
             } else {
                 BINARY_OP(BOOL_VAL, >, double);
             }
@@ -1454,7 +1454,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(LESS): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                STRING_COMPARE(<);
+                STRING_COMPARE(<, secondString);
             } else {
                 BINARY_OP(BOOL_VAL, <, double);
             }
