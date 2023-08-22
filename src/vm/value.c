@@ -566,3 +566,43 @@ bool valuesEqual(Value a, Value b) {
 
     return a == b;
 }
+
+bool compareStringLess(Value a, Value b) {
+    // Swapping as it's a stack
+    ObjString *secondString = AS_STRING(a);
+    ObjString *firstString = AS_STRING(b);
+
+    int i;
+
+    for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {
+        if (firstString->chars[i] < secondString->chars[i]) {
+            return true;
+        }
+    }
+
+    if (secondString->chars[i] != '\0') {
+        return true;
+    }
+
+    return false;
+}
+
+bool compareStringGreater(Value a, Value b) {
+    // Swapping as it's a stack
+    ObjString *secondString = AS_STRING(a);
+    ObjString *firstString = AS_STRING(b);
+
+    int i;
+
+    for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {
+        if (firstString->chars[i] > secondString->chars[i]) {
+            return true;
+        }
+    }
+
+    if (firstString->chars[i] != '\0') {
+        return true;
+    }
+
+    return false;
+}
