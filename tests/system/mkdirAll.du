@@ -53,7 +53,7 @@ class TestSystemMkdirAll < UnitTest {
         this.assertTruthy(System.mkdirAll(sysTestDir, perm[0755]).success());
         this.assertFalsey(System.mkdirAll(sysTestDir, perm[0755]).success());
         this.assertEquals(System.mkdirAll(sysTestDir, perm[0755]).unwrapError(), "File exists");
-        this.assertTruthy(System.rmdir(sysTestDir).unwrap());
+        this.assertTruthy(System.rmdir(sysTestDir).success());
         this.assertTruthy(System.rmdir(sysTestDir.split("\\")[0]).success());
         this.assertFalsey(System.rmdir(sysTestDir).success()); // Directory doesn't exist
         this.assertEquals(System.rmdir(sysTestDir).unwrapError(), "No such file or directory");
