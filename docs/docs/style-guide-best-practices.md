@@ -25,9 +25,7 @@ Favor 4 spaces over tabs.
 
 ## Commentary
 
-Dictu supports single and multiline comments in the form of `//` and `/** */` respectively. Declaration comments should use the former.
-
-For example:
+Dictu supports single and multiline comments in the form of `//` and `/** */` respectively. Declaration comments should use the former. For example:
 
 ```cs
 // class User provides ...
@@ -53,7 +51,7 @@ import System;
 
 ## Imports
 
-Imports should be grouped together into 3 seconds. The first section is for regular imports from the standard library. The second is for `from` imports from the standard library. And the third is for local file based imports. The 3 above sections should be seperated by 1 line and listed alphabetically.
+Imports should be grouped together into 3 sections. The first section is for regular imports from the standard library. The second is for `from` imports from the standard library. And the third is for local file based imports. The 3 above sections should be seperated by 1 line and listed alphabetically.
 
 ```cs
 import Env;
