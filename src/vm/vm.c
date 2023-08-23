@@ -1422,7 +1422,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(GREATER): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                push(vm, BOOL_VAL(compareStringGreater(pop(vm), pop(vm))));
+                // Use variables here as function argument evaluation order is unspecified
+                Value first = pop(vm);
+                Value second = pop(vm);
+
+                push(vm, BOOL_VAL(compareStringGreater(first, second)));
             } else {
                 BINARY_OP(BOOL_VAL, >, double);
             }
@@ -1432,7 +1436,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 
         CASE_CODE(LESS): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                push(vm, BOOL_VAL(compareStringLess(pop(vm), pop(vm))));
+                Value first = pop(vm);
+                Value second = pop(vm);
+
+                push(vm, BOOL_VAL(compareStringLess(first, second)));
             } else {
                 BINARY_OP(BOOL_VAL, <, double);
             }
