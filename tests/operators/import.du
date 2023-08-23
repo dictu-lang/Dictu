@@ -19,3 +19,5 @@ import "bitwise.du";
 import "precedence.du";
 import "ternary.du";
 import "unpack.du";
+import "less.du";
+import "greater.du";
