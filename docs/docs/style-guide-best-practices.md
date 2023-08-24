@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Style-Guide-Best-Practices
+title: Style Guide Best Practices
 nav_order: 9
 ---
 
