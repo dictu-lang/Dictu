@@ -55,7 +55,7 @@ stack.push("some_value");
 
 ### Stack.pop() -> Value
 
-Returns the value at the front of the stack. The capacity will be decreased if necessary.
+Returns the value at the top of the stack. The capacity will be decreased if necessary.
 
 ```cs
 const stack = Stack.new();
@@ -67,7 +67,7 @@ print(value);
 
 ### Stack.peek() -> Value
 
-Returns the value at the front of the stack without removing the value.
+Returns the value at the top of the stack without removing the value.
 
 ```cs
 const stack = Stack.new();
