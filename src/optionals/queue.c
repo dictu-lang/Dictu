@@ -49,9 +49,9 @@ static Value queueIsEmpty(DictuVM *vm, int argCount, Value *args) {
     }
 
     Queue *queue = AS_QUEUE(args[0]);
-    bool isFull = queue->count == 0;
+    bool isEmpty = queue->count == 0;
 
-    return BOOL_VAL(isFull);
+    return BOOL_VAL(isEmpty);
 }
 
 static Value queueCap(DictuVM *vm, int argCount, Value *args) {

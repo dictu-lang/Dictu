@@ -7,12 +7,12 @@
 typedef struct {
     Value *ds;
     int capacity;
-    int front;
+    int top;
     int count;
 } Stack;
 
 #define AS_STACK(v) ((Stack*)AS_ABSTRACT(v)->data)
-#define DEFAULT_STACK_CAPACITY 8 
+#define DEFAULT_STACK_CAPACITY 8
 
 void freeStack(DictuVM *vm, ObjAbstract *abstract) {
     Stack *stack = (Stack*)abstract->data;
@@ -48,9 +48,9 @@ static Value stackIsEmpty(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-    bool isFull = stack->count == 0;
-
-    return BOOL_VAL(isFull);
+    bool isEmpty = stack->count == 0;
+    
+    return BOOL_VAL(isEmpty);
 }
 
 static Value stackCap(DictuVM *vm, int argCount, Value *args) {
@@ -60,7 +60,6 @@ static Value stackCap(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-
     return NUMBER_VAL(stack->capacity);
 }
 
@@ -83,7 +82,7 @@ static Value stackPeek(DictuVM *vm, int argCount, Value *args) {
 
     Stack *stack = AS_STACK(args[0]);
     
-    return stack->ds[stack->front];
+    return stack->ds[stack->top];
 }
 
 static Value stackPush(DictuVM *vm, int argCount, Value *args) {
@@ -93,14 +92,13 @@ static Value stackPush(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-
-    if (stack->capacity < stack->count + 1) {
+    if (stack->count == stack->capacity) {
         int oldCapacity = stack->capacity;
         stack->capacity = GROW_CAPACITY(oldCapacity);
         stack->ds = GROW_ARRAY(vm, stack->ds, Value, oldCapacity, stack->capacity);
     }
 
-    stack->ds[++stack->front] = args[1];
+    stack->ds[stack->top] = args[1];
     stack->count++;
 
     return NIL_VAL;
@@ -115,16 +113,16 @@ static Value stackPop(DictuVM *vm, int argCount, Value *args) {
     Stack *stack = AS_STACK(args[0]);
 
     if (stack->count == 0) {
-        runtimeError(vm, "pop() called on an empty Stack");
+        runtimeError(vm, "pop() called on an empty stack");
         return EMPTY_VAL;
     }
 
-    Value data = stack->ds[stack->front];
-
+    Value data = stack->ds[stack->top];
+    stack->top--;
     stack->count--;
 
     if (stack->count < stack->capacity / 2 && stack->capacity > DEFAULT_STACK_CAPACITY) {
-        int oldCapacity = stack->capacity;
+        int oldCapacity = stack->capacity;        
         stack->capacity = SHRINK_CAPACITY(oldCapacity);
         stack->ds = SHRINK_ARRAY(vm, stack->ds, Value, oldCapacity, stack->capacity);
     }
@@ -170,7 +168,7 @@ static Value newStack(DictuVM *vm, int argCount, Value *args) {
 
     stack->ds = ALLOCATE(vm, Value, DEFAULT_STACK_CAPACITY);
     stack->capacity = DEFAULT_STACK_CAPACITY;
-    stack->front = 0;
+    stack->top = 0;
     stack->count = 0;
 
     pop(vm);
@@ -201,7 +199,7 @@ static Value newStackWithSize(DictuVM *vm, int argCount, Value *args) {
 
     stack->ds = ALLOCATE(vm, Value, capacity);
     stack->capacity = capacity;
-    stack->front = 0;
+    stack->top = 0;
     stack->count = 0;
 
     Value success = newResultSuccess(vm, OBJ_VAL(abstract));
