@@ -77,7 +77,9 @@ Value createUnitTestModule(DictuVM *vm) {
         return EMPTY_VAL;
     }
 
+    push(vm, OBJ_VAL(closure));
     defineNative(vm, &closure->function->module->values, "mock", mockNative);
+    pop(vm);
 
     return OBJ_VAL(closure);
 }
