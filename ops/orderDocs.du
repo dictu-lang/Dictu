@@ -1,0 +1,39 @@
+import Path;
+
+const docsDirectory = Path.listDir("docs/docs").filter(def (file) => file.endsWith(".md"));
+
+def selectionSort(arr) {
+    for (var i = 0; i < arr.len()-1; i += 1){
+
+        var minIndex = i;
+        for (var j = i + 1; j < arr.len(); j += 1){
+            if (arr[j] < arr[minIndex]) minIndex = j;
+        }
+
+        var temp = arr[minIndex];
+        arr[minIndex] = arr[i];
+        arr[i] = temp;
+    }
+}
+
+selectionSort(docsDirectory);
+
+var index = 1;
+docsDirectory.forEach(def (file) => {
+    var source = '';
+    var line;
+    with("docs/docs/{}".format(file), "r") {
+        while((line = file.readLine()) != nil) {
+            if (line.startsWith('nav_order:')) {
+                line = "nav_order: {}".format(index);
+            }
+
+            source += line + '\n';
+        }
+    }
+
+    index += 1;
+    with("docs/docs/{}".format(file), "w") {
+        file.write(source);
+    }
+});
