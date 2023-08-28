@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Object
-nav_order: 17
+nav_order: 12
 parent: Standard Library
 ---
 

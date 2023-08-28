@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Argparse
-nav_order: 19
+nav_order: 1
 parent: Standard Library
 ---
 
