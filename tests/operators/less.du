@@ -29,6 +29,7 @@ class LessThanOperator < UnitTest {
             {"operation": "a" < "ba"},
             {"operation": not("aaaa" < "aaaa")},
             {"operation": "aaaa" < "aaaab"},
+            {"operation": "thank-you.md" < "variables.md"},
         ];
     }
 }

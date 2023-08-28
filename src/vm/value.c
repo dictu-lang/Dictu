@@ -577,6 +577,8 @@ bool compareStringLess(Value a, Value b) {
     for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {
         if (firstString->chars[i] < secondString->chars[i]) {
             return true;
+        } else if (firstString->chars[i] > secondString->chars[i]) {
+            return false;
         }
     }
 
@@ -597,6 +599,8 @@ bool compareStringGreater(Value a, Value b) {
     for (i = 0; firstString->chars[i] != '\0' || secondString->chars[i] != '\0'; i++) {
         if (firstString->chars[i] > secondString->chars[i]) {
             return true;
+        } else if (firstString->chars[i] < secondString->chars[i]) {
+            return false;
         }
     }
 
