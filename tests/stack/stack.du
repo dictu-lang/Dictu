@@ -1,0 +1,103 @@
+/**
+ * stack.du
+ *
+ * Testing the Stack module.
+ *
+ */
+from UnitTest import UnitTest;
+
+import Stack;
+
+class TestStack < UnitTest {
+    const defaultStackSize = 8;
+    const stackCap = 5;
+    const testValue = "asdf1234";
+
+    setUp() {
+        this.stack = Stack.new();
+    }
+
+    testStackNew() {
+        this.assertNotNil(this.stack);
+    }
+
+    testStackNewWithSize() {
+        const stack = Stack.newWithSize(this.stackCap);
+        this.assertSuccess(stack);
+        this.assertNotNil(stack.unwrap());
+    }
+
+    testStackPush() {
+        const res = this.stack.push(this.testValue);
+        this.assertNil(res);
+    }
+
+    testStackPop() {
+        this.stack.push("dictu");
+        this.stack.push(this.testValue);
+        this.stack.push(1009);
+        const res = this.stack.pop();
+        this.assertEquals(res, 1009);
+    }
+
+    testStackPeek() {
+        this.stack.push(this.testValue);
+        const res = this.stack.peek();
+        this.assertEquals(res, this.testValue);
+    }
+
+    testStackCap() {
+        this.assertEquals(this.stack.cap(), this.defaultStackSize);
+
+        const stack = Stack.newWithSize(this.stackCap);
+        this.assertEquals(stack.unwrap().cap(), this.stackCap);
+    }
+
+    testStackLen() {
+        this.stack.push(this.testValue);
+        this.assertEquals(this.stack.len(), 1);
+    }
+
+    testStackIsEmpty() {
+        this.assertTruthy(this.stack.isEmpty());
+        this.stack.push(this.testValue);
+        this.assertFalsey(this.stack.isEmpty());
+    }
+
+    testStackIsFull() {
+        this.assertFalsey(this.stack.isFull());
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x));
+        this.assertTruthy(this.stack.isFull());
+    }
+
+    testStackGrow() {
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x));
+        this.assertTruthy(this.stack.isFull());
+        this.stack.push(this.testValue);
+        this.assertFalsey(this.stack.isFull());
+        this.assertEquals(this.stack.cap(), 16);
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x));
+        this.assertFalsey(this.stack.isFull());
+        this.assertEquals(this.stack.cap(), 32);
+    }
+
+    testStackShrink() {
+        this.assertEquals(this.stack.cap(), this.defaultStackSize);
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].forEach(def (x) => this.stack.push(x));
+        this.assertEquals(this.stack.cap(), 32);
+        const res = this.stack.pop();
+        this.assertEquals(res, 16);
+        this.assertEquals(this.stack.cap(), 32);
+        this.stack.pop();
+        this.stack.pop();
+        this.stack.pop();
+        this.stack.pop();
+        this.stack.pop();
+        this.stack.pop();
+        this.stack.pop();
+        this.assertEquals(this.stack.cap(), 16);
+    }
+}
+
+
+TestStack().run();

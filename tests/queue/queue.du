@@ -62,7 +62,7 @@ class TestQueue < UnitTest {
         this.assertFalsey(this.queue.isEmpty());
     }
 
-    testQueueIsFill() {
+    testQueueIsFull() {
         this.assertFalsey(this.queue.isFull());
         [1, 2, 3, 4, 5, 6, 7, 8].map(def (x) => this.queue.push(x));
         this.assertTruthy(this.queue.isFull());
