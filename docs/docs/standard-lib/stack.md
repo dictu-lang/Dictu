@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Stack
-nav_order: 23
+nav_order: 19
 parent: Standard Library
 ---
 
