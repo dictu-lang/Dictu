@@ -57,6 +57,8 @@ stack.push("some_value");
 
 Returns the value at the top of the stack. The capacity will be decreased if necessary.
 
+**Note:** A runtime error will occur if there is an attempt to pop on an empty stack
+
 ```cs
 const stack = Stack.new();
 stack.push("some_value");
