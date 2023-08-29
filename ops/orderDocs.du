@@ -1,6 +1,7 @@
 import Path;
+import System;
 
-const docsDirectory = Path.listDir("docs/docs/standard-lib").filter(def (file) => file.endsWith(".md"));
+from Argparse import Parser;
 
 def selectionSort(arr) {
     for (var i = 0; i < arr.len()-1; i += 1){
@@ -16,24 +17,69 @@ def selectionSort(arr) {
     }
 }
 
-selectionSort(docsDirectory);
+def rewriteOrder(docsDirectory) {
+    var index = 1;
+    docsDirectory.forEach(def (file) => {
+        var source = '';
+        var line;
+        with("docs/docs/standard-lib/{}".format(file), "r") {
+            while((line = file.readLine()) != nil) {
+                if (line.startsWith('nav_order:')) {
+                    line = "nav_order: {}".format(index);
+                }
 
-var index = 1;
-docsDirectory.forEach(def (file) => {
-    var source = '';
-    var line;
-    with("docs/docs/standard-lib/{}".format(file), "r") {
-        while((line = file.readLine()) != nil) {
-            if (line.startsWith('nav_order:')) {
-                line = "nav_order: {}".format(index);
+                source += line + '\n';
             }
+        }
 
-            source += line + '\n';
+        index += 1;
+        with("docs/docs/standard-lib/{}".format(file), "w") {
+            file.write(source);
+        }
+    });
+}
+
+def checkOrder(docsDirectory) {
+    var index = 1;
+
+    for (var index = 1; index - 1 < docsDirectory.len(); index += 1) {
+        const file = docsDirectory[index - 1];
+
+        var line;
+        with("docs/docs/standard-lib/{}".format(file), "r") {
+            while((line = file.readLine()) != nil) {
+                if (line.startsWith('nav_order:')) {
+                    const order = line.replace("nav_order: ", "").toNumber().unwrap();
+
+                    if (order != index) {
+                        return false;
+                    }
+                }
+            }
         }
     }
 
-    index += 1;
-    with("docs/docs/standard-lib/{}".format(file), "w") {
-        file.write(source);
+    return true;
+}
+
+def main() {
+    const parser = Parser("Order Docs", "Helper script to re-order the documentation", "");
+    parser.addBool("--ci", "Run in actions", false);
+    const args = parser.parse().unwrap();
+
+    const docsDirectory = Path.listDir("docs/docs/standard-lib").filter(def (file) => file.endsWith(".md"));
+    selectionSort(docsDirectory);
+
+    if (args.getAttribute("ci")) {
+        if (checkOrder(docsDirectory)) {
+            System.exit(0);
+        }
+
+        printError("Docs navigation is not ordered alphabetically, please run orderDocs");
+        System.exit(1);
     }
-});
+
+    rewriteOrder(docsDirectory);
+}
+
+main();
