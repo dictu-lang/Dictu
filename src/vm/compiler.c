@@ -1037,6 +1037,16 @@ int parseEscapeSequences(char *string, int length) {
                     string[i + 1] = '\v';
                     break;
                 }
+                case 'x': {
+                    char hexChars[3];
+                    memcpy(hexChars, &string[i + 2], 2);
+                    hexChars[2] = '\0';
+                    int hex = strtol(hexChars, NULL, 16);
+                    string[i + 3] = hex;
+                    memmove(&string[i], &string[i + 3], length - 3 - i);
+                    length -= 3;
+                    continue;
+                }
                 case '\\': {
                     string[i + 1] = '\\';
                     break;
