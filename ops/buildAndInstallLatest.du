@@ -19,7 +19,7 @@ def pullLatest(isFork) {
 
     const res = Process.run(cmd);
     if (not res.success()) {
-        print(res.errorUnwrap());
+        print(res.unwrapError());
         System.exit(1);
     }
 }
@@ -44,7 +44,7 @@ def install() {
 
     const res = Process.run(cmd);
     if (not res.success()) {
-        print(res.errorUnwrap());
+        print(res.unwrapError());
     }
 }
 
