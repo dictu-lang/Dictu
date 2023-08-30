@@ -23,6 +23,7 @@
 #include "term.h"
 #include "uuid.h"
 #include "queue.h"
+#include "stack.h"
 #include "bigint.h"
 #include "object/object.h"
 #include "unittest/unittest.h"

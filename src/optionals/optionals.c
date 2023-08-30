@@ -14,6 +14,7 @@ BuiltinModules modules[] = {
     {"Base64", &createBase64Module, false},
     {"Hashlib", &createHashlibModule, false},
     {"Queue", &createQueueModule, false},
+    {"Stack", &createStackModule, false},
     {"Sqlite", &createSqliteModule, false},
     {"Process", &createProcessModule, false},
     {"System", &createSystemModule, false},

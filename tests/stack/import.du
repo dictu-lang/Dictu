@@ -1,0 +1,7 @@
+/**
+ * import.du
+ *
+ * General import file for Stack methods.
+ */
+
+import "stack.du";

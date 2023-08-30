@@ -1,4 +1,3 @@
-import Argparse;
 import System;
 
 class Args {
@@ -7,12 +6,13 @@ class Args {
 
 class Parser {
     private args;
+    private preArgs;
+    private required;
 
-    var preArgs = [];
-    var required = [];
-
-    init(private name, private desc, private userUsage) {
+    init(private name, private desc, private userUsage = '') {
         this.args = Args(name, desc);
+        this.preArgs = [];
+        this.required = [];
     }
 
     private flagExists(flag) {
@@ -67,7 +67,11 @@ class Parser {
             var u = 'usage: {}\n    {}\n\n'.format(this.name, this.desc);
 
             for (var i = 0; i < this.preArgs.len(); i+=1) {
-                u += '    {}    {}\n'.format(this.preArgs[i]['flag'], this.preArgs[i]['desc']);
+                u += '    {}    {}{}\n'.format(
+                    this.preArgs[i]['flag'],
+                    this.preArgs[i]['desc'],
+                    this.preArgs[i]['required'] ? '    Required' : ''
+                );
             }
 
             return u;
@@ -93,6 +97,23 @@ class Parser {
         return false;
     }
 
+    private fillEmpty() {
+        for (var i = 0; i < this.preArgs.len(); i += 1) {
+            const arg = this.preArgs[i];
+
+            if (arg.get('metavar') and not this.args.getAttribute(arg['metavar'])) {
+                this.args.setAttribute(arg['metavar'], nil);
+
+                continue;
+            }
+
+            const flag = arg['flag'].replace('-', '');
+            if (not this.args.getAttribute(flag)) {
+                this.args.setAttribute(flag, nil);
+            }
+        }
+    }
+
     parse() {
         for (var i = 0; i < System.argv.len(); i+=1) {
             for (var j = 0; j < this.preArgs.len(); j+=1) {
@@ -115,7 +136,7 @@ class Parser {
                             this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(','));
                         }
                     } else if (this.preArgs[j]['type'] == 'number') {
-                        if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {
+                        if (i == (System.argv.len() - 1)) {
                             return Error('{} requires an argument'.format(System.argv[i]));
                         }
 
@@ -148,6 +169,8 @@ class Parser {
         if (not this.hasRequired()) {
             return Error('1 or more required flags missing');
         }
+
+        this.fillEmpty();
 
         return Success(this.args);
     }

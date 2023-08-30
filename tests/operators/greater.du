@@ -29,6 +29,7 @@ class GreaterThanOperator < UnitTest {
             {"operation": not("a" > "ba")},
             {"operation": not("aaaa" > "aaaa")},
             {"operation": not("aaaa" > "aaaab")},
+            {"operation": "variables.md" > "thank-you.md"},
         ];
     }
 }
