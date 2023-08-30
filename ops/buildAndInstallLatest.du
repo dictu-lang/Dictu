@@ -20,6 +20,7 @@ def pullLatest(isFork) {
     const res = Process.run(cmd);
     if (not res.success()) {
         print(res.errorUnwrap());
+        System.exit(1);
     }
 }
 
@@ -31,7 +32,8 @@ def build() {
     ].forEach(def(cmd) => {
         const res = Process.run(cmd);
         if (not res.success()) {
-            print(res.errorUnwrap());
+            print(res.unwrapError());
+            System.exit(1);
         }
     });
 }
@@ -62,26 +64,17 @@ def install() {
         }
     );
 
-    if (args.hasAttribute("help")) {
-        if (args.help) {
-            print(parser.usage());
-            System.exit(1);
-        }
-    }
-
-    var isFork;
-    if (args.hasAttribute("fork")) {
-        isFork = args.fork;
+    if (args.help) {
+        print(parser.usage());
+        System.exit(0);
     }
 
     print("Pulling latest changes...");
-    pullLatest(isFork);
+    pullLatest(args.fork);
 
     print("Building latest...");
     build();
 
     print("Installing binary...");
     install();
-
-    System.exit(0);
 }
