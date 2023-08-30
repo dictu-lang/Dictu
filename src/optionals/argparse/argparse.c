@@ -9,8 +9,5 @@ Value createArgParseModule(DictuVM *vm) {
         return EMPTY_VAL;
     }
 
-    push(vm, OBJ_VAL(closure));
-    pop(vm);
-
     return OBJ_VAL(closure);
 }

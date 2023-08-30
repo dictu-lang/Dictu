@@ -24,12 +24,16 @@ To make use of the Argparse module an import is required.
 from Argparse import Parser;
 ```
 
-### New Parser(String, String, String) -> Parser
+### New Parser(String, String, String -> Optional) -> Parser
 
-To create a new parser instance, call the `Parser` class with the 3 required string arguments; name, description, and user provided usage.
+To create a new parser instance, call the `Parser` class with the 2 required string arguments; name, description.
+
+You can optionally pass in a user generated usage for the Parser
 
 ```cs
-var parser = Parser("prog_name", "Program to do all the things", "");
+const parser = Parser("prog_name", "Program to do all the things");
+// 
+const parser = Parser("prog_name", "Program to do all the things", "User defined usage string");
 ```
 
 ### Parse.addString(String, String, Bool, string -> Optional)
@@ -64,7 +68,24 @@ To add a new list argument, call the method below with at least the 3 required a
 parser.addList("-u", "active users", true, "users");
 ```
 
-### Parser.parse() -> Result\<Dict>
+### Parser.usage() -> String
+
+The Parser class will create a helpful output based on the arguments added to the parser class for you, this can be used to populate a `--help` argument.
+
+```cs
+const parser = Parser("Code!", "Some code");
+parser.addBool("--myOption", "Some useful boolean option", false);
+print(parser.usage());
+
+// Output
+usage: Code!
+    Some code
+
+    --myOption    Some useful boolean option
+
+```
+
+### Parser.parse() -> Result\<Args>
 
 The `parse` method needs to be called to process the given flags against the configured flags. `parse` returns a `Result` value that, on success, will need to be unwrapped to access an instance of the `Args` class.
 
@@ -78,8 +99,23 @@ const args = parser.parse().match(
 );
 ```
 
-The value of type `Args` will be instantiated with fields matching the configured flags or the given metavar names. Below is an example using the list argument example from above.
+The value of type `Args` will be instantiated with fields matching the configured flags or the given metavar names.
+
+If the option was not marked as required and a value for that given argument was not passed then it will have a `nil` value.
 
 ```cs
-print("Users: {}".format(args.users));
+const parser = Parser("Code!", "Some code");
+parser.addString("--option", "Some useful string option", false);
+parser.addString("--option1", "Some useful string option", false);
+const args = parser.parse().unwrap();
+
+print(args.option, args.option1);
+```
+
+CLI Input / Output:
+
+```
+$ dictu argparse.du --option "Hello"
+hello
+nil
 ```

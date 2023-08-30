@@ -1,5 +1,4 @@
-#define DICTU_ARGPARSE_SOURCE "import Argparse;\n" \
-"import System;\n" \
+#define DICTU_ARGPARSE_SOURCE "import System;\n" \
 "\n" \
 "class Args {\n" \
 "    init(private name, private desc) {}\n" \
@@ -7,12 +6,13 @@
 "\n" \
 "class Parser {\n" \
 "    private args;\n" \
+"    private preArgs;\n" \
+"    private required;\n" \
 "\n" \
-"    var preArgs = [];\n" \
-"    var required = [];\n" \
-"\n" \
-"    init(private name, private desc, private userUsage) {\n" \
+"    init(private name, private desc, private userUsage = '') {\n" \
 "        this.args = Args(name, desc);\n" \
+"        this.preArgs = [];\n" \
+"        this.required = [];\n" \
 "    }\n" \
 "\n" \
 "    private flagExists(flag) {\n" \
@@ -67,7 +67,11 @@
 "            var u = 'usage: {}\n    {}\n\n'.format(this.name, this.desc);\n" \
 "\n" \
 "            for (var i = 0; i < this.preArgs.len(); i+=1) {\n" \
-"                u += '    {}    {}\n'.format(this.preArgs[i]['flag'], this.preArgs[i]['desc']);\n" \
+"                u += '    {}    {}{}\n'.format(\n" \
+"                    this.preArgs[i]['flag'],\n" \
+"                    this.preArgs[i]['desc'],\n" \
+"                    this.preArgs[i]['required'] ? '    Required' : ''\n" \
+"                );\n" \
 "            }\n" \
 "\n" \
 "            return u;\n" \
@@ -93,6 +97,23 @@
 "        return false;\n" \
 "    }\n" \
 "\n" \
+"    private fillEmpty() {\n" \
+"        for (var i = 0; i < this.preArgs.len(); i += 1) {\n" \
+"            const arg = this.preArgs[i];\n" \
+"\n" \
+"            if (arg.get('metavar') and not this.args.getAttribute(arg['metavar'])) {\n" \
+"                this.args.setAttribute(arg['metavar'], nil);\n" \
+"\n" \
+"                continue;\n" \
+"            }\n" \
+"\n" \
+"            const flag = arg['flag'].replace('-', '');\n" \
+"            if (not this.args.getAttribute(flag)) {\n" \
+"                this.args.setAttribute(flag, nil);\n" \
+"            }\n" \
+"        }\n" \
+"    }\n" \
+"\n" \
 "    parse() {\n" \
 "        for (var i = 0; i < System.argv.len(); i+=1) {\n" \
 "            for (var j = 0; j < this.preArgs.len(); j+=1) {\n" \
@@ -115,7 +136,7 @@
 "                            this.args.setAttribute(this.preArgs[j]['flag'].replace('-', ''), System.argv[i+1].split(','));\n" \
 "                        }\n" \
 "                    } else if (this.preArgs[j]['type'] == 'number') {\n" \
-"                        if (i == (System.argv.len() - 1) or System.argv[i+1][0] == '-') {\n" \
+"                        if (i == (System.argv.len() - 1)) {\n" \
 "                            return Error('{} requires an argument'.format(System.argv[i]));\n" \
 "                        }\n" \
 "\n" \
@@ -148,6 +169,8 @@
 "        if (not this.hasRequired()) {\n" \
 "            return Error('1 or more required flags missing');\n" \
 "        }\n" \
+"\n" \
+"        this.fillEmpty();\n" \
 "\n" \
 "        return Success(this.args);\n" \
 "    }\n" \
