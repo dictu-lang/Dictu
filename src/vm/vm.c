@@ -766,6 +766,16 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
             ObjDict *dict = copyDict(vm, superclass->classAnnotations, true);
             klass->classAnnotations = dict;
         }
+
+        if (superclass->methodAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, true);
+            klass->methodAnnotations = dict;
+        }
+
+        if (superclass->fieldAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, true);
+            klass->fieldAnnotations = dict;
+        }
     }
 }
 
@@ -2205,6 +2215,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_CLASS_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            if (dict->entries == 0) {
+                printf("XXX - 0!\n");
+            }
 
             if (IS_CLASS(peek(vm, 1))) {
                 ObjClass *super = AS_CLASS(peek(vm, 1));
