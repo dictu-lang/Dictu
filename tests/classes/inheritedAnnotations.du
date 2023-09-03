@@ -1,0 +1,37 @@
+/**
+ * inherit.du
+ *
+ * Testing class inheritance
+ */
+from UnitTest import UnitTest;
+
+
+@ClassA("asdf1234")
+class A {
+    @FieldA
+    var a = "asdf333";
+
+    @MethodA(0)
+    methodA() {}
+}
+
+@ClassB
+class B < A {
+    @FieldB("lklk")
+    var b = 999;
+
+    init() {}
+
+    @MethodB
+    methodB() {}
+}
+
+class TestClassInheritAnnotations < UnitTest {
+    testClassInheritAnnotations() {
+        this.assertEquals(B()._class.classAnnotations.len(), 2);
+        this.assertEquals(B()._class.methodAnnotations.len(), 2);
+        this.assertEquals(B()._class.fieldAnnotations.len(), 2);
+    }
+}
+
+TestClassInheritAnnotations().run();

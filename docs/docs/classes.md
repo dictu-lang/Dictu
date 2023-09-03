@@ -310,7 +310,7 @@ print(Test()?.unknownMethod()); // Undefined attribute 'unknownMethod'.
 ### _class
 
 `_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
-useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+useful for things like pulling class, method, and field annotations from an object where it's class may be unknown until runtime.
 
 ```cs
 class Test {}
@@ -411,7 +411,7 @@ Hello
 
 ## Inheritance
 
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class.
 
 Note: private methods and instance variables are not inherited.
 
