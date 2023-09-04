@@ -411,7 +411,7 @@ Hello
 
 ## Inheritance
 
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation.
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation. 
 
 Note: private methods and instance variables are not inherited.
 
