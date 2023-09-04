@@ -8,6 +8,7 @@ import "methodCall.du";
 import "static.du";
 import "properties.du";
 import "inherit.du";
+import "inheritedAnnotations.du";
 import "traits.du";
 import "copy.du";
 import "toString.du";
