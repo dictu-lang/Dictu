@@ -44,6 +44,11 @@ class TestClassInheritAnnotations < UnitTest {
     testClassInheritAnnotationsOverrides() {
         this.assertEquals(C()._class.fieldAnnotations["a"]["FieldA"], 99);
         this.assertEquals(C()._class.methodAnnotations["methodA"]["MethodA"], "dictu");
+
+        const c = C();
+        const a = A();
+        c._class.methodAnnotations["methodA"]["MethodA"] = 1984;
+        this.assertEquals(a._class.methodAnnotations["methodA"]["MethodA"], 0);
     }
 }
 
