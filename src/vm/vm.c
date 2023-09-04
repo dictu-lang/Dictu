@@ -813,17 +813,23 @@ static void setReplVar(DictuVM *vm, Value value) {
 
 static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *klassAnnotations) {
     for (int i = 0; i <= superAnnotations->capacityMask; ++i) {
-        if (IS_EMPTY(superAnnotations->entries[i].key)) {
+        DictItem *item = &superAnnotations->entries[i];
+
+        if (IS_EMPTY(item->key)) {
             continue;
         }
 
-        Value val = superAnnotations->entries[i].value;
-        dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, val);
+        Value value;
+        if (dictGet(klassAnnotations, item->key, &value)) {
+            continue;
+        }
+
+        Value superVal = superAnnotations->entries[i].value;
+        dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, superVal);
     }
 }
 
 static DictuInterpretResult run(DictuVM *vm) {
-
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
