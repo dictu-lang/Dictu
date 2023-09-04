@@ -763,17 +763,17 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
 
         if (superclass->classAnnotations != NULL) {
-            ObjDict *dict = copyDict(vm, superclass->classAnnotations, true);
+            ObjDict *dict = copyDict(vm, superclass->classAnnotations, false);
             klass->classAnnotations = dict;
         }
 
         if (superclass->methodAnnotations != NULL) {
-            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, true);
+            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, false);
             klass->methodAnnotations = dict;
         }
 
         if (superclass->fieldAnnotations != NULL) {
-            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, true);
+            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, false);
             klass->fieldAnnotations = dict;
         }
     }
@@ -2219,14 +2219,8 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            if (IS_CLASS(peek(vm, 1))) {
-                ObjClass *super = AS_CLASS(peek(vm, 1));
-
-                if (super->classAnnotations != NULL) {
-                    ObjDict *superAnnotations = copyDict(vm, super->classAnnotations, true);
-
-                    copyAnnotations(vm, superAnnotations, dict);
-                }
+            if (klass->classAnnotations != NULL) {
+                copyAnnotations(vm, klass->classAnnotations, dict);
             }
 
             klass->classAnnotations = dict;
@@ -2237,15 +2231,9 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
-
-            if (IS_CLASS(peek(vm, 1))) {
-                ObjClass *super = AS_CLASS(peek(vm, 1));
-
-                if (super->methodAnnotations != NULL) {
-                    ObjDict *superAnnotations = copyDict(vm, super->methodAnnotations, true);
-
-                    copyAnnotations(vm, superAnnotations, dict);
-                }
+            
+            if (klass->methodAnnotations != NULL) {
+                copyAnnotations(vm, klass->methodAnnotations, dict);
             }
 
             klass->methodAnnotations = dict;
@@ -2257,14 +2245,8 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            if (IS_CLASS(peek(vm, 1))) {
-                ObjClass *super = AS_CLASS(peek(vm, 1));
-
-                if (super->fieldAnnotations != NULL) {
-                    ObjDict *superAnnotations = copyDict(vm, super->fieldAnnotations, true);
-
-                    copyAnnotations(vm, superAnnotations, dict);
-                }
+            if (klass->fieldAnnotations != NULL) {
+                copyAnnotations(vm, klass->fieldAnnotations, dict);
             }
 
             klass->fieldAnnotations = dict;
