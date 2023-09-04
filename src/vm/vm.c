@@ -818,10 +818,7 @@ static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *kla
         }
 
         Value val = superAnnotations->entries[i].value;
-        push(vm, val);
-
         dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, val);
-        pop(vm);
     }
 }
 
@@ -2215,10 +2212,6 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_CLASS_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
-
-            if (dict->entries == 0) {
-                printf("XXX - 0!\n");
-            }
 
             if (IS_CLASS(peek(vm, 1))) {
                 ObjClass *super = AS_CLASS(peek(vm, 1));
