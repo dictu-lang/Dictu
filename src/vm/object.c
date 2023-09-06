@@ -523,6 +523,85 @@ char *classToString(Value value) {
     return classString;
 }
 
+ObjDict *classToDict(DictuVM *vm, Value value) {
+    ObjClass *klass = AS_CLASS(value);
+
+    ObjDict *classDict = newDict(vm);
+    push(vm, OBJ_VAL(classDict));
+
+    ObjDict *variablesDict = newDict(vm);
+    push(vm, OBJ_VAL(variablesDict));
+
+    for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+        if (klass->variables.entries[i].key == NULL) {
+            continue;
+        }
+
+        dictSet(vm, variablesDict, OBJ_VAL(klass->variables.entries[i].key), klass->variables.entries[i].value);
+    }
+    Value variables = OBJ_VAL(copyString(vm, "public_variables", 16));
+
+    ObjDict *constantsDict = newDict(vm);
+    push(vm, OBJ_VAL(constantsDict));
+
+    for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+        if (klass->constants.entries[i].key == NULL) {
+            continue;
+        }
+
+        dictSet(vm, constantsDict, OBJ_VAL(klass->constants.entries[i].key), klass->constants.entries[i].value);
+    }
+    Value constants = OBJ_VAL(copyString(vm, "constants", 9));
+    
+
+    ObjList *methodsList = newList(vm);
+    push(vm, OBJ_VAL(methodsList));
+
+    for (int i = 0; i < klass->publicMethods.capacityMask + 1; i++) {
+        if (klass->publicMethods.entries[i].key == NULL) {
+            continue;
+        }
+
+        writeValueArray(vm, &methodsList->values, OBJ_VAL(klass->publicMethods.entries[i].key));
+    }
+    Value methods = OBJ_VAL(copyString(vm, "public_methods", 14));
+
+    if (klass->superclass != NULL) {
+        ObjClass *superclass = klass->superclass;
+
+        for (int i = 0; i < superclass->variables.capacityMask + 1; i++) {
+            if (superclass->variables.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, variablesDict, OBJ_VAL(superclass->variables.entries[i].key), superclass->variables.entries[i].value);
+        }
+
+        for (int i = 0; i < superclass->constants.capacityMask + 1; i++) {
+            if (superclass->constants.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, constantsDict, OBJ_VAL(superclass->constants.entries[i].key), superclass->constants.entries[i].value);
+        }
+
+        for (int i = 0; i < superclass->publicMethods.capacityMask + 1; i++) {
+            if (superclass->publicMethods.entries[i].key == NULL) {
+                continue;
+            }
+            writeValueArray(vm, &methodsList->values, OBJ_VAL(superclass->publicMethods.entries[i].key));
+        }
+    }
+    pop(vm);
+    pop(vm);
+    pop(vm);
+
+    dictSet(vm, classDict, variables, OBJ_VAL(variablesDict));
+    dictSet(vm, classDict, methods, OBJ_VAL(methodsList));
+    dictSet(vm, classDict, constants, OBJ_VAL(constantsDict));
+
+    pop(vm);
+    return classDict;
+}
+
 char *instanceToString(Value value) {
     ObjInstance *instance = AS_INSTANCE(value);
     char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));

@@ -1,0 +1,41 @@
+/**
+ * toDict.du
+ *
+ * Testing the class.toDict() and instance.toDict() method.
+ *
+ * .toDict() returns the dictionary representation of a class / object.
+ */
+from UnitTest import UnitTest;
+
+
+class Test {
+    var publicField1 = "a";
+    var publicField2 = "b";
+
+    const constant = "dictu";
+
+    methodA() {}
+    methodB() {}
+
+    init() {}
+}
+
+class TestToDict < UnitTest {
+    testClassToDict() {
+        this.assertEquals(Test.toDict().len(), 3);
+        this.assertEquals(Test.toDict()["public_variables"].len(), 2);
+        this.assertEquals(Test.toDict()["public_methods"].len(), 3);
+        this.assertEquals(Test.toDict()["constants"].get("constant"), "dictu");
+    }
+
+    testinstanceToDict() {
+        const t = Test()._class;
+
+        this.assertEquals(t.toDict().len(), 3);
+        this.assertEquals(t.toDict()["public_variables"].len(), 2);
+        this.assertEquals(t.toDict()["public_methods"].len(), 3);
+        this.assertEquals(t.toDict()["constants"].get("constant"), "dictu");
+    }
+}
+
+TestToDict().run();
