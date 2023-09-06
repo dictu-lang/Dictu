@@ -325,11 +325,11 @@ Splice provides a means of changing the contents of a list by removing or replac
 [1, 2, 3, 4, 5].splice(3, 0, [100, 101, 102]); // [1, 2, 3, 100, 101, 102, 4, 5]
 ```
 
-### list.uniq() -> List
+### list.unique() -> List
 
-Uniq returns a new list with contianing the contents of the original list deduplicated.
+Unique returns a new list with contianing the contents of the original list deduplicated.
 
 ```cs
 const l = [1, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9];
-l.uniq(); // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+l.unique(); // [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
