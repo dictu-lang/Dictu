@@ -177,7 +177,7 @@ class B < A {
 }
 
 const b = B();
-print(b.toDict()); // {"public_methods": ["abethodb", "init", "methodA", "amethod", "methodB", "abethodb", "amethod"], "variables": {"afield": 44, "fieldA": 1, "fieldB": 2}, "constants": {"y": 8, "_name": "A", "x": 9}}
+print(b._class.toDict()); // {"public_methods": ["abethodb", "init", "methodA", "amethod", "methodB", "abethodb", "amethod"], "variables": {"afield": 44, "fieldA": 1, "fieldB": 2}, "constants": {"y": 8, "_name": "A", "x": 9}}
 
 ```
 
