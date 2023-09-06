@@ -1,0 +1,25 @@
+/**
+ * unique.du
+ *
+ * Testing list deduplicating.
+ */
+from UnitTest import UnitTest;
+
+
+class TestListUnique < UnitTest {
+    testNumberListUnique() {
+        const numbers = [1, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9];
+
+        const nl = numbers.unique();
+        this.assertEquals(nl.len(), 9);
+    }
+
+    testStringListUnique() {
+        const strings = ["a", "b", "b", "c"];
+
+        const sl = strings.unique();
+        this.assertEquals(sl.len(), 3);
+    }
+}
+
+TestListUnique().run();
