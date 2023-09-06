@@ -22,10 +22,11 @@ class Test {
 
 class TestClassToDict < UnitTest {
     testClassToDict() {
-        this.assertEquals(Test.toDict().len(), 3);
-        this.assertEquals(Test.toDict()["public_variables"].len(), 2);
-        this.assertEquals(Test.toDict()["public_methods"].len(), 3);
-        this.assertEquals(Test.toDict()["constants"].get("constant"), "dictu");
+        const test = Test();
+        this.assertEquals(test._class.toDict().len(), 3);
+        this.assertEquals(test._class.toDict()["public_variables"].len(), 2);
+        this.assertEquals(test._class.toDict()["public_methods"].len(), 3);
+        this.assertEquals(test._class.toDict()["constants"].get("constant"), "dictu");
     }
 }
 
