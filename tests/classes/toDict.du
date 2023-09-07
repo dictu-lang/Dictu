@@ -20,9 +20,21 @@ class Test {
     init() {}
 }
 
+class Chain1 < Test {}
+
+class Chain2 < Chain1 {}
+
 class TestClassToDict < UnitTest {
     testClassToDict() {
         const test = Test();
+        this.assertEquals(test._class.toDict().len(), 3);
+        this.assertEquals(test._class.toDict()["public_variables"].len(), 2);
+        this.assertEquals(test._class.toDict()["public_methods"].len(), 3);
+        this.assertEquals(test._class.toDict()["constants"].get("constant"), "dictu");
+    }
+
+    testClassToDictInheritance() {
+        const test = Chain2();
         this.assertEquals(test._class.toDict().len(), 3);
         this.assertEquals(test._class.toDict()["public_variables"].len(), 2);
         this.assertEquals(test._class.toDict()["public_methods"].len(), 3);
