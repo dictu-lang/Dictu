@@ -27,7 +27,4 @@ import "splice.du";
 import "subscript.du";
 import "toBool.du";
 import "toString.du";
-<<<<<<< HEAD
 import "unique.du";
-=======
->>>>>>> 55e9798 (remove list leaked changes)
