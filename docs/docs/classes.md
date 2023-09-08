@@ -148,6 +148,39 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
+### toDict() -> Dict
+
+Classes and instances can both be converted to a dictionary using the `toDict()` method. Inherited super classes are included in the dictionary.
+
+```cs
+class A {
+    var afield = 44;
+
+    amethod() {}
+    abethodb() {}
+}
+
+class B < A {
+    const x = 9;
+    const y = 8;
+
+    var fieldA = 1;
+    var fieldB = 2;
+
+    init() {}
+
+    methodA() {}
+    methodB() {}
+
+    private methodC() {}
+    private methodD() {}
+}
+
+const b = B();
+print(b._class.toDict()); // {"public_methods": ["abethodb", "init", "methodA", "amethod", "methodB", "abethodb", "amethod"], "variables": {"afield": 44, "fieldA": 1, "fieldB": 2}, "constants": {"y": 8, "_name": "A", "x": 9}}
+
+```
+
 ### methods() -> List
 
 Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This

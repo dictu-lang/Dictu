@@ -523,6 +523,83 @@ char *classToString(Value value) {
     return classString;
 }
 
+static bool listContains(ObjList *list, Value value) {
+    for (int i = 0; i < list->values.count; ++i) {
+        if (valuesEqual(list->values.values[i], value)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ObjDict *classToDict(DictuVM *vm, Value value) {
+    ObjClass *klass = AS_CLASS(value);
+
+    ObjDict *classDict = newDict(vm);
+    push(vm, OBJ_VAL(classDict));
+
+    ObjDict *variablesDict = newDict(vm);
+    push(vm, OBJ_VAL(variablesDict));
+
+    ObjDict *constantsDict = newDict(vm);
+    push(vm, OBJ_VAL(constantsDict));
+
+    ObjList *methodsList = newList(vm);
+    push(vm, OBJ_VAL(methodsList));
+
+    while (klass != NULL) {
+        for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+            if (klass->variables.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, variablesDict, OBJ_VAL(klass->variables.entries[i].key), klass->variables.entries[i].value);
+        }
+
+        for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+            if (klass->constants.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, constantsDict, OBJ_VAL(klass->constants.entries[i].key), klass->constants.entries[i].value);
+        }
+
+        for (int i = 0; i < klass->publicMethods.capacityMask + 1; i++) {
+            if (klass->publicMethods.entries[i].key == NULL) {
+                continue;
+            }
+
+            if (listContains(methodsList, OBJ_VAL(klass->publicMethods.entries[i].key))) {
+                continue;
+            }
+
+            writeValueArray(vm, &methodsList->values, OBJ_VAL(klass->publicMethods.entries[i].key));
+        }
+
+        klass = klass->superclass;
+    }
+
+    Value variables = OBJ_VAL(copyString(vm, "public_variables", 16));
+    push(vm, OBJ_VAL(variables));
+    dictSet(vm, classDict, variables, OBJ_VAL(variablesDict));
+    pop(vm);
+    pop(vm); // variablesDict
+
+    Value constants = OBJ_VAL(copyString(vm, "constants", 9));
+    push(vm, OBJ_VAL(constants));
+    dictSet(vm, classDict, constants, OBJ_VAL(constantsDict));
+    pop(vm);
+    pop(vm); // constantsDict
+
+    Value methods = OBJ_VAL(copyString(vm, "public_methods", 14));
+    push(vm, OBJ_VAL(methods));
+    dictSet(vm, classDict, methods, OBJ_VAL(methodsList));
+    pop(vm);
+    pop(vm); // methodsList
+
+    pop(vm); // classDict
+    return classDict;
+}
+
 char *instanceToString(Value value) {
     ObjInstance *instance = AS_INSTANCE(value);
     char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));

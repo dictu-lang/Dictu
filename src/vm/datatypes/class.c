@@ -16,6 +16,17 @@ static Value toString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
+static Value toDict(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "toDict() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjDict *dict = classToDict(vm, args[0]);
+
+    return OBJ_VAL(dict);
+}
+
 static Value methods(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "methods() takes no arguments (%d given)", argCount);
@@ -41,5 +52,6 @@ static Value methods(DictuVM *vm, int argCount, Value *args) {
 
 void declareClassMethods(DictuVM *vm) {
     defineNative(vm, &vm->classMethods, "toString", toString);
+    defineNative(vm, &vm->classMethods, "toDict", toDict);
     defineNative(vm, &vm->classMethods, "methods", methods);
 }

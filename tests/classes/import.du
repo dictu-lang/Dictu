@@ -12,6 +12,7 @@ import "inheritedAnnotations.du";
 import "traits.du";
 import "copy.du";
 import "toString.du";
+import "toDict.du";
 import "abstract.du";
 import "classVariables.du";
 import "classConstants.du";
