@@ -515,7 +515,7 @@ static Value copyFileNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "cannot open dst file");
     }
 
-    char buffer = fgetc(sf);
+    int buffer = fgetc(sf);
     while (buffer != EOF) {
         fputc(buffer, df);
         buffer = fgetc(sf);
