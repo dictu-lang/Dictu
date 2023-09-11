@@ -141,7 +141,6 @@ struct sObjList {
 typedef struct {
     Value key;
     Value value;
-    uint32_t psl;
 } DictItem;
 
 struct sObjDict {
