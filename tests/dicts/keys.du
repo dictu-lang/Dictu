@@ -16,7 +16,7 @@ class TestDictKeys < UnitTest {
 
         this.assertEquals(dict.keys().len(), 5);
         this.assertType(dict.keys(), "list");
-        this.assertEquals(dict.keys(), [false, true, nil, 1, "test"]);
+        this.assertEquals(dict.keys(), [false, true, "test", 1, nil]);
     }
 }
 
