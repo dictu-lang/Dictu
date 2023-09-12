@@ -20,4 +20,12 @@
 "\n" \
 "    return Error(errorCallback(result.unwrapError()));\n" \
 "}\n" \
+"\n" \
+"def matchError(result, errorCallback) {\n" \
+"    if (result.success()) {\n" \
+"        return result.unwrap();\n" \
+"    }\n" \
+"\n" \
+"    return errorCallback(result.unwrapError());\n" \
+"}\n" \
 

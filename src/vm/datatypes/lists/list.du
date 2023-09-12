@@ -66,3 +66,12 @@ def splice(list, index, count, items) {
 
     return list[:index]+items+list[index+count:];
 }
+
+def unique(list) {
+    var dict = {};
+    list.forEach(def(e) => {
+        dict[e] = nil;
+    });
+
+    return dict.keys();
+}

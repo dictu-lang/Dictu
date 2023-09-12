@@ -292,6 +292,7 @@ char *setToString(Value value);
 char *dictToString(Value value);
 char *listToString(Value value);
 char *classToString(Value value);
+ObjDict *classToDict(DictuVM *vm, Value value);
 char *instanceToString(Value value);
 char *objectToString(Value value);
 

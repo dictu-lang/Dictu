@@ -761,6 +761,21 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
+
+        if (superclass->classAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->classAnnotations, false);
+            klass->classAnnotations = dict;
+        }
+
+        if (superclass->methodAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, false);
+            klass->methodAnnotations = dict;
+        }
+
+        if (superclass->fieldAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, false);
+            klass->fieldAnnotations = dict;
+        }
     }
 }
 
@@ -796,8 +811,25 @@ static void setReplVar(DictuVM *vm, Value value) {
     tableSet(vm, &vm->globals, vm->replVar, value);
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *klassAnnotations) {
+    for (int i = 0; i <= superAnnotations->capacityMask; ++i) {
+        DictItem *item = &superAnnotations->entries[i];
 
+        if (IS_EMPTY(item->key)) {
+            continue;
+        }
+
+        Value value;
+        if (dictGet(klassAnnotations, item->key, &value)) {
+            continue;
+        }
+
+        Value superVal = superAnnotations->entries[i].value;
+        dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, superVal);
+    }
+}
+
+static DictuInterpretResult run(DictuVM *vm) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -2187,6 +2219,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
+            if (klass->classAnnotations != NULL) {
+                copyAnnotations(vm, klass->classAnnotations, dict);
+            }
+
             klass->classAnnotations = dict;
 
             DISPATCH();
@@ -2195,6 +2231,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
+            
+            if (klass->methodAnnotations != NULL) {
+                copyAnnotations(vm, klass->methodAnnotations, dict);
+            }
 
             klass->methodAnnotations = dict;
 
@@ -2204,6 +2244,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_FIELD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            if (klass->fieldAnnotations != NULL) {
+                copyAnnotations(vm, klass->fieldAnnotations, dict);
+            }
 
             klass->fieldAnnotations = dict;
 
