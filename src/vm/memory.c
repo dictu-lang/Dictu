@@ -168,6 +168,9 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_ABSTRACT: {
             ObjAbstract *abstract = (ObjAbstract *) object;
             grayTable(vm, &abstract->values);
+            if (abstract->grayFunc != NULL) {
+                abstract->grayFunc(vm, abstract);
+            }
             break;
         }
 

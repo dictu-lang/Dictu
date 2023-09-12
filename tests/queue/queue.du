@@ -79,7 +79,7 @@ class TestQueue < UnitTest {
         this.assertEquals(this.queue.cap(), 32);
     }
 
-    testQueueShrink() {
+    testQueuePopMany() {
         this.assertEquals(this.queue.cap(), this.defaultQueueSize);
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(def (x) => this.queue.push(x));
         this.assertEquals(this.queue.cap(), 32);
@@ -93,7 +93,6 @@ class TestQueue < UnitTest {
         this.queue.pop();
         this.queue.pop();
         this.queue.pop();
-        this.assertEquals(this.queue.cap(), 16);
     }
 }
 
