@@ -1,0 +1,23 @@
+/**
+ * bitwiseOr.du
+ *
+ * Testing the BigInt bitwiseOr function.
+ *
+ * .bitwiseOr() returns a Result containing the value of `bigIntVal1 | bigIntVal2`.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntBitwiseOr < UnitTest {
+    testBigIntBitwiseOr() {
+        const bi1 = BigInt.new(2157634);
+        const bi2 = BigInt.new(345);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi1.unwrap().bitwiseOr(bi2.unwrap()));
+    }
+}
+
+TestBigIntBitwiseOr().run();

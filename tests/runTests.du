@@ -2,7 +2,11 @@ from UnitTest import UnitTest;
 
 UnitTest.forceOnlyFailures = true;
 
+import "argparse/import.du";
 import "bool/import.du";
+import "queue/import.du";
+import "stack/import.du";
+import "bigint/import.du";
 import "nil/import.du";
 import "number/import.du";
 import "strings/import.du";
@@ -33,13 +37,19 @@ import "process/import.du";
 import "inspect/import.du";
 
 if (isDefined("HTTP")) {
-  import "http/import.du";
+    import "http/import.du";
+}
+
+if (isDefined("UUID")) {
+    import "uuid/import.du";
 }
 
 import "modules/import.du";
 import "imports/import.du";
 import "random/import.du";
 import "hashlib/import.du";
+import "object/import.du";
+import "term/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

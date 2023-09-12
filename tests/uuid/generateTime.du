@@ -1,0 +1,25 @@
+/**
+ * generateRandom.du
+ *
+ * Testing the UUID.generateTime function.
+ *
+ * The UUID.generateTime function provides the ability to generate UUID.
+ */
+import UUID;
+import System;
+
+from UnitTest import UnitTest;
+
+class TestUUIDGenerateTime < UnitTest {
+    testGenerate() {
+        const ret = UUID.generateTime();
+        this.assertTruthy(ret.success());
+        const uuid = ret.unwrap();
+        this.assertType(type(uuid), "string");
+        this.assertTruthy(uuid.len() == 37);
+    }
+}
+
+if (System.platform != "windows") {
+    TestUUIDGenerateTime().run();
+}

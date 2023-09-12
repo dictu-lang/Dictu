@@ -20,7 +20,7 @@ void getStrerror(char *buf, int error) {
 #endif
 }
 
-void createCModule(DictuVM *vm) {
+Value createCModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "C", 1);
     push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, name);
@@ -273,8 +273,8 @@ void createCModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "EHWPOISON", NUMBER_VAL(EHWPOISON));
 #endif
 
-    tableSet(vm, &vm->globals, name, OBJ_VAL(module));
     pop(vm);
     pop(vm);
-}
 
+    return OBJ_VAL(module);
+}

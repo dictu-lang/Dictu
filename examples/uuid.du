@@ -1,0 +1,3 @@
+import UUID;
+
+print(UUID.generate().unwrap());

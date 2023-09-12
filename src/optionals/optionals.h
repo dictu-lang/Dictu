@@ -2,6 +2,8 @@
 #define dictu_optionals_h
 
 #include "../vm/util.h"
+#include "c.h"
+#include "argparse/argparse.h"
 #include "math.h"
 #include "env/env.h"
 #include "system.h"
@@ -18,6 +20,12 @@
 #include "sqlite.h"
 #include "process.h"
 #include "inspect.h"
+#include "term.h"
+#include "uuid.h"
+#include "queue.h"
+#include "stack.h"
+#include "bigint.h"
+#include "object/object.h"
 #include "unittest/unittest.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);

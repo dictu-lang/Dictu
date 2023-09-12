@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Inspect
-nav_order: 14
+nav_order: 8
 parent: Standard Library
 ---
 
@@ -23,7 +23,7 @@ To make use of the Inspect module an import is required.
 import Inspect;
 ```
 
-### Inspect.getFrameCount()
+### Inspect.getFrameCount() -> Number
 
 This gives you the current frame count of the VM at the point of calling.
 
@@ -39,7 +39,7 @@ def test() {
 test(); // 1
 ```
 
-### Inspect.getLine(number: count -> optional)
+### Inspect.getLine(Number: count -> optional) -> Number
 
 This gives you the line number within the file that the function was called from.
 
@@ -51,7 +51,7 @@ Inspect.getLine(); // 1
 Inspect.getLine(1000); // Optional argument passed to getLine() exceeds the frame count.
 ```
 
-### Inspect.getFile(number: count -> optional)
+### Inspect.getFile(Number: count -> Optional) -> String
 
 This gives you the name of the file that the function was called from.
 

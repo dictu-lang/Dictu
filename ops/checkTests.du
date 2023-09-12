@@ -1,0 +1,86 @@
+import System;
+import Path;
+
+const ignored = {
+    'tests': [
+        'runTests.du',
+        'benchmarks',
+    ],
+    'path': [
+        'test_dir',
+    ],
+    'env': [
+        '.env',
+    ],
+    'files': [
+        'read.txt',
+    ],
+    'strings': [
+        'test',
+    ],
+    'random': [
+        // Need investigating
+        'range.du',
+        'select.du',
+    ],
+    '*': [
+        'import.du',
+    ]
+};
+
+def getDirectoryContents(directory) {
+    return Path.listDir(directory).filter(def (file) => {
+        return not (
+            ignored["*"].contains(file) or
+            ignored.get(directory.replace("tests/", ""), []).contains(file)
+        );
+    });
+}
+
+def getImportedTests(path) {
+    const imports = [];
+
+    with (path, 'r') {
+        var line;
+
+        while((line = file.readLine()) != nil) {
+            line = line.strip();
+            if (line.startsWith('import')) {
+                const importName = line[8:].split('/')[0].replace('";', "");
+                imports.push(importName);
+            }
+        }
+    }
+
+    return imports;
+}
+
+def getMissingImports(dirContents, imports) {
+    return dirContents.filter(def (importName) => {
+        return not imports.contains(importName);
+    });
+}
+
+const dirContents = getDirectoryContents('tests');
+const imports = getImportedTests('tests/runTests.du');
+const missingImports = getMissingImports(dirContents, imports);
+var failed = false;
+
+dirContents.forEach(def (subDirectory) => {
+    const dirContents = getDirectoryContents('tests/' + subDirectory);
+    const imports = getImportedTests('tests/{}/import.du'.format(subDirectory));
+    const missingImports = getMissingImports(dirContents, imports);
+
+    if (missingImports) {
+        print('There are missing imports in {}: {}'.format(subDirectory, missingImports));
+        failed = true;
+    }
+});
+
+if (missingImports) {
+    print('There are missing imports in runTests.du: {}'.format(missingImports));
+}
+
+if (failed or missingImports) {
+    System.exit(1);
+}

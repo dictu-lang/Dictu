@@ -90,7 +90,7 @@ r"Dictu\trocks!"; // 'Dictu\trocks!'
 r"Dictu\trocks!".len(); // 12
 ```
 
-### string.len()
+### string.len() -> Number
 
 Returns the length of the given string.
 
@@ -98,7 +98,7 @@ Returns the length of the given string.
 "string".len(); // 6
 ```
 
-### string.lower()
+### string.lower() -> String
 
 Returns a lowercase version of the given string.
 
@@ -108,7 +108,7 @@ Returns a lowercase version of the given string.
 "dictu".lower(); // dictu
 ```
 
-### string.upper()
+### string.upper() -> String
 
 Returns an uppercase version of the given string.
 
@@ -118,7 +118,7 @@ Returns an uppercase version of the given string.
 "DICTU".upper(); // DICTU
 ```
 
-### string.toNumber()
+### string.toNumber() -> Number
 
 Casts a string to a number. This method returns a Result type and will unwrap to a number.
 
@@ -128,7 +128,7 @@ Casts a string to a number. This method returns a Result type and will unwrap to
 "10px".toNumber(); // <Result Err>
 ```
 
-### string.toBool()
+### string.toBool() -> Boolean
 
 Casts a string to a boolean value. Any string except an empty string is considered `true`.
 
@@ -137,7 +137,7 @@ Casts a string to a boolean value. Any string except an empty string is consider
 "false".toBool(); // true
 ```
 
-### string.startsWith(string)
+### string.startsWith(string) -> Boolean
 
 Returns true if a string starts with a given string.
 
@@ -149,7 +149,7 @@ Returns true if a string starts with a given string.
 "Dictu".startsWith("d"); // false
 ```
 
-### string.endsWith(string)
+### string.endsWith(string) -> Boolean
 
 Returns true if a string ends with a given string.
 
@@ -162,7 +162,7 @@ Returns true if a string ends with a given string.
 "Dictu".endsWith("U"); // false
 ```
 
-### string.split(string: delimiter, number: splitCount -> optional)
+### string.split(String: delimiter, Number: splitCount -> Optional) -> List
 
 Returns a list of strings, split based on a given delimiter.
 Returns a list of all characters in a string if an empty string is passed as delimiter.
@@ -177,7 +177,7 @@ as not passing a value and will split by all occurrences of the delimiter.
 "Dictu is awesome!".split(" ", 1); // ['Dictu', 'is awesome!']
 ```
 
-### string.replace(string: old, string: new)
+### string.replace(String: old, String: new) -> String
 
 Replaces part (a substring) of a string with another string.
 
@@ -185,7 +185,7 @@ Replaces part (a substring) of a string with another string.
 "Dictu is okay...".replace("okay...", "awesome!"); // "Dictu is awesome!"
 ```
 
-### string.contains(string)
+### string.contains(String) -> Boolean
 
 Returns true if a string contains another string.
 
@@ -194,7 +194,7 @@ Returns true if a string contains another string.
 "Dictu is awesome!".contains("Dictu is awesome!"); // true
 ```
 
-### string.find(string, number: skip -> optional)
+### string.find(String, Number: skip -> Optional) -> Number
 
 To find the index of a given substring, use the `.find()` method. This method takes an optional second parameter which can be used to skip the first `n` number of appearances of the substring. This method returns `-1` if the substring could not be found. Otherwise, it returns the index of the string.
 
@@ -204,7 +204,7 @@ To find the index of a given substring, use the `.find()` method. This method ta
 "House".find("Lost Keys"); // -1 (Not found)
 ```
 
-### string.leftStrip()
+### string.leftStrip() -> String
 
 Strips whitespace from the left side of a string and returns the result.
 
@@ -212,7 +212,7 @@ Strips whitespace from the left side of a string and returns the result.
 "     Dictu".leftStrip(); // "Dictu"
 ```
 
-### string.rightStrip()
+### string.rightStrip() -> String
 
 Strips whitespace from the right side of a string and returns the result.
 
@@ -220,7 +220,7 @@ Strips whitespace from the right side of a string and returns the result.
 "Dictu     ".rightStrip(); // "Dictu"
 ```
 
-### string.strip()
+### string.strip() -> String
 
 Strips whitespace from both sides of a string and returns the result.
 
@@ -228,7 +228,7 @@ Strips whitespace from both sides of a string and returns the result.
 "     Dictu     ".strip(); // "Dictu"
 ```
 
-### string.format(...value: args...)
+### string.format(...value: args...) -> String
 
 This method will replace any instances of `{}` with the provided parameters. It also casts all arguments to strings.
 
@@ -239,7 +239,7 @@ This method will replace any instances of `{}` with the provided parameters. It 
 "String: {}, Number: {}, Boolean: {}, List: {}, Dictionary: {}".format("String", 123, true, ["String", 123, true], {"key": "value"}); // "String: String, Number: 123, Boolean: true, List: ["String", 123, true], Dictionary: {"key": "value"}"
 ```
 
-### string.count(string)
+### string.count(String) -> Number
 
 Returns the number of occurrences of a given substring within another string.
 
@@ -249,7 +249,7 @@ Returns the number of occurrences of a given substring within another string.
 "Sooooooooooome characters".count("o"); // 11
 ```
 
-### string.title()
+### string.title() -> String
 
 Returns a title cased version of string with first letter of each word capitalized.
 
@@ -259,7 +259,7 @@ Returns a title cased version of string with first letter of each word capitaliz
 "once upon a time".title(); // Once Upon A Time
 ```
 
-### string.repeat(number)
+### string.repeat(Number) -> String
 
 Returns a new string with the original string repeated the given number of times.
 

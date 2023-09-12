@@ -1,7 +1,7 @@
 ---
 layout: default
 title: UnitTest
-nav_order: 15
+nav_order: 22
 parent: Standard Library
 ---
 
@@ -17,6 +17,7 @@ parent: Standard Library
 ---
 
 ## UnitTest
+
 Unit testing is a very important part of software development and something we as developers
 should always strive to complete. Dictu aims to make this slightly easier by having a unit test
 framework built within the language.
@@ -201,6 +202,7 @@ Results:
 
 ## Settings
 ### Silencing Passing Tests
+
 The default setting is that it will output `Success.` for tests that pass, but
 sometimes that can cause finding errors or tests that fail slightly harder 
 so we can turn this off to only show output from failed tests.
@@ -255,6 +257,7 @@ Results:
 ```
 
 #### Global
+
 The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
 ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
 as a class variable on the UnitTest parent class.
@@ -303,6 +306,7 @@ Results:
 ```
 
 ### Exit On Failure
+
 Sometimes we may want our test suite to stop as soon as a test fails.
 This is done very similarly to silencing passing tests.
 

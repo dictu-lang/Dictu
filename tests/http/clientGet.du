@@ -1,0 +1,72 @@
+/**
+ * clientGet.du
+ *
+ * Testing the HTTP.HttpClient.get() function
+ *
+ */
+from UnitTest import UnitTest;
+
+import HTTP;
+
+class TestHttpClientGet < UnitTest {
+
+    private httpClient;
+
+    setUp() {
+        this.httpClient = HTTP.newClient({});
+    }
+
+    testHttpGet() {
+        var response = this.httpClient.get("http://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsGet() {
+        var response = this.httpClient.get("https://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsHeaders() {
+        this.httpClient.setHeaders(["Header: test"]);
+        var response = this.httpClient.get("https://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.content.contains('"Header": "test"'));
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsBadURL() {
+        this.httpClient.setTimeout(1);
+        const response = this.httpClient.get("https://BAD_URL.test_for_error");
+        this.assertFalsey(response.success());
+    }
+
+    testHttpGzip() {
+        var response = this.httpClient.get("https://httpbin.org/gzip");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.content.contains("headers"));
+        this.assertTruthy(response.headers.len() > 0);
+    }
+}
+
+TestHttpClientGet().run();

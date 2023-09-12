@@ -19,7 +19,7 @@ static Chunk *currentChunk(Compiler *compiler) {
     return &compiler->function->chunk;
 }
 
-static void errorAt(Parser *parser, Token *token, const char *message) {
+static void errorAt(Parser *parser, LangToken *token, const char *message) {
     if (parser->panicMode) return;
     parser->panicMode = true;
 
@@ -61,7 +61,13 @@ static void advance(Parser *parser) {
     }
 }
 
-static void consume(Compiler *compiler, TokenType type, const char *message) {
+static void recede(Parser *parser){
+    for (int i = 0; i < parser->current.length; ++i) {
+            backTrack(&parser->scanner);
+    }
+}
+
+static void consume(Compiler *compiler, LangTokenType type, const char *message) {
     if (compiler->parser->current.type == type) {
         advance(compiler->parser);
         return;
@@ -70,11 +76,11 @@ static void consume(Compiler *compiler, TokenType type, const char *message) {
     errorAtCurrent(compiler->parser, message);
 }
 
-static bool check(Compiler *compiler, TokenType type) {
+static bool check(Compiler *compiler, LangTokenType type) {
     return compiler->parser->current.type == type;
 }
 
-static bool match(Compiler *compiler, TokenType type) {
+static bool match(Compiler *compiler, LangTokenType type) {
     if (!check(compiler, type)) return false;
     advance(compiler->parser);
     return true;
@@ -157,11 +163,12 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->class = NULL;
     compiler->loop = NULL;
     compiler->withBlock = false;
-    compiler->annotations = NULL;
+    compiler->classAnnotations = NULL;
+    compiler->methodAnnotations = NULL;
+    compiler->fieldAnnotations = NULL;
 
     if (parent != NULL) {
         compiler->class = parent->class;
-        compiler->loop = parent->loop;
     }
 
     compiler->type = type;
@@ -269,11 +276,11 @@ static void statement(Compiler *compiler);
 
 static void declaration(Compiler *compiler);
 
-static ParseRule *getRule(TokenType type);
+static ParseRule *getRule(LangTokenType type);
 
 static void parsePrecedence(Compiler *compiler, Precedence precedence);
 
-static uint8_t identifierConstant(Compiler *compiler, Token *name) {
+static uint8_t identifierConstant(Compiler *compiler, LangToken *name) {
     ObjString *string = copyString(compiler->parser->vm, name->start, name->length);
     Value indexValue;
     if (tableGet(&compiler->stringConstants, string, &indexValue)) {
@@ -285,12 +292,12 @@ static uint8_t identifierConstant(Compiler *compiler, Token *name) {
     return index;
 }
 
-static bool identifiersEqual(Token *a, Token *b) {
+static bool identifiersEqual(LangToken *a, LangToken *b) {
     if (a->length != b->length) return false;
     return memcmp(a->start, b->start, a->length) == 0;
 }
 
-static int resolveLocal(Compiler *compiler, Token *name, bool inFunction) {
+static int resolveLocal(Compiler *compiler, LangToken *name, bool inFunction) {
     // Look it up in the local scopes. Look in reverse order so that the
     // most nested variable is found first and shadows outer ones.
     for (int i = compiler->localCount - 1; i >= 0; i--) {
@@ -339,7 +346,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal, bool cons
 // If the name is found outside of the immediately enclosing function,
 // this will flatten the closure and add upvalues to all of the
 // intermediate functions so that it gets walked down to this one.
-static int resolveUpvalue(Compiler *compiler, Token *name) {
+static int resolveUpvalue(Compiler *compiler, LangToken *name) {
     // If we are at the top level, we didn't find it.
     if (compiler->enclosing == NULL) return -1;
 
@@ -368,7 +375,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
     return -1;
 }
 
-static void addLocal(Compiler *compiler, Token name) {
+static void addLocal(Compiler *compiler, LangToken name) {
     if (compiler->localCount == UINT8_COUNT) {
         error(compiler->parser, "Too many local variables in function.");
         return;
@@ -386,13 +393,13 @@ static void addLocal(Compiler *compiler, Token name) {
 
 // Allocates a local slot for the value currently on the stack, if
 // we're in a local scope.
-static void declareVariable(Compiler *compiler, Token *name) {
+static void declareVariable(Compiler *compiler, LangToken *name) {
     // Global variables are implicitly declared.
     if (compiler->scopeDepth == 0) return;
 
     // See if a local variable with this name is already declared in this
     // scope.
-    // Token *name = &compiler->parser->previous;
+    // LangToken *name = &compiler->parser->previous;
     for (int i = compiler->localCount - 1; i >= 0; i--) {
         Local *local = &compiler->locals[i];
         if (local->depth != -1 && local->depth < compiler->scopeDepth) break;
@@ -460,7 +467,7 @@ static int argumentList(Compiler *compiler, bool *unpack) {
     return argCount;
 }
 
-static void and_(Compiler *compiler, Token previousToken, bool canAssign) {
+static void and_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
 
@@ -481,7 +488,7 @@ static void and_(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static bool foldBinary(Compiler *compiler, TokenType operatorType) {
+static bool foldBinary(Compiler *compiler, LangTokenType operatorType) {
 #define FOLD(operator)                                                         \
     do {                                                                       \
         Chunk *chunk = currentChunk(compiler);                                 \
@@ -555,15 +562,15 @@ static bool foldBinary(Compiler *compiler, TokenType operatorType) {
 #undef FOLD_FUNC
 }
 
-static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
+static void binary(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(canAssign);
 
-    TokenType operatorType = compiler->parser->previous.type;
+    LangTokenType operatorType = compiler->parser->previous.type;
 
     ParseRule *rule = getRule(operatorType);
     parsePrecedence(compiler, (Precedence) (rule->precedence + 1));
 
-    TokenType currentToken = compiler->parser->previous.type;
+    LangTokenType currentToken = compiler->parser->previous.type;
 
     // Attempt constant fold.
     if ((previousToken.type == TOKEN_NUMBER) &&
@@ -624,7 +631,7 @@ static void binary(Compiler *compiler, Token previousToken, bool canAssign) {
     }
 }
 
-static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
+static void ternary(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
     // Jump to the else branch if the condition is false.
@@ -647,7 +654,7 @@ static void ternary(Compiler *compiler, Token previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-static void call(Compiler *compiler, Token previousToken, bool canAssign) {
+static void call(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
     bool unpack = false;
@@ -658,20 +665,20 @@ static void call(Compiler *compiler, Token previousToken, bool canAssign) {
     emitByte(compiler, unpack);
 }
 
-static bool privatePropertyExists(Token name, Compiler *compiler) {
+static bool privatePropertyExists(LangToken name, Compiler *compiler) {
     ObjString *string = copyString(compiler->parser->vm, name.start, name.length);
     Value _;
 
     return tableGet(&compiler->class->privateVariables, string, &_);
 }
 
-static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
+static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
 
     consume(compiler, TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
 
-    Token identifier = compiler->parser->previous;
+    LangToken identifier = compiler->parser->previous;
 
     if (match(compiler, TOKEN_LEFT_PAREN)) {
         bool unpack = false;
@@ -691,91 +698,91 @@ static void dot(Compiler *compiler, Token previousToken, bool canAssign) {
                                     privatePropertyExists(identifier, compiler))) {
         if (canAssign && match(compiler, TOKEN_EQUAL)) {
             expression(compiler);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_ADD);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
-            emitBytes(compiler, OP_SET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
         } else {
-            emitBytes(compiler, OP_GET_PRIVATE_PROPERTY, name);
+            emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE, name);
         }
     } else {
         if (canAssign && match(compiler, TOKEN_EQUAL)) {
             expression(compiler);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_ADD);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
-            emitBytes(compiler, OP_GET_PROPERTY_NO_POP, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
-            emitBytes(compiler, OP_SET_PROPERTY, name);
+            emitBytes(compiler, OP_SET_ATTRIBUTE, name);
         } else {
-            emitBytes(compiler, OP_GET_PROPERTY, name);
+            emitBytes(compiler, OP_GET_ATTRIBUTE, name);
         }
     }
 }
 
-static void chain(Compiler *compiler, Token previousToken, bool canAssign) {
+static void chain(Compiler *compiler, LangToken previousToken, bool canAssign) {
     // If the operand is not nil we want to stop, otherwise continue
     int endJump = emitJump(compiler, OP_JUMP_IF_NIL);
 
@@ -900,7 +907,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 fnCompiler->function->propertyIndexes[i] = indexes[i];
             }
 
-            emitBytes(fnCompiler, OP_SET_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+            emitBytes(fnCompiler, OP_SET_INIT_ATTRIBUTES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
 
         if (fnCompiler->function->privatePropertyCount > 0) {
@@ -915,7 +922,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 fnCompiler->function->privatePropertyIndexes[i] = privateIndexes[i];
             }
 
-            emitBytes(fnCompiler, OP_SET_PRIVATE_INIT_PROPERTIES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+            emitBytes(fnCompiler, OP_SET_PRIVATE_INIT_ATTRIBUTES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
         }
     }
 
@@ -982,7 +989,7 @@ static void number(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, parseNumber(compiler, canAssign));
 }
 
-static void or_(Compiler *compiler, Token previousToken, bool canAssign) {
+static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     UNUSED(canAssign);
 
@@ -1125,7 +1132,7 @@ static void dict(Compiler *compiler, bool canAssign) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
 
-static void subscript(Compiler *compiler, Token previousToken, bool canAssign) {
+static void subscript(Compiler *compiler, LangToken previousToken, bool canAssign) {
     UNUSED(previousToken);
     // slice with no initial index [1, 2, 3][:100]
     if (match(compiler, TOKEN_COLON)) {
@@ -1209,7 +1216,7 @@ static void checkConst(Compiler *compiler, uint8_t setOp, int arg) {
     }
 }
 
-static void namedVariable(Compiler *compiler, Token name, bool canAssign) {
+static void namedVariable(Compiler *compiler, LangToken name, bool canAssign) {
     uint8_t getOp, setOp;
     int arg = resolveLocal(compiler, &name, false);
     if (arg != -1) {
@@ -1286,8 +1293,8 @@ static void variable(Compiler *compiler, bool canAssign) {
     namedVariable(compiler, compiler->parser->previous, canAssign);
 }
 
-static Token syntheticToken(const char *text) {
-    Token token;
+static LangToken syntheticToken(const char *text) {
+    LangToken token;
     token.start = text;
     token.length = (int) strlen(text);
     return token;
@@ -1371,8 +1378,8 @@ static void useStatement(Compiler *compiler) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after use statement.");
 }
 
-static bool foldUnary(Compiler *compiler, TokenType operatorType) {
-    TokenType valueToken = compiler->parser->previous.type;
+static bool foldUnary(Compiler *compiler, LangTokenType operatorType) {
+    LangTokenType valueToken = compiler->parser->previous.type;
 
     switch (operatorType) {
         case TOKEN_NOT: {
@@ -1409,7 +1416,7 @@ static bool foldUnary(Compiler *compiler, TokenType operatorType) {
 static void unary(Compiler *compiler, bool canAssign) {
     UNUSED(canAssign);
 
-    TokenType operatorType = compiler->parser->previous.type;
+    LangTokenType operatorType = compiler->parser->previous.type;
     parsePrecedence(compiler, PREC_UNARY);
 
     // Constant fold.
@@ -1488,7 +1495,7 @@ ParseRule rules[] = {
         {NULL,     and_,      PREC_AND},                // TOKEN_AND
         {NULL,     NULL,      PREC_NONE},               // TOKEN_ELSE
         {NULL,     or_,       PREC_OR},                 // TOKEN_OR               
-        {NULL,	   NULL,      PREC_NONE},               // TOKEN_SWITCH 
+        {NULL,	   NULL,      PREC_NONE},               // TOKEN_SWITCH
         {NULL,	   NULL,      PREC_NONE},               // TOKEN_CASE
         {NULL,     NULL,      PREC_NONE},               // TOKEN_DEFUALT
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
@@ -1521,7 +1528,7 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     prefixRule(compiler, canAssign);
 
     while (precedence <= getRule(parser->current.type)->precedence) {
-        Token token = compiler->parser->previous;
+        LangToken token = compiler->parser->previous;
         advance(parser);
         ParseInfixFn infixRule = getRule(parser->previous.type)->infix;
         infixRule(compiler, token, canAssign);
@@ -1534,7 +1541,7 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     }
 }
 
-static ParseRule *getRule(TokenType type) {
+static ParseRule *getRule(LangTokenType type) {
     return &rules[type];
 }
 
@@ -1558,7 +1565,7 @@ static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     endCompiler(&fnCompiler);
 }
 
-static void method(Compiler *compiler, bool private, Token *identifier) {
+static void method(Compiler *compiler, bool private, LangToken *identifier, bool *hasAnnotation) {
     AccessLevel level = ACCESS_PUBLIC;
     FunctionType type;
 
@@ -1598,6 +1605,18 @@ static void method(Compiler *compiler, bool private, Token *identifier) {
         type = TYPE_INITIALIZER;
     }
 
+    if (*hasAnnotation) {
+        DictuVM *vm = compiler->parser->vm;
+
+        Value existingDict;
+        dictGet(compiler->methodAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
+        ObjString *methodName = AS_STRING(currentChunk(compiler)->constants.values[constant]);
+        dictSet(vm, compiler->methodAnnotations, OBJ_VAL(methodName), existingDict);
+        dictDelete(vm, compiler->methodAnnotations, OBJ_VAL(vm->annotationString));
+
+        *hasAnnotation = false;
+    }
+
     if (type != TYPE_ABSTRACT) {
         function(compiler, type, level);
     } else {
@@ -1622,7 +1641,6 @@ static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler,
     classCompiler->enclosing = compiler->class;
     classCompiler->staticMethod = false;
     classCompiler->abstractClass = abstract;
-    classCompiler->annotations = NULL;
     initTable(&classCompiler->privateVariables);
     compiler->class = classCompiler;
 }
@@ -1631,10 +1649,22 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
     freeTable(compiler->parser->vm, &classCompiler->privateVariables);
     compiler->class = compiler->class->enclosing;
 
-    if (compiler->annotations != NULL) {
-        int importConstant = makeConstant(compiler, OBJ_VAL(compiler->annotations));
-        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, importConstant);
-        compiler->annotations = NULL;
+    if (compiler->classAnnotations != NULL) {
+        int classAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->classAnnotations));
+        emitBytes(compiler, OP_DEFINE_CLASS_ANNOTATIONS, classAnnotationsConstant);
+        compiler->classAnnotations = NULL;
+    }
+
+    if (compiler->methodAnnotations != NULL) {
+        int methodAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->methodAnnotations));
+        emitBytes(compiler, OP_DEFINE_METHOD_ANNOTATIONS, methodAnnotationsConstant);
+        compiler->methodAnnotations = NULL;
+    }
+
+    if (compiler->fieldAnnotations != NULL) {
+        int fieldAnnotationsConstant = makeConstant(compiler, OBJ_VAL(compiler->fieldAnnotations));
+        emitBytes(compiler, OP_DEFINE_FIELD_ANNOTATIONS, fieldAnnotationsConstant);
+        compiler->fieldAnnotations = NULL;
     }
 }
 
@@ -1643,9 +1673,8 @@ static bool checkLiteralToken(Compiler *compiler) {
         check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
 }
 
-static void parseClassAnnotations(Compiler *compiler) {
+static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
     DictuVM *vm = compiler->parser->vm;
-    compiler->annotations = newDict(vm);
 
     do {
         consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
@@ -1663,54 +1692,150 @@ static void parseClassAnnotations(Compiler *compiler) {
             if (match(compiler, TOKEN_STRING)) {
                 Value string = parseString(compiler, false);
                 push(vm, string);
-                dictSet(vm, compiler->annotations, annotationName, string);
+                dictSet(vm, annotationDict, annotationName, string);
                 pop(vm);
             } else if (match(compiler, TOKEN_NUMBER)) {
                 Value number = parseNumber(compiler, false);
-                dictSet(vm, compiler->annotations, annotationName, number);
+                dictSet(vm, annotationDict, annotationName, number);
             } else if (match(compiler, TOKEN_TRUE)) {
-                dictSet(vm, compiler->annotations, annotationName, TRUE_VAL);
+                dictSet(vm, annotationDict, annotationName, TRUE_VAL);
             } else if (match(compiler, TOKEN_FALSE)) {
-                dictSet(vm, compiler->annotations, annotationName, FALSE_VAL);
+                dictSet(vm, annotationDict, annotationName, FALSE_VAL);
             } else if (match(compiler, TOKEN_NIL)) {
-                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+                dictSet(vm, annotationDict, annotationName, NIL_VAL);
             } else {
-                dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+                dictSet(vm, annotationDict, annotationName, NIL_VAL);
             }
 
             consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after annotation value.");
         } else {
-            dictSet(vm, compiler->annotations, annotationName, NIL_VAL);
+            dictSet(vm, annotationDict, annotationName, NIL_VAL);
         }
 
         pop(vm);
     } while (match(compiler, TOKEN_AT));
 }
 
+static void parseFieldAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    if (compiler->fieldAnnotations == NULL) {
+        compiler->fieldAnnotations = newDict(vm);
+    }
+
+    ObjDict *annotationDict = newDict(vm);
+    push(vm, OBJ_VAL(annotationDict));
+    dictSet(vm, compiler->fieldAnnotations, OBJ_VAL(vm->annotationString), OBJ_VAL(annotationDict));
+    pop(vm);
+
+    parseAnnotations(compiler, annotationDict);
+}
+
+static void parseMethodAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    if (compiler->methodAnnotations == NULL) {
+        compiler->methodAnnotations = newDict(vm);
+    }
+
+    ObjDict *annotationDict = newDict(vm);
+    push(vm, OBJ_VAL(annotationDict));
+    dictSet(vm, compiler->methodAnnotations, OBJ_VAL(vm->annotationString), OBJ_VAL(annotationDict));
+    pop(vm);
+
+    parseAnnotations(compiler, annotationDict);
+}
+
+static void parseClassAnnotations(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    compiler->classAnnotations = newDict(vm);
+
+    parseAnnotations(compiler, compiler->classAnnotations);
+}
+
+static bool isFieldAnnotation(Compiler *compiler) {
+    Parser *previousCompiler = compiler->parser;
+    Scanner scanner = compiler->parser->scanner;
+    LangToken current = compiler->parser->current;
+    LangToken previous = compiler->parser->previous;
+
+    do {
+        consume(compiler, TOKEN_IDENTIFIER, "Expected annotation identifier");
+
+        if (match(compiler, TOKEN_LEFT_PAREN)) {
+            do {
+                advance(compiler->parser);
+            } while (check(compiler, TOKEN_RIGHT_PAREN));
+        }
+    } while (match(compiler, TOKEN_AT));
+
+    bool isAttribute = check(compiler, TOKEN_VAR) || check(compiler, TOKEN_CONST);
+
+    compiler->parser = previousCompiler;
+    compiler->parser->scanner = scanner;
+    compiler->parser->current = current;
+    compiler->parser->previous = previous;
+
+    return isAttribute;
+}
+
 static void parseClassBody(Compiler *compiler) {
+    bool hasAnnotation = false;
+
     while (!check(compiler, TOKEN_RIGHT_BRACE) && !check(compiler, TOKEN_EOF)) {
         if (match(compiler, TOKEN_USE)) {
+            if (hasAnnotation) {
+                consume(compiler, TOKEN_USE, "Annotations not allowed on `use` statements\n");
+            }
+
             useStatement(compiler);
         } else if (match(compiler, TOKEN_VAR)) {
             consume(compiler, TOKEN_IDENTIFIER, "Expect class variable name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
-
             consume(compiler, TOKEN_EQUAL, "Expect '=' after class variable identifier.");
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
             emitByte(compiler, false);
 
+            if (hasAnnotation) {
+                DictuVM *vm = compiler->parser->vm;
+                ObjString *varName = AS_STRING(currentChunk(compiler)->constants.values[name]);
+
+                Value existingDict;
+                dictGet(compiler->fieldAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
+                dictSet(vm, compiler->fieldAnnotations, OBJ_VAL(varName), existingDict);
+                dictDelete(vm, compiler->fieldAnnotations, OBJ_VAL(vm->annotationString));
+
+                hasAnnotation = false;
+            }
+
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class variable declaration.");
         } else if (match(compiler, TOKEN_CONST)) {
             consume(compiler, TOKEN_IDENTIFIER, "Expect class constant name.");
             uint8_t name = identifierConstant(compiler, &compiler->parser->previous);
-
             consume(compiler, TOKEN_EQUAL, "Expect '=' after class constant identifier.");
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
             emitByte(compiler, true);
 
+            if (hasAnnotation) {
+                DictuVM *vm = compiler->parser->vm;
+                ObjString *varName = AS_STRING(currentChunk(compiler)->constants.values[name]);
+
+                Value existingDict;
+                dictGet(compiler->fieldAnnotations, OBJ_VAL(vm->annotationString), &existingDict);
+                dictSet(vm, compiler->fieldAnnotations, OBJ_VAL(varName), existingDict);
+                dictDelete(vm, compiler->fieldAnnotations, OBJ_VAL(vm->annotationString));
+
+                hasAnnotation = false;
+            }
+
             consume(compiler, TOKEN_SEMICOLON, "Expect ';' after class constant declaration.");
+        } else if (match(compiler, TOKEN_AT)) {
+            hasAnnotation = true;
+            if (isFieldAnnotation(compiler)) {
+                parseFieldAnnotations(compiler);
+            } else {
+                parseMethodAnnotations(compiler);
+            }
         } else {
             if (match(compiler, TOKEN_PRIVATE)) {
                 if (match(compiler, TOKEN_IDENTIFIER)) {
@@ -1722,15 +1847,19 @@ static void parseClassBody(Compiler *compiler) {
                         continue;
                     }
 
-                    method(compiler, true, &compiler->parser->previous);
+                    method(compiler, true, &compiler->parser->previous, &hasAnnotation);
                     continue;
                 }
 
-                method(compiler, true, NULL);
+                method(compiler, true, NULL, &hasAnnotation);
             } else {
-                method(compiler, false, NULL);
+                method(compiler, false, NULL, &hasAnnotation);
             }
         }
+    }
+
+    if (hasAnnotation) {
+        consume(compiler, TOKEN_CLASS, "Annotations only allowed on methods");
     }
 }
 
@@ -1876,7 +2005,7 @@ static void funDeclaration(Compiler *compiler) {
 
 static void varDeclaration(Compiler *compiler, bool constant) {
     if (match(compiler, TOKEN_LEFT_BRACKET)) {
-        Token variables[255];
+        LangToken variables[255];
         int varCount = 0;
 
         do {
@@ -1923,9 +2052,9 @@ static void varDeclaration(Compiler *compiler, bool constant) {
 }
 
 static void expressionStatement(Compiler *compiler) {
-    Token previous = compiler->parser->previous;
+    LangToken previous = compiler->parser->previous;
     advance(compiler->parser);
-    TokenType t = compiler->parser->current.type;
+    LangTokenType t = compiler->parser->current.type;
 
     for (int i = 0; i < compiler->parser->current.length; ++i) {
         backTrack(&compiler->parser->scanner);
@@ -1988,15 +2117,15 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_SET_MODULE:
         case OP_GET_UPVALUE:
         case OP_SET_UPVALUE:
-        case OP_GET_PROPERTY:
-        case OP_GET_PRIVATE_PROPERTY:
-        case OP_GET_PROPERTY_NO_POP:
-        case OP_GET_PRIVATE_PROPERTY_NO_POP:
-        case OP_SET_PROPERTY:
-        case OP_SET_PRIVATE_PROPERTY:
+        case OP_GET_ATTRIBUTE:
+        case OP_GET_PRIVATE_ATTRIBUTE:
+        case OP_GET_ATTRIBUTE_NO_POP:
+        case OP_GET_PRIVATE_ATTRIBUTE_NO_POP:
+        case OP_SET_ATTRIBUTE:
+        case OP_SET_PRIVATE_ATTRIBUTE:
         case OP_SET_CLASS_VAR:
-        case OP_SET_INIT_PROPERTIES:
-        case OP_SET_PRIVATE_INIT_PROPERTIES:
+        case OP_SET_INIT_ATTRIBUTES:
+        case OP_SET_PRIVATE_INIT_ATTRIBUTES:
         case OP_GET_SUPER:
         case OP_METHOD:
         case OP_IMPORT:
@@ -2004,6 +2133,9 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_NEW_DICT:
         case OP_CLOSE_FILE:
         case OP_MULTI_CASE:
+        case OP_DEFINE_CLASS_ANNOTATIONS:
+        case OP_DEFINE_METHOD_ANNOTATIONS:
+        case OP_DEFINE_FIELD_ANNOTATIONS:
             return 1;
 
         case OP_DEFINE_OPTIONAL:
@@ -2152,7 +2284,14 @@ static void breakStatement(Compiler *compiler) {
     for (int i = compiler->localCount - 1;
          i >= 0 && compiler->locals[i].depth > compiler->loop->scopeDepth;
          i--) {
-        emitByte(compiler, OP_POP);
+        if(compiler->locals[i].isUpvalue)
+        {
+            emitByte(compiler, OP_CLOSE_UPVALUE);
+        }
+        else
+        {
+            emitByte(compiler, OP_POP);
+        }
     }
 
     emitJump(compiler, OP_BREAK);
@@ -2169,7 +2308,14 @@ static void continueStatement(Compiler *compiler) {
     for (int i = compiler->localCount - 1;
          i >= 0 && compiler->locals[i].depth > compiler->loop->scopeDepth;
          i--) {
-        emitByte(compiler, OP_POP);
+        if(compiler->locals[i].isUpvalue)
+        {
+            emitByte(compiler, OP_CLOSE_UPVALUE);
+        }
+        else
+        {
+            emitByte(compiler, OP_POP);
+        }
     }
 
     // Jump to top of current innermost loop.
@@ -2229,8 +2375,8 @@ static void switchStatement(Compiler *compiler) {
 
     } while(match(compiler, TOKEN_CASE));
 
+    emitByte(compiler, OP_POP); // expression.
     if (match(compiler,TOKEN_DEFAULT)){
-        emitByte(compiler, OP_POP); // expression.
         consume(compiler, TOKEN_COLON, "Expect ':' after default.");
         statement(compiler);
     }
@@ -2243,7 +2389,7 @@ static void switchStatement(Compiler *compiler) {
 
     for (int i = 0; i < caseCount; i++) {
     	patchJump(compiler, caseEnds[i]);
-    } 
+    }
 }
 
 static void withStatement(Compiler *compiler) {
@@ -2273,7 +2419,7 @@ static void withStatement(Compiler *compiler) {
 
 static void checkForFileHandle(Compiler *compiler) {
     if (compiler->withBlock) {
-        Token token = syntheticToken("file");
+        LangToken token = syntheticToken("file");
         int local = resolveLocal(compiler, &token, true);
 
         if (local != -1) {
@@ -2362,7 +2508,7 @@ static void fromImportStatement(Compiler *compiler) {
         emitByte(compiler, OP_POP);
 
         uint8_t variables[255];
-        Token tokens[255];
+        LangToken tokens[255];
         int varCount = 0;
 
         do {
@@ -2413,7 +2559,7 @@ static void fromImportStatement(Compiler *compiler) {
         }
 
         uint8_t variables[255];
-        Token tokens[255];
+        LangToken tokens[255];
         int varCount = 0;
 
         do {
@@ -2482,6 +2628,71 @@ static void whileStatement(Compiler *compiler) {
     endLoop(compiler);
 }
 
+static void unpackListStatement(Compiler *compiler){
+    int varCount = 0;
+    LangToken variables[255];
+    LangToken previous=compiler->parser->previous;
+    do {
+        if(!check(compiler,TOKEN_IDENTIFIER)){
+            if(varCount>0){
+                recede(compiler->parser);
+            }
+            int varsAndCommas=varCount+(varCount-1);
+            for(int var=0;var<varsAndCommas;var++){
+                recede(compiler->parser);
+            }
+            recede(compiler->parser);
+            compiler->parser->current=previous;
+            expressionStatement(compiler);
+            return;
+        }
+        consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
+        variables[varCount] = compiler->parser->previous;
+        varCount++;
+    } while (match(compiler, TOKEN_COMMA));
+
+    consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
+
+    if(!check(compiler, TOKEN_EQUAL)){
+        recede(compiler->parser);
+        int varsAndCommas=varCount+(varCount-1);
+        for(int var=0;var<varsAndCommas;var++){
+                recede(compiler->parser);
+        }
+        recede(compiler->parser);
+        compiler->parser->current=previous;
+        expressionStatement(compiler);
+        return;
+    }
+
+    consume(compiler, TOKEN_EQUAL, "Expect '=' after list destructure.");
+
+    expression(compiler);
+
+    emitBytes(compiler, OP_UNPACK_LIST, varCount);
+
+
+    for(int i=varCount-1;i>-1;i--){
+        LangToken token=variables[i];
+
+        uint8_t setOp;
+        int arg = resolveLocal(compiler, &token, false);
+        if (arg != -1) {
+                setOp = OP_SET_LOCAL;
+        } else if ((arg = resolveUpvalue(compiler, &token)) != -1) {
+                setOp = OP_SET_UPVALUE;
+        } else {
+                arg = identifierConstant(compiler, &token);
+                setOp = OP_SET_MODULE;
+        }
+        checkConst(compiler, setOp, arg);
+        emitBytes(compiler, setOp, (uint8_t) arg);
+        emitByte(compiler, OP_POP);
+    }
+
+    consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+}
+
 static void synchronize(Parser *parser) {
     parser->panicMode = false;
 
@@ -2519,10 +2730,6 @@ static void declaration(Compiler *compiler) {
         classDeclaration(compiler);
         if (compiler->parser->panicMode) synchronize(compiler->parser);
         return;
-    }
-
-    if (compiler->annotations != NULL) {
-        errorAtCurrent(compiler->parser, "Annotations can only be applied to classes");
     }
 
     if (match(compiler, TOKEN_TRAIT)) {
@@ -2565,10 +2772,12 @@ static void statement(Compiler *compiler) {
         breakStatement(compiler);
     } else if (match(compiler, TOKEN_WHILE)) {
         whileStatement(compiler);
+    } else if (match(compiler, TOKEN_LEFT_BRACKET)) {
+        unpackListStatement(compiler);
     } else if (match(compiler, TOKEN_LEFT_BRACE)) {
         Parser *parser = compiler->parser;
-        Token previous = parser->previous;
-        Token curtok = parser->current;
+        LangToken previous = parser->previous;
+        LangToken curtok = parser->current;
 
         // Advance the parser to the next token
         advance(parser);
@@ -2653,12 +2862,13 @@ void grayCompilerRoots(DictuVM *vm) {
         ClassCompiler *classCompiler = vm->compiler->class;
 
         while (classCompiler != NULL) {
-            grayObject(vm, (Obj *) classCompiler->annotations);
             grayTable(vm, &classCompiler->privateVariables);
             classCompiler = classCompiler->enclosing;
         }
 
-        grayObject(vm, (Obj *) compiler->annotations);
+        grayObject(vm, (Obj *) compiler->classAnnotations);
+        grayObject(vm, (Obj *) compiler->methodAnnotations);
+        grayObject(vm, (Obj *) compiler->fieldAnnotations);
         grayObject(vm, (Obj *) compiler->function);
         grayTable(vm, &compiler->stringConstants);
         compiler = compiler->enclosing;

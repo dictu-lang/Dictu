@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Log
-nav_order: 16
+nav_order: 10
 parent: Standard Library
 ---
 
@@ -32,7 +32,7 @@ import Log;
 | Log.stderr | The default file descriptor where a process can write error messages. |
 | Log.stdin  | An input stream where data is sent to and read by a program.          |
 
-### Log.print(string)
+### Log.print(String)
 
 ```cs
 Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something extremely interesting
@@ -44,7 +44,7 @@ Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something e
 Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
-### Log.fatal(string)
+### Log.fatal(String)
 
 Log the given output and exit the program with an exit code of 1.
 
@@ -52,7 +52,7 @@ Log the given output and exit the program with an exit code of 1.
 Log.fatal("we've met a tragic end"); // 2021/11/27 11:49:14 we've met a tragic end
 ```
 
-### Log.fatalln(string)
+### Log.fatalln(String)
 
 Log the given output with a new line and exit the program with an exit code of 1.
 
@@ -60,7 +60,7 @@ Log the given output with a new line and exit the program with an exit code of 1
 Log.fatalln("hello, world! fatalln"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
-### Log.new(number)
+### Log.new(Number)
 
 Create a new instance of a logger.
 
@@ -68,7 +68,7 @@ Create a new instance of a logger.
 const log = Log.new(Log.stdout).unwrap();
 ```
 
-### log.setPrefix(string)
+### log.setPrefix(String)
 
 A prefix can be set on the logger that will be included in the output just before the user provided content.
 
@@ -76,7 +76,7 @@ A prefix can be set on the logger that will be included in the output just befor
 log.setPrefix("prefix");
 ```
 
-### log.unsetPrefix(string)
+### log.unsetPrefix(String)
 
 Remove the prefix on the logger. This is a noop if there was no prefix previously set.
 
@@ -84,19 +84,19 @@ Remove the prefix on the logger. This is a noop if there was no prefix previousl
 log.unsetPrefix();
 ```
 
-### log.print(string)
+### log.print(String)
 
 ```cs
 Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something extremely interesting
 ```
 
-### log.println(string)
+### log.println(String)
 
 ```cs
 Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print
 ```
 
-### log.fatal(string)
+### log.fatal(String)
 
 Log the given output and exit the program with an exit code of 1.
 
@@ -104,7 +104,7 @@ Log the given output and exit the program with an exit code of 1.
 log.fatal("we've met a tragic end"); // 2021/11/27 11:49:14 we've met a tragic end
 ```
 
-### log.fatalln(string)
+### log.fatalln(String)
 
 Log the given output with a new line and exit the program with an exit code of 1.
 

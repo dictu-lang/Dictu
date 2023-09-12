@@ -27,5 +27,7 @@ CMakeSettings.json
 dictu.ilk
 dictu.pdb
 test1.du
-\.vscode/
+.vscode
 /.env
+/vcpkg_installed
+/Release

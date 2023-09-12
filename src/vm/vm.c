@@ -123,6 +123,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
+    vm->annotationString = copyString(vm, "__annotationName", 16);
 
     // Native functions
     defineAllNatives(vm);
@@ -139,12 +140,6 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     declareClassMethods(vm);
     declareInstanceMethods(vm);
     declareResultMethods(vm);
-
-    /**
-     * Native classes which are not required to be
-     * imported. For imported modules see optionals.c
-     */
-    createCModule(vm);
 
     if (vm->repl) {
         vm->replVar = copyString(vm, "_", 1);
@@ -372,11 +367,11 @@ static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
     Value method;
     if (!tableGet(&klass->publicMethods, name, &method)) {
         if (tableGet(&klass->privateMethods, name, &method)) {
-            runtimeError(vm, "Cannot access private property '%s' from superclass '%s'.", name->chars, klass->name->chars);
+            runtimeError(vm, "Cannot access private attribute '%s' from superclass '%s'.", name->chars, klass->name->chars);
             return false;
         }
 
-        runtimeError(vm, "Undefined property '%s'.", name->chars);
+        runtimeError(vm, "Undefined attribute '%s'.", name->chars);
         return false;
     }
 
@@ -407,7 +402,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpa
         }
 
         // Look for a field which may shadow a method.
-        if (tableGet(&instance->publicFields, name, &value)) {
+        if (tableGet(&instance->publicAttributes, name, &value)) {
             vm->stackTop[-argCount - 1] = value;
             return callValue(vm, value, argCount, unpack);
         }
@@ -447,7 +442,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpa
         }
     }
 
-    runtimeError(vm, "Undefined property '%s'.", name->chars);
+    runtimeError(vm, "Undefined attribute '%s'.", name->chars);
     return false;
 }
 
@@ -489,7 +484,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
 
                 Value value;
                 if (!tableGet(&module->values, name, &value)) {
-                    runtimeError(vm, "Undefined property '%s'.", name->chars);
+                    runtimeError(vm, "Undefined attribute '%s'.", name->chars);
                     return false;
                 }
                 return callValue(vm, value, argCount, unpack);
@@ -516,7 +511,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     return callNativeMethod(vm, method, argCount);
                 }
 
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                runtimeError(vm, "Undefined attribute '%s'.", name->chars);
                 return false;
             }
 
@@ -535,17 +530,17 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                 }
 
                 // Look for a field which may shadow a method.
-                if (tableGet(&instance->publicFields, name, &value)) {
+                if (tableGet(&instance->publicAttributes, name, &value)) {
                     vm->stackTop[-argCount - 1] = value;
                     return callValue(vm, value, argCount, unpack);
                 }
 
                 if (tableGet(&instance->klass->privateMethods, name, &value)) {
-                    runtimeError(vm, "Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    runtimeError(vm, "Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
                     return false;
                 }
 
-                runtimeError(vm, "Undefined property '%s'.", name->chars);
+                runtimeError(vm, "Undefined attribute '%s'.", name->chars);
                 return false;
             }
 
@@ -659,7 +654,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     return callValue(vm, value, argCount, false);
                 }
 
-                runtimeError(vm, "'%s' enum has no property '%s'.", enumObj->name->chars, name->chars);
+                runtimeError(vm, "'%s' enum has no value '%s'.", enumObj->name->chars, name->chars);
                 return false;
             }
 
@@ -766,6 +761,21 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
+
+        if (superclass->classAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->classAnnotations, false);
+            klass->classAnnotations = dict;
+        }
+
+        if (superclass->methodAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, false);
+            klass->methodAnnotations = dict;
+        }
+
+        if (superclass->fieldAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, false);
+            klass->fieldAnnotations = dict;
+        }
     }
 }
 
@@ -801,8 +811,25 @@ static void setReplVar(DictuVM *vm, Value value) {
     tableSet(vm, &vm->globals, vm->replVar, value);
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *klassAnnotations) {
+    for (int i = 0; i <= superAnnotations->capacityMask; ++i) {
+        DictItem *item = &superAnnotations->entries[i];
 
+        if (IS_EMPTY(item->key)) {
+            continue;
+        }
+
+        Value value;
+        if (dictGet(klassAnnotations, item->key, &value)) {
+            continue;
+        }
+
+        Value superVal = superAnnotations->entries[i].value;
+        dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, superVal);
+    }
+}
+
+static DictuInterpretResult run(DictuVM *vm) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -1049,11 +1076,11 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(GET_PROPERTY): {
+        CASE_CODE(GET_ATTRIBUTE): {
             Value receiver = peek(vm, 0);
 
             if (!IS_OBJ(receiver)) {
-                RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+                RUNTIME_ERROR_TYPE("'%s' type has no attributes", 0);
             }
 
             switch (getObjType(receiver)) {
@@ -1061,7 +1088,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     ObjInstance *instance = AS_INSTANCE(receiver);
                     ObjString *name = READ_STRING();
                     Value value;
-                    if (tableGet(&instance->publicFields, name, &value)) {
+                    if (tableGet(&instance->publicAttributes, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
@@ -1075,13 +1102,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                     ObjClass *klass = instance->klass;
 
                     while (klass != NULL) {
-                        if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                        if (tableGet(&klass->constants, name, &value)) {
                             pop(vm); // Instance.
                             push(vm, value);
                             DISPATCH();
                         }
 
-                        if (tableGet(&klass->publicProperties, name, &value)) {
+                        if (tableGet(&klass->variables, name, &value)) {
                             pop(vm); // Instance.
                             push(vm, value);
                             DISPATCH();
@@ -1090,11 +1117,11 @@ static DictuInterpretResult run(DictuVM *vm) {
                         klass = klass->superclass;
                     }
 
-                    if (tableGet(&instance->privateFields, name, &value)) {
-                        RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+                    if (tableGet(&instance->privateAttributes, name, &value)) {
+                        RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
                     }
 
-                    RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+                    RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars);
                 }
 
                 case OBJ_MODULE: {
@@ -1107,7 +1134,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("'%s' module has no property: '%s'.", module->name->chars, name->chars);
+                    RUNTIME_ERROR("'%s' module has no attribute: '%s'.", module->name->chars, name->chars);
                 }
 
                 case OBJ_CLASS: {
@@ -1118,13 +1145,13 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     Value value;
                     while (klass != NULL) {
-                        if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                        if (tableGet(&klass->constants, name, &value)) {
                             pop(vm); // Class.
                             push(vm, value);
                             DISPATCH();
                         }
 
-                        if (tableGet(&klass->publicProperties, name, &value)) {
+                        if (tableGet(&klass->variables, name, &value)) {
                             pop(vm); // Class.
                             push(vm, value);
                             DISPATCH();
@@ -1133,13 +1160,25 @@ static DictuInterpretResult run(DictuVM *vm) {
                         klass = klass->superclass;
                     }
 
-                    if (strcmp(name->chars, "annotations") == 0) {
+                    if (strcmp(name->chars, "classAnnotations") == 0) {
                         pop(vm); // Klass
-                        push(vm, klassStore->annotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->annotations));
+                        push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
+                        DISPATCH();
+                    }
+                    
+                    if (strcmp(name->chars, "methodAnnotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->methodAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->methodAnnotations));
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
+                    if (strcmp(name->chars, "fieldAnnotations") == 0) {
+                        pop(vm); // Klass
+                        push(vm, klassStore->fieldAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->fieldAnnotations));
+                        DISPATCH();
+                    }
+
+                    RUNTIME_ERROR("'%s' class has no attribute: '%s'.", klassStore->name->chars, name->chars);
                 }
 
                 case OBJ_ENUM: {
@@ -1153,7 +1192,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("'%s' enum has no property: '%s'.", enumObj->name->chars, name->chars);
+                    RUNTIME_ERROR("'%s' enum has no attribute: '%s'.", enumObj->name->chars, name->chars);
                 }
 
                 default: {
@@ -1162,18 +1201,18 @@ static DictuInterpretResult run(DictuVM *vm) {
             }
         }
 
-        CASE_CODE(GET_PRIVATE_PROPERTY): {
+        CASE_CODE(GET_PRIVATE_ATTRIBUTE): {
             if (IS_INSTANCE(peek(vm, 0))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
                 ObjString *name = READ_STRING();
                 Value value;
-                if (tableGet(&instance->privateFields, name, &value)) {
+                if (tableGet(&instance->privateAttributes, name, &value)) {
                     pop(vm); // Instance.
                     push(vm, value);
                     DISPATCH();
                 }
 
-                if (tableGet(&instance->publicFields, name, &value)) {
+                if (tableGet(&instance->publicAttributes, name, &value)) {
                     pop(vm); // Instance.
                     push(vm, value);
                     DISPATCH();
@@ -1187,13 +1226,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = instance->klass;
 
                 while (klass != NULL) {
-                    if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                    if (tableGet(&klass->constants, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
                     }
 
-                    if (tableGet(&klass->publicProperties, name, &value)) {
+                    if (tableGet(&klass->variables, name, &value)) {
                         pop(vm); // Instance.
                         push(vm, value);
                         DISPATCH();
@@ -1202,7 +1241,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+                RUNTIME_ERROR("'%s' instance has no attribute1: '%s'.", instance->klass->name->chars, name->chars);
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
@@ -1211,13 +1250,13 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 Value value;
                 while (klass != NULL) {
-                    if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                    if (tableGet(&klass->constants, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
                         DISPATCH();
                     }
 
-                    if (tableGet(&klass->publicProperties, name, &value)) {
+                    if (tableGet(&klass->variables, name, &value)) {
                         pop(vm); // Class.
                         push(vm, value);
                         DISPATCH();
@@ -1226,21 +1265,21 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("'%s' class has no property: '%s'.", klassStore->name->chars, name->chars);
+                RUNTIME_ERROR("'%s' class has no attribute: '%s'.", klassStore->name->chars, name->chars);
             }
 
-            RUNTIME_ERROR_TYPE("'%s' type has no properties", 0);
+            RUNTIME_ERROR_TYPE("'%s' type has no attributes", 0);
         }
 
-        CASE_CODE(GET_PROPERTY_NO_POP): {
+        CASE_CODE(GET_ATTRIBUTE_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
-                RUNTIME_ERROR("Only instances have properties.");
+                RUNTIME_ERROR("Only instances have attrributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
             ObjString *name = READ_STRING();
             Value value;
-            if (tableGet(&instance->publicFields, name, &value)) {
+            if (tableGet(&instance->publicAttributes, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
@@ -1253,12 +1292,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
-                if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                if (tableGet(&klass->constants, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
 
-                if (tableGet(&klass->publicProperties, name, &value)) {
+                if (tableGet(&klass->variables, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
@@ -1266,27 +1305,27 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            if (tableGet(&instance->privateFields, name, &value)) {
-                RUNTIME_ERROR("Cannot access private property '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
+            if (tableGet(&instance->privateAttributes, name, &value)) {
+                RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
             }
 
-            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+            RUNTIME_ERROR("'%s' instance has no attribute2: '%s'.", instance->klass->name->chars, name->chars);
         }
 
-        CASE_CODE(GET_PRIVATE_PROPERTY_NO_POP): {
+        CASE_CODE(GET_PRIVATE_ATTRIBUTE_NO_POP): {
             if (!IS_INSTANCE(peek(vm, 0))) {
-                RUNTIME_ERROR("Only instances have properties.");
+                RUNTIME_ERROR("Only instances have attributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
             ObjString *name = READ_STRING();
             Value value;
-            if (tableGet(&instance->privateFields, name, &value)) {
+            if (tableGet(&instance->privateAttributes, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
 
-            if (tableGet(&instance->publicFields, name, &value)) {
+            if (tableGet(&instance->publicAttributes, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
@@ -1299,12 +1338,12 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = instance->klass;
 
             while (klass != NULL) {
-                if (tableGet(&klass->publicConstantProperties, name, &value)) {
+                if (tableGet(&klass->constants, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
 
-                if (tableGet(&klass->publicProperties, name, &value)) {
+                if (tableGet(&klass->variables, name, &value)) {
                     push(vm, value);
                     DISPATCH();
                 }
@@ -1312,13 +1351,13 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("'%s' instance has no property: '%s'.", instance->klass->name->chars, name->chars);
+            RUNTIME_ERROR("'%s' instance has no attribute3: '%s'.", instance->klass->name->chars, name->chars);
         }
 
-        CASE_CODE(SET_PROPERTY): {
+        CASE_CODE(SET_ATTRIBUTE): {
             if (IS_INSTANCE(peek(vm, 1))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-                tableSet(vm, &instance->publicFields, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &instance->publicAttributes, READ_STRING(), peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
@@ -1328,24 +1367,24 @@ static DictuInterpretResult run(DictuVM *vm) {
                 ObjClass *klass = AS_CLASS(peek(vm, 1));
 
                 Value _;
-                if (tableGet(&klass->publicConstantProperties, key, &_)) {
+                if (tableGet(&klass->constants, key, &_)) {
                     RUNTIME_ERROR("Cannot assign to class constant '%s.%s'.", klass->name->chars, key->chars);
                 }
 
-                tableSet(vm, &klass->publicProperties, key, peek(vm, 0));
+                tableSet(vm, &klass->variables, key, peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
                 DISPATCH();
             }
 
-            RUNTIME_ERROR_TYPE("Can not set property on type '%s'", 1);
+            RUNTIME_ERROR_TYPE("Can not set attribute on type '%s'", 1);
         }
 
-        CASE_CODE(SET_PRIVATE_PROPERTY): {
+        CASE_CODE(SET_PRIVATE_ATTRIBUTE): {
             if (IS_INSTANCE(peek(vm, 1))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-                tableSet(vm, &instance->privateFields, READ_STRING(), peek(vm, 0));
+                tableSet(vm, &instance->privateAttributes, READ_STRING(), peek(vm, 0));
                 pop(vm);
                 pop(vm);
                 push(vm, NIL_VAL);
@@ -1362,35 +1401,35 @@ static DictuInterpretResult run(DictuVM *vm) {
             bool constant = READ_BYTE();
 
             if (constant) {
-                tableSet(vm, &klass->publicConstantProperties, key, peek(vm, 0));
+                tableSet(vm, &klass->constants, key, peek(vm, 0));
             } else {
-                tableSet(vm, &klass->publicProperties, key, peek(vm, 0));
+                tableSet(vm, &klass->variables, key, peek(vm, 0));
             }
             pop(vm);
             DISPATCH();
         }
 
-        CASE_CODE(SET_INIT_PROPERTIES): {
+        CASE_CODE(SET_INIT_ATTRIBUTES): {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
             int argCount = function->arity + function->arityOptional;
             ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
 
             for (int i = 0; i < function->propertyCount; ++i) {
                 ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->propertyNames[i]]);
-                tableSet(vm, &instance->publicFields, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
+                tableSet(vm, &instance->publicAttributes, propertyName, peek(vm, argCount - function->propertyIndexes[i] - 1));
             }
 
             DISPATCH();
         }
 
-        CASE_CODE(SET_PRIVATE_INIT_PROPERTIES): {
+        CASE_CODE(SET_PRIVATE_INIT_ATTRIBUTES): {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
             int argCount = function->arity + function->arityOptional;
             ObjInstance *instance = AS_INSTANCE(peek(vm, function->arity + function->arityOptional));
 
             for (int i = 0; i < function->privatePropertyCount; ++i) {
                 ObjString *propertyName = AS_STRING(function->chunk.constants.values[function->privatePropertyNames[i]]);
-                tableSet(vm, &instance->privateFields, propertyName, peek(vm, argCount - function->privatePropertyIndexes[i] - 1));
+                tableSet(vm, &instance->privateAttributes, propertyName, peek(vm, argCount - function->privatePropertyIndexes[i] - 1));
             }
 
             DISPATCH();
@@ -1401,7 +1440,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *superclass = AS_CLASS(pop(vm));
 
             if (!bindMethod(vm, superclass, name)) {
-                RUNTIME_ERROR("Undefined property '%s'.", name->chars);
+                RUNTIME_ERROR("Undefined attribute '%s'.", name->chars);
             }
             DISPATCH();
         }
@@ -1413,13 +1452,32 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >, double);
-            DISPATCH();
+        CASE_CODE(GREATER): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                // Use variables here as function argument evaluation order is unspecified
+                Value first = pop(vm);
+                Value second = pop(vm);
 
-        CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <, double);
+                push(vm, BOOL_VAL(compareStringGreater(first, second)));
+            } else {
+                BINARY_OP(BOOL_VAL, >, double);
+            }
+
             DISPATCH();
+        }
+
+        CASE_CODE(LESS): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                Value first = pop(vm);
+                Value second = pop(vm);
+
+                push(vm, BOOL_VAL(compareStringLess(first, second)));
+            } else {
+                BINARY_OP(BOOL_VAL, <, double);
+            }
+
+            DISPATCH();
+        }
 
         CASE_CODE(ADD): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
@@ -1565,16 +1623,20 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjString *fileName = READ_STRING();
             Value moduleVal;
 
-            // If we have imported this file already, skip.
-            if (tableGet(&vm->modules, fileName, &moduleVal)) {
-                vm->lastModule = AS_MODULE(moduleVal);
-                push(vm, NIL_VAL);
-                DISPATCH();
-            }
-
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+            }
+
+            ObjString *pathObj = copyString(vm, path, strlen(path));
+            push(vm, OBJ_VAL(pathObj));
+
+            // If we have imported this file already, skip.
+            if (tableGet(&vm->modules, pathObj, &moduleVal)) {
+                pop(vm);
+                vm->lastModule = AS_MODULE(moduleVal);
+                push(vm, NIL_VAL);
+                DISPATCH();
             }
 
             char *source = readFile(vm, path);
@@ -1583,13 +1645,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                 RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
             }
 
-            ObjString *pathObj = copyString(vm, path, strlen(path));
-            push(vm, OBJ_VAL(pathObj));
             ObjModule *module = newModule(vm, pathObj);
             module->path = dirname(vm, path, strlen(path));
             vm->lastModule = module;
             pop(vm);
-
             push(vm, OBJ_VAL(module));
             ObjFunction *function = compile(vm, module, source);
             pop(vm);
@@ -2160,7 +2219,37 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
-            klass->annotations = dict;
+            if (klass->classAnnotations != NULL) {
+                copyAnnotations(vm, klass->classAnnotations, dict);
+            }
+
+            klass->classAnnotations = dict;
+
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+            
+            if (klass->methodAnnotations != NULL) {
+                copyAnnotations(vm, klass->methodAnnotations, dict);
+            }
+
+            klass->methodAnnotations = dict;
+
+            DISPATCH();
+        }
+
+        CASE_CODE(DEFINE_FIELD_ANNOTATIONS): {
+            ObjDict *dict = AS_DICT(READ_CONSTANT());
+            ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            if (klass->fieldAnnotations != NULL) {
+                copyAnnotations(vm, klass->fieldAnnotations, dict);
+            }
+
+            klass->fieldAnnotations = dict;
 
             DISPATCH();
         }

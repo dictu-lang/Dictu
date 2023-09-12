@@ -37,8 +37,8 @@ A big part of the OOP paradigm is encapsulation, the fact that the outside inter
 internal to the class do not need to be known to the user of the interface. Dictu manages this concept much the same as other languages 
 through access levels. Unlike other languages, Dictu only has two access levels, `public` or `private`. If a method or instance variable
 is marked as `private` it is only accessible from within the class itself. To mark an instance variable as private it can be done in two
-ways, via [implicit properties](#implicit-properties) or by marking the property as private (note this must be done before defining the
-property otherwise it will be publically visible). To mark a method as private, preface the name with `private`.
+ways, via [implicit attributes](#implicit-attributes) or by marking the attribute as private (note this must be done before defining the
+attribute otherwise it will be publicly visible). To mark a method as private, preface the name with `private`.
 
 ```js
 class SomeClass {
@@ -54,7 +54,7 @@ class SomeClass {
 }
 
 print(SomeClass(10).getX()); // 10
-print(SomeClass(10).x); // Cannot access private property 'x' on 'SomeClass' instance.
+print(SomeClass(10).x); // Cannot access private attribute 'x' on 'SomeClass' instance.
 ```
 
 ## Constructor
@@ -72,9 +72,9 @@ class SomeClass {
 SomeClass("Object created!"); // Object created!
 ```
 
-### Implicit properties
+### Implicit Attributes
 
-Dictu actually has a way to define properties on the object without explicitly setting each variable passed into the constructor on the object through `this`.
+Dictu actually has a way to define attributes on the object without explicitly setting each variable passed into the constructor on the object through `this`.
 If `var` is used the instance variable has public visibility, if `private` is used the instance variable has private visibility.
 
 ```cs
@@ -92,8 +92,8 @@ The `var` or `private` keywords are optional on the constructor parameters, and 
 ```cs
 class SomeClass {
     init(var a, b, c, var d, private e) {
-        // b and c are not set as instance properties
-        // e is set as a private property
+        // b and c are not set as instance attributes
+        // e is set as a private attribute
     }
 }
 
@@ -122,7 +122,7 @@ class SomeClass {
 SomeClass().printMessage(); // Hello!
 ```
 
-### toString
+### toString() -> String
 
 Classes and instances can both be converted to a string using the toString method. If you want a different string
 representation for an object you can overload the toString method in your class.
@@ -148,7 +148,40 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
-### methods
+### toDict() -> Dict
+
+Classes and instances can both be converted to a dictionary using the `toDict()` method. Inherited super classes are included in the dictionary.
+
+```cs
+class A {
+    var afield = 44;
+
+    amethod() {}
+    abethodb() {}
+}
+
+class B < A {
+    const x = 9;
+    const y = 8;
+
+    var fieldA = 1;
+    var fieldB = 2;
+
+    init() {}
+
+    methodA() {}
+    methodB() {}
+
+    private methodC() {}
+    private methodD() {}
+}
+
+const b = B();
+print(b._class.toDict()); // {"public_methods": ["abethodb", "init", "methodA", "amethod", "methodB", "abethodb", "amethod"], "variables": {"afield": 44, "fieldA": 1, "fieldB": 2}, "constants": {"y": 8, "_name": "A", "x": 9}}
+
+```
+
+### methods() -> List
 
 Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This
 will return a list of strings, where the strings are the names of all public methods stored within a class.
@@ -205,12 +238,12 @@ var myObject = Test();
 print(myObject.x); // 10
 ```
 
-### hasAttribute
+### hasAttribute(String) -> Boolean
 
 Attempting to access an attribute of an object that does not exist will throw a runtime error, and instead before accessing an attribute that may not be there, you should check
 if the object has the given attribute. This is done via `hasAttribute`.
 
-Note: Will only check properties with public visibility.
+Note: Will only check attributes with public visibility.
 
 ```cs
 class Test {
@@ -223,15 +256,15 @@ var myObject = Test();
 print(myObject.hasAttribute("x")); // true
 print(myObject.hasAttribute("y")); // false
 
-print(myObject.z); // Undefined property 'z'.
+print(myObject.z); // Undefined attribute 'z'.
 ```
 
-### getAttribute
+### getAttribute(String) -> Value
 
 Sometimes in Dictu we may wish to access an attribute of an object without knowing the attribute until runtime. We can do this via the `getAttribute` method.
 This method takes a string and an optional default value and returns either the attribute value or the default value (if there is no attribute and no default value, nil is returned).
 
-Note: Will only retrieve properties with public visibility.
+Note: Will only retrieve attributes with public visibility.
 
 ```cs
 class Test {
@@ -247,9 +280,9 @@ print(myObject.getAttribute("y", 100)); // 100
 print(myObject.getAttribute("y")); // nil
 ```
 
-### getAttributes
+### getAttributes() -> Dict
 
-The `getAttributes` method returns all public attributes on the given instance of a class.
+The `getAttributes` method returns all class variables / constants, public methods and public attributes.
 
 ```cs
 class Test {
@@ -259,14 +292,14 @@ class Test {
 }
 
 var myObject = Test();
-print(myObject.getAttributes()); // ["x"]
+print(myObject.getAttributes()); // {"fields": ["_name"], "methods": ["init"], "attributes": ["_class", "x"]}
 ```
 
-### setAttribute
+### setAttribute(String, Value)
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
 
-Note: Will set a property with public visibility.
+Note: Will set a attribute with public visibility.
 
 ```cs
 class Test {
@@ -282,10 +315,10 @@ print(myObject.x); // 100
 
 ### Optional Chaining
 
-Optional chaining allows you to read a property or method of an instance without explicitly having to check for `nil` before
+Optional chaining allows you to read a attribute or method of an instance without explicitly having to check for `nil` before
 attempting to access.
 
-**Note:** If the left hand value is not nil the property / method **must** still exist when attempting to access otherwise a runtime error will occur.
+**Note:** If the left hand value is not nil the attribute / method **must** still exist when attempting to access otherwise a runtime error will occur.
 
 ```js
 class Test {
@@ -303,19 +336,29 @@ class Test {
 // Here there is no explicit nil check.
 print(Test().someMethod()?.someOtherMethod()); // nil
 
-// If the operand is not nil the method / property must exist  
-print(Test()?.unknownMethod()); // Undefined property 'unknownMethod'.
+// If the operand is not nil the method / attribute must exist  
+print(Test()?.unknownMethod()); // Undefined attribute 'unknownMethod'.
 ```
 
 ### _class
 
 `_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
-useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+useful for things like pulling class, method, and field annotations from an object where it's class may be unknown until runtime.
 
 ```cs
 class Test {}
 
 print(Test()._class); // <Cls Test>
+```
+
+### _name
+
+`_name` is a special attribute that is added to classes that returns a string representation of the class name.
+
+```cs
+class Test {}
+
+print(Test.name); // Test
 ```
 
 ## Class variables
@@ -401,7 +444,7 @@ Hello
 
 ## Inheritance
 
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation. 
 
 Note: private methods and instance variables are not inherited.
 
@@ -561,7 +604,7 @@ print(myObject.x); // 100
 
 To get around this, instances have two methods, obj.copy() and obj.deepCopy().
 
-### obj.copy()
+### obj.copy() -> value
 
 This method will take a shallow copy of the object, and create a new copy of the instance. Mutable types are still references
 and will mutate on both new and old if changed. See obj.deepCopy() to avoid this.
@@ -584,7 +627,7 @@ myNewObject.obj.x = 100;
 print(myObject.obj.x); // 100
 ```
 
-### obj.deepCopy()
+### obj.deepCopy() -> value
 
 This method will take a deep copy of the object, and create a new copy of the instance. The difference with deepCopy()
 is if the object contains references to any mutable datatypes these will also be copied and returned as new values meaning,
@@ -610,7 +653,7 @@ print(myObject.obj.x); // 10
 
 ## Checking instance types
 
-### instance.isInstance(class)
+### instance.isInstance(Class) -> Boolean
 
 Checking if an instance is of a given class is made very simple with the `isInstance` method. This method takes in a class as an 
 argument and returns a boolean based on whether or not the object was instantiated from the given class. Since classes can inherit other
@@ -639,8 +682,7 @@ anotherTestObj.isInstance(Test); // true
 
 ## Annotations
 
-Annotations are metadata that are applied to classes that by themselves have no impact.
-They, however, can provide user defined changes at runtime to given classes.
+Annotations are metadata that are applied to classes, methods and class variables and constants that by themselves have no impact. They, however, can provide user defined changes at runtime.
 
 ```cs
 @Annotation
@@ -649,25 +691,50 @@ class AnnotatedClass {
 }
 ```
 
-Annotations are accessed via the `.annotations` property available on all classes. If annotations
-are preset a dictionary is returned, otherwise the `.annotations` property is `nil`.
+```cs
+class ClassWithMethodAnnotation {
+    @ClassVarAnnotation
+    var someVariable = 10;
+
+    // This will be available in `.fieldAnnotations`
+    @ClassConstVariable
+    const y = 10;
+
+    init() {}
+
+    @MethodAnnotation
+    method() {}
+}
+```
+
+Annotations are access via the `.classAnnotations`, `.methodAnnotations` and `.fieldAnnotations` attributes available on all classes.
+
+For class annotations, the returned data structure returned is a dictionary with keys set to the names of the annotations and their values if present. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+
+For method annotations, the returned data structure is also a dictionary, however the keys are the method names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
+
+For class variables and class constants, the returned data structure is also a dictionary, however the keys are the variable/constant names and the values are also dictionaries containing the annotation name and associated values. If no value is provided to the annotation, the value associated with the key is set to `nil`. 
 
 ```cs
-print(AnnotatedClass.annotations); // {"Annotation": nil}
+print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
+```
+
+```cs
+print(ClassWithMethodAnnotation.methodAnnotations); // {"method": {"MethodAnnotation": nil}}
 ```
 
 Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
 
-```
+```cs
 @Annotation("Some extra value!")
 class AnnotatedClass {
 
 }
 
-print(AnnotatedClass.annotations); // {"Annotation": "Some extra value!"}
+print(AnnotatedClass.classAnnotations); // {"Annotation": "Some extra value!"}
 ```
 
-Multiple annotations can be supplied to classes.
+Multiple annotations can be supplied to classes and methods.
 
 ```cs
 @Annotation
@@ -675,7 +742,10 @@ Multiple annotations can be supplied to classes.
 @SomeOtherAnnotation
 class AnnotatedClass {
 
+    @MethodAnnotation
+    @AnotherMethodAnnotation(10)
+    @SomeOtherMethodAnnotation("another one")
+    method() {}
+
 }
 ```
-
-**Note**: Annotations are not available on methods.

@@ -2,7 +2,7 @@ FROM alpine
 
 WORKDIR Dictu
 
-RUN apk add git make curl-dev gcc libc-dev cmake --no-cache
+RUN apk add git make curl-dev gcc libc-dev cmake libuuid --no-cache
 
 RUN git clone https://github.com/dictu-lang/Dictu.git
 

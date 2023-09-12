@@ -141,7 +141,6 @@ struct sObjList {
 typedef struct {
     Value key;
     Value value;
-    uint32_t psl;
 } DictItem;
 
 struct sObjDict {
@@ -223,9 +222,11 @@ typedef struct sObjClass {
     Table publicMethods;
     Table privateMethods;
     Table abstractMethods;
-    Table publicProperties;
-    Table publicConstantProperties;
-    ObjDict *annotations;
+    Table variables;
+    Table constants;
+    ObjDict *classAnnotations;
+    ObjDict *methodAnnotations;
+    ObjDict *fieldAnnotations;
     ClassType type;
 } ObjClass;
 
@@ -238,8 +239,8 @@ typedef struct sObjEnum {
 typedef struct {
     Obj obj;
     ObjClass *klass;
-    Table privateFields;
-    Table publicFields;
+    Table privateAttributes;
+    Table publicAttributes;
 } ObjInstance;
 
 typedef struct {
@@ -290,6 +291,7 @@ char *setToString(Value value);
 char *dictToString(Value value);
 char *listToString(Value value);
 char *classToString(Value value);
+ObjDict *classToDict(DictuVM *vm, Value value);
 char *instanceToString(Value value);
 char *objectToString(Value value);
 

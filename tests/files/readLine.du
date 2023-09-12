@@ -15,6 +15,34 @@ class TestFileReadline < UnitTest {
             }
         }
     }
+
+    testFileReadlineWithGivenBufferSize() {
+        with("tests/files/read.txt", "r") {
+            var line;
+            while ((line = file.readLine(16)) != nil) {
+                // Check readline works with empty lines as well
+                this.assertTruthy(line == "Dictu is great!" or line == "");
+            }
+        }
+
+        with("tests/files/read.txt", "r") {
+            this.assertTruthy(file.readLine(1) == "D");
+            this.assertTruthy(file.readLine(1) == "i");
+            this.assertTruthy(file.readLine(1) == "c");
+            this.assertTruthy(file.readLine(1) == "t");
+            this.assertTruthy(file.readLine(1) == "u");
+            this.assertTruthy(file.readLine(1) == " ");
+            this.assertTruthy(file.readLine(1) == "i");
+            this.assertTruthy(file.readLine(1) == "s");
+            this.assertTruthy(file.readLine(1) == " ");
+            this.assertTruthy(file.readLine(1) == "g");
+            this.assertTruthy(file.readLine(1) == "r");
+            this.assertTruthy(file.readLine(1) == "e");
+            this.assertTruthy(file.readLine(1) == "a");
+            this.assertTruthy(file.readLine(1) == "t");
+            this.assertTruthy(file.readLine(1) == "!");
+        }
+    }
 }
 
 TestFileReadline().run();

@@ -20,3 +20,11 @@ def matchWrap(result, successCallback, errorCallback) {
 
     return Error(errorCallback(result.unwrapError()));
 }
+
+def matchError(result, errorCallback) {
+    if (result.success()) {
+        return result.unwrap();
+    }
+
+    return errorCallback(result.unwrapError());
+}

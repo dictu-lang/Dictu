@@ -19,25 +19,25 @@ class TestSystemMkdir < UnitTest {
             S_IROTH = System.S_IROTH,
             S_IXOTH = System.S_IXOTH;
 
-        const PERM = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
+        const perm = {0755: S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH};
 
-        const sys_test_dir = "test_dir";
+        const sysTestDir = "test_dir";
 
-        this.assertTruthy(System.mkdir(sys_test_dir, PERM[0755]).success());
-        this.assertFalsey(System.mkdir(sys_test_dir, PERM[0755]).success());
-        this.assertEquals(System.mkdir(sys_test_dir, PERM[0755]).unwrapError(), "File exists");
-        this.assertTruthy(System.rmdir(sys_test_dir).success());
-        this.assertFalsey(System.rmdir(sys_test_dir).success()); // Directory doesn't exist
-        this.assertEquals(System.rmdir(sys_test_dir).unwrapError(), "No such file or directory");
+        this.assertTruthy(System.mkdir(sysTestDir, perm[0755]).success());
+        this.assertFalsey(System.mkdir(sysTestDir, perm[0755]).success());
+        this.assertEquals(System.mkdir(sysTestDir, perm[0755]).unwrapError(), "File exists");
+        this.assertTruthy(System.rmdir(sysTestDir).success());
+        this.assertFalsey(System.rmdir(sysTestDir).success()); // Directory doesn't exist
+        this.assertEquals(System.rmdir(sysTestDir).unwrapError(), "No such file or directory");
 
-        with(sys_test_dir, "w") {
+        with(sysTestDir, "w") {
             file.write ("test");
         }
 
-        this.assertFalsey(System.rmdir(sys_test_dir).success());
-        this.assertTruthy(System.rmdir(sys_test_dir).unwrapError() == "Not a directory" or
-            System.rmdir(sys_test_dir).unwrapError() == "Invalid argument");
-        this.assertTruthy(System.remove(sys_test_dir).success());
+        this.assertFalsey(System.rmdir(sysTestDir).success());
+        this.assertTruthy(System.rmdir(sysTestDir).unwrapError() == "Not a directory" or
+            System.rmdir(sysTestDir).unwrapError() == "Invalid argument");
+        this.assertTruthy(System.remove(sysTestDir).success());
     }
 }
 

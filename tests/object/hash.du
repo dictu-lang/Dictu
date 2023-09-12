@@ -1,0 +1,23 @@
+/**
+ * hash.du
+ *
+ * Testing the Object.hash method
+ */
+from UnitTest import UnitTest;
+
+import Object;
+
+class Test {}
+
+class TestObjectHash < UnitTest {
+    testObjectHash() {
+        this.assertNotNil(Object.hash("1234"));
+        this.assertNotNil(Object.hash(1234));
+        this.assertNotNil(Object.hash([1, 2, 3, 4, 5]));
+        this.assertNotNil(Object.hash(set(1, 2, 3, 4, 5)));
+        this.assertNotNil(Object.hash({"key": "value"}));
+        this.assertNotNil(Object.hash(Test()));
+    }
+}
+
+TestObjectHash().run();

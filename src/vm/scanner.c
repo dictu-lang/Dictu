@@ -49,8 +49,8 @@ static bool match(Scanner *scanner, char expected) {
     return true;
 }
 
-static Token makeToken(Scanner *scanner, TokenType type) {
-    Token token;
+static LangToken makeToken(Scanner *scanner, LangTokenType type) {
+    LangToken token;
     token.type = type;
     token.start = scanner->start;
     token.length = (int) (scanner->current - scanner->start);
@@ -58,8 +58,8 @@ static Token makeToken(Scanner *scanner, TokenType type) {
     return token;
 }
 
-static Token errorToken(Scanner *scanner, const char *message) {
-    Token token;
+static LangToken errorToken(Scanner *scanner, const char *message) {
+    LangToken token;
     token.type = TOKEN_ERROR;
     token.start = message;
     token.length = (int) strlen(message);
@@ -82,7 +82,12 @@ static void skipWhitespace(Scanner *scanner) {
                 scanner->line++;
                 advance(scanner);
                 break;
-
+            case '#':
+                if (peekNext(scanner) == '!') {
+                    // Ignore shebang line
+                    while (peek(scanner) != '\n' && !isAtEnd(scanner)) advance(scanner);
+                }
+                break;
             case '/':
                 if (peekNext(scanner) == '*') {
                     // Multiline comments
@@ -119,8 +124,8 @@ static void skipWhitespace(Scanner *scanner) {
     }
 }
 
-static TokenType checkKeyword(Scanner *scanner, int start, int length,
-                              const char *rest, TokenType type) {
+static LangTokenType checkKeyword(Scanner *scanner, int start, int length,
+                              const char *rest, LangTokenType type) {
     if (scanner->current - scanner->start == start + length &&
         memcmp(scanner->start + start, rest, length) == 0) {
         return type;
@@ -129,7 +134,7 @@ static TokenType checkKeyword(Scanner *scanner, int start, int length,
     return TOKEN_IDENTIFIER;
 }
 
-static TokenType identifierType(Scanner *scanner) {
+static LangTokenType identifierType(Scanner *scanner) {
     switch (scanner->start[0]) {
         case 'a':
             if (scanner->current - scanner->start > 1) {
@@ -287,13 +292,13 @@ static TokenType identifierType(Scanner *scanner) {
     return TOKEN_IDENTIFIER;
 }
 
-static Token identifier(Scanner *scanner) {
+static LangToken identifier(Scanner *scanner) {
     while (isAlpha(peek(scanner)) || isDigit(peek(scanner))) advance(scanner);
 
     return makeToken(scanner,identifierType(scanner));
 }
 
-static Token exponent(Scanner *scanner) {
+static LangToken exponent(Scanner *scanner) {
     // Consume the "e"
     advance(scanner);
     while (peek(scanner) == '_') advance(scanner);
@@ -306,7 +311,7 @@ static Token exponent(Scanner *scanner) {
     return makeToken(scanner,TOKEN_NUMBER);
 }
 
-static Token number(Scanner *scanner) {
+static LangToken number(Scanner *scanner) {
     while (isDigit(peek(scanner)) || peek(scanner) == '_') advance(scanner);
     if (peek(scanner) == 'e' || peek(scanner) == 'E')
         return exponent(scanner);
@@ -321,7 +326,7 @@ static Token number(Scanner *scanner) {
     return makeToken(scanner,TOKEN_NUMBER);
 }
 
-static Token hexNumber(Scanner *scanner) {
+static LangToken hexNumber(Scanner *scanner) {
     while (peek(scanner) == '_') advance(scanner);
     if (peek(scanner) == '0')advance(scanner);
     if ((peek(scanner) == 'x') || (peek(scanner) == 'X')) {
@@ -333,7 +338,7 @@ static Token hexNumber(Scanner *scanner) {
 }
 
 
-static Token string(Scanner *scanner, char stringToken) {
+static LangToken string(Scanner *scanner, char stringToken) {
     while (peek(scanner) != stringToken && !isAtEnd(scanner)) {
         if (peek(scanner) == '\n') {
             scanner->line++;
@@ -354,7 +359,7 @@ void backTrack(Scanner *scanner) {
     scanner->current--;
 }
 
-Token scanToken(Scanner *scanner) {
+LangToken scanToken(Scanner *scanner) {
     skipWhitespace(scanner);
 
     scanner->start = scanner->current;

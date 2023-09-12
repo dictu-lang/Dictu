@@ -1,0 +1,52 @@
+on:
+  push:
+    tags:
+    - '*'
+
+name: Upload Release Asset
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install nfpm
+      run: |
+        echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+        sudo apt update
+        sudo apt install nfpm
+    - name: Build
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+        cmake -DCMAKE_BUILD_TYPE=Release -B ./build
+        cmake --build ./build
+    - name: Package
+      run: |
+        ./dictu ops/pkgBuild.du
+        mv dictu dictu-linux-x86_64
+    - name: Release
+      uses: SierraSoftworks/gh-releases@v1.0.7
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        overwrite: 'true'
+        files: |
+          dictu-linux-x86_64
+          dictu_${{ github.ref_name }}_amd64.deb
+          dictu_${{ github.ref_name }}_x86_64.apk
+          dictu_${{ github.ref_name }}.x86_64.rpm
+    - name: Docker Hub Login
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        tags: dictulang/dictu:${{ github.ref_name }}
+        file: ./Docker/DictuUbuntuDockerfile
+        context: .

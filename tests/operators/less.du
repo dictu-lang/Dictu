@@ -1,0 +1,37 @@
+/**
+ * less.du
+ *
+ * Testing less operator for strings and numbers
+ */
+
+from UnitTest import UnitTest;
+
+class LessThanOperator < UnitTest {
+    testLessthanOperator(data) {
+        this.assertTruthy(data["operation"]);
+    }
+
+    testLessthanOperatorProvider() {
+        const x = 10;
+
+        return [
+            // Numbers
+            {"operation": 9 < 10},
+            {"operation": not(10 < 10)},
+            {"operation": not(11 < 10)},
+            {"operation": 9 < x},
+            {"operation": not(x < x)},
+            {"operation": not(11 < x)},
+            // Strings
+            {"operation": "a" < "b"},
+            {"operation": not("a" < "a")},
+            {"operation": not("b" < "a")},
+            {"operation": "a" < "ba"},
+            {"operation": not("aaaa" < "aaaa")},
+            {"operation": "aaaa" < "aaaab"},
+            {"operation": "thank-you.md" < "variables.md"},
+        ];
+    }
+}
+
+LessThanOperator().run();

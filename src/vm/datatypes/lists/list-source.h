@@ -58,4 +58,21 @@
 "        }\n" \
 "    }\n" \
 "}\n" \
+"\n" \
+"def splice(list, index, count, items) {\n" \
+"    if (count == 0) {\n" \
+"        return list[:index]+items+list[index:];    \n" \
+"    }\n" \
+"\n" \
+"    return list[:index]+items+list[index+count:];\n" \
+"}\n" \
+"\n" \
+"def unique(list) {\n" \
+"    var dict = {};\n" \
+"    list.forEach(def(e) => {\n" \
+"        dict[e] = nil;\n" \
+"    });\n" \
+"\n" \
+"    return dict.keys();\n" \
+"}\n" \
 

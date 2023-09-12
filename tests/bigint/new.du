@@ -1,0 +1,38 @@
+/**
+ * new.du
+ *
+ * Testing the BigInt new function.
+ *
+ * .new() returns a Result value with a BigInt or an error. new()
+ * takes 0 or 1 argument of either Number or String. If no argument 
+ * is given, the returned BigInt value is set to 0.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntNew < UnitTest {
+    testBigIntNewDefault() {
+        const bi1 = BigInt.new();
+        this.assertNotNil(bi1);
+        this.assertSuccess(bi1);
+    }
+
+    testBigIntNewWithArg() {
+        const bi1 = BigInt.new(7263535);
+        this.assertNotNil(bi1);
+        this.assertSuccess(bi1);
+
+        const bi2 = BigInt.new("7263535");
+        this.assertNotNil(bi2);
+        this.assertSuccess(bi2);
+    }
+
+    testBigIntNewError() {
+        const bi1 = BigInt.new("asdf");
+        this.assertError(bi1);
+    }
+}
+
+TestBigIntNew().run();

@@ -1,0 +1,46 @@
+/*
+ * This script is used in the CI process to create RPMs, debs, and apks when
+ * new releases/tags are created.
+ */
+
+import Env;
+import Process;
+import System;
+
+
+const PKG_FORMATS = ["deb", "rpm", "apk"],
+      PKG_ARCHS = ["amd64"];
+
+{ // main
+    print("Setting up environment...");
+
+    var semver = Env.get("SEMVER");
+    if (not semver) {
+        const gitRev = Process.run(["git", "rev-parse", "--short", "HEAD"], true);
+        if (not gitRev.success()) {
+            print(gitRev.unwrapError());
+            System.exit(1);
+        }
+        semver = gitRev.unwrap().strip();
+        Env.set("SEMVER", semver);
+    }
+
+    print("Building packages for version: {}".format(semver));
+
+    PKG_FORMATS.forEach(def(pkgFmt) => {
+        print("Creating {}...".format(pkgFmt));
+
+        Process.run(["nfpm", "pkg", "-f", "ops/nfpm.yaml", "--packager", pkgFmt, "--target", "build"]).match(
+            def(result) => print(result),
+            def(error) => {
+                print(error);
+                System.exit(1);  
+            }
+        );
+    });
+
+    print("Complete!");
+    print("Packages can be found in ./build");
+
+    System.exit(0);
+}

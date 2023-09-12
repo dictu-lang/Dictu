@@ -24,7 +24,7 @@ To make use of the HTTP module an import is required. Along with the methods des
 import HTTP;
 ```
 
-### HTTP.get(string, list: headers -> optional, number: timeout -> optional)
+### HTTP.get(String, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
 
 Sends a HTTP GET request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
@@ -37,9 +37,9 @@ HTTP.get("https://httpbin.org/get", ["Content-Type: application/json"], 1);
 {"content": "...", "headers": ["...", "..."], "statusCode": 200}
 ```
 
-### HTTP.post(string, dictionary: postArgs -> optional, list: headers -> optional, number: timeout -> optional)
+### HTTP.post(String, dictionary: postArgs -> Optional, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
 
-Sends a HTTP POST request to a given URL.Timeout is given in seconds.
+Sends a HTTP POST request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
 
 ```cs
@@ -49,27 +49,68 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/json"], 1);
 ```
 
+### HTTP.newClient(Dict) -> HttpClient
+
+Creates a new HTTP client with a given set of options.
+
+```cs
+const opts = {
+    "timeout": 20,
+    "headers": [
+        "Content-Type: application/json", 
+        "Accept: application/json",
+        "User-Agent: Dictu"
+    ],
+    "insecure": false,
+    "keyFile": "",
+    "certFile": "",
+    "keyPasswd": ""
+};
+var httpClient = HTTP.newClient(opts);
+```
+
+### httpClient.get(String) -> Result\<Response>
+
+Sends a HTTP GET request to a given URL.
+Returns a Result and unwraps to a Response upon success.
+
+```cs
+httpClient.get("https://httpbin.org/get");
+
+{"content": "...", "headers": ["...", "..."], "statusCode": 200}
+```
+
+### httpClient.post(String, Dict: postArgs) -> Result\<Response>
+
+Sends a HTTP POST request to a given URL.
+Returns a Result and unwraps to a Response upon success.
+
+```cs
+httpClient.post("https://httpbin.org/post");
+httpClient.post("https://httpbin.org/post", {"test": 10});
+```
+
 ### Response
 
-Both HTTP.get() and HTTP.post() return a Result that unwraps a Response object on success, or nil on error.
-The Response object returned has 3 public properties, "content", "headers" and "statusCode". "content" is the actual content returned from the
+Both HTTP.get(), HTTP.post(), httpClient.get(), and httpClient.post() return a Result that unwraps a Response object on success, or nil on error.
+The Response object returned has 3 public attributes, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
 
 #### Quick Reference Table
-##### Properties
+##### Attributes
 
-| Property   | Description                                            |
-|------------|--------------------------------------------------------|
-| content    | Raw string content returned from the HTTP request      |
-| headers    | A list of headers returned from the HTTP request       |
-| statusCode | The status code returned from the HTTP request         |
+| Attribute  | Description                                       |
+| ---------- | ------------------------------------------------- |
+| content    | Raw string content returned from the HTTP request |
+| headers    | A list of headers returned from the HTTP request  |
+| statusCode | The status code returned from the HTTP request    |
 
 ##### Methods
 
-| Method     | Description                                            |
-|------------|--------------------------------------------------------|
-| json       | Convert the content property to JSON                   |
+| Method | Description                           |
+| ------ | ------------------------------------- |
+| json   | Convert the content attribute to JSON |
 
 Example response from [httpbin.org](https://httpbin.org)
 
@@ -122,6 +163,7 @@ print(response.statusCode);
 200
 ```
 
-#### Response.json()
+#### Response.json() -> Result\<Value>
+
 To quickly convert the raw string contained within the Response object we can use the helper `.json` method.
 This works exactly the same as `JSON.parse()` and will return a Result object.

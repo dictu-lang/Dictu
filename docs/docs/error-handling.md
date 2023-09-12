@@ -22,13 +22,15 @@ type which will wrap a value on success or wrap a string on failure with a given
 error message. This wrapped value *must* be unwrapped before accessing it.
 
 ### Result type
+
 Note, if returning a Result type from a function there is nothing in the interpreter
 that will enforce both Success and Error types can be returned, or even that these are the only
 types that can be returned, however it is very much recommended that if you return a Result type
-from a function, this is the only type you ever return - this will made handling a result type
+from a function, this is the only type you ever return - this will make handling a result type
 much easier for the caller.
 
 #### Success
+
 Creating a Success type is incredibly simple with the builtin `Success()` function.
 Any type can be passed to Success to be wrapped.
 
@@ -38,6 +40,7 @@ print(result.unwrap()); // 10
 ```
 
 #### Error
+
 Creating an Error type is incredibly simple with the builtin `Error()` function.
 Only a string can be passed to Error to be wrapped.
 
@@ -46,7 +49,7 @@ var result = Error("Some error happened!!");
 print(result.unwrapError()); // 'Some error happened!!'
 ```
 
-### .unwrap()
+### .unwrap() -> Value
 
 As previously explained to get a value out of a Result it needs to be unwrapped.
 If you attempt to unwrap a Result that is of ERROR status a runtime error will be raised.
@@ -57,7 +60,7 @@ print(num); // <Result Suc>
 print(num.unwrap()); // 10
 ```
 
-### .unwrapError()
+### .unwrapError() -> String
 
 A Result that has a type of ERROR will always contain an error message as to why it failed, however 
 attempting to unwrap a Result that is an ERROR gives you a runtime error. Instead you must use
@@ -68,7 +71,7 @@ error.
 "num".toNumber().unwrapError(); // 'Can not convert 'num' to number'
 ```
 
-### .success()
+### .success() -> Boolean
 
 Check if a Result type is in a SUCCESS state, returns a boolean.
 
@@ -77,7 +80,7 @@ Check if a Result type is in a SUCCESS state, returns a boolean.
 "number".toNumber().success(); // false
 ```
 
-### .match(func: success, func: error)
+### .match(Func: success, Func: error) -> Value
 
 `.match` takes two callbacks that are ran depending upon the status of the result type. The callbacks passed to
 match must both have one parameter each, on success the unwrapped value is passed as the first argument and on
@@ -106,7 +109,7 @@ var number = "number".toNumber().match(
 print(number);
 ```
 
-### .matchWrap(func: success, func: error)
+### .matchWrap(Func: success, Func: error) -> Result
 
 `.matchWrap` is exactly the same as `.wrap` however, the value returned from either callback
 function is implicitly wrapped back up into a Result object. This allows us to easily deal
@@ -123,3 +126,20 @@ print(response); // <Result Suc>
 
 In the above example we can handle the case that we need to do some data transformation, however, we
 also need to ensure that a Result object is returned in case we hit the error callback.
+
+### .matchError(Func: error) -> Value
+
+`.matchError` is similar to `.match` except it only accepts a single callback. If the Result type is 
+in an Error state the callback will be ran, otherwise the Result will be unwrapped and the wrapped value is
+returned. It becomes a shortcut if you do not need any intermediate handling on success unwrapping. 
+
+```cs
+var number = "10".toNumber().matchError(
+    def (error) => {
+        print(error);
+        System.exit(1);
+    }
+);
+
+print(number); // 10
+```

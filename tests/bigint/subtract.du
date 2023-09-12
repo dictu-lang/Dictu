@@ -1,0 +1,27 @@
+/**
+ * subtract.du
+ *
+ * Testing the BigInt subtract function.
+ *
+ * .subtract() returns a Result value containing the difference.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntSubtract < UnitTest {
+    testBigIntSubtract() {
+        const bi1 = BigInt.new(9999);
+        const bi2 = BigInt.new(100);
+        const bi3 = BigInt.new(9899);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(bi3);
+        const sum = bi1.unwrap().subtract(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
+    }
+}
+
+TestBigIntSubtract().run();

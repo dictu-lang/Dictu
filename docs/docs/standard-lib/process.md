@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Process
-nav_order: 12
+nav_order: 14
 parent: Standard Library
 ---
 
@@ -24,7 +24,7 @@ To make use of the Process module an import is required.
 import Process;
 ```
 
-### Process.exec(list)
+### Process.exec(List) -> Result<Nil>
 
 Executing an external process can be done via `.exec`. Unlike `.run()` exec does not wait for the process
 to finish executing, so it is only useful for circumstances where you wish to "fire and forget".
@@ -36,9 +36,9 @@ It will return a Result that unwraps to `nil` on success.
 Process.exec(["ls", "-la"]);
 ```
 
-### Process.run(list, boolean: captureOutput -> optional)
+### Process.run(List, Boolean: captureOutput -> Optional) -> Result<Nil>
 
-Similar to `.run()` except this **will** wait for the external process to finish executing.
+Similar to `.exec()` except this **will** wait for the external process to finish executing.
 
 `.run()` expects a list as a parameter which is the command and any arguments for the command as individual list elements,
 and it will return a Result that unwraps to `nil` on success.

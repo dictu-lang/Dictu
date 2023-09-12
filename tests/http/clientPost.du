@@ -1,0 +1,61 @@
+/**
+ * clientPost.du
+ *
+ * Testing the HTTP.HttpClient.post() function
+ *
+ */
+from UnitTest import UnitTest;
+
+import HTTP;
+import System;
+
+class TestHttpClientPost < UnitTest {
+
+    private httpClient;
+
+    setUp() {
+        this.httpClient = HTTP.newClient({});
+    }
+
+    testHttpPost() {
+        var response = this.httpClient.post("http://httpbin.org/post", {"test": 10});
+        this.assertTruthy(response.success());
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.headers.len() > 0);
+        this.assertTruthy(response.content.contains("origin"));
+        this.assertTruthy(response.content.contains('"test": "10"'));
+    }
+
+    testHttpsPost() {
+        var response = this.httpClient.post("https://httpbin.org/post", {"test": 10});
+        this.assertTruthy(response.success());
+        response = response.unwrap();
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.headers.len() > 0);
+        this.assertTruthy(response.content.contains("origin"));
+        this.assertTruthy(response.content.contains('"test": "10"'));
+    }
+
+    testHttpsPostWithHeaders() {
+        this.httpClient.setHeaders(["Test: header"]);
+        var response = this.httpClient.post("https://httpbin.org/post", {"test": 10});
+        this.assertTruthy(response.success());
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertTruthy(response.headers.len() > 0);
+        this.assertTruthy(response.content.contains("origin"));
+        this.assertTruthy(response.content.contains('"Test": "header"'));
+        this.assertTruthy(response.content.contains('"test": "10"'));
+    }
+
+    testHttpsPostBadUrl() {
+        this.httpClient.setTimeout(1);
+        const response = this.httpClient.post("https://BAD_URL.test_for_error", {"test": 10});
+        this.assertFalsey(response.success());
+    }
+}
+
+TestHttpClientPost().run();

@@ -9,6 +9,8 @@ from UnitTest import UnitTest;
 class Test {
     var x = 10;
 
+    const y = 20;
+
     init(private priv = 10, var pub = 20) {
         this.prop = 30;
     }
@@ -19,30 +21,32 @@ class Test {
 }
 
 class Inherit < Test {
-
+    var x = 20;
 }
 
 class TestGetAttributes < UnitTest {
     testGetAttributes() {
         this.assertEquals(Test().getAttributes().len(), 3);
-        this.assertTruthy(Test().getAttributes().exists("properties"));
-        this.assertTruthy(Test().getAttributes().exists("classVariables"));
+        this.assertTruthy(Test().getAttributes().exists("attributes"));
+        this.assertTruthy(Test().getAttributes().exists("fields"));
         this.assertTruthy(Test().getAttributes().exists("methods"));
         // 3 because of the implicit "_class" property
-        this.assertEquals(Test().getAttributes().get("properties").len(), 3);
-        this.assertEquals(Test().getAttributes().get("classVariables").len(), 1);
+        this.assertEquals(Test().getAttributes().get("attributes").len(), 3);
+        // 3 because of the implicit "_name" property
+        this.assertEquals(Test().getAttributes().get("fields").len(), 3);
         this.assertEquals(Test().getAttributes().get("methods").len(), 2);
         this.assertTruthy(Test().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
     }
 
     testGetAttributesInherit() {
         this.assertEquals(Inherit().getAttributes().len(), 3);
-        this.assertTruthy(Inherit().getAttributes().exists("properties"));
-        this.assertTruthy(Inherit().getAttributes().exists("classVariables"));
+        this.assertTruthy(Inherit().getAttributes().exists("attributes"));
+        this.assertTruthy(Inherit().getAttributes().exists("fields"));
         this.assertTruthy(Inherit().getAttributes().exists("methods"));
         // 3 because of the implicit "_class" property
-        this.assertEquals(Inherit().getAttributes().get("properties").len(), 3);
-        this.assertEquals(Inherit().getAttributes().get("classVariables").len(), 1);
+        this.assertEquals(Inherit().getAttributes().get("attributes").len(), 3);
+        // 3 because of the implicit "_name" property
+        this.assertEquals(Inherit().getAttributes().get("fields").len(), 3);
         this.assertEquals(Inherit().getAttributes().get("methods").len(), 2);
         this.assertTruthy(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));
     }

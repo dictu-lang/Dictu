@@ -101,12 +101,14 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             grayObject(vm, (Obj *) klass->name);
             grayObject(vm, (Obj *) klass->superclass);
-            grayObject(vm, (Obj *) klass->annotations);
+            grayObject(vm, (Obj *) klass->classAnnotations);
+            grayObject(vm, (Obj *) klass->methodAnnotations);
+            grayObject(vm, (Obj *) klass->fieldAnnotations);
             grayTable(vm, &klass->publicMethods);
             grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);
-            grayTable(vm, &klass->publicProperties);
-            grayTable(vm, &klass->publicConstantProperties);
+            grayTable(vm, &klass->variables);
+            grayTable(vm, &klass->constants);
             break;
         }
 
@@ -136,8 +138,8 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
             grayObject(vm, (Obj *) instance->klass);
-            grayTable(vm, &instance->publicFields);
-            grayTable(vm, &instance->privateFields);
+            grayTable(vm, &instance->publicAttributes);
+            grayTable(vm, &instance->privateAttributes);
             break;
         }
 
@@ -205,8 +207,8 @@ void freeObject(DictuVM *vm, Obj *object) {
             freeTable(vm, &klass->publicMethods);
             freeTable(vm, &klass->privateMethods);
             freeTable(vm, &klass->abstractMethods);
-            freeTable(vm, &klass->publicProperties);
-            freeTable(vm, &klass->publicConstantProperties);
+            freeTable(vm, &klass->variables);
+            freeTable(vm, &klass->constants);
             FREE(vm, ObjClass, object);
             break;
         }
@@ -244,8 +246,8 @@ void freeObject(DictuVM *vm, Obj *object) {
 
         case OBJ_INSTANCE: {
             ObjInstance *instance = (ObjInstance *) object;
-            freeTable(vm, &instance->publicFields);
-            freeTable(vm, &instance->privateFields);
+            freeTable(vm, &instance->publicAttributes);
+            freeTable(vm, &instance->privateAttributes);
             FREE(vm, ObjInstance, object);
             break;
         }
@@ -346,6 +348,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->resultMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
+    grayObject(vm, (Obj *) vm->annotationString);
     grayObject(vm, (Obj *) vm->replVar);
 
     // Traverse the references.

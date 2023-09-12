@@ -1,0 +1,54 @@
+import HTTP;
+import JSON;
+import System;
+
+// main
+{
+    const opts = {
+        "timeout": 20,
+        "headers": [
+            "Content-Type: application/json", 
+            "Accept: application/json",
+            "User-Agent: Dictu"
+        ],
+        "insecure": false,
+        "keyFile": "",
+        "certFile": "",
+        "keyPasswd": ""
+    };
+    var httpClient = HTTP.newClient(opts);
+
+    var res = httpClient.get("https://httpbin.org/get");
+    if (not res.success()) {
+        print(res.unwrapError());
+        System.exit(1);
+    }
+    print("Status Code: {}".format(res.unwrap().statusCode));
+    print(res.unwrap().json().unwrap());
+
+    httpClient.setInsecure(true);
+    res = httpClient.get("https://httpbin.org/uuid");
+    if (not res.success()) {
+        print(res.unwrapError());
+        System.exit(1);
+    }
+    const uuid = res.unwrap().json().unwrap()["uuid"];
+    print("UUID: {}".format(uuid));
+
+    res = httpClient.post("https://httpbin.org/post", {});
+    if (not res.success()) {
+        print(res.unwrapError());
+        System.exit(1);
+    }
+    print("Status Code: {}".format(res.unwrap().statusCode));
+    print(res.unwrap().json().unwrap());
+
+    System.exit(0);
+}
+
+
+
+
+
+
+

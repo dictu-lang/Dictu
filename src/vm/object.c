@@ -67,9 +67,19 @@ ObjClass *newClass(DictuVM *vm, ObjString *name, ObjClass *superclass, ClassType
     initTable(&klass->abstractMethods);
     initTable(&klass->privateMethods);
     initTable(&klass->publicMethods);
-    initTable(&klass->publicProperties);
-    initTable(&klass->publicConstantProperties);
-    klass->annotations = NULL;
+    initTable(&klass->variables);
+    initTable(&klass->constants);
+    klass->classAnnotations = NULL;
+    klass->methodAnnotations = NULL;
+    klass->fieldAnnotations = NULL;
+
+    push(vm, OBJ_VAL(klass));
+    ObjString *nameString = copyString(vm, "_name", 5);
+    push(vm, OBJ_VAL(nameString));
+    tableSet(vm, &klass->constants, nameString, OBJ_VAL(name));
+    pop(vm);
+    pop(vm);
+
     return klass;
 }
 
@@ -117,13 +127,13 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
 ObjInstance *newInstance(DictuVM *vm, ObjClass *klass) {
     ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
-    initTable(&instance->publicFields);
-    initTable(&instance->privateFields);
+    initTable(&instance->publicAttributes);
+    initTable(&instance->privateAttributes);
 
     push(vm, OBJ_VAL(instance));
     ObjString *classString = copyString(vm, "_class", 6);
     push(vm, OBJ_VAL(classString));
-    tableSet(vm, &instance->publicFields, classString, OBJ_VAL(klass));
+    tableSet(vm, &instance->publicAttributes, classString, OBJ_VAL(klass));
     pop(vm);
     pop(vm);
 
@@ -266,7 +276,10 @@ char *listToString(Value value) {
         char *element;
         int elementSize;
 
-        if (IS_STRING(listValue)) {
+        if (listValue == value) {
+            element = "[...]";
+            elementSize = 5;
+        } else if (IS_STRING(listValue)) {
             ObjString *s = AS_STRING(listValue);
             element = s->chars;
             elementSize = s->length;
@@ -292,7 +305,10 @@ char *listToString(Value value) {
             listString = newB;
         }
 
-        if (IS_STRING(listValue)) {
+        if (listValue == value) {
+            memcpy(listString + listStringLength, element, elementSize);
+            listStringLength += elementSize;
+        } else if (IS_STRING(listValue)) {
             memcpy(listString + listStringLength, "\"", 1);
             memcpy(listString + listStringLength + 1, element, elementSize);
             memcpy(listString + listStringLength + 1 + elementSize, "\"", 1);
@@ -374,8 +390,10 @@ char *dictToString(Value value) {
 
        char *element;
        int elementSize;
-
-       if (IS_STRING(item->value)) {
+       if (item->value == value){
+           element = "{...}";
+           elementSize = 5;
+       } else if (IS_STRING(item->value)) {
            ObjString *s = AS_STRING(item->value);
            element = s->chars;
            elementSize = s->length;
@@ -401,7 +419,10 @@ char *dictToString(Value value) {
            dictString = newB;
        }
 
-       if (IS_STRING(item->value)) {
+       if (item->value == value) {
+           memcpy(dictString + dictStringLength, element, elementSize);
+           dictStringLength += elementSize;
+       } else if (IS_STRING(item->value)) {
            memcpy(dictString + dictStringLength, "\"", 1);
            memcpy(dictString + dictStringLength + 1, element, elementSize);
            memcpy(dictString + dictStringLength + 1 + elementSize, "\"", 1);
@@ -500,6 +521,83 @@ char *classToString(Value value) {
     memcpy(classString + 5 + klass->name->length, ">", 1);
     classString[klass->name->length + 6] = '\0';
     return classString;
+}
+
+static bool listContains(ObjList *list, Value value) {
+    for (int i = 0; i < list->values.count; ++i) {
+        if (valuesEqual(list->values.values[i], value)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ObjDict *classToDict(DictuVM *vm, Value value) {
+    ObjClass *klass = AS_CLASS(value);
+
+    ObjDict *classDict = newDict(vm);
+    push(vm, OBJ_VAL(classDict));
+
+    ObjDict *variablesDict = newDict(vm);
+    push(vm, OBJ_VAL(variablesDict));
+
+    ObjDict *constantsDict = newDict(vm);
+    push(vm, OBJ_VAL(constantsDict));
+
+    ObjList *methodsList = newList(vm);
+    push(vm, OBJ_VAL(methodsList));
+
+    while (klass != NULL) {
+        for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+            if (klass->variables.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, variablesDict, OBJ_VAL(klass->variables.entries[i].key), klass->variables.entries[i].value);
+        }
+
+        for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+            if (klass->constants.entries[i].key == NULL) {
+                continue;
+            }
+            dictSet(vm, constantsDict, OBJ_VAL(klass->constants.entries[i].key), klass->constants.entries[i].value);
+        }
+
+        for (int i = 0; i < klass->publicMethods.capacityMask + 1; i++) {
+            if (klass->publicMethods.entries[i].key == NULL) {
+                continue;
+            }
+
+            if (listContains(methodsList, OBJ_VAL(klass->publicMethods.entries[i].key))) {
+                continue;
+            }
+
+            writeValueArray(vm, &methodsList->values, OBJ_VAL(klass->publicMethods.entries[i].key));
+        }
+
+        klass = klass->superclass;
+    }
+
+    Value variables = OBJ_VAL(copyString(vm, "public_variables", 16));
+    push(vm, OBJ_VAL(variables));
+    dictSet(vm, classDict, variables, OBJ_VAL(variablesDict));
+    pop(vm);
+    pop(vm); // variablesDict
+
+    Value constants = OBJ_VAL(copyString(vm, "constants", 9));
+    push(vm, OBJ_VAL(constants));
+    dictSet(vm, classDict, constants, OBJ_VAL(constantsDict));
+    pop(vm);
+    pop(vm); // constantsDict
+
+    Value methods = OBJ_VAL(copyString(vm, "public_methods", 14));
+    push(vm, OBJ_VAL(methods));
+    dictSet(vm, classDict, methods, OBJ_VAL(methodsList));
+    pop(vm);
+    pop(vm); // methodsList
+
+    pop(vm); // classDict
+    return classDict;
 }
 
 char *instanceToString(Value value) {

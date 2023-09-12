@@ -1,7 +1,7 @@
 ---
 layout: default
 title: JSON
-nav_order: 6
+nav_order: 9
 parent: Standard Library
 ---
 
@@ -24,7 +24,7 @@ To make use of the JSON module an import is required.
 import JSON;
 ```
 
-### JSON.parse(string)
+### JSON.parse(String) -> Result\<Value>
 
 Parses a JSON string and turns it into a valid Dictu datatype.
 Returns a Result type and unwraps to <any> datatype.
@@ -36,7 +36,7 @@ JSON.parse('[1, 2, 3]'); // [1, 2, 3]
 JSON.parse('null'); // nil
 ```
 
-### JSON.stringify(value, number: indent -> optional)
+### JSON.stringify(value, String: indent -> Optional) -> Result<String>
 
 Stringify converts a Dictu value into a valid JSON string.
 Returns a Result type and unwraps to string.
