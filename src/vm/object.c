@@ -189,6 +189,7 @@ ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) 
     abstract->data = NULL;
     abstract->func = func;
     abstract->type = type;
+    abstract->grayFunc = NULL;
     initTable(&abstract->values);
 
     return abstract;

@@ -29,6 +29,33 @@ char *queueToString(ObjAbstract *abstract) {
     return queueString;
 }
 
+void grayQueue(DictuVM *vm, ObjAbstract *abstract) {
+    Queue *queue = (Queue*)abstract->data;
+
+    if (queue == NULL) return;
+
+    if (queue->count == queue->capacity) {
+        for (int i = queue->front; i < queue->capacity; ++i) {
+            grayValue(vm, queue->dq[i]);
+        }
+
+        return;
+    }
+
+    if (queue->rear + 1 < queue->front) {
+        for (int i = queue->front; i < queue->capacity; ++i) {
+            grayValue(vm, queue->dq[i]);
+        }
+
+        for (int i = 0; i < queue->rear + 1; ++i) {
+            grayValue(vm, queue->dq[i]);
+        }
+    } else {
+        for (int i = queue->front; i < queue->rear + 1; ++i) {
+            grayValue(vm, queue->dq[i]);
+        }
+    }
+}
 
 static Value queueIsFull(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -102,13 +129,41 @@ static Value queuePush(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (queue->rear == queue->capacity-1) {
-        queue->rear = -1;            
+        queue->rear = -1;
     }
 
     queue->dq[++queue->rear] = args[1];
     queue->count++;
 
     return NIL_VAL;
+}
+
+Queue* createQueue(DictuVM *vm, double capacity);
+
+static void shrinkQueue(DictuVM *vm, Queue *queue) {
+    int oldCapacity = queue->capacity;
+    Queue *newQueue = createQueue(vm, SHRINK_CAPACITY(oldCapacity));
+
+    while (queue->count != 0) {
+        newQueue->dq[++newQueue->rear] = queue->dq[queue->front++];
+        newQueue->count++;
+
+        if (queue->front == queue->capacity) {
+            queue->front = 0;
+        }
+
+        queue->count--;
+    }
+
+    FREE_ARRAY(vm, Value, queue->dq, queue->capacity);
+
+    queue->dq = newQueue->dq;
+    queue->capacity = newQueue->capacity;
+    queue->front = newQueue->front;
+    queue->rear = newQueue->rear;
+    queue->count = newQueue->count;
+
+    FREE(vm, Queue, newQueue);
 }
 
 static Value queuePop(DictuVM *vm, int argCount, Value *args) {
@@ -124,6 +179,10 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
+    if (queue->count < queue->capacity / 2 && queue->capacity > DEFAULT_QUEUE_CAPACITY) {
+        shrinkQueue(vm, queue);
+    }
+
     Value data = queue->dq[queue->front++];
 
     if (queue->front == queue->capacity) {
@@ -132,20 +191,25 @@ static Value queuePop(DictuVM *vm, int argCount, Value *args) {
 
     queue->count--;
 
-    if (queue->count < queue->capacity / 2 && queue->capacity > DEFAULT_QUEUE_CAPACITY) {
-        int oldCapacity = queue->capacity;
-        queue->capacity = SHRINK_CAPACITY(oldCapacity);
-        queue->dq = SHRINK_ARRAY(vm, queue->dq, Value, oldCapacity, queue->capacity);
-    }
-
     return data;
 }
 
-ObjAbstract* newQueueObj(DictuVM *vm) {
+Queue* createQueue(DictuVM *vm, double capacity) {
+    Queue *queue = ALLOCATE(vm, Queue, 1);
+    queue->dq = ALLOCATE(vm, Value, capacity);
+    queue->capacity = capacity;
+    queue->front = 0;
+    queue->rear = -1;
+    queue->count = 0;
+
+    return queue;
+}
+
+ObjAbstract* newQueueObj(DictuVM *vm, double capacity) {
     ObjAbstract *abstract = newAbstract(vm, freeQueue, queueToString);
     push(vm, OBJ_VAL(abstract));
 
-    Queue *queue = ALLOCATE(vm, Queue, 1);
+    Queue *queue = createQueue(vm, capacity);
 
     /**
      * Setup Queue object methods
@@ -154,11 +218,12 @@ ObjAbstract* newQueueObj(DictuVM *vm) {
     defineNative(vm, &abstract->values, "isFull", queueIsFull);
     defineNative(vm, &abstract->values, "cap", queueCap);
     defineNative(vm, &abstract->values, "len", queueLen);
-    defineNative(vm, &abstract->values, "peek",  queuePeek);
+    defineNative(vm, &abstract->values, "peek", queuePeek);
     defineNative(vm, &abstract->values, "push", queuePush);
     defineNative(vm, &abstract->values, "pop", queuePop);
 
     abstract->data = queue;
+    abstract->grayFunc = grayQueue;
     pop(vm);
 
     return abstract;
@@ -172,20 +237,7 @@ static Value newQueue(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjAbstract *abstract = newQueueObj(vm);
-    push(vm, OBJ_VAL(abstract));
-    
-    Queue *queue = abstract->data;
-
-    queue->dq = ALLOCATE(vm, Value, DEFAULT_QUEUE_CAPACITY);
-    queue->capacity = DEFAULT_QUEUE_CAPACITY;
-    queue->front = 0;
-    queue->rear = -1;
-    queue->count = 0;
-
-    pop(vm);
-
-    return OBJ_VAL(abstract);
+    return OBJ_VAL(newQueueObj(vm, DEFAULT_QUEUE_CAPACITY));
 }
 
 static Value newQueueWithSize(DictuVM *vm, int argCount, Value *args) {
@@ -204,21 +256,7 @@ static Value newQueueWithSize(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "capacity must be greater than 0");
     }
 
-    ObjAbstract *abstract = newQueueObj(vm);
-    push(vm, OBJ_VAL(abstract));
-    
-    Queue *queue = abstract->data;
-
-    queue->dq = ALLOCATE(vm, Value, capacity);
-    queue->capacity = capacity;
-    queue->front = 0;
-    queue->rear = -1;
-    queue->count = 0;
-
-    Value success = newResultSuccess(vm, OBJ_VAL(abstract));
-    pop(vm);
-
-    return success;
+    return newResultSuccess(vm, OBJ_VAL(newQueueObj(vm, capacity)));
 }
 
 Value createQueueModule(DictuVM *vm) {

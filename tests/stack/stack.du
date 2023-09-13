@@ -71,22 +71,22 @@ class TestStack < UnitTest {
     }
 
     testStackGrow() {
-        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x));
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x.toString()));
         this.assertTruthy(this.stack.isFull());
         this.stack.push(this.testValue);
         this.assertFalsey(this.stack.isFull());
         this.assertEquals(this.stack.cap(), 16);
-        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x));
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(def (x) => this.stack.push(x.toString()));
         this.assertFalsey(this.stack.isFull());
         this.assertEquals(this.stack.cap(), 32);
     }
 
     testStackShrink() {
         this.assertEquals(this.stack.cap(), this.defaultStackSize);
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].forEach(def (x) => this.stack.push(x));
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].forEach(def (x) => this.stack.push(x.toString()));
         this.assertEquals(this.stack.cap(), 32);
         const res = this.stack.pop();
-        this.assertEquals(res, 16);
+        this.assertEquals(res, "16");
         this.assertEquals(this.stack.cap(), 32);
         this.stack.pop();
         this.stack.pop();
