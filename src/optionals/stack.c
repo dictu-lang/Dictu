@@ -8,11 +8,20 @@ typedef struct {
     Value *ds;
     int capacity;
     int top;
-    int count;
 } Stack;
 
 #define AS_STACK(v) ((Stack*)AS_ABSTRACT(v)->data)
 #define DEFAULT_STACK_CAPACITY 8
+
+void grayStack(DictuVM *vm, ObjAbstract *abstract) {
+    Stack *stack = (Stack*)abstract->data;
+
+    if (stack == NULL) return;
+
+    for (int i = 0; i < stack->top; i++) {
+        grayValue(vm, stack->ds[i]);
+    }
+}
 
 void freeStack(DictuVM *vm, ObjAbstract *abstract) {
     Stack *stack = (Stack*)abstract->data;
@@ -36,7 +45,7 @@ static Value stackIsFull(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-    bool isFull = stack->capacity == stack->count;
+    bool isFull = stack->capacity == stack->top;
 
     return BOOL_VAL(isFull);
 }
@@ -48,7 +57,7 @@ static Value stackIsEmpty(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-    bool isEmpty = stack->count == 0;
+    bool isEmpty = stack->top == 0;
     
     return BOOL_VAL(isEmpty);
 }
@@ -71,7 +80,7 @@ static Value stackLen(DictuVM *vm, int argCount, Value *args) {
 
     Stack *stack = AS_STACK(args[0]);
 
-    return NUMBER_VAL(stack->count);
+    return NUMBER_VAL(stack->top);
 }
 
 static Value stackPeek(DictuVM *vm, int argCount, Value *args) {
@@ -82,7 +91,7 @@ static Value stackPeek(DictuVM *vm, int argCount, Value *args) {
 
     Stack *stack = AS_STACK(args[0]);
     
-    return stack->ds[stack->top];
+    return stack->ds[stack->top - 1];
 }
 
 static Value stackPush(DictuVM *vm, int argCount, Value *args) {
@@ -92,14 +101,13 @@ static Value stackPush(DictuVM *vm, int argCount, Value *args) {
     }
 
     Stack *stack = AS_STACK(args[0]);
-    if (stack->count == stack->capacity) {
+    if (stack->top == stack->capacity) {
         int oldCapacity = stack->capacity;
         stack->capacity = GROW_CAPACITY(oldCapacity);
         stack->ds = GROW_ARRAY(vm, stack->ds, Value, oldCapacity, stack->capacity);
     }
 
-    stack->ds[stack->top] = args[1];
-    stack->count++;
+    stack->ds[stack->top++] = args[1];
 
     return NIL_VAL;
 }
@@ -112,17 +120,15 @@ static Value stackPop(DictuVM *vm, int argCount, Value *args) {
 
     Stack *stack = AS_STACK(args[0]);
 
-    if (stack->count == 0) {
+    if (stack->top == 0) {
         runtimeError(vm, "pop() called on an empty stack");
         return EMPTY_VAL;
     }
 
-    Value data = stack->ds[stack->top];
-    stack->top--;
-    stack->count--;
+    Value data = stack->ds[--stack->top];
 
-    if (stack->count < stack->capacity / 2 && stack->capacity > DEFAULT_STACK_CAPACITY) {
-        int oldCapacity = stack->capacity;        
+    if (stack->top < stack->capacity / 2 && stack->capacity > DEFAULT_STACK_CAPACITY) {
+        int oldCapacity = stack->capacity;
         stack->capacity = SHRINK_CAPACITY(oldCapacity);
         stack->ds = SHRINK_ARRAY(vm, stack->ds, Value, oldCapacity, stack->capacity);
     }
@@ -130,11 +136,14 @@ static Value stackPop(DictuVM *vm, int argCount, Value *args) {
     return data;
 }
 
-ObjAbstract* newStackObj(DictuVM *vm) {
+ObjAbstract* newStackObj(DictuVM *vm, double capacity) {
     ObjAbstract *abstract = newAbstract(vm, freeStack, stackToString);
     push(vm, OBJ_VAL(abstract));
 
     Stack *stack = ALLOCATE(vm, Stack, 1);
+    stack->top = 0;
+    stack->ds = ALLOCATE(vm, Value, capacity);
+    stack->capacity = capacity;
 
     /**
      * Setup Stack object methods
@@ -148,6 +157,8 @@ ObjAbstract* newStackObj(DictuVM *vm) {
     defineNative(vm, &abstract->values, "pop", stackPop);
 
     abstract->data = stack;
+    abstract->grayFunc = grayStack;
+
     pop(vm);
 
     return abstract;
@@ -161,19 +172,7 @@ static Value newStack(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjAbstract *abstract = newStackObj(vm);
-    push(vm, OBJ_VAL(abstract));
-    
-    Stack *stack = abstract->data;
-
-    stack->ds = ALLOCATE(vm, Value, DEFAULT_STACK_CAPACITY);
-    stack->capacity = DEFAULT_STACK_CAPACITY;
-    stack->top = 0;
-    stack->count = 0;
-
-    pop(vm);
-
-    return OBJ_VAL(abstract);
+    return OBJ_VAL(newStackObj(vm, DEFAULT_STACK_CAPACITY));
 }
 
 static Value newStackWithSize(DictuVM *vm, int argCount, Value *args) {
@@ -192,20 +191,7 @@ static Value newStackWithSize(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "capacity must be greater than 0");
     }
 
-    ObjAbstract *abstract = newStackObj(vm);
-    push(vm, OBJ_VAL(abstract));
-    
-    Stack *stack = abstract->data;
-
-    stack->ds = ALLOCATE(vm, Value, capacity);
-    stack->capacity = capacity;
-    stack->top = 0;
-    stack->count = 0;
-
-    Value success = newResultSuccess(vm, OBJ_VAL(abstract));
-    pop(vm);
-
-    return success;
+    return OBJ_VAL(newResultSuccess(vm, OBJ_VAL(newStackObj(vm, capacity))));
 }
 
 Value createStackModule(DictuVM *vm) {
