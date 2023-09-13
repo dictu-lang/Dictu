@@ -170,6 +170,7 @@ struct sObjFile {
 };
 
 typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
+typedef void (*AbstractGrayFn)(DictuVM *vm, ObjAbstract *abstract);
 typedef char* (*AbstractTypeFn)(ObjAbstract *abstract);
 
 struct sObjAbstract {
@@ -177,6 +178,7 @@ struct sObjAbstract {
     Table values;
     void *data;
     AbstractFreeFn func;
+    AbstractGrayFn grayFunc;
     AbstractTypeFn type;
 };
 
