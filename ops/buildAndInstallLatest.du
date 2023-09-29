@@ -25,10 +25,18 @@ def pullLatest(isFork) {
 }
 
 // build builds the latest code pulled.
-def build() {
+def build(debug) {
+    const buildType = debug ? "Debug" : "Release";
+
     const cmds = [
-        ["cmake", "-DCMAKE_BUILD_TYPE=Release", "-B", "./build"],
-        ["cmake", "--build", "./build"]
+        [
+            "cmake",
+            "-DCMAKE_BUILD_TYPE={}".format(buildType),
+            "-B", "./build"
+        ],
+        [
+            "cmake", "--build", "./build"
+        ]
     ].forEach(def(cmd) => {
         const res = Process.run(cmd);
         if (not res.success()) {
@@ -53,6 +61,7 @@ def install() {
         "buildAndInstallLatest", 
         "This program will pull the latest changes from develop, build the code, and install the new binary.", "");
 
+    parser.addBool("-d", "build in debug mode", false, "debug");
     parser.addBool("-f", "running from a fork", false, "fork");
     parser.addBool("-h", "help", false, "help");
 
@@ -73,7 +82,7 @@ def install() {
     pullLatest(args.fork);
 
     print("Building latest...");
-    build();
+    build(args.debug);
 
     print("Installing binary...");
     install();
