@@ -666,6 +666,12 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
+                ObjEnum *enumObj = AS_ENUM(receiver);
+
+                if (tableGet(&enumObj->values, name, &value)) {
+                    return callValue(vm, value, argCount, false);
+                }
+
                 runtimeError(vm, "Enum has no method '%s'.", name->chars);
                 return false;
             }

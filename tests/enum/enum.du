@@ -82,7 +82,7 @@ class TestEnums < UnitTest {
             c = func
         }
 
-        const values = MyEnum.values();
+        const values = HeterogeneousEnum.values();
 
         this.assertEquals(values["a"], 0);
         this.assertEquals(values["b"], "string");
