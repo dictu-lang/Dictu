@@ -175,14 +175,25 @@ static Value closeConnection(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "connect() takes 1 argument (%d given)", argCount);
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "connect() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "connect() argument must be a string");
+        runtimeError(vm, "connect() first argument must be a string");
         return EMPTY_VAL;
+    }
+
+    double timeout = 5000;
+
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "connect() second argument must be a number");
+            return EMPTY_VAL;
+        }
+
+        timeout = AS_NUMBER(args[1]);
     }
 
     ObjAbstract *abstract = newSqlite(vm);
@@ -191,6 +202,7 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
 
     /* Open database */
     int err = sqlite3_open(name, &db->db);
+    sqlite3_busy_timeout(db->db, (int)timeout);
 
     if (err) {
         char *error = (char *)sqlite3_errmsg(db->db);

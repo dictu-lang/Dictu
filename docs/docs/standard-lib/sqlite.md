@@ -25,9 +25,12 @@ Note: Unlike SQLite and most other libraries, foreign keys **are** enabled by de
 import Sqlite;
 ```
 
-### Sqlite.connect(String: database) -> Result<SQLite>
+### Sqlite.connect(String: database, timeout: number -> optional) -> Result<SQLite>
 
 This opens a connection to a SQLite database. Returns a Result type and on success wraps an abstract SQLite type.
+
+The second argument to connect is the amount of time it will sleep (total) in milliseconds if the database is currently locked. If 
+not set it will default to 5 seconds.
 
 Note: You can pass ":memory:" to open the SQLite database in memory rather than a file.
 
