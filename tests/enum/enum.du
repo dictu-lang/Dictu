@@ -58,6 +58,36 @@ class TestEnums < UnitTest {
         this.assertEquals(HeterogeneousEnum.c, func);
         this.assertEquals(HeterogeneousEnum.c(), 10);
     }
+
+    testGetValues() {
+        enum MyEnum {
+            a,
+            b,
+            c
+        }
+
+        const values = MyEnum.values();
+
+        this.assertEquals(values["a"], 0);
+        this.assertEquals(values["b"], 1);
+        this.assertEquals(values["c"], 2);
+    }
+
+    testGetValuesHeterogeneousEnum() {
+        const func = def () => 10;
+
+        enum HeterogeneousEnum {
+            a = 0,
+            b = "string",
+            c = func
+        }
+
+        const values = MyEnum.values();
+
+        this.assertEquals(values["a"], 0);
+        this.assertEquals(values["b"], "string");
+        this.assertEquals(values["c"], func);
+    }
 }
 
 TestEnums().run();

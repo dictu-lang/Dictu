@@ -50,3 +50,17 @@ enum HeterogeneousEnum {
     c = def () => 10
 }
 ```
+
+### Enum.values()
+
+To get all values within an Enum you can use the `.values()` method. This will return a dictionary.
+
+```cs
+enum Test {
+    a = 10, // 10
+    b,      // 1
+    c       // 2
+}
+
+print(Test.values()); // {"c": 2, "a": 10, "b": 1}
+```

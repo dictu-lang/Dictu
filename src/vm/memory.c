@@ -349,6 +349,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->classMethods);
     grayTable(vm, &vm->instanceMethods);
     grayTable(vm, &vm->resultMethods);
+    grayTable(vm, &vm->enumMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->annotationString);

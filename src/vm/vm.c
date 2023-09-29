@@ -23,6 +23,7 @@
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
 #include "datatypes/result/result.h"
+#include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -120,6 +121,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
     initTable(&vm->resultMethods);
+    initTable(&vm->enumMethods);
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
@@ -140,6 +142,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     declareClassMethods(vm);
     declareInstanceMethods(vm);
     declareResultMethods(vm);
+    declareEnumMethods(vm);
 
     if (vm->repl) {
         vm->replVar = copyString(vm, "_", 1);
@@ -168,6 +171,7 @@ void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
     freeTable(vm, &vm->resultMethods);
+    freeTable(vm, &vm->enumMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
@@ -647,14 +651,22 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
             }
 
             case OBJ_ENUM: {
-                ObjEnum *enumObj = AS_ENUM(receiver);
-
                 Value value;
-                if (tableGet(&enumObj->values, name, &value)) {
-                    return callValue(vm, value, argCount, false);
+                if (tableGet(&vm->enumMethods, name, &value)) {
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
-                runtimeError(vm, "'%s' enum has no value '%s'.", enumObj->name->chars, name->chars);
+                runtimeError(vm, "Enum has no method '%s'.", name->chars);
                 return false;
             }
 
