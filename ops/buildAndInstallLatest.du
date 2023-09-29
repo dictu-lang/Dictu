@@ -26,10 +26,7 @@ def pullLatest(isFork) {
 
 // build builds the latest code pulled.
 def build(debug) {
-    var buildType = "Release";
-    if (debug) {
-        buildType = "Debug";
-    }
+    const buildType = debug ? "Debug" : "Release";
 
     const cmds = [
         [
