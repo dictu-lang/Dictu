@@ -61,6 +61,19 @@ HTTP.put("https://httpbin.org/put", {"test": 10}, ["Content-Type: application/js
 HTTP.put("https://httpbin.org/put", {"test": 10}, ["Content-Type: application/json"], 1);
 ```
 
+### HTTP.head(String, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
+
+Sends a HTTP HEAD request to a given URL. Timeout is given in seconds.
+Returns a Result and unwraps to a Response upon success. 
+
+```cs
+HTTP.head("https://httpbin.org/get");
+HTTP.head("https://httpbin.org/get", ["Content-Type: application/json"]);
+HTTP.head("https://httpbin.org/get", ["Content-Type: application/json"], 1);
+
+{"content": "", "headers": ["...", "..."], "statusCode": 200}
+```
+
 ### HTTP.newClient(Dict) -> HttpClient
 
 Creates a new HTTP client with a given set of options.
@@ -112,9 +125,20 @@ httpClient.put("https://httpbin.org/put");
 httpClient.put("https://httpbin.org/put", {"test": 10});
 ```
 
+### httpClient.head(String) -> Result\<Response>
+
+Sends a HTTP HEAD request to a given URL.
+Returns a Result and unwraps to a Response upon success.
+
+```cs
+httpClient.head("https://httpbin.org/get");
+
+{"content": "", "headers": ["...", "..."], "statusCode": 200}
+```
+
 ### Response
 
-Both HTTP.get(), HTTP.post(), httpClient.get(), and httpClient.post() return a Result that unwraps a Response object on success, or nil on error.
+Both HTTP.get(), HTTP.post(), httpClient.put(), and httpClient.head() return a Result that unwraps a Response object on success, or nil on error.
 The Response object returned has 3 public attributes, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response

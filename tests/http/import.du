@@ -6,7 +6,9 @@
 
 import "get.du";
 import "post.du";
+import "head.du";
 import "constants.du";
 import "client.du";
 import "clientGet.du";
 import "clientPost.du";
+import "clientHead.du";
