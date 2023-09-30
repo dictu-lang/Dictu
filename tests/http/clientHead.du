@@ -3,7 +3,7 @@
  *
  * Testing the HTTP.HttpClient.head() function
  *
- */
+ */ 
 from UnitTest import UnitTest;
 
 import HTTP;
