@@ -1186,12 +1186,12 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
 
 static Value httpClientHead(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "get() takes 1 argument (%d given).", argCount);
+        runtimeError(vm, "head() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to get() must be a string.");
+        runtimeError(vm, "URL passed to head() must be a string.");
         return EMPTY_VAL;
     }
 
