@@ -138,7 +138,7 @@ httpClient.head("https://httpbin.org/get");
 
 ### Response
 
-Both HTTP.get(), HTTP.post(), httpClient.put(), and httpClient.head() return a Result that unwraps a Response object on success, or nil on error.
+All HTTP requests return a Result that unwraps a Response object on success, or nil on error.
 The Response object returned has 3 public attributes, "content", "headers" and "statusCode". "content" is the actual content returned from the
 HTTP request as a string, "headers" is a list of all the response headers and "statusCode" is a number denoting the status code from
 the response
