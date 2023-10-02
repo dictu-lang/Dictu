@@ -33,6 +33,35 @@ import Datetime;
 | Datetime.SECONDS_IN_DAY    | The number of seconds in a day.    |
 | Datetime.SECONDS_IN_WEEK   | The number of seconds in a week.   |
 
+
+### Datetime.new() -> Datetime
+
+Returns a datetime object with current datetime.
+
+```cs
+var datetime = Datetime.new(); 
+datetime.toString(); // Fri May 29 03:12:32 2020
+```
+
+### Datetime.new(String, String) -> Datetime
+
+Returns a datetime object for given time string format.
+
+```cs
+var datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); 
+datetime.toString(); // Wed Jan  1 00:00:00 2020
+```
+
+### Datetime.new(Number) -> Datetime
+
+Returns a datetime object for given number of seconds from epoch.
+
+```cs
+const datetime = Datetime.new(1577836800);
+datetime.toString(); // Wed Jan  1 00:00:00 2020
+```
+
+
 ### Datetime.now() -> String
 
 Returns a human readable locale datetime string.
@@ -105,5 +134,23 @@ the date string in the format of the first parameter.
 
 ```cs
 Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
+```
+
+### datetimeObj.strptime() -> Number
+
+Returns a number which is the number of seconds from epoch, for a given datetime
+
+```cs
+const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.strptime(); // 1577836800
+```
+
+### datetimeObj.strftime() -> String
+
+Returns a user-defined datetime formatted string for a datetime object, see [Datetime formats](#datetime-formats).
+
+```cs
+const datetime = Datetime.new();
+datetime.strftime("Today is %A"); // Today is Friday
 ```
 

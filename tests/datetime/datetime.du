@@ -1,0 +1,60 @@
+
+/**
+ * new.du
+ *
+ * Testing the Datetime object
+ *
+ */
+
+
+from UnitTest import UnitTest;
+
+import Datetime;
+
+class TestDatetime < UnitTest {
+    testNewDatetimeDefault() {
+        const datetime = Datetime.new();
+        this.assertNotNil(datetime);
+    }
+    testNewDatetimeUTC() {
+        const datetime = Datetime.newUTC();
+        this.assertNotNil(datetime);
+    }
+    testNewDatetimeTimestampInteger() {
+        const datetime = Datetime.new(1577836800);
+        this.assertEquals(datetime.toString(), "Wed Jan  1 00:00:00 2020");
+    }
+    testNewDatetimeFormatedString() {
+        const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+        this.assertEquals(datetime.toString(), "Wed Jan  1 00:00:00 2020");
+    }
+    testDatetimeStrftime(data) {
+        const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+        this.assertEquals(datetime.strftime(data["pattern"]), data["expected"]);
+    }
+
+    testDatetimeStrptime() {
+        const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+        this.assertEquals(datetime.strptime(), 1577836800);
+    }
+
+    testDatetimeStrftimeProvider() {
+        return [
+            {"pattern": "%y", "expected": "20"},
+            {"pattern": "%Y", "expected": "2020"},
+            {"pattern": "%b", "expected": "Jan"},
+            {"pattern": "%B", "expected": "January"},
+            {"pattern": "%m", "expected": "01"},
+            {"pattern": "%d", "expected": "01"},
+            {"pattern": "%a", "expected": "Wed"},
+            {"pattern": "%A", "expected": "Wednesday"},
+            {"pattern": "%H", "expected": "00"},
+            {"pattern": "%M", "expected": "00"},
+            {"pattern": "%S", "expected": "00"},
+            {"pattern": "%Y-%m-%d %H:%M:%S", "expected": "2020-01-01 00:00:00"},
+            {"pattern": "", "expected": ""}, // catch up the case of an empty string
+        ];
+    }
+}
+
+TestDatetime().run();
