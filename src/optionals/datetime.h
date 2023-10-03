@@ -19,7 +19,6 @@ typedef struct {
 	unsigned char day;	    /* day of the month [1-31] */
 	unsigned char month;		/* months since January [0-11] */
 	unsigned short year;	    /* years since 1900 */
-	long offset;	/* offset from UTC in seconds */
 } Datetime;
 
 Value createDatetimeModule(DictuVM *vm);

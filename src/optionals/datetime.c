@@ -66,7 +66,6 @@ static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
     tictoc.tm_mday = datetime->day;
     tictoc.tm_mon = datetime->month;
     tictoc.tm_year = datetime->year;
-    tictoc.tm_gmtoff = datetime->offset;
     tictoc.tm_isdst = -1;
     const time_t timestamp = mktime(&tictoc);
     localtime_r(&timestamp, &tictoc);
@@ -108,6 +107,7 @@ static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
 }
 
 
+#ifdef HAS_STRPTIME
 static Value datetimeStrptime(DictuVM *vm, int argCount, Value *args){
 
     if (argCount != 0) {
@@ -124,13 +124,13 @@ static Value datetimeStrptime(DictuVM *vm, int argCount, Value *args){
     tictoc.tm_mday = datetime->day;
     tictoc.tm_mon = datetime->month;
     tictoc.tm_year = datetime->year;
-    tictoc.tm_gmtoff = datetime->offset;
     tictoc.tm_isdst = -1;
     const time_t timestamp = mktime(&tictoc);
-    localtime_r(&timestamp, &tictoc);
 
-    return NUMBER_VAL((double) mktime(&tictoc)+tictoc.tm_gmtoff);
+    return NUMBER_VAL(timestamp+tictoc.tm_gmtoff);
 }
+#endif
+
 
 static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
@@ -146,7 +146,6 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     tictoc.tm_mday = datetime->day;
     tictoc.tm_mon = datetime->month;
     tictoc.tm_year = datetime->year;
-    tictoc.tm_gmtoff = datetime->offset;
     tictoc.tm_isdst = -1;
     const time_t timestamp = mktime(&tictoc);
     localtime_r(&timestamp, &tictoc);
@@ -165,8 +164,7 @@ ObjAbstract* newDatetimeObj(
     unsigned char hours,
     unsigned char day,
     unsigned char month,
-    unsigned short year,
-    long offset
+    unsigned short year
     ) {
     ObjAbstract *abstract = newAbstract(vm, freeDatetime, datetimeTypeToString);
     push(vm, OBJ_VAL(abstract));
@@ -178,7 +176,6 @@ ObjAbstract* newDatetimeObj(
     datetime->day = day;
     datetime->month = month;
     datetime->year = year;
-    datetime->offset = offset;
 
     /**
      * Setup Queue object methods
@@ -206,7 +203,7 @@ static Value nowNative(DictuVM *vm, int argCount, Value *args) {
     struct tm tictoc;
     localtime_r(&t, &tictoc);
 
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
 }
 
 static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
@@ -221,7 +218,7 @@ static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
     struct tm tictoc;
     gmtime_r(&t, &tictoc);
 
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
 }
 
 
@@ -236,7 +233,7 @@ static Value newUTCDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     time_t t = time(NULL);
     struct tm tictoc;
     gmtime_r(&t, &tictoc);
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
 }
 
 
@@ -251,9 +248,8 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         }
         struct tm tictoc = {0};
         tictoc.tm_isdst = -1;
-        // char *end = strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc);
         if (strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc) != NULL) {
-             return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+             return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
         } else {
            return NIL_VAL;
         }
@@ -269,7 +265,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         struct tm tictoc = {0};
         time_t num = (time_t)((long) AS_NUMBER(args[0]));
         gmtime_r(&num, &tictoc);
-        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
     }
 
     if (argCount == 0) {
@@ -277,7 +273,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         struct tm tictoc;
         localtime_r(&t, &tictoc);
 
-        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year, tictoc.tm_gmtoff));
+        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
     }
 
     runtimeError(vm, "new() takes 0,1 or 2 arguments, (%d given)", argCount);
