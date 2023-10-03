@@ -140,6 +140,8 @@ Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
 
 Returns a number which is the number of seconds from epoch, for a given datetime
 
+**Note:** This is not available on windows systems.
+
 ```cs
 const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
 datetime.strptime(); // 1577836800

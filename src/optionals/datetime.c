@@ -182,7 +182,9 @@ ObjAbstract* newDatetimeObj(
      */
 
     defineNative(vm, &abstract->values, "strftime", datetimeStrftime);
+    #ifdef HAS_STRPTIME
     defineNative(vm, &abstract->values, "strptime", datetimeStrptime);
+    #endif
     defineNative(vm, &abstract->values, "toString", datetimeToString);
 
     abstract->data = datetime;
