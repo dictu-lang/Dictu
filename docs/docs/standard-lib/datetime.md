@@ -47,6 +47,8 @@ datetime.toString(); // Fri May 29 03:12:32 2020
 
 Returns a datetime object for given time string format.
 
+**Note:** This is not available on windows systems.
+
 ```cs
 var datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); 
 datetime.toString(); // Wed Jan  1 00:00:00 2020
