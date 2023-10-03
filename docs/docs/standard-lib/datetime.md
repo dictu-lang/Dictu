@@ -149,7 +149,7 @@ const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
 datetime.strptime(); // 1577836800
 ```
 
-### datetimeObj.strftime() -> String
+### datetimeObj.strftime(String) -> String
 
 Returns a user-defined datetime formatted string for a datetime object, see [Datetime formats](#datetime-formats).
 
