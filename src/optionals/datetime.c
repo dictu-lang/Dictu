@@ -403,8 +403,6 @@ Value createDatetimeModule(DictuVM *vm) {
     defineNative(vm, &module->values, "now", nowNative);
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
 
-    // defineNative(vm, &module->values, "now", nowNative);
-    // defineNative(vm, &module->values, "nowUTC", nowUTCNative);
     defineNative(vm, &module->values, "strftime", strftimeNative);
     #ifdef HAS_STRPTIME
     defineNative(vm, &module->values, "strptime", strptimeNative);
