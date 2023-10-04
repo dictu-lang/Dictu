@@ -1,0 +1,62 @@
+/**
+ * head.du
+ *
+ * Testing the HTTP.head() function
+ *
+ */
+from UnitTest import UnitTest;
+
+import HTTP;
+
+class TestHttpHead < UnitTest {
+    testHttpHead() {
+        var response = HTTP.head("http://httpbin.org/get", [], 60);
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsHead() {
+        var response = HTTP.head("https://httpbin.org/get", [], 60);
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsHeaders() {
+        var response = HTTP.head("https://httpbin.org/get", ["Header: test"], 60);
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsBadURL() {
+        const response = HTTP.head("https://BAD_URL.test_for_error", [], 1);
+        this.assertFalsey(response.success());
+    }
+
+    testHttpGzip() {
+        var response = HTTP.head("https://httpbin.org/gzip", [], 90);
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+}
+
+TestHttpHead().run();
