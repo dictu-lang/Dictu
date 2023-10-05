@@ -222,7 +222,7 @@ print(list2); // [[10, 2]]
 ### Sorting Lists
 #### list.sort()
 
-To sort numeric lists (that is lists that contain only numbers) you can use the method
+To sort numeric lists and string lists (that is lists that contain only numbers or only strings) you can use the method
 sort.
 
 ```cs
@@ -232,6 +232,15 @@ print(list1); // [1, -1, 4, 2, 10, 5, 3]
 list1.sort();
 
 print(list1); // [-1, 1, 2, 3, 4, 5, 10]
+```
+
+```cs
+var list1 = ["zebra", "cat", "dino", "pig"];
+
+print(list1); // ["zebra", "cat", "dino", "pig"]
+list1.sort();
+
+print(list1); // ["cat", "dino", "pig", "zebra"]
 ```
 
 ### list.forEach(Func)
