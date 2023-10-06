@@ -1977,7 +1977,7 @@ static void enumDeclaration(Compiler *compiler) {
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACE)) {
-            error(compiler->parser, "Trailing comma in enum declaration");
+            break;
         }
 
         consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");
