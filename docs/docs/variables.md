@@ -16,16 +16,16 @@ nav_order: 3
 ---
 ## Data types
 
-| Type | Example | Note |
-| --- | --- | --- |
-| String | `'foo'`, `"bar"` | You can use single or double quotes to represent strings in Dictu. |
-| Number | `100`, `100.5` | This data type includes both integers (whole numbers) and floats (numbers with decimals). |
-| Boolean | `true`, `false` | Fun fact: Boolean data types are named after George Boole. |
-| List | `[1, 2, ‘hi’, true, nil]` | Lists can contain any data type or combination of data types. |
+| Type       | Example                                            | Note                                                                                                                                                                          |
+| ---------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| String     | `'foo'`, `"bar"`                                   | You can use single or double quotes to represent strings in Dictu.                                                                                                            |
+| Number     | `100`, `100.5`                                     | This data type includes both integers (whole numbers) and floats (numbers with decimals).                                                                                     |
+| Boolean    | `true`, `false`                                    | Fun fact: Boolean data types are named after George Boole.                                                                                                                    |
+| List       | `[1, 2, ‘hi’, true, nil]`                          | Lists can contain any data type or combination of data types.                                                                                                                 |
 | Dictionary | `{"key1": 10, 2: "two", true: "true", nil: "nil"}` | Dictionaries have key-value pairs, like a dictionary (Word: Definition). Keys must be an immutable data type (strings, numbers, nil or boolean). Values can be any data type. |
-| Set | `set("1", 1, nil)` | Sets are unordered collections of immutable, unique values. You can create a set with the `set()` function. |
-| Nil | `nil` | Used to signify no value (much like null in other languages) |
-| Result | `Success`, `Error` | See [Error Handling section.](/docs/error-handling) |
+| Set        | `set("1", 1, nil)`                                 | Sets are unordered collections of immutable, unique values. You can create a set with the `set()` function.                                                                   |
+| Nil        | `nil`                                              | Used to signify no value (much like null in other languages)                                                                                                                  |
+| Result     | `Success`, `Error`                                 | See [Error Handling section.](/docs/error-handling)                                                                                                                           |
 
 ## Declaring a variable
 
@@ -48,6 +48,7 @@ Once a variable has been defined, `var` is no longer needed to update the value 
 ```cs
 var someNumber = 10;
 someNumber = someNumber + 13;
+someNumber = someNumber.negate();
 ```
 
 Variables can also change their data type without being redeclared with `var`:

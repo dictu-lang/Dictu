@@ -1,0 +1,21 @@
+/**
+ * negate.du
+ *
+ * Testing the number.negate() method
+ *
+ * .negate() returns the negated value of the number
+ */
+
+from UnitTest import UnitTest;
+
+class NegateNumberTest < UnitTest {
+    testNumberNegate() {
+        const x = 100;
+        const n = x.negate();
+        this.assertEquals(n, -100);
+        const p = n.negate();
+        this.assertEquals(p, x);
+    }
+}
+
+NegateNumberTest().run();

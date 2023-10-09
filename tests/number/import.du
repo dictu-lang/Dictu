@@ -4,6 +4,7 @@
 * General import file for all the function tests
 */
 
+import "negate.du";
 import "toString.du";
 import "toBool.du";
 import "literals.du";
