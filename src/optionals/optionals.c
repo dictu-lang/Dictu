@@ -5,6 +5,7 @@ BuiltinModules modules[] = {
     {"Argparse", &createArgParseModule, false},
     {"Math", &createMathsModule, false},
     {"Env", &createEnvModule, true},
+    {"IO", &createIOModule, false},
     {"JSON", &createJSONModule, false},
     {"Log", &createLogModule, false},
     {"Path", &createPathModule, false},
