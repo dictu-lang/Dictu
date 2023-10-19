@@ -42,7 +42,6 @@ Value createIOModule(DictuVM *vm) {
      * Define IO methods
      */
     defineNative(vm, &module->values, "print", printIO);
-    defineNative(vm, &module->values, "fprint", fprintIO);
     defineNative(vm, &module->values, "println", printlnIO);
 
     pop(vm);
