@@ -1,3 +1,11 @@
+#include <fcntl.h>
+#include <unistd.h>
+#if defined(__APPLE__) || defined(__FreeBSD__)
+#include <copyfile.h>
+#else
+#include <sys/sendfile.h>
+#endif
+
 #include "io.h"
 
 
@@ -28,6 +36,52 @@ static Value printlnIO(DictuVM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+//#ifndef _WIN32
+static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "copyFile() takes 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "src argument needs to be a string");
+        return EMPTY_VAL;    
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "dst argument needs to be a string");
+        return EMPTY_VAL;    
+    }
+
+    char *src = AS_STRING(args[0])->chars;
+    char *dst = AS_STRING(args[1])->chars;
+
+    int in = 0;
+    int out = 0;
+
+    if ((in = open(src, O_RDONLY)) == -1) {
+        return newResultError(vm, "failed to open src file");
+    }
+    if ((out = creat(dst, 0660)) == -1) {
+        close(in);
+        return newResultError(vm, "failed to create/open dst file");
+    }
+
+#if defined(__APPLE__) || defined(__FreeBSD__)
+    fcopyfile(in, out, 0, COPYFILE_ALL);
+#else
+    off_t bytes = 0;
+    struct stat fileinfo = {0};
+    fstat(in, &fileinfo);
+    sendfile(out, in, &bytes, fileinfo.st_size);
+#endif
+    close(in);
+    close(out);
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+//#endif
+
 Value createIOModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "IO", 2);
     push(vm, OBJ_VAL(name));
@@ -43,6 +97,9 @@ Value createIOModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "print", printIO);
     defineNative(vm, &module->values, "println", printlnIO);
+//#ifndef _WIN32
+    defineNative(vm, &module->values, "copyFile", copyFileIO);
+//#endif
 
     pop(vm);
     pop(vm);

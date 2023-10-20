@@ -1,0 +1,34 @@
+/**
+ * copyFile.du
+ *
+ * Testing the IO.copyFile() method
+ */
+from UnitTest import UnitTest;
+
+import IO;
+import System;
+
+class TestIOCopyFile < UnitTest {
+    const testFile1 = "tests/io/test1";
+    const testFile2 = "tests/io/test2";
+
+    setUp() {
+        with(this.testFile1, "w") {
+            this.written = file.write("Dictu!");
+        }
+    }
+
+    tearDown() {
+        System.remove(this.testFile1);
+        System.remove(this.testFile2);
+    }
+
+    testIOCopyFile() {
+        const res = IO.copyFile(this.testFile1, this.testFile2);
+        this.assertSuccess(res);
+    }
+}
+
+//if (System.platform != "windows") {
+    TestIOCopyFile().run();
+//}

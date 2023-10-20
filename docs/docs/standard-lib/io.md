@@ -41,3 +41,13 @@ Prints a given list of values to stdout with an appended newline character.
 IO.println("Dictu!");
 // Dictu!
 ```
+
+### IO.copyFile(String: src, String: dst) -> Result<Nil>
+
+Copies the contents from the source file to the destination file.
+
+Returns a Result type and on success will unwrap to nil.
+
+```cs
+IO.copyFile(src, dst);
+```
