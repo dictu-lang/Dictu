@@ -1,34 +1,53 @@
 /**
  * copyFile.du
  *
- * Testing the IO.copyFile() method
+ * Testing the IO.copyFile() function
+ *
+ * copyFile() copies the contents from the source file to the 
+ * destination file.
  */
 from UnitTest import UnitTest;
 
 import IO;
+import Path;
 import System;
 
-class TestIOCopyFile < UnitTest {
-    const testFile1 = "tests/io/test1";
-    const testFile2 = "tests/io/test2";
+const srcFile = "src_file",
+      dstFile = "dst_file";
+
+class TestSystemCopyFile < UnitTest {
+    private tmpDir;
 
     setUp() {
-        with(this.testFile1, "w") {
-            this.written = file.write("Dictu!");
-        }
+        this.tmpDir = "temp";
+        System.mkdir("temp");
     }
 
     tearDown() {
-        System.remove(this.testFile1);
-        System.remove(this.testFile2);
+        Path.listDir(this.tmpDir).forEach(def(f) => {
+            System.remove(Path.join(this.tmpDir, f));
+        });
+
+        System.rmdir(this.tmpDir);
     }
 
-    testIOCopyFile() {
-        const res = IO.copyFile(this.testFile1, this.testFile2);
+    testCopyFile() {
+        with(Path.join(this.tmpDir, srcFile), 'w') {
+            file.write("lots and lots of temp data!");
+        }
+
+        with(Path.join(this.tmpDir, srcFile), 'r') {
+            print(file.read());
+        }
+
+        const srcFullPath = Path.join(this.tmpDir, srcFile);
+        const dstFullPath = Path.join(this.tmpDir, dstFile);
+
+        const res = IO.copyFile(srcFullPath, dstFullPath);
+
+        this.assertNotNil(res);
         this.assertSuccess(res);
     }
 }
 
-//if (System.platform != "windows") {
-    TestIOCopyFile().run();
-//}
+TestSystemCopyFile().run();
