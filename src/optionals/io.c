@@ -1,8 +1,9 @@
 #include <fcntl.h>
-#include <unistd.h>
 #if defined(__APPLE__) || defined(__FreeBSD__)
+#include <unistd.h>
 #include <copyfile.h>
 #else
+#include <unistd.h>
 #include <sys/sendfile.h>
 #endif
 
@@ -69,11 +70,17 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
     fcopyfile(in, out, 0, COPYFILE_ALL);
-#else
+#elif defined(__linux__)
     off_t bytes = 0;
     struct stat fileinfo = {0};
     fstat(in, &fileinfo);
     sendfile(out, in, &bytes, fileinfo.st_size);
+#elif defined(_WIN32)
+    int buffer = fgetc(in);
+    while (buffer != EOF) {
+        fputc(buffer, out);
+        buffer = fgetc(in);
+    }
 #endif
     close(in);
     close(out);
@@ -97,9 +104,7 @@ Value createIOModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "print", printIO);
     defineNative(vm, &module->values, "println", printlnIO);
-//#ifndef _WIN32
     defineNative(vm, &module->values, "copyFile", copyFileIO);
-//#endif
 
     pop(vm);
     pop(vm);
