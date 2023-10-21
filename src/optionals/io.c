@@ -1,9 +1,10 @@
 #include <fcntl.h>
-#if defined(__APPLE__) || defined(__FreeBSD__)
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #include <copyfile.h>
 #else
-#include <unistd.h>
 #include <sys/sendfile.h>
 #endif
 
