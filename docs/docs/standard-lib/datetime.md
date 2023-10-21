@@ -40,18 +40,7 @@ Returns a datetime object with current datetime.
 
 ```cs
 var datetime = Datetime.new(); 
-datetime.toString(); // Fri May 29 03:12:32 2020
-```
-
-### Datetime.new(String, String) -> Datetime
-
-Returns a datetime object for given time string format.
-
-**Note:** This is not available on windows systems.
-
-```cs
-var datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); 
-datetime.toString(); // Wed Jan  1 00:00:00 2020
+datetime.strftime(); // Fri May 29 03:12:32 2020
 ```
 
 ### Datetime.new(Number) -> Datetime
@@ -60,7 +49,7 @@ Returns a datetime object for given number of seconds from epoch.
 
 ```cs
 const datetime = Datetime.new(1577836800);
-datetime.toString(); // Wed Jan  1 00:00:00 2020
+datetime.strftime(); // Wed Jan  1 00:00:00 2020
 ```
 
 
@@ -78,6 +67,18 @@ Returns a human readable UTC datetime string.
 
 ```cs
 Datetime.now(); // Fri May 29 02:12:32 2020
+```
+
+
+### Datetime.strptime(String, String) -> Datetime
+
+Returns a datetime object for given time string format.
+
+**Note:** This is not available on windows systems.
+
+```cs
+var datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); 
+datetime.strftime(); // Wed Jan  1 00:00:00 2020
 ```
 
 ### Datetime formats
@@ -113,48 +114,31 @@ Datetime.now(); // Fri May 29 02:12:32 2020
 | %%        | A literal %                                                                        |                          |
 
 
-### Datetime.strftime(String, Number: time -> Optional) -> String
-
-Returns a user-defined datetime formatted string, see [Datetime formats](#datetime-formats). `strftime` also takes an optional argument
-which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
-the current point in time.
-
-```cs
-Datetime.strftime("Today is %A"); // Today is Friday
-
-var time = System.time();
-Datetime.strftime("Some point in time %H:%M:%S", time);
-```
-
-### Datetime.strptime(String, String) -> Number
-
-Returns a number which is the number of seconds from epoch. `strptime` expects two parameters
-the first parameter being the date format, see [Datetime formats](#datetime-formats) and the second
-the date string in the format of the first parameter.
-
-**Note:** This is not available on windows systems.
-
-```cs
-Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
-```
-
-### datetimeObj.strptime() -> Number
+### datetimeObj.getTime() -> Number
 
 Returns a number which is the number of seconds from epoch, for a given datetime
 
 **Note:** This is not available on windows systems.
 
 ```cs
-const datetime = Datetime.new("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
-datetime.strptime(); // 1577836800
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.getTime(); // 1577836800
 ```
 
-### datetimeObj.strftime(String) -> String
+### datetimeObj.strftime(String -> Optional) -> String
 
 Returns a user-defined datetime formatted string for a datetime object, see [Datetime formats](#datetime-formats).
 
 ```cs
 const datetime = Datetime.new();
 datetime.strftime("Today is %A"); // Today is Friday
+```
+
+Returns in default format when user defined format is not provided 
+
+
+```cs
+const datetime = Datetime.new();
+datetime.strftime(); // Sat Oct 21 21:44:25 2023
 ```
 

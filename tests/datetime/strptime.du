@@ -12,7 +12,7 @@ import System;
 class TestStrptimeDatetimeModule < UnitTest {
     testStrptime(data) {
         // 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
-        this.assertEquals(Datetime.strptime(data["pattern"], data["value"]), 1577836800);
+        this.assertEquals(Datetime.strptime(data["pattern"], data["value"]).getTime(), 1577836800);
     }
 
     testStrptimeProvider() {

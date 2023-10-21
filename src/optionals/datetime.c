@@ -33,24 +33,36 @@ char *datetimeTypeToString(ObjAbstract *abstract) {
 }
 
 static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
-    if (argCount != 1) {
-        runtimeError(vm, "strftime() takes 1 argument (%d given)", argCount);
+
+
+    if (argCount > 1) {
+        runtimeError(vm, "strftime() takes 0 or 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "strftime() argument must be a string");
-        return EMPTY_VAL;
-    }
+    char *fmt;
+    int len;
 
-    ObjString *format = AS_STRING(args[1]);
+    int default_length = 128;
 
-     /** this is to avoid an eternal loop while calling strftime() below */
-    if (0 == format->length)
+    if(argCount == 1) {
+        if (!IS_STRING(args[1])) {
+            runtimeError(vm, "strftime() argument must be a string");
+            return EMPTY_VAL;
+        }
+        ObjString *format = AS_STRING(args[1]);
+        /** this is to avoid an eternal loop while calling strftime() below */
+        if (0 == format->length)
         return OBJ_VAL(copyString(vm, "", 0));
 
-    char *fmt = format->chars;
-    int len = (format->length > 128 ? format->length * 4 : 128);
+        fmt = format->chars;
+        len = (format->length > default_length ? format->length * 4 : default_length);
+    }
+
+    else {
+        len = default_length;
+        fmt = "%a %b %d %H:%M:%S %Y";
+    }
 
     char *point = ALLOCATE(vm, char, len);
     if (point == NULL) {
@@ -108,10 +120,10 @@ static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
 
 
 #ifdef HAS_STRPTIME
-static Value datetimeStrptime(DictuVM *vm, int argCount, Value *args){
+static Value datetimeGetTime(DictuVM *vm, int argCount, Value *args){
 
     if (argCount != 0) {
-        runtimeError(vm, "strptime() take 0 argument (%d given)", argCount);
+        runtimeError(vm, "getTime() take 0 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -130,31 +142,6 @@ static Value datetimeStrptime(DictuVM *vm, int argCount, Value *args){
     return NUMBER_VAL(timestamp+tictoc.tm_gmtoff);
 }
 #endif
-
-
-static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "toString() takes no arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Datetime *datetime = AS_DATETIME(args[0]);
-    struct tm tictoc;
-    tictoc.tm_sec = datetime->seconds;
-    tictoc.tm_min = datetime->minutes;
-    tictoc.tm_hour = datetime->hours;
-    tictoc.tm_mday = datetime->day;
-    tictoc.tm_mon = datetime->month;
-    tictoc.tm_year = datetime->year;
-    tictoc.tm_isdst = -1;
-    const time_t timestamp = mktime(&tictoc);
-    localtime_r(&timestamp, &tictoc);
-
-    char time[26];
-    asctime_r(&tictoc, time);
-
-    return OBJ_VAL(copyString(vm, time, strlen(time) - 1));
-}
 
 
 ObjAbstract* newDatetimeObj(
@@ -183,9 +170,8 @@ ObjAbstract* newDatetimeObj(
 
     defineNative(vm, &abstract->values, "strftime", datetimeStrftime);
     #ifdef HAS_STRPTIME
-    defineNative(vm, &abstract->values, "strptime", datetimeStrptime);
+    defineNative(vm, &abstract->values, "getTime", datetimeGetTime);
     #endif
-    defineNative(vm, &abstract->values, "toString", datetimeToString);
 
     abstract->data = datetime;
     pop(vm);
@@ -241,22 +227,6 @@ static Value newUTCDatetimeNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
-    
-    #ifdef HAS_STRPTIME
-    if (argCount == 2) {
-        if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-            runtimeError(vm, "new() takes 2 arguments, must be strings (%d given)", argCount);
-            return EMPTY_VAL;
-        }
-        struct tm tictoc = {0};
-        tictoc.tm_isdst = -1;
-        if (strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc) != NULL) {
-             return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
-        } else {
-           return NIL_VAL;
-        }
-    }
-    #endif
 
     if(argCount == 1) {
         if (!IS_NUMBER(args[0])) {
@@ -278,7 +248,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
     }
 
-    runtimeError(vm, "new() takes 0,1 or 2 arguments, (%d given)", argCount);
+    runtimeError(vm, "new() takes 0 or 1 argument, (%d given)", argCount);
 
     return EMPTY_VAL;
 }
@@ -299,94 +269,13 @@ static Value strptimeNative(DictuVM *vm, int argCount, Value *args) {
     tictoc.tm_mday = 1;
     tictoc.tm_isdst = -1;
 
-    char *end = strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc);
-
-    if (end == NULL) {
-        return NIL_VAL;
+    if (strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc) != NULL) {
+        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
     }
 
-    return NUMBER_VAL((double) mktime(&tictoc) + tictoc.tm_gmtoff);
+    return NIL_VAL;
 }
 #endif
-
-static Value strftimeNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "strftime() takes 1 or 2 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "strftime() argument must be a string");
-        return EMPTY_VAL;
-    }
-
-    time_t t;
-
-    if (argCount == 2) {
-        if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "strftime() optional argument must be a number");
-            return EMPTY_VAL;
-        }
-
-        t = AS_NUMBER(args[1]);
-    } else {
-        time(&t);
-    }
-
-    ObjString *format = AS_STRING(args[0]);
-
-    /** this is to avoid an eternal loop while calling strftime() below */
-    if (0 == format->length)
-        return OBJ_VAL(copyString(vm, "", 0));
-
-    char *fmt = format->chars;
-
-    struct tm tictoc;
-    int len = (format->length > 128 ? format->length * 4 : 128);
-
-    char *point = ALLOCATE(vm, char, len);
-    if (point == NULL) {
-        runtimeError(vm, "Memory error on strftime()!");
-        return EMPTY_VAL;
-    }
-
-    gmtime_r(&t, &tictoc);
-
-    /**
-     * strtime returns 0 when it fails to write - this would be due to the buffer
-     * not being large enough. In that instance we double the buffer length until
-     * there is a big enough buffer.
-     */
-
-     /** however is not guaranteed that 0 indicates a failure (`man strftime' says so).
-     * So we might want to catch up the eternal loop, by using a maximum iterator.
-     */
-    int max_iterations = 8;  // maximum 65536 bytes with the default 128 len,
-                             // more if the given string is > 128
-    int iterator = 0;
-    while (strftime(point, sizeof(char) * len, fmt, &tictoc) == 0) {
-        if (++iterator > max_iterations) {
-            FREE_ARRAY(vm, char, point, len);
-            return OBJ_VAL(copyString(vm, "", 0));
-        }
-
-        len *= 2;
-
-        point = GROW_ARRAY(vm, point, char, len / 2, len);
-        if (point == NULL) {
-            runtimeError(vm, "Memory error on strftime()!");
-            return EMPTY_VAL;
-        }
-    }
-
-    int length = strlen(point);
-
-    if (length != len) {
-        point = SHRINK_ARRAY(vm, point, char, len, length + 1);
-    }
-
-    return OBJ_VAL(takeString(vm, point, length));
-}
 
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
@@ -403,7 +292,6 @@ Value createDatetimeModule(DictuVM *vm) {
     defineNative(vm, &module->values, "now", nowNative);
     defineNative(vm, &module->values, "nowUTC", nowUTCNative);
 
-    defineNative(vm, &module->values, "strftime", strftimeNative);
     #ifdef HAS_STRPTIME
     defineNative(vm, &module->values, "strptime", strptimeNative);
     #endif

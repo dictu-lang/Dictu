@@ -11,11 +11,15 @@ import Datetime;
 class TestStrftimeDatetimeModule < UnitTest {
     testStrftime(data) {
         // 1577836800 is 1/1/2020 at 12:00 am (Wednesday)
-        this.assertEquals(Datetime.strftime(data["pattern"], 1577836800), data["expected"]);
+        this.assertEquals(Datetime.new(1577836800).strftime(data["pattern"]), data["expected"]);
+    }
+
+    testStrftimeWithoutPattern() {
+        this.assertEquals(Datetime.new(1577836800).strftime(), "Wed Jan 01 00:00:00 2020");
     }
 
     testStrftimeUPattern() {
-        this.assertTruthy(Datetime.strftime("%u", 1577836800) == "3" or Datetime.strftime("%u", 1577836800) == "");
+        this.assertTruthy(Datetime.new(1577836800).strftime("%u") == "3" or Datetime.new(1577836800).strftime("%u") == "");
     }
 
     testStrftimeProvider() {
