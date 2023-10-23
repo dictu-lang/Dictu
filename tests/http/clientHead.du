@@ -1,0 +1,71 @@
+/**
+ * clientHead.du
+ *
+ * Testing the HTTP.HttpClient.head() function
+ *
+ */ 
+from UnitTest import UnitTest;
+
+import HTTP;
+
+class TestHttpClientHead < UnitTest {
+
+    private httpClient;
+
+    setUp() {
+        this.httpClient = HTTP.newClient({});
+    }
+
+    testHttpGet() {
+        var response = this.httpClient.head("http://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsGet() {
+        var response = this.httpClient.head("https://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsHeaders() {
+        this.httpClient.setHeaders(["Header: test"]);
+        var response = this.httpClient.head("https://httpbin.org/get");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+
+    testHttpsBadURL() {
+        this.httpClient.setTimeout(1);
+        const response = this.httpClient.head("https://BAD_URL.test_for_error");
+        this.assertFalsey(response.success());
+    }
+
+    testHttpGzip() {
+        var response = this.httpClient.head("https://httpbin.org/gzip");
+        this.assertTruthy(response.success());
+
+        response = response.unwrap();
+
+        this.assertEquals(response.statusCode, 200);
+        this.assertEquals(response.content, "");
+        this.assertTruthy(response.headers.len() > 0);
+    }
+}
+
+TestHttpClientHead().run();

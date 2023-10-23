@@ -39,6 +39,7 @@ struct _vm {
     Table classMethods;
     Table instanceMethods;
     Table resultMethods;
+    Table enumMethods;
     ObjString *initString;
     ObjString *annotationString;
     ObjString *replVar;

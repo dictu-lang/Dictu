@@ -6,6 +6,7 @@
 #include "argparse/argparse.h"
 #include "math.h"
 #include "env/env.h"
+#include "io.h"
 #include "system.h"
 #include "json.h"
 #include "log.h"

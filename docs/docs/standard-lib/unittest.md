@@ -1,7 +1,7 @@
 ---
 layout: default
 title: UnitTest
-nav_order: 22
+nav_order: 23
 parent: Standard Library
 ---
 
@@ -449,3 +449,63 @@ a `Success` state.
 
 This helper method ensures that the value passed in is a `Result` type in
 an `Error` state. 
+
+## Mocking
+
+Mocking is an important part of unit testing as it allows us to focus on a single unit of code and correctly test that 
+part is working. If we have a method that, for example, calls an external API and does some *stuff* with the response, we don't 
+care about testing the API request, we just want to assume it successfully returned some data and that our method correctly 
+handles that data, that's where mocking comes in.
+
+`mock()` is a function within the UnitTest module that expects a class given to it and it will return an object with the 
+same blueprint as the given class, however, all methods actually do nothing and by default return nil.
+
+```cs
+from UnitTest import mock;
+
+class Test {
+    print() {
+        print("test!");
+    }
+}
+
+Test().print(); // test!
+mock(Test).print(); // <nothing>
+```
+
+A lot of the time, however, methods will return a value, following on from our API example, we can tell the mock object to return
+a given value if that method is called. To do that, mock can be given a dictionary as the second argument which is a mapping of 
+method name to value returned.
+
+```cs
+import HTTP;
+
+from UnitTest import mock;
+
+class ExternalApi {
+    someExternalCall() {
+        const response = HTTP.get("https://dictu-lang.com/").unwrap();
+        print("Calling API!");
+
+        return response.statusCode;
+    }
+}
+
+class SomeServiceClass {
+    init(private api) {}
+
+    print() {
+        const statusCode = this.api.someExternalCall();
+
+        if (statusCode == 200) {
+            print("Success!");
+        }
+    }
+}
+
+const successObj = mock(ExternalApi, {"someExternalCall": 200});
+SomeServiceClass(successObj).print(); // Success!
+
+const errorObj = mock(ExternalApi, {"someExternalCall": 500});
+SomeServiceClass(errorObj).print(); // <nothing>
+```
