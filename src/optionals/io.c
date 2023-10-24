@@ -4,7 +4,7 @@
 #endif
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include <copyfile.h>
-#else
+#elif defined(__linux__)
 #include <sys/sendfile.h>
 #endif
 
