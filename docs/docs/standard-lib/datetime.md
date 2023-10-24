@@ -134,7 +134,7 @@ const datetime = Datetime.new();
 datetime.strftime("Today is %A"); // Today is Friday
 ```
 
-Returns in default format when user defined format is not provided 
+Returns in default format "%a %b %d %H:%M:%S %Y", when user defined format is not provided 
 
 
 ```cs

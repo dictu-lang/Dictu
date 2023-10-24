@@ -27,16 +27,16 @@ Datetime* createDatetime(DictuVM *vm) {
 char *datetimeTypeToString(ObjAbstract *abstract) {
     UNUSED(abstract);
 
-    char *queueString = malloc(sizeof(char) * 11);
-    snprintf(queueString, 11, "<Datetime>");
-    return queueString;
+    char *datetimeString = malloc(sizeof(char) * 11);
+    snprintf(datetimeString, 11, "<Datetime>");
+    return datetimeString;
 }
 
 static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
 
 
     if (argCount > 1) {
-        runtimeError(vm, "strftime() takes 0 or 1 argument (%d given)", argCount);
+        runtimeError(vm, "strftime() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -183,7 +183,7 @@ static Value nowNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "nowNative() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "now() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -198,7 +198,7 @@ static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "nowUTCNative() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "nowUTC() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -214,7 +214,7 @@ static Value newUTCDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "nowUTCNative() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "nowUTC() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -230,7 +230,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
 
     if(argCount == 1) {
         if (!IS_NUMBER(args[0])) {
-            runtimeError(vm, "new() takes 1 argument , must be a number");
+            runtimeError(vm, "new() argument must be a number");
             return EMPTY_VAL;
         }
 
@@ -248,7 +248,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
     }
 
-    runtimeError(vm, "new() takes 0 or 1 argument, (%d given)", argCount);
+    runtimeError(vm, "new() takes 0 or 1 arguments (%d given)", argCount);
 
     return EMPTY_VAL;
 }
