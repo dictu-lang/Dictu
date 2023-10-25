@@ -84,14 +84,9 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "src argument needs to be a string");
-        return EMPTY_VAL;    
-    }
-
-    if (!IS_STRING(args[1])) {
-        runtimeError(vm, "dst argument needs to be a string");
-        return EMPTY_VAL;    
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "copyFile() arguments must be strings.");
+        return EMPTY_VAL;
     }
 
     char *src = AS_STRING(args[0])->chars;
