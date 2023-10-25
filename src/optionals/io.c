@@ -38,7 +38,46 @@ static Value printlnIO(DictuVM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
-//#ifndef _WIN32
+#ifdef _WIN32
+static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "copyFile() takes 2 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "copyFile() arguments must be strings.");
+        return EMPTY_VAL;
+    }
+
+    char *srcFile = AS_STRING(args[0])->chars;
+    char *dstFile = AS_STRING(args[1])->chars;
+
+    FILE *sf = fopen(srcFile, "r");
+    if (sf == NULL) {
+        return newResultError(vm, "cannot open src file");
+    }
+
+    FILE *df = fopen(dstFile, "w");
+    if (df == NULL) {
+        fclose(sf);
+        return newResultError(vm, "cannot open dst file");
+    }
+
+    int buffer = fgetc(sf);
+    while (buffer != EOF) {
+        fputc(buffer, df);
+        buffer = fgetc(sf);
+    }
+
+    fclose(sf);
+    fclose(df);
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+#endif
+
+#ifndef _WIN32
 static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "copyFile() takes 2 arguments (%d given)", argCount);
@@ -76,19 +115,13 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
     struct stat fileinfo = {0};
     fstat(in, &fileinfo);
     sendfile(out, in, &bytes, fileinfo.st_size);
-#elif defined(_WIN32)
-    int buffer = fgetc(in);
-    while (buffer != EOF) {
-        fputc(buffer, out);
-        buffer = fgetc(in);
-    }
 #endif
     close(in);
     close(out);
 
     return newResultSuccess(vm, NIL_VAL);
 }
-//#endif
+#endif
 
 Value createIOModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "IO", 2);
