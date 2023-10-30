@@ -1692,7 +1692,55 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
 
 static bool checkLiteralToken(Compiler *compiler) {
     return check(compiler, TOKEN_STRING) || check(compiler, TOKEN_NUMBER) ||
-        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
+        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE)
+        || check(compiler, TOKEN_NIL) || check(compiler, TOKEN_LEFT_BRACE);
+}
+
+static Value parseDict(Compiler *compiler);
+
+static Value parseDictValue(Compiler *compiler) {
+    if (match(compiler, TOKEN_STRING)) {
+        return parseString(compiler, false);
+    } else if (match(compiler, TOKEN_LEFT_BRACE)) {
+        return parseDict(compiler);
+    }
+
+    return EMPTY_VAL;
+}
+
+static Value parseDict(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    ObjDict *dict = newDict(vm);
+    push(vm, OBJ_VAL(dict));
+
+    do {
+        if (match(compiler, TOKEN_RIGHT_BRACE))
+            break;
+
+        Value key = parseDictValue(compiler);
+        push(vm, key);
+
+        if (IS_EMPTY(key) || IS_DICT(key)) {
+            errorAtCurrent(compiler->parser, "Invalid key type for annotation dictionary, allowed: bool, number, string, nil");
+        }
+
+        consume(compiler, TOKEN_COLON, "Expected colon after dict key");
+
+        Value value = parseDictValue(compiler);
+        if (IS_EMPTY(value)) {
+            errorAtCurrent(compiler->parser, "Invalid value type for annotation dictionary");
+        }
+
+        push(vm, value);
+        dictSet(vm, dict, key, value);
+        pop(vm);
+        pop(vm);
+
+    } while (match(compiler, TOKEN_COMMA));
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
+
+    return OBJ_VAL(dict);
 }
 
 static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
@@ -1715,6 +1763,10 @@ static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
                 Value string = parseString(compiler, false);
                 push(vm, string);
                 dictSet(vm, annotationDict, annotationName, string);
+                pop(vm);
+            } else if (match(compiler, TOKEN_LEFT_BRACE)) {
+                Value dict = parseDict(compiler);
+                dictSet(vm, annotationDict, annotationName, dict);
                 pop(vm);
             } else if (match(compiler, TOKEN_NUMBER)) {
                 Value number = parseNumber(compiler, false);
