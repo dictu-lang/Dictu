@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#endif
+
 #include <arpa/inet.h>
 #include <string.h>
 
@@ -21,10 +25,15 @@ static Value parseIp4(DictuVM *vm, int argCount, Value *args) {
     char *ipStr = AS_CSTRING(args[0]);
     char ignore[4] = {0};
     
+#ifdef _WIN32
+    if (InetPton(AF_INET, ipStr, ignore) == 0) {
+        return newResultError(vm, "invalid ip4 address");
+    }
+#else
     if (inet_pton(AF_INET, ipStr, ignore) == 0) {
         return newResultError(vm, "invalid ip4 address");
     }
-    
+#endif    
     unsigned char value[IP4_LEN] = {0};
     size_t index = 0;
 
