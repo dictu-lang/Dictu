@@ -1,9 +1,10 @@
 #ifdef _WIN32
 #include "windowsapi.h"
-//#include <Ws2tcpip.h>
+#include <Ws2tcpip.h>
+#else
+#include <arpa/inet.h>
 #endif
 
-#include <arpa/inet.h>
 #include <string.h>
 
 #include "net.h"
