@@ -1,6 +1,6 @@
 #ifdef _WIN32
 #include "windowsapi.h"
-#include <Ws2tcpip.h>
+//#include <Ws2tcpip.h>
 #endif
 
 #include <arpa/inet.h>
@@ -67,13 +67,13 @@ Value createNetModule(DictuVM *vm) {
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
 
+    defineNativeProperty(vm, &module->values, "ip4Len", NUMBER_VAL(IP4_LEN));
+    defineNativeProperty(vm, &module->values, "ip6Len", NUMBER_VAL(IP6_LEN));
+
     /**
      * Define Net methods
      */
     defineNative(vm, &module->values, "parseIp4", parseIp4);
-
-    defineNativeProperty(vm, &module->values, "ip4Len", NUMBER_VAL(IP4_LEN));
-    defineNativeProperty(vm, &module->values, "ip6Len", NUMBER_VAL(IP6_LEN));
 
     pop(vm);
     pop(vm);
