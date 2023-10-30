@@ -27,6 +27,14 @@ class TestParseIp4 < UnitTest {
         const parsed = res.unwrap();
         this.assertEquals(parsed.len(), Net.ip4Len);
     }
+
+    testParseBadIp4() {
+        const res = Net.parseIp4("900.8");
+        this.assertError(res);
+
+        const res2 = Net.parseIp4("255.256.255.255");
+        this.assertError(res2);
+    }
 }
 
 TestParseIp4().run();

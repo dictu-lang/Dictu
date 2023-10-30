@@ -3,5 +3,5 @@ import Net;
 
 print(Net.ip4Len);
 print(Net.ip6Len);
-const res = Net.parseIp("10.1.1.9").unwrap();
+const res = Net.parseIp4("10.1.1.9").unwrap();
 print(res);

@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <string.h>
 
 #include "net.h"
@@ -18,6 +19,11 @@ static Value parseIp4(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *ipStr = AS_CSTRING(args[0]);
+    char ignore[4] = {0};
+    
+    if (inet_pton(AF_INET, ipStr, ignore) == 0) {
+        return newResultError(vm, "invalid ip4 address");
+    }
     
     unsigned char value[IP4_LEN] = {0};
     size_t index = 0;
