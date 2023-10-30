@@ -1017,7 +1017,7 @@ static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-int parseEscapeSequences(char *string, int length) {
+int parseEscapeSequences(Parser *parser, char *string, int length) {
     for (int i = 0; i < length - 1; i++) {
         if (string[i] == '\\') {
             switch (string[i + 1]) {
@@ -1036,6 +1036,28 @@ int parseEscapeSequences(char *string, int length) {
                 case 'v': {
                     string[i + 1] = '\v';
                     break;
+                }
+                case 'x': {
+                    if (string[i + 2] == '\0' || string[i + 3] == '\0') {
+                        error(parser, "\\x escape code expects format \\xhh");
+                        break;
+                    }
+
+                    char hexChars[3];
+                    char *end;
+                    memcpy(hexChars, &string[i + 2], 2);
+                    hexChars[2] = '\0';
+                    int hex = strtol(hexChars, &end, 16);
+
+                    if (hexChars == end) {
+                        error(parser, "\\x escape code failed to parse");
+                        break;
+                    }
+
+                    string[i + 3] = hex;
+                    memmove(&string[i], &string[i + 3], length - 3 - i);
+                    length -= 3;
+                    continue;
                 }
                 case '\\': {
                     string[i + 1] = '\\';
@@ -1080,7 +1102,7 @@ static Value parseString(Compiler *compiler, bool canAssign) {
     char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
     memcpy(string, parser->previous.start + 1, stringLength);
-    int length = parseEscapeSequences(string, stringLength);
+    int length = parseEscapeSequences(parser, string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
     if (length != stringLength) {
