@@ -4,4 +4,4 @@
 * General import file for net module tests.
 */
 
-import "parseIp.du";
+import "parseIp4.du";
