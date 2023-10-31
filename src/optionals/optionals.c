@@ -11,6 +11,7 @@ BuiltinModules modules[] = {
     {"Path", &createPathModule, false},
     {"Datetime", &createDatetimeModule, false},
     {"Socket", &createSocketModule, false},
+    {"Net", &createNetModule, false},
     {"Random", &createRandomModule, false},
     {"Base64", &createBase64Module, false},
     {"Hashlib", &createHashlibModule, false},
