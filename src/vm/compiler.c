@@ -1889,7 +1889,7 @@ static bool isFieldAnnotation(Compiler *compiler) {
         if (match(compiler, TOKEN_LEFT_PAREN)) {
             do {
                 advance(compiler->parser);
-            } while (check(compiler, TOKEN_RIGHT_PAREN));
+            } while (!match(compiler, TOKEN_RIGHT_PAREN));
         }
     } while (match(compiler, TOKEN_AT));
 
