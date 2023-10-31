@@ -24,7 +24,7 @@ To make use of the Process module an import is required.
 import Process;
 ```
 
-### Process.exec(List) -> Result<Nil>
+### Process.exec(List) -> Result\<Nil>
 
 Executing an external process can be done via `.exec`. Unlike `.run()` exec does not wait for the process
 to finish executing, so it is only useful for circumstances where you wish to "fire and forget".
@@ -36,7 +36,7 @@ It will return a Result that unwraps to `nil` on success.
 Process.exec(["ls", "-la"]);
 ```
 
-### Process.run(List, Boolean: captureOutput -> Optional) -> Result<Nil>
+### Process.run(List, Boolean: captureOutput -> Optional) -> Result\<Nil>
 
 Similar to `.exec()` except this **will** wait for the external process to finish executing.
 
