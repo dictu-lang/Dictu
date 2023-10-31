@@ -723,7 +723,8 @@ print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
 print(ClassWithMethodAnnotation.methodAnnotations); // {"method": {"MethodAnnotation": nil}}
 ```
 
-Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
+Annotations can also be supplied a value, however, the value must be of type: dict, list, string, number, boolean or nil.
+Note: Annotation values must be constants as they are created at compile time.
 
 ```cs
 @Annotation("Some extra value!")
