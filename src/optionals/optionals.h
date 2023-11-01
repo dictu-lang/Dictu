@@ -15,6 +15,7 @@
 #include "c.h"
 #include "datetime.h"
 #include "socket.h"
+#include "net.h"
 #include "random.h"
 #include "base64.h"
 #include "hashlib.h"

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Path
-nav_order: 14
+nav_order: 15
 parent: Standard Library
 ---
 
@@ -65,7 +65,7 @@ Path.isAbsolute("/usr"); // true
 Path.isAbsolute("usr");  // false
 ```
 
-### Path.realpath(String) -> Result<String>
+### Path.realpath(String) -> Result\<String>
 
 Returns A result type and unwraps the canonicalized absolute pathname as a string.
 

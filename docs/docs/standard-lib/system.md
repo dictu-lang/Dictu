@@ -1,7 +1,7 @@
 ---
 layout: default
 title: System
-nav_order: 21
+nav_order: 22
 parent: Standard Library
 ---
 
@@ -49,7 +49,7 @@ import System;
 | System.W_OK     | Test for write permission.                                                                        |
 | System.R_OK     | Test for read permission.                                                                         |
 
-### System.mkdir(String, Number: mode -> Optional) -> Result<Nil>
+### System.mkdir(String, Number: mode -> Optional) -> Result\<Nil>
 
 Make directory.
 Returns a Result type and on success will unwrap nil.
@@ -69,7 +69,7 @@ const
 System.mkdir(dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IXOTH|S_IROTH);
 ```
 
-### System.mkdirAll(String, Number: mode -> Optional) -> Result<Nil>
+### System.mkdirAll(String, Number: mode -> Optional) -> Result\<Nil>
 
 Make all directories for a given path.
 Returns a Result type and on success will unwrap nil.
@@ -78,7 +78,7 @@ It can take an optional number argument that specifies the mode. If a mode is no
 
 The actual permissions is modified by the process umask, which typically is S_IWGRP\|S_IWOTH (octal 022).
 
-### System.access(String, Number) -> Result<Nil>
+### System.access(String, Number) -> Result\<Nil>
 
 Check user's permissions for a file.
 Returns a Result type and on success will unwrap nil.
@@ -91,7 +91,7 @@ var F_OK = System.F_OK;
 System.access("/", F_OK);
 ```
 
-### System.rmdir(String) -> Result<Nil>
+### System.rmdir(String) -> Result\<Nil>
 
 Remove directory.
 
@@ -101,7 +101,7 @@ Returns a Result type and on success will unwrap nil.
 System.rmdir(dir);
 ```
 
-### System.remove(String) -> Result<Nil>
+### System.remove(String) -> Result\<Nil>
 
 Delete a file from filesystem.
 
@@ -171,7 +171,7 @@ Returns the effective group ID of the calling process as a number.
 System.getegid();
 ```
 
-### System.getCWD() -> Result<String>
+### System.getCWD() -> Result\<String>
 
 Get the current working directory of the Dictu process.
 
@@ -181,7 +181,7 @@ Returns a Result type and on success will unwrap a string.
 System.getCWD().unwrap(); // '/Some/Path/To/A/Directory'
 ```
 
-### System.setCWD(String) -> Result<Nil>
+### System.setCWD(String) -> Result\<Nil>
 
 Set current working directory of the Dictu process.
 
@@ -266,7 +266,7 @@ Note: This is not available on Windows systems.
 System.uname();
 ```
 
-### System.mkdirTemp(String: directory_template -> Optional) -> Result<String>
+### System.mkdirTemp(String: directory_template -> Optional) -> Result\<String>
 
 Makes a temporary directory. If an empty string is given, the temporary directory's name will be a random string created in the current working directory. If a string is passed in, the temporary directory will be created with that name in the current working directory.
 

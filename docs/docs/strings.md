@@ -72,6 +72,7 @@ If you want to get only part of a string, you slice it! To slice a string, use s
 | \r | \r is the escape code for a carriage return |
 | \t | \t is the escape code for a horizontal tab |
 | \v | \v is the escape code for a vertical tab |
+| \x\<hh> | \x is the escape code for a hex value of hh |
 | \\\ | \\\ is the escape code for a backslash |
 | \\" | \\" is the escape code for double quotes |
 | \\' | \\' is the escape code for single quotes |

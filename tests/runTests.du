@@ -31,6 +31,7 @@ import "json/import.du";
 import "log/import.du";
 import "path/import.du";
 import "sockets/import.du";
+import "net/import.du";
 import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
