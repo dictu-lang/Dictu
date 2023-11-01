@@ -5,7 +5,7 @@ nav_order: 13
 parent: Standard Library
 ---
 
-# IO
+# Net
 {: .no_toc }
 
 ## Table of contents
