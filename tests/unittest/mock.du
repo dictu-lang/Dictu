@@ -1,0 +1,47 @@
+import System;
+
+from UnitTest import UnitTest, mock;
+
+class Test {
+    exit() {
+        System.exit(1);
+    }
+
+    returnValue() {
+        return 100;
+    }
+}
+
+class Child < Test {}
+
+class TestMockObj < UnitTest {
+    testMethodsAreOverriden() {
+        const obj = mock(Test);
+
+        this.assertNil(obj.exit());
+    }
+
+    testMethodsAreOverridenCanReturn() {
+        const obj = mock(Test, {
+            "returnValue": 100
+        });
+
+        this.assertEquals(obj.returnValue(), 100);
+    }
+
+    testMethodsAreOverridenCanReturnCorrectValue() {
+        const obj = mock(Test, {
+            "returnValue": "someOtherValue"
+        });
+
+        this.assertEquals(obj.returnValue(), "someOtherValue");
+    }
+
+    testChildClass() {
+        const obj = mock(Child);
+
+        this.assertNil(obj.exit());
+    }
+}
+
+TestMockObj().run();

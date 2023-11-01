@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Math
-nav_order: 3
+nav_order: 12
 parent: Standard Library
 ---
 

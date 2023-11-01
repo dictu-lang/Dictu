@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Sqlite
-nav_order: 13
+nav_order: 20
 parent: Standard Library
 ---
 
@@ -25,9 +25,12 @@ Note: Unlike SQLite and most other libraries, foreign keys **are** enabled by de
 import Sqlite;
 ```
 
-### Sqlite.connect(String: database) -> Result<SQLite>
+### Sqlite.connect(String: database, timeout: number -> optional) -> Result\<SQLite>
 
 This opens a connection to a SQLite database. Returns a Result type and on success wraps an abstract SQLite type.
+
+The second argument to connect is the amount of time it will sleep (total) in milliseconds if the database is currently locked. If 
+not set it will default to 5 seconds.
 
 Note: You can pass ":memory:" to open the SQLite database in memory rather than a file.
 
@@ -36,7 +39,7 @@ Sqlite.connect(":memory:").unwrap();
 Sqlite.connect("my/database/file.db").unwrap();
 ```
 
-### sqlite.execute(String: query, List: arguments -> Optional) -> Result<Nil>
+### sqlite.execute(String: query, List: arguments -> Optional) -> Result\<Nil>
 
 The `execute` method is ran on the abstract that is returned from `.connect` rather than the `Sqlite` module, hence the
 lower case `sqlite`. The `execute` method executes an SQL query and can return one of 3 values.

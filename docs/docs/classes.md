@@ -148,6 +148,39 @@ print(TestOverload().toString()); // 'Testing object'
 
 ```
 
+### toDict() -> Dict
+
+Classes and instances can both be converted to a dictionary using the `toDict()` method. Inherited super classes are included in the dictionary.
+
+```cs
+class A {
+    var afield = 44;
+
+    amethod() {}
+    abethodb() {}
+}
+
+class B < A {
+    const x = 9;
+    const y = 8;
+
+    var fieldA = 1;
+    var fieldB = 2;
+
+    init() {}
+
+    methodA() {}
+    methodB() {}
+
+    private methodC() {}
+    private methodD() {}
+}
+
+const b = B();
+print(b._class.toDict()); // {"public_methods": ["abethodb", "init", "methodA", "amethod", "methodB", "abethodb", "amethod"], "variables": {"afield": 44, "fieldA": 1, "fieldB": 2}, "constants": {"y": 8, "_name": "A", "x": 9}}
+
+```
+
 ### methods() -> List
 
 Sometimes we need to programmatically access methods that are stored within a class, this can be aided through the use of `.methods()`. This
@@ -310,7 +343,7 @@ print(Test()?.unknownMethod()); // Undefined attribute 'unknownMethod'.
 ### _class
 
 `_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
-useful for things like pulling class annotations from an object where it's class may be unknown until runtime.
+useful for things like pulling class, method, and field annotations from an object where it's class may be unknown until runtime.
 
 ```cs
 class Test {}
@@ -411,7 +444,7 @@ Hello
 
 ## Inheritance
 
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited.
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation. 
 
 Note: private methods and instance variables are not inherited.
 
@@ -690,7 +723,8 @@ print(AnnotatedClass.classAnnotations); // {"Annotation": nil}
 print(ClassWithMethodAnnotation.methodAnnotations); // {"method": {"MethodAnnotation": nil}}
 ```
 
-Annotations can also be supplied a value, however, the value must be of type: nil, boolean, number or string.
+Annotations can also be supplied a value, however, the value must be of type: dict, list, string, number, boolean or nil.
+Note: Annotation values must be constants as they are created at compile time.
 
 ```cs
 @Annotation("Some extra value!")

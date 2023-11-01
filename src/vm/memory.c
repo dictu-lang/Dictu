@@ -101,6 +101,9 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjClass *klass = (ObjClass *) object;
             grayObject(vm, (Obj *) klass->name);
             grayObject(vm, (Obj *) klass->superclass);
+            grayObject(vm, (Obj *) klass->classAnnotations);
+            grayObject(vm, (Obj *) klass->methodAnnotations);
+            grayObject(vm, (Obj *) klass->fieldAnnotations);
             grayTable(vm, &klass->publicMethods);
             grayTable(vm, &klass->privateMethods);
             grayTable(vm, &klass->abstractMethods);
@@ -165,6 +168,9 @@ static void blackenObject(DictuVM *vm, Obj *object) {
         case OBJ_ABSTRACT: {
             ObjAbstract *abstract = (ObjAbstract *) object;
             grayTable(vm, &abstract->values);
+            if (abstract->grayFunc != NULL) {
+                abstract->grayFunc(vm, abstract);
+            }
             break;
         }
 
@@ -343,6 +349,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->classMethods);
     grayTable(vm, &vm->instanceMethods);
     grayTable(vm, &vm->resultMethods);
+    grayTable(vm, &vm->enumMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->annotationString);

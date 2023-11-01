@@ -288,14 +288,14 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
     snprintf(tmp, sizeof(tmp), "%s", dir);
 
     len = strlen(tmp);
-    if (tmp[len - 1] == DIR_SEPARATOR) {
+    if (tmp[len - 1] == '/' || tmp[len - 1] == '\\') {
         tmp[len - 1] = 0;
     }
 
     int retval;
 
     for (p = tmp + 1; *p; p++) {
-        if (*p == DIR_SEPARATOR) {
+        if (*p == '/' || *p == '\\') {
             *p = 0;
 
             retval = MKDIR(tmp, mode);
@@ -490,43 +490,6 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
-static Value copyFileNative(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 2) {
-        runtimeError(vm, "copyFile() takes 2 arguments (%d given).", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "copyFile() arguments must be strings.");
-        return EMPTY_VAL;
-    }
-
-    char *srcFile = AS_STRING(args[0])->chars;
-    char *dstFile = AS_STRING(args[1])->chars;
-
-    FILE *sf = fopen(srcFile, "r");
-    if (sf == NULL) {
-        return newResultError(vm, "cannot open src file");
-    }
-
-    FILE *df = fopen(dstFile, "w");
-    if (df == NULL) {
-        fclose(sf);
-        return newResultError(vm, "cannot open dst file");
-    }
-
-    char buffer = fgetc(sf);
-    while (buffer != EOF) {
-        fputc(buffer, df);
-        buffer = fgetc(sf);
-    }
-
-    fclose(sf);
-    fclose(df);
-
-    return newResultSuccess(vm, NIL_VAL);
-}
-
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
@@ -627,7 +590,6 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "sleep", sleepNative);
     defineNative(vm, &module->values, "exit", exitNative);
     defineNative(vm, &module->values, "chmod", chmodNative);
-    defineNative(vm, &module->values, "copyFile", copyFileNative);
 
     /**
      * Define System properties

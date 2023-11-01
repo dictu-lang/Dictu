@@ -1,0 +1,89 @@
+#!/usr/bin/env dictu
+
+import Process;
+import System;
+
+from Argparse import Parser;
+
+
+// pullLatest pulls the latest changes on the "develop" branch.
+// We make a few assumptions:
+// 1. we're running in the repo directory
+// 2. the remote to pull from is named "upstream"
+def pullLatest(isFork) {
+    const cmd = ["git", "pull"];
+
+    if (isFork) {
+        cmd.extend(["upstream", "develop"]);
+    }
+
+    const res = Process.run(cmd);
+    if (not res.success()) {
+        print(res.unwrapError());
+        System.exit(1);
+    }
+}
+
+// build builds the latest code pulled.
+def build(debug) {
+    const buildType = debug ? "Debug" : "Release";
+
+    const cmds = [
+        [
+            "cmake",
+            "-DCMAKE_BUILD_TYPE={}".format(buildType),
+            "-B", "./build"
+        ],
+        [
+            "cmake", "--build", "./build"
+        ]
+    ].forEach(def(cmd) => {
+        const res = Process.run(cmd);
+        if (not res.success()) {
+            print(res.unwrapError());
+            System.exit(1);
+        }
+    });
+}
+
+// install installs the binary built in the previous step.
+def install() {
+    const cmd = ["sudo", "cp", "dictu", "/usr/local/bin"];
+
+    const res = Process.run(cmd);
+    if (not res.success()) {
+        print(res.unwrapError());
+    }
+}
+
+{ // main
+    const parser = Parser(
+        "buildAndInstallLatest", 
+        "This program will pull the latest changes from develop, build the code, and install the new binary.", "");
+
+    parser.addBool("-d", "build in debug mode", false, "debug");
+    parser.addBool("-f", "running from a fork", false, "fork");
+    parser.addBool("-h", "help", false, "help");
+
+    const args = parser.parse().match(
+        def (result) => result,
+        def (error) => {
+            print(error);
+            System.exit(1);
+        }
+    );
+
+    if (args.help) {
+        print(parser.usage());
+        System.exit(0);
+    }
+
+    print("Pulling latest changes...");
+    pullLatest(args.fork);
+
+    print("Building latest...");
+    build(args.debug);
+
+    print("Installing binary...");
+    install();
+}

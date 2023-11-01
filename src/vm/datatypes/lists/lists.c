@@ -304,10 +304,15 @@ static Value copyListDeep(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(list);
 }
 
-static int partition(ObjList* arr, int start, int end) {
-    int pivot_index = (int)floor(start + end) / 2;
 
-    double pivot =  AS_NUMBER(arr->values.values[pivot_index]);
+int compareString(ObjString *operandOne, ObjString *operandTwo) {
+    return strcmp(operandOne->chars, operandTwo->chars);
+}
+
+static int partitionStringList(ObjList *arr, int start, int end) {
+    int pivot_index = (int) floor(start + end) / 2;
+
+    ObjString *pivot = AS_STRING(arr->values.values[pivot_index]);
 
     int i = start - 1;
     int j = end + 1;
@@ -315,11 +320,11 @@ static int partition(ObjList* arr, int start, int end) {
     for (;;) {
         do {
             i = i + 1;
-        } while(AS_NUMBER(arr->values.values[i]) < pivot);
+        } while (compareString(AS_STRING(arr->values.values[i]), pivot) < 0);
 
         do {
             j = j - 1;
-        } while(AS_NUMBER(arr->values.values[j]) > pivot);
+        } while (compareString(AS_STRING(arr->values.values[j]), pivot) > 0);
 
         if (i >= j) {
             return j;
@@ -327,7 +332,37 @@ static int partition(ObjList* arr, int start, int end) {
 
         // Swap arr[i] with arr[j]
         Value temp = arr->values.values[i];
-        
+
+        arr->values.values[i] = arr->values.values[j];
+        arr->values.values[j] = temp;
+    }
+}
+
+
+static int partitionNumberList(ObjList *arr, int start, int end) {
+    int pivot_index = (int) floor(start + end) / 2;
+
+    double pivot = AS_NUMBER(arr->values.values[pivot_index]);
+
+    int i = start - 1;
+    int j = end + 1;
+
+    for (;;) {
+        do {
+            i = i + 1;
+        } while (AS_NUMBER(arr->values.values[i]) < pivot);
+
+        do {
+            j = j - 1;
+        } while (AS_NUMBER(arr->values.values[j]) > pivot);
+
+        if (i >= j) {
+            return j;
+        }
+
+        // Swap arr[i] with arr[j]
+        Value temp = arr->values.values[i];
+
         arr->values.values[i] = arr->values.values[j];
         arr->values.values[j] = temp;
     }
@@ -337,21 +372,39 @@ static int partition(ObjList* arr, int start, int end) {
 // Partition scheme.
 // Best Case O(n log n)
 // Worst Case O(n^2) (If the list is already sorted.) 
-static void quickSort(ObjList* arr, int start, int end) {
+static void quickSort(ObjList *arr, int start, int end, int (*partition)(ObjList *, int, int)) {
     while (start < end) {
         int part = partition(arr, start, end);
 
         // Recurse for the smaller halve.
         if (part - start < end - part) {
-            quickSort(arr, start, part);
-            
+            quickSort(arr, start, part, partition);
+
             start = start + 1;
         } else {
-            quickSort(arr, part + 1, end);
+            quickSort(arr, part + 1, end, partition);
 
             end = end - 1;
         }
     }
+}
+
+bool isNumberList(ObjList *list) {
+    for (int i = 0; i < list->values.count; i++) {
+        if (!IS_NUMBER(list->values.values[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isStringList(ObjList *list) {
+    for (int i = 0; i < list->values.count; i++) {
+        if (!IS_STRING(list->values.values[i])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 static Value sortList(DictuVM *vm, int argCount, Value *args) {
@@ -360,19 +413,21 @@ static Value sortList(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjList* list = AS_LIST(args[0]);
+    ObjList *list = AS_LIST(args[0]);
 
-    // Check if all the list elements are indeed numbers.
-    for (int i = 0; i < list->values.count; i++) {
-        if (!IS_NUMBER(list->values.values[i])) {
-            runtimeError(vm, "sort() takes lists with numbers (index %d was not a number)", i);
-            return EMPTY_VAL;
-        }
+    if (isNumberList(list)) {
+        quickSort(list, 0, list->values.count - 1, &partitionNumberList);
+        return NIL_VAL;
     }
 
-    quickSort(list, 0, list->values.count - 1);
+    if (isStringList(list)) {
+        quickSort(list, 0, list->values.count - 1, &partitionStringList);
+        return NIL_VAL;
+    }
 
-    return NIL_VAL;
+    runtimeError(vm,
+                 "sort() takes lists with either numbers or string (other types and heterotypic lists are not supported)");
+    return EMPTY_VAL;
 }
 
 static Value reverseList(DictuVM *vm, int argCount, Value *args) {
@@ -381,7 +436,7 @@ static Value reverseList(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    ObjList* list = AS_LIST(args[0]);
+    ObjList *list = AS_LIST(args[0]);
     int listLength = list->values.count;
 
     for (int i = 0; i < listLength / 2; i++) {

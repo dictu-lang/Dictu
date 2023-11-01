@@ -46,7 +46,6 @@ class TestGetAttributes < UnitTest {
         // 3 because of the implicit "_class" property
         this.assertEquals(Inherit().getAttributes().get("attributes").len(), 3);
         // 3 because of the implicit "_name" property
-        print(Inherit().getAttributes());
         this.assertEquals(Inherit().getAttributes().get("fields").len(), 3);
         this.assertEquals(Inherit().getAttributes().get("methods").len(), 2);
         this.assertTruthy(Inherit().getAttributes().get("methods").find(def (item) => item == "publicMethod"));

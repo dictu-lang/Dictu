@@ -1,7 +1,7 @@
 ---
 layout: default
 title: JSON
-nav_order: 6
+nav_order: 10
 parent: Standard Library
 ---
 
@@ -36,7 +36,7 @@ JSON.parse('[1, 2, 3]'); // [1, 2, 3]
 JSON.parse('null'); // nil
 ```
 
-### JSON.stringify(value, String: indent -> Optional) -> Result<String>
+### JSON.stringify(value, String: indent -> Optional) -> Result\<String>
 
 Stringify converts a Dictu value into a valid JSON string.
 Returns a Result type and unwraps to string.

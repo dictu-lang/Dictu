@@ -1,3 +1,6 @@
+#include "optionals.h"
+#include "../vm/vm.h"
+
 #ifndef dictu_c_h
 #define dictu_c_h
 
@@ -36,7 +39,7 @@
 #include "../vm/vm.h"
 #include "../vm/memory.h"
 
-void createCModule(DictuVM *vm);
+Value createCModule(DictuVM *vm);
 
 void getStrerror(char *buf, int error);
 

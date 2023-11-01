@@ -6,3 +6,4 @@
 
 import "sha256.du";
 import "bcrypt.du";
+import "hmac.du";

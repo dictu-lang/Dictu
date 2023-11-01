@@ -109,4 +109,8 @@ void printValue(Value value);
 
 void printValueError(Value value);
 
+bool compareStringLess(Value a, Value b);
+
+bool compareStringGreater(Value a, Value b);
+
 #endif

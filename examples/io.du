@@ -1,0 +1,7 @@
+import IO;
+
+
+IO.print("asdf134\n");
+IO.println(IO.stderr);
+IO.println(IO.stdin);
+IO.println(IO.stdout);

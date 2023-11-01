@@ -1,18 +1,22 @@
 #include "optionals.h"
 
 BuiltinModules modules[] = {
+    {"C", &createCModule, false},
     {"Argparse", &createArgParseModule, false},
     {"Math", &createMathsModule, false},
     {"Env", &createEnvModule, true},
+    {"IO", &createIOModule, false},
     {"JSON", &createJSONModule, false},
     {"Log", &createLogModule, false},
     {"Path", &createPathModule, false},
     {"Datetime", &createDatetimeModule, false},
     {"Socket", &createSocketModule, false},
+    {"Net", &createNetModule, false},
     {"Random", &createRandomModule, false},
     {"Base64", &createBase64Module, false},
     {"Hashlib", &createHashlibModule, false},
     {"Queue", &createQueueModule, false},
+    {"Stack", &createStackModule, false},
     {"Sqlite", &createSqliteModule, false},
     {"Process", &createProcessModule, false},
     {"System", &createSystemModule, false},

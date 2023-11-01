@@ -1017,7 +1017,7 @@ static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     patchJump(compiler, endJump);
 }
 
-int parseEscapeSequences(char *string, int length) {
+int parseEscapeSequences(Parser *parser, char *string, int length) {
     for (int i = 0; i < length - 1; i++) {
         if (string[i] == '\\') {
             switch (string[i + 1]) {
@@ -1036,6 +1036,28 @@ int parseEscapeSequences(char *string, int length) {
                 case 'v': {
                     string[i + 1] = '\v';
                     break;
+                }
+                case 'x': {
+                    if (string[i + 2] == '\0' || string[i + 3] == '\0') {
+                        error(parser, "\\x escape code expects format \\xhh");
+                        break;
+                    }
+
+                    char hexChars[3];
+                    char *end;
+                    memcpy(hexChars, &string[i + 2], 2);
+                    hexChars[2] = '\0';
+                    int hex = strtol(hexChars, &end, 16);
+
+                    if (hexChars == end) {
+                        error(parser, "\\x escape code failed to parse");
+                        break;
+                    }
+
+                    string[i + 3] = hex;
+                    memmove(&string[i], &string[i + 3], length - 3 - i);
+                    length -= 3;
+                    continue;
                 }
                 case '\\': {
                     string[i + 1] = '\\';
@@ -1080,7 +1102,7 @@ static Value parseString(Compiler *compiler, bool canAssign) {
     char *string = ALLOCATE(parser->vm, char, stringLength + 1);
 
     memcpy(string, parser->previous.start + 1, stringLength);
-    int length = parseEscapeSequences(string, stringLength);
+    int length = parseEscapeSequences(parser, string, stringLength);
 
     // If there were escape chars and the string shrank, resize the buffer
     if (length != stringLength) {
@@ -1670,7 +1692,101 @@ static void endClassCompiler(Compiler *compiler, ClassCompiler *classCompiler) {
 
 static bool checkLiteralToken(Compiler *compiler) {
     return check(compiler, TOKEN_STRING) || check(compiler, TOKEN_NUMBER) ||
-        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE) || check(compiler, TOKEN_NIL);
+        check(compiler, TOKEN_TRUE) || check(compiler, TOKEN_FALSE)
+        || check(compiler, TOKEN_NIL) || check(compiler, TOKEN_LEFT_BRACKET)
+        || check(compiler, TOKEN_LEFT_BRACE);
+}
+
+static Value parseDict(Compiler *compiler);
+
+static Value parseList(Compiler *compiler);
+
+static Value parseValue(Compiler *compiler) {
+    if (match(compiler, TOKEN_STRING)) {
+        return parseString(compiler, false);
+    } else if (match(compiler, TOKEN_LEFT_BRACE)) {
+        return parseDict(compiler);
+    } else if (match(compiler, TOKEN_LEFT_BRACKET)) {
+        return parseList(compiler);
+    } else if (match(compiler, TOKEN_NUMBER)) {
+        return parseNumber(compiler, false);
+    } else if (match(compiler, TOKEN_TRUE)) {
+        return TRUE_VAL;
+    } else if (match(compiler, TOKEN_FALSE)) {
+        return FALSE_VAL;
+    } else if (match(compiler, TOKEN_NIL)) {
+        return NIL_VAL;
+    }
+
+    return EMPTY_VAL;
+}
+
+static Value parseDict(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    ObjDict *dict = newDict(vm);
+    push(vm, OBJ_VAL(dict));
+
+    do {
+        if (check(compiler, TOKEN_RIGHT_BRACE))
+            break;
+
+        Value key = parseValue(compiler);
+
+        if (IS_EMPTY(key) || IS_DICT(key)) {
+            errorAtCurrent(compiler->parser, "Invalid key type for annotation dictionary, allowed: bool, number, string, nil");
+            return EMPTY_VAL;
+        }
+
+        consume(compiler, TOKEN_COLON, "Expected colon after dict key");
+
+        push(vm, key);
+        Value value = parseValue(compiler);
+        if (IS_EMPTY(value)) {
+            errorAtCurrent(compiler->parser, "Invalid value type for annotation dictionary, allowed: dict, list, bool, number, string, nil");
+            return EMPTY_VAL;
+        }
+
+        push(vm, value);
+        dictSet(vm, dict, key, value);
+        pop(vm);
+        pop(vm);
+
+    } while (match(compiler, TOKEN_COMMA));
+
+    pop(vm);
+
+    consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
+
+    return OBJ_VAL(dict);
+}
+
+static Value parseList(Compiler *compiler) {
+    DictuVM *vm = compiler->parser->vm;
+    ObjList *list = newList(vm);
+    push(vm, OBJ_VAL(list));
+
+    do {
+        if (check(compiler, TOKEN_RIGHT_BRACKET))
+            break;
+
+        Value value = parseValue(compiler);
+
+        if (IS_EMPTY(value)) {
+            errorAtCurrent(compiler->parser, "Invalid value type for annotation list, allowed: dict, list, bool, number, string, nil");
+            return EMPTY_VAL;
+        }
+
+        push(vm, value);
+        writeValueArray(vm, &list->values, value);
+        pop(vm);
+
+    } while (match(compiler, TOKEN_COMMA));
+
+    pop(vm);
+
+    consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
+
+    return OBJ_VAL(list);
 }
 
 static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
@@ -1693,6 +1809,16 @@ static void parseAnnotations(Compiler *compiler, ObjDict *annotationDict) {
                 Value string = parseString(compiler, false);
                 push(vm, string);
                 dictSet(vm, annotationDict, annotationName, string);
+                pop(vm);
+            } else if (match(compiler, TOKEN_LEFT_BRACE)) {
+                Value dict = parseDict(compiler);
+                push(vm, dict);
+                dictSet(vm, annotationDict, annotationName, dict);
+                pop(vm);
+            } else if (match(compiler, TOKEN_LEFT_BRACKET)) {
+                Value list = parseList(compiler);
+                push(vm, list);
+                dictSet(vm, annotationDict, annotationName, list);
                 pop(vm);
             } else if (match(compiler, TOKEN_NUMBER)) {
                 Value number = parseNumber(compiler, false);
@@ -1763,7 +1889,7 @@ static bool isFieldAnnotation(Compiler *compiler) {
         if (match(compiler, TOKEN_LEFT_PAREN)) {
             do {
                 advance(compiler->parser);
-            } while (check(compiler, TOKEN_RIGHT_PAREN));
+            } while (!match(compiler, TOKEN_RIGHT_PAREN));
         }
     } while (match(compiler, TOKEN_AT));
 
@@ -1977,7 +2103,7 @@ static void enumDeclaration(Compiler *compiler) {
 
     do {
         if (check(compiler, TOKEN_RIGHT_BRACE)) {
-            error(compiler->parser, "Trailing comma in enum declaration");
+            break;
         }
 
         consume(compiler, TOKEN_IDENTIFIER, "Expect enum value identifier.");

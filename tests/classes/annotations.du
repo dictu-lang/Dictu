@@ -13,6 +13,8 @@ class NoAnnotations {}
 @NumberAnnotation(10)
 @DecimalNumberAnnotation(10.5)
 @NilAnnotation(nil)
+@ListAnnotation([1, 2, 3, 4])
+@DictAnnotation({1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]})
 class Test {
     
     @EmptyAnnotation
@@ -21,6 +23,8 @@ class Test {
     @NumberAnnotation(10)
     @DecimalNumberAnnotation(10.5)
     @NilAnnotation(nil)
+    @ListAnnotation([1, 2, 3, 4])
+    @DictAnnotation({1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]})
     methodOnAClass() {}
 
     private noMethodAnnotations() {}
@@ -39,6 +43,8 @@ class AnnotatedClassVars {
     @NumberAnnotation(10)
     @DecimalNumberAnnotation(10.5)
     @NilAnnotation(nil)
+    @ListAnnotation([1, 2, 3, 4])
+    @DictAnnotation({1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]})
     var classVariable = 1;
 
     @EmptyAnnotation
@@ -47,6 +53,8 @@ class AnnotatedClassVars {
     @NumberAnnotation(10)
     @DecimalNumberAnnotation(10.5)
     @NilAnnotation(nil)
+    @ListAnnotation([1, 2, 3, 4])
+    @DictAnnotation({1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]})
     const classConstant = 2;
 }
 
@@ -57,26 +65,30 @@ class TestClassAnnotations < UnitTest {
     }
 
     testClassAnnotations() {
-        this.assertEquals(Test.classAnnotations.len(), 6);
+        this.assertEquals(Test.classAnnotations.len(), 8);
         this.assertEquals(Test.classAnnotations['EmptyAnnotation'], nil);
         this.assertEquals(Test.classAnnotations['TrueAnnotation'], true);
         this.assertEquals(Test.classAnnotations['FalseAnnotation'], false);
         this.assertEquals(Test.classAnnotations['NumberAnnotation'], 10);
         this.assertEquals(Test.classAnnotations['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(Test.classAnnotations['NilAnnotation'], nil);
+        this.assertEquals(Test.classAnnotations['ListAnnotation'], [1, 2, 3, 4]);
+        this.assertEquals(Test.classAnnotations['DictAnnotation'], {1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]});
     }
 
     testMethodAnnotations() {
         this.assertEquals(NoAnnotations.methodAnnotations, nil);
 
         this.assertEquals(Test.methodAnnotations.len(), 1);
-        this.assertEquals(Test.methodAnnotations['methodOnAClass'].len(), 6);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass'].len(), 8);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['EmptyAnnotation'], nil);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['TrueAnnotation'], true);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['FalseAnnotation'], false);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['NumberAnnotation'], 10);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(Test.methodAnnotations['methodOnAClass']['NilAnnotation'], nil);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['ListAnnotation'], [1, 2, 3, 4]);
+        this.assertEquals(Test.methodAnnotations['methodOnAClass']['DictAnnotation'], {1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]});
     }
 
     testInitAnnotation() {
@@ -86,21 +98,25 @@ class TestClassAnnotations < UnitTest {
     testClassVarAnnotations() {
         this.assertEquals(AnnotatedClassVars.fieldAnnotations.len(), 2);
 
-        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable'].len(), 6);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable'].len(), 8);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['EmptyAnnotation'], nil);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['TrueAnnotation'], true);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['FalseAnnotation'], false);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['NumberAnnotation'], 10);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['NilAnnotation'], nil);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['ListAnnotation'], [1, 2, 3, 4]);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classVariable']['DictAnnotation'], {1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]});
 
-        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant'].len(), 6);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant'].len(), 8);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['EmptyAnnotation'], nil);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['TrueAnnotation'], true);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['FalseAnnotation'], false);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['NumberAnnotation'], 10);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['DecimalNumberAnnotation'], 10.5);
         this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['NilAnnotation'], nil);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['ListAnnotation'], [1, 2, 3, 4]);
+        this.assertEquals(AnnotatedClassVars.fieldAnnotations['classConstant']['DictAnnotation'], {1: 2, "test": "test", nil: nil, true: false, "dict": {"nested": "dict"}, "vals": [1, 2]});
     }
 }
 

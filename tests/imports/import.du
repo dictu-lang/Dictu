@@ -5,3 +5,5 @@
  */
 
 import "from.du";
+import "class.du";
+import "middle-import.du";

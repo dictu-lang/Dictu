@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Inspect
-nav_order: 14
+nav_order: 8
 parent: Standard Library
 ---
 

@@ -6,14 +6,14 @@
 from UnitTest import UnitTest;
 
 class TestListSort < UnitTest {
-    testListSort() {
+    testNumberListSort() {
         const x = [3, 6, 4, 1, 5];
 
         x.sort();
         this.assertEquals(x, [1, 3, 4, 5, 6]);
     }
 
-    testListSortAlreadySorted() {
+    testNumberListSortAlreadySorted() {
         const x = [3, 6, 4, 1, 5];
 
         // Test sorting on an already sorted list.
@@ -21,7 +21,7 @@ class TestListSort < UnitTest {
         this.assertEquals(x, [1, 3, 4, 5, 6]);
     }
 
-    testListSortNegative() {
+    testNumberListSortNegative() {
         // Test sorting on negative values.
         const y = [3, 2, -1, 100, -3, 23, 1, -98];
 
@@ -32,7 +32,7 @@ class TestListSort < UnitTest {
         this.assertEquals(y, [-98, -3, -1, 1, 2, 3, 23, 100]);
     }
 
-    testListSortSameElements() {
+    testNumberListSortSameElements() {
         // Test sorting on lists containing equal elements
         const z = [3, 3, -3, 10, -3];
 
@@ -41,6 +41,31 @@ class TestListSort < UnitTest {
 
         z.sort();
         this.assertEquals(z, [-3, -3, 3, 3, 10]);
+    }
+
+    testStringListSort() {
+        const x = ["apple", "dog", "ceo", "bee", "aero", "deep", "zebra", "cat"];
+
+        x.sort();
+        this.assertEquals(x, ["aero", "apple", "bee", "cat", "ceo", "deep", "dog", "zebra"]);
+    }
+
+    testStringListSortAlreadySorted() {
+        const x = ["apple", "bee", "cat"];
+
+        x.sort();
+        this.assertEquals(x, ["apple", "bee", "cat"]);
+    }
+
+    testStringListSortSameElements() {
+        // Test sorting on lists containing equal elements
+        const z = ["abc", "cde", "abc", "cde"];
+
+        z.sort();
+        this.assertEquals(z, ["abc", "abc", "cde", "cde"]);
+
+        z.sort();
+        this.assertEquals(z, ["abc", "abc", "cde", "cde"]);
     }
 }
 

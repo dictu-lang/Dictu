@@ -1,0 +1,40 @@
+/**
+ * parseIp.du
+ *
+ * Testing parseIp function and net module constants.
+ *
+ */
+
+from UnitTest import UnitTest;
+
+import Net;
+
+class TestParseIp4 < UnitTest {
+    const ip4Addr = "10.0.0.2";
+
+    testIp4Len() {
+        this.assertEquals(Net.ip4Len, 4);
+    }
+
+    testIp6Len() {
+        this.assertEquals(Net.ip6Len, 16);
+    }
+
+    testParseIp4() {
+        const res = Net.parseIp4(this.ip4Addr);
+        this.assertSuccess(res);
+        
+        const parsed = res.unwrap();
+        this.assertEquals(parsed.len(), Net.ip4Len);
+    }
+
+    testParseBadIp4() {
+        const res = Net.parseIp4("900.8");
+        this.assertError(res);
+
+        const res2 = Net.parseIp4("255.256.255.255");
+        this.assertError(res2);
+    }
+}
+
+TestParseIp4().run();

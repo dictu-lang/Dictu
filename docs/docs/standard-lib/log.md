@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Log
-nav_order: 16
+nav_order: 11
 parent: Standard Library
 ---
 

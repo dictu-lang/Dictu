@@ -23,6 +23,7 @@
 #include "datatypes/class.h"
 #include "datatypes/instance.h"
 #include "datatypes/result/result.h"
+#include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 
@@ -120,6 +121,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     initTable(&vm->classMethods);
     initTable(&vm->instanceMethods);
     initTable(&vm->resultMethods);
+    initTable(&vm->enumMethods);
 
     vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
     vm->initString = copyString(vm, "init", 4);
@@ -140,12 +142,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     declareClassMethods(vm);
     declareInstanceMethods(vm);
     declareResultMethods(vm);
-
-    /**
-     * Native classes which are not required to be
-     * imported. For imported modules see optionals.c
-     */
-    createCModule(vm);
+    declareEnumMethods(vm);
 
     if (vm->repl) {
         vm->replVar = copyString(vm, "_", 1);
@@ -174,6 +171,7 @@ void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->classMethods);
     freeTable(vm, &vm->instanceMethods);
     freeTable(vm, &vm->resultMethods);
+    freeTable(vm, &vm->enumMethods);
     FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
     vm->initString = NULL;
     vm->replVar = NULL;
@@ -653,14 +651,28 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
             }
 
             case OBJ_ENUM: {
+                Value value;
+                if (tableGet(&vm->enumMethods, name, &value)) {
+                    if (IS_NATIVE(value)) {
+                        return callNativeMethod(vm, value, argCount);
+                    }
+
+                    push(vm, peek(vm, 0));
+
+                    for (int i = 2; i <= argCount + 1; i++) {
+                        vm->stackTop[-i] = peek(vm, i);
+                    }
+
+                    return call(vm, AS_CLOSURE(value), argCount + 1);
+                }
+
                 ObjEnum *enumObj = AS_ENUM(receiver);
 
-                Value value;
                 if (tableGet(&enumObj->values, name, &value)) {
                     return callValue(vm, value, argCount, false);
                 }
 
-                runtimeError(vm, "'%s' enum has no value '%s'.", enumObj->name->chars, name->chars);
+                runtimeError(vm, "Enum has no method '%s'.", name->chars);
                 return false;
             }
 
@@ -767,6 +779,21 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
     if (superclass != NULL) {
         tableAddAll(vm, &superclass->publicMethods, &klass->publicMethods);
         tableAddAll(vm, &superclass->abstractMethods, &klass->abstractMethods);
+
+        if (superclass->classAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->classAnnotations, false);
+            klass->classAnnotations = dict;
+        }
+
+        if (superclass->methodAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->methodAnnotations, false);
+            klass->methodAnnotations = dict;
+        }
+
+        if (superclass->fieldAnnotations != NULL) {
+            ObjDict *dict = copyDict(vm, superclass->fieldAnnotations, false);
+            klass->fieldAnnotations = dict;
+        }
     }
 }
 
@@ -802,8 +829,25 @@ static void setReplVar(DictuVM *vm, Value value) {
     tableSet(vm, &vm->globals, vm->replVar, value);
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *klassAnnotations) {
+    for (int i = 0; i <= superAnnotations->capacityMask; ++i) {
+        DictItem *item = &superAnnotations->entries[i];
 
+        if (IS_EMPTY(item->key)) {
+            continue;
+        }
+
+        Value value;
+        if (dictGet(klassAnnotations, item->key, &value)) {
+            continue;
+        }
+
+        Value superVal = superAnnotations->entries[i].value;
+        dictSet(vm, klassAnnotations, superAnnotations->entries[i].key, superVal);
+    }
+}
+
+static DictuInterpretResult run(DictuVM *vm) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -1426,13 +1470,32 @@ static DictuInterpretResult run(DictuVM *vm) {
             DISPATCH();
         }
 
-        CASE_CODE(GREATER):
-            BINARY_OP(BOOL_VAL, >, double);
-            DISPATCH();
+        CASE_CODE(GREATER): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                // Use variables here as function argument evaluation order is unspecified
+                Value first = pop(vm);
+                Value second = pop(vm);
 
-        CASE_CODE(LESS):
-            BINARY_OP(BOOL_VAL, <, double);
+                push(vm, BOOL_VAL(compareStringGreater(first, second)));
+            } else {
+                BINARY_OP(BOOL_VAL, >, double);
+            }
+
             DISPATCH();
+        }
+
+        CASE_CODE(LESS): {
+            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                Value first = pop(vm);
+                Value second = pop(vm);
+
+                push(vm, BOOL_VAL(compareStringLess(first, second)));
+            } else {
+                BINARY_OP(BOOL_VAL, <, double);
+            }
+
+            DISPATCH();
+        }
 
         CASE_CODE(ADD): {
             if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
@@ -2174,6 +2237,10 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
+            if (klass->classAnnotations != NULL) {
+                copyAnnotations(vm, klass->classAnnotations, dict);
+            }
+
             klass->classAnnotations = dict;
 
             DISPATCH();
@@ -2182,6 +2249,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_METHOD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
+            
+            if (klass->methodAnnotations != NULL) {
+                copyAnnotations(vm, klass->methodAnnotations, dict);
+            }
 
             klass->methodAnnotations = dict;
 
@@ -2191,6 +2262,10 @@ static DictuInterpretResult run(DictuVM *vm) {
         CASE_CODE(DEFINE_FIELD_ANNOTATIONS): {
             ObjDict *dict = AS_DICT(READ_CONSTANT());
             ObjClass *klass = AS_CLASS(peek(vm, 0));
+
+            if (klass->fieldAnnotations != NULL) {
+                copyAnnotations(vm, klass->fieldAnnotations, dict);
+            }
 
             klass->fieldAnnotations = dict;
 

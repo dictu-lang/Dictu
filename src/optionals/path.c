@@ -188,7 +188,7 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
     WIN32_FIND_DATAA file;
     HANDLE dir = FindFirstFile(searchPath, &file);
     if (dir == INVALID_HANDLE_VALUE) {
-        runtimeError(vm, "%s is not a path!", path);
+        runtimeError(vm, "%s is not a path", path);
         free(searchPath);
         return EMPTY_VAL;
     }
@@ -221,7 +221,7 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
             pop(vm);
         }
     } else {
-        runtimeError(vm, "%s is not a path!", path);
+        runtimeError(vm, "%s is not a path", path);
         return EMPTY_VAL;
     }
 
