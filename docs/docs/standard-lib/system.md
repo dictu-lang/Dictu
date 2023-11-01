@@ -280,13 +280,3 @@ Note: This is not available on Windows systems.
 System.mkdirTemp().unwrap(); // "VOO16s"
 System.mkdirTemp("test_XXXXXX").unwrap(); // "test_0bL2qS"
 ```
-
-### System.copyFile(String: src, String: dst) -> Result\<Nil>
-
-Copies the contents from the source file to the destination file.
-
-Returns a Result type and on success will unwrap to nil.
-
-```cs
-System.copyFile(src, dst);
-```
