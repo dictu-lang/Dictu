@@ -243,16 +243,20 @@ static void createResponse(DictuVM *vm, Response *response) {
 
     response->len = 0;
     response->res = NULL;
+    response->firstIteration = true;
 }
 
 static size_t writeResponse(char *ptr, size_t size, size_t nmemb, void *data) {
     Response *response = (Response *) data;
     size_t new_len = response->len + size * nmemb;
-    response->res = GROW_ARRAY(response->vm, response->res, char, response->len, new_len + 1);
+    response->res = GROW_ARRAY(response->vm, response->res, char, response->len + !response->firstIteration, new_len + 1);
+    response->firstIteration = false;
+
     if (response->res == NULL) {
         printf("Unable to allocate memory\n");
         exit(71);
     }
+
     memcpy(response->res + response->len, ptr, size * nmemb);
     response->res[new_len] = '\0';
     response->len = new_len;
