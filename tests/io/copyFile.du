@@ -1,13 +1,14 @@
 /**
  * copyFile.du
  *
- * Testing the System.copyFile() function
+ * Testing the IO.copyFile() function
  *
  * copyFile() copies the contents from the source file to the 
  * destination file.
  */
 from UnitTest import UnitTest;
 
+import IO;
 import Path;
 import System;
 
@@ -42,7 +43,7 @@ class TestSystemCopyFile < UnitTest {
         const srcFullPath = Path.join(this.tmpDir, srcFile);
         const dstFullPath = Path.join(this.tmpDir, dstFile);
 
-        const res = System.copyFile(srcFullPath, dstFullPath);
+        const res = IO.copyFile(srcFullPath, dstFullPath);
 
         this.assertNotNil(res);
         this.assertSuccess(res);

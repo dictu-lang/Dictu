@@ -36,6 +36,7 @@ import "base64/import.du";
 import "sqlite/import.du";
 import "process/import.du";
 import "inspect/import.du";
+import "io/import.du";
 import "unittest/import.du";
 
 if (isDefined("HTTP")) {

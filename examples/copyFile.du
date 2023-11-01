@@ -1,3 +1,4 @@
+import IO;
 import Path;
 import System;
 
@@ -36,7 +37,7 @@ def cleanup(tmpDir) {
         print(file.read());
     }
 
-    System.copyFile(Path.join(tmpDir, srcFile), Path.join(tmpDir, dstFile)).match(
+    IO.copyFile(Path.join(tmpDir, srcFile), Path.join(tmpDir, dstFile)).match(
         def(result) => result,
         def(error) => {
             print(error);
