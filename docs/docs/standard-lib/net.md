@@ -1,6 +1,6 @@
 ---
 layout: default
-title: IO
+title: Net
 nav_order: 13
 parent: Standard Library
 ---
