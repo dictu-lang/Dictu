@@ -42,7 +42,7 @@ IO.println("Dictu!");
 // Dictu!
 ```
 
-### IO.copyFile(String: src, String: dst) -> Result<Nil>
+### IO.copyFile(String: src, String: dst) -> Result\<Nil>
 
 Copies the contents from the source file to the destination file.
 
