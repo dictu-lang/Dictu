@@ -29,8 +29,6 @@ HTTP.get("https://api.coindesk.com/v1/bpi/currentprice.json").match(
 Dictu is a high-level dynamically typed, multi-paradigm, interpreted programming language. Dictu has a very familiar
 C-style syntax along with taking inspiration from the family of languages surrounding it, such as Python and JavaScript.
 
-Dictu means simplistic in Latin. This is the aim of the language: to be as simplistic, organized, and logical as humanly possible.
-
 {: .fs-6 .fw-300 }
 
 ---
