@@ -127,6 +127,11 @@ Value createIOModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "stdin",  NUMBER_VAL(STDIN_FILENO));
     defineNativeProperty(vm, &module->values, "stdout",  NUMBER_VAL(STDOUT_FILENO));
     defineNativeProperty(vm, &module->values, "stderr",  NUMBER_VAL(STDERR_FILENO));
+#ifndef _WIN32
+    defineNativeProperty(vm, &module->values, "devNull", OBJ_VAL(copyString(vm, "/dev/null", strlen("/dev/null"))));
+#else
+    defineNativeProperty(vm, &module->values, "devNull", OBJ_VAL(copyString(vm, "\\\\.\\NUL", strlen("\\\\.\\NUL"))));
+#endif
 
     /**
      * Define IO methods
