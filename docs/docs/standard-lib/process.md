@@ -64,3 +64,5 @@ const res = Process.kill(709871);
 const res = Process.kill(709871, Process.SIGTERM).unwrap();
 // 0
 ```
+
+**Note:** On Windows, `kill` only takes the PID as the argument.

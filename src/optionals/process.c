@@ -277,6 +277,30 @@ static Value runProcess(DictuVM* vm, int argCount, Value* args) {
     return execute(vm, argList, true);
 }
 
+#ifdef _WIN32
+static Value killProcess(DictuVM* vm, int argCount, Value* args) {
+    if (argCount > 2) {
+        runtimeError(vm, "kill() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "Argument passed to kill() must be a number");
+        return EMPTY_VAL;
+    }
+
+    pid_t pid = (pid_t)AS_NUMBER(args[0]);
+
+    HANDLE handle = OpenProcess(PROCESS_TERMINATE, TRUE, (int)pid);
+    if (handle != NULL) {   
+        TerminateProcess(handle, 0);
+        CloseHandle(handle);
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+#endif
+
 static Value killProcess(DictuVM* vm, int argCount, Value* args) {
     if (argCount > 2) {
         runtimeError(vm, "kill() takes 1 or 2 arguments (%d given)", argCount);
@@ -300,15 +324,7 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
         signal = AS_NUMBER(args[1]);
     }
 
-#ifdef _WIN32
-    HANDLE handle = OpenProcess(PROCESS_TERMINATE, TRUE, (int)pid);
-    if (handle != NULL) {   
-        TerminateProcess(handle, 0);
-        CloseHandle(handle);
-    }
-#else
     kill(pid, signal);
-#endif
 
     return newResultSuccess(vm, NIL_VAL);
 }
