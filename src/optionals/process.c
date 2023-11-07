@@ -377,7 +377,7 @@ Value createProcessModule(DictuVM* vm) {
     defineNativeProperty(vm, &module->values, "SIGUSR2", NUMBER_VAL(31));
     defineNativeProperty(vm, &module->values, "SIGTHR", NUMBER_VAL(32));
     defineNativeProperty(vm, &module->values, "SIGLIBRT", NUMBER_VAL(33));
-#elif defined(__WIN32)
+#elif defined(WIN32)
     defineNativeProperty(vm, &module->values, "SIGEXIT", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(22));
 #endif
