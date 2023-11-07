@@ -286,7 +286,7 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
     }
 
     pid_t pid = (pid_t)AS_NUMBER(args[0]);
-    int signal = SIGKILL;
+    int signal = 9;
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
