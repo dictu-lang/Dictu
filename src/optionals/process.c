@@ -1,4 +1,7 @@
 #include <signal.h>
+#ifdef _WIN32
+#include "windowsapi.h"
+#endif
 
 #include "process.h"
 
@@ -297,9 +300,17 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
         signal = AS_NUMBER(args[1]);
     }
 
-    int res = kill(pid, signal);
+#ifdef _WIN32
+    HANDLE handle = OpenProcess(PROCESS_TERMINATE, TRUE, (int)pid);
+    if (handle != NULL) {   
+        TerminateProcess(handle, 0);
+        CloseHandle(handle);
+    }
+#else
+    kill(pid, signal);
+#endif
 
-    return newResultSuccess(vm, AS_NUMBER(res));
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 Value createProcessModule(DictuVM* vm) {
