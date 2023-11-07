@@ -299,8 +299,7 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
 
     return newResultSuccess(vm, NIL_VAL);
 }
-#endif
-
+#else
 static Value killProcess(DictuVM* vm, int argCount, Value* args) {
     if (argCount > 2) {
         runtimeError(vm, "kill() takes 1 or 2 arguments (%d given)", argCount);
@@ -328,6 +327,7 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
 
     return newResultSuccess(vm, NIL_VAL);
 }
+#endif
 
 Value createProcessModule(DictuVM* vm) {
     ObjString* name = copyString(vm, "Process", 7);
