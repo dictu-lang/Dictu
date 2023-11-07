@@ -3,6 +3,10 @@
 #include "process.h"
 
 #ifdef _WIN32
+#define pid_t int
+#endif
+
+#ifdef _WIN32
 static char* buildArgs(DictuVM *vm, ObjList* list, int *size) {
     // 3 for 1st arg escape + null terminator
     int length = 3;
