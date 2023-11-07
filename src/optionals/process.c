@@ -314,12 +314,12 @@ Value createProcessModule(DictuVM* vm) {
     /**
      * Define process properties
      */
-    defineNativeProperty(vm, &module->values, "SIGINT", NUMBER_VAL(SIGINT));
-    defineNativeProperty(vm, &module->values, "SIGILL", NUMBER_VAL(SIGILL));
-    defineNativeProperty(vm, &module->values, "SIGFPE", NUMBER_VAL(SIGFPE));
-    defineNativeProperty(vm, &module->values, "SIGKILL", NUMBER_VAL(SIGKILL));
-    defineNativeProperty(vm, &module->values, "SIGSEGV", NUMBER_VAL(SIGSEGV));
-    defineNativeProperty(vm, &module->values, "SIGTERM", NUMBER_VAL(SIGTERM));
+    defineNativeProperty(vm, &module->values, "SIGINT", NUMBER_VAL(2));
+    defineNativeProperty(vm, &module->values, "SIGILL", NUMBER_VAL(4));
+    defineNativeProperty(vm, &module->values, "SIGFPE", NUMBER_VAL(8));
+    defineNativeProperty(vm, &module->values, "SIGKILL", NUMBER_VAL(9));
+    defineNativeProperty(vm, &module->values, "SIGSEGV", NUMBER_VAL(11));
+    defineNativeProperty(vm, &module->values, "SIGTERM", NUMBER_VAL(15));
 
 #if defined(__Linux__)
     defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
