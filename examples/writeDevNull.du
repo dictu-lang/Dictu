@@ -1,0 +1,13 @@
+import IO;
+import System;
+
+
+{ // main
+    print(IO.devNull);
+    with(IO.devNull, 'w') {
+        const out = file.write("asdfasfdasdfasdf");
+        print(out);
+    }
+
+    System.exit(0);
+}

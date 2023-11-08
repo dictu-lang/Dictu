@@ -48,6 +48,19 @@ class TestSystemCopyFile < UnitTest {
         this.assertNotNil(res);
         this.assertSuccess(res);
     }
+
+    testCopyFileToDevNull() {
+        with(Path.join(this.tmpDir, srcFile), 'w') {
+            file.write("lots and lots of temp data!");
+        }
+
+        const srcFullPath = Path.join(this.tmpDir, srcFile);
+
+        const res = IO.copyFile(srcFullPath, IO.devNull);
+
+        this.assertNotNil(res);
+        this.assertSuccess(res);
+    }
 }
 
 TestSystemCopyFile().run();

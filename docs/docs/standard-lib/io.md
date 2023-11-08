@@ -24,6 +24,12 @@ To make use of the IO module an import is required.
 import IO;
 ```
 
+### Constants
+
+| Constant   | Description                         |
+| ---------- | ----------------------------------- |
+| IO.devNull | Provides access to the null device. |
+
 ### IO.print(...values) -> Nil
 
 Prints a given list of values to stdout.
