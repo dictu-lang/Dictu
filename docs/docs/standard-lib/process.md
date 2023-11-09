@@ -51,7 +51,7 @@ Process.run(["ls", "-la"]).unwrap();
 print(Process.run(["echo", "test"], true).unwrap()); // 'test'
 ```
 
-### Process.kill(Number, Number -> Optional) -> Result\<Number>
+### Process.kill(Number, Number -> Optional) -> Result\<Nil>
 
 kill receives a process ID number and an optional signal number and attempts to kill the process associated with the given pid. If no signal is provided, SIGKILL is used.
 

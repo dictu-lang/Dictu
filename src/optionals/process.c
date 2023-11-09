@@ -323,7 +323,9 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
         signal = AS_NUMBER(args[1]);
     }
 
-    kill(pid, signal);
+    if (kill(pid, signal) == -1) {
+        ERROR_RESULT;
+    }
 
     return newResultSuccess(vm, NIL_VAL);
 }
