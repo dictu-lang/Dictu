@@ -50,3 +50,19 @@ If the external process writes to stdout and you wish to capture the output you 
 Process.run(["ls", "-la"]).unwrap();
 print(Process.run(["echo", "test"], true).unwrap()); // 'test'
 ```
+
+### Process.kill(Number, Number -> Optional) -> Result\<Nil>
+
+kill receives a process ID number and an optional signal number and attempts to kill the process associated with the given pid. If no signal is provided, SIGKILL is used.
+
+```cs
+const res = Process.kill(709871);
+// 0
+```
+
+```cs
+const res = Process.kill(709871, Process.SIGTERM).unwrap();
+// 0
+```
+
+**Note:** On Windows, `kill` only takes the PID as the argument.

@@ -13,8 +13,7 @@
 
 #include "linenoise/linenoise.h"
 
-static int matchStringLiteral(char* line, int i)
-{
+static int matchStringLiteral(char* line, int i) {
     char quote = line[i];
     
     if (quote != '\'' && quote != '"') {
@@ -62,8 +61,7 @@ static bool matchBraces(char *line) {
     return braceLevel == 0;
 }
 
-static void memcpyAndAppendNul(char* dst, char* src, int len)
-{
+static void memcpyAndAppendNul(char* dst, char* src, int len) {
     memcpy(dst, src, len);
     dst[len] = '\0';
 }
@@ -157,9 +155,9 @@ static void runFile(DictuVM *vm, char *filename) {
 }
 
 static const char *const usage[] = {
-        "dictu [options] [[--] args]",
-        "dictu [options]",
-        NULL,
+    "dictu [options] [[--] args]",
+    "dictu [options]",
+    NULL,
 };
 
 int main(int argc, char *argv[]) {
@@ -167,10 +165,10 @@ int main(int argc, char *argv[]) {
     char *cmd = NULL;
 
     struct argparse_option options[] = {
-            OPT_HELP(),
-            OPT_BOOLEAN('v', "version", &version, "Display Dictu version"),
-            OPT_STRING('c', "cmd", &cmd, "Run program passed in as string"),
-            OPT_END(),
+        OPT_HELP(),
+        OPT_BOOLEAN('v', "version", &version, "Display Dictu version"),
+        OPT_STRING('c', "cmd", &cmd, "Run program passed in as string"),
+        OPT_END(),
     };
 
     struct argparse argparse;

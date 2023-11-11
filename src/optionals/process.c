@@ -1,4 +1,13 @@
+#include <signal.h>
+#ifdef _WIN32
+#include "windowsapi.h"
+#endif
+
 #include "process.h"
+
+#ifdef _WIN32
+#define pid_t int
+#endif
 
 #ifdef _WIN32
 static char* buildArgs(DictuVM *vm, ObjList* list, int *size) {
@@ -222,7 +231,7 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
 }
 #endif
 
-static Value execNative(DictuVM* vm, int argCount, Value* args) {
+static Value execProcess(DictuVM* vm, int argCount, Value* args) {
     if (argCount != 1) {
         runtimeError(vm, "exec() takes 1 argument (%d given).", argCount);
         return EMPTY_VAL;
@@ -237,7 +246,7 @@ static Value execNative(DictuVM* vm, int argCount, Value* args) {
     return execute(vm, argList, false);
 }
 
-static Value runNative(DictuVM* vm, int argCount, Value* args) {
+static Value runProcess(DictuVM* vm, int argCount, Value* args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "run() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -268,6 +277,60 @@ static Value runNative(DictuVM* vm, int argCount, Value* args) {
     return execute(vm, argList, true);
 }
 
+#ifdef _WIN32
+static Value killProcess(DictuVM* vm, int argCount, Value* args) {
+    if (argCount > 2) {
+        runtimeError(vm, "kill() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "Argument passed to kill() must be a number");
+        return EMPTY_VAL;
+    }
+
+    pid_t pid = (pid_t)AS_NUMBER(args[0]);
+
+    HANDLE handle = OpenProcess(PROCESS_TERMINATE, TRUE, (int)pid);
+    if (handle != NULL) {   
+        TerminateProcess(handle, 0);
+        CloseHandle(handle);
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+#else
+static Value killProcess(DictuVM* vm, int argCount, Value* args) {
+    if (argCount > 2) {
+        runtimeError(vm, "kill() takes 1 or 2 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "First argument passed to kill() must be a number");
+        return EMPTY_VAL;
+    }
+
+    pid_t pid = (pid_t)AS_NUMBER(args[0]);
+    int signal = 9;
+
+    if (argCount == 2) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError(vm, "Second argument passed to kill() must be a number");
+            return EMPTY_VAL;
+        }
+
+        signal = AS_NUMBER(args[1]);
+    }
+
+    if (kill(pid, signal) == -1) {
+        ERROR_RESULT;
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+#endif
+
 Value createProcessModule(DictuVM* vm) {
     ObjString* name = copyString(vm, "Process", 7);
     push(vm, OBJ_VAL(name));
@@ -277,12 +340,80 @@ Value createProcessModule(DictuVM* vm) {
     /**
      * Define process methods
      */
-    defineNative(vm, &module->values, "exec", execNative);
-    defineNative(vm, &module->values, "run", runNative);
+    defineNative(vm, &module->values, "exec", execProcess);
+    defineNative(vm, &module->values, "run", runProcess);
+    defineNative(vm, &module->values, "kill", killProcess);
 
     /**
      * Define process properties
      */
+    defineNativeProperty(vm, &module->values, "SIGINT", NUMBER_VAL(2));
+    defineNativeProperty(vm, &module->values, "SIGILL", NUMBER_VAL(4));
+    defineNativeProperty(vm, &module->values, "SIGFPE", NUMBER_VAL(8));
+    defineNativeProperty(vm, &module->values, "SIGKILL", NUMBER_VAL(9));
+    defineNativeProperty(vm, &module->values, "SIGSEGV", NUMBER_VAL(11));
+    defineNativeProperty(vm, &module->values, "SIGTERM", NUMBER_VAL(15));
+
+#if defined(__Linux__)
+    defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
+    defineNativeProperty(vm, &module->values, "SIGQUIT", NUMBER_VAL(3));
+    defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(6));
+    defineNativeProperty(vm, &module->values, "SIGTRAP", NUMBER_VAL(5));
+    defineNativeProperty(vm, &module->values, "SIGIOT", NUMBER_VAL(6));
+    defineNativeProperty(vm, &module->values, "SIGBUS", NUMBER_VAL(7));
+    defineNativeProperty(vm, &module->values, "SIGUSR1", NUMBER_VAL(10));
+    defineNativeProperty(vm, &module->values, "SIGUSR2", NUMBER_VAL(12));
+    defineNativeProperty(vm, &module->values, "SIGPIPE", NUMBER_VAL(13));
+    defineNativeProperty(vm, &module->values, "SIGALRM", NUMBER_VAL(14));
+    defineNativeProperty(vm, &module->values, "SIGSTKFLT", NUMBER_VAL(16));
+    defineNativeProperty(vm, &module->values, "SIGCHLD", NUMBER_VAL(17));
+    defineNativeProperty(vm, &module->values, "SIGCONT", NUMBER_VAL(18));
+    defineNativeProperty(vm, &module->values, "SIGSTOP", NUMBER_VAL(19));
+    defineNativeProperty(vm, &module->values, "SIGTSTP", NUMBER_VAL(20));
+    defineNativeProperty(vm, &module->values, "SIGTTIN", NUMBER_VAL(21));
+    defineNativeProperty(vm, &module->values, "SIGTTOU", NUMBER_VAL(22));
+    defineNativeProperty(vm, &module->values, "SIGURG", NUMBER_VAL(23));
+    defineNativeProperty(vm, &module->values, "SIGXCPU", NUMBER_VAL(24));
+    defineNativeProperty(vm, &module->values, "SIGXFSZ", NUMBER_VAL(25));
+    defineNativeProperty(vm, &module->values, "SIGVTALRM", NUMBER_VAL(26));
+    defineNativeProperty(vm, &module->values, "SIGPROF", NUMBER_VAL(27));
+    defineNativeProperty(vm, &module->values, "SIGWINCH", NUMBER_VAL(28));
+    defineNativeProperty(vm, &module->values, "SIGIO", NUMBER_VAL(29));
+    defineNativeProperty(vm, &module->values, "SIGPWR", NUMBER_VAL(30));
+    defineNativeProperty(vm, &module->values, "SIGSYS", NUMBER_VAL(31));
+    defineNativeProperty(vm, &module->values, "SIGUNUSED", NUMBER_VAL(31));
+#elif defined(__FreeBSD__) || defined(__APPLE__)
+    defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
+    defineNativeProperty(vm, &module->values, "SIGQUIT", NUMBER_VAL(3));
+    defineNativeProperty(vm, &module->values, "SIGTRAP", NUMBER_VAL(5));
+    defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(6));
+    defineNativeProperty(vm, &module->values, "SIGEMT", NUMBER_VAL(7));
+    defineNativeProperty(vm, &module->values, "SIGBUS", NUMBER_VAL(10));
+    defineNativeProperty(vm, &module->values, "SIGSYS", NUMBER_VAL(12));
+    defineNativeProperty(vm, &module->values, "SIGPIPE", NUMBER_VAL(13));
+    defineNativeProperty(vm, &module->values, "SIGALRM", NUMBER_VAL(14));
+    defineNativeProperty(vm, &module->values, "SIGURG", NUMBER_VAL(16));
+    defineNativeProperty(vm, &module->values, "SIGSTOP", NUMBER_VAL(17));
+    defineNativeProperty(vm, &module->values, "SIGTSTP", NUMBER_VAL(18));
+    defineNativeProperty(vm, &module->values, "SIGCONT", NUMBER_VAL(19));
+    defineNativeProperty(vm, &module->values, "SIGCHLD", NUMBER_VAL(20));
+    defineNativeProperty(vm, &module->values, "SIGTTIN", NUMBER_VAL(21));
+    defineNativeProperty(vm, &module->values, "SIGTTOU", NUMBER_VAL(22));
+    defineNativeProperty(vm, &module->values, "SIGIO", NUMBER_VAL(23));
+    defineNativeProperty(vm, &module->values, "SIGXCPU", NUMBER_VAL(24));
+    defineNativeProperty(vm, &module->values, "SIGXFSZ", NUMBER_VAL(25));
+    defineNativeProperty(vm, &module->values, "SIGVTALRM", NUMBER_VAL(26));
+    defineNativeProperty(vm, &module->values, "SIGPROF", NUMBER_VAL(27));
+    defineNativeProperty(vm, &module->values, "SIGWINCH", NUMBER_VAL(28));
+    defineNativeProperty(vm, &module->values, "SIGINFO", NUMBER_VAL(29));
+    defineNativeProperty(vm, &module->values, "SIGUSR1", NUMBER_VAL(30));
+    defineNativeProperty(vm, &module->values, "SIGUSR2", NUMBER_VAL(31));
+    defineNativeProperty(vm, &module->values, "SIGTHR", NUMBER_VAL(32));
+    defineNativeProperty(vm, &module->values, "SIGLIBRT", NUMBER_VAL(33));
+#elif defined(_WIN32)
+    defineNativeProperty(vm, &module->values, "SIGEXIT", NUMBER_VAL(0));
+    defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(22));
+#endif
 
     pop(vm);
     pop(vm);
