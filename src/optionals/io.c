@@ -50,8 +50,8 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *srcFile = AS_STRING(args[0])->chars;
-    char *dstFile = AS_STRING(args[1])->chars;
+    char *srcFile = AS_CSTRING(args[0]);
+    char *dstFile = AS_CSTRING(args[1]);
 
     FILE *sf = fopen(srcFile, "r");
     if (sf == NULL) {
@@ -89,8 +89,8 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *src = AS_STRING(args[0])->chars;
-    char *dst = AS_STRING(args[1])->chars;
+    char *src = AS_CSTRING(args[0]);
+    char *dst = AS_CSTRING(args[1]);
 
     int in = 0;
     int out = 0;
