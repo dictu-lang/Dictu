@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sodium.h>
 
 #define UNUSED(__x__) (void) __x__
 
@@ -163,6 +164,12 @@ static const char *const usage[] = {
 int main(int argc, char *argv[]) {
     int version = 0;
     char *cmd = NULL;
+
+    if (sodium_init() < 0) {
+        printf("WTF??\n");
+    } else {
+        printf("FINE!\n");
+    }
 
     struct argparse_option options[] = {
         OPT_HELP(),
