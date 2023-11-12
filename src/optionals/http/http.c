@@ -941,7 +941,7 @@ static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
     headerChunk = NULL;
 
     for (int h = 0; h < headers->values.count; h++) {
-        headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
+        headerChunk = curl_slist_append(headerChunk, AS_CSTRING(headers->values.values[h]));
     }
     
     curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
@@ -962,7 +962,7 @@ static Value httpClientSetKeyFile(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_CSTRING(args[1]));
 
     return NIL_VAL;
 }
@@ -980,7 +980,7 @@ static Value httpClientSetCertFile(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_CSTRING(args[1]));
 
     return NIL_VAL;
 }
@@ -998,7 +998,7 @@ static Value httpClientSetKeyPass(DictuVM *vm, int argCount, Value *args) {
 
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
-    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_STRING(args[1])->chars);
+    curl_easy_setopt(httpClient->curl, CURLOPT_SSLKEY, AS_CSTRING(args[1]));
 
     return NIL_VAL;
 }
@@ -1281,7 +1281,7 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 ObjList *headers = AS_LIST(entry->value);
 
                 for (int h = 0; h < headers->values.count; h++) {
-                    headerChunk = curl_slist_append(headerChunk, AS_STRING(headers->values.values[h])->chars);
+                    headerChunk = curl_slist_append(headerChunk, AS_CSTRING(headers->values.values[h]));
                 }
                 
                 curl_easy_setopt(httpClient->curl, CURLOPT_HTTPHEADER, headerChunk);
@@ -1323,7 +1323,7 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                     return EMPTY_VAL;
                 }
 
-                char *keyFile = AS_STRING(entry->value)->chars;
+                char *keyFile = AS_CSTRING(entry->value);
                 if (keyFile[0] == '\0') {
                     continue;
                 }
@@ -1339,7 +1339,7 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                     return EMPTY_VAL;
                 }
 
-                char *certFile = AS_STRING(entry->value)->chars;
+                char *certFile = AS_CSTRING(entry->value);
                 if (certFile[0] == '\0') {
                     continue;
                 }
@@ -1355,7 +1355,7 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                     return EMPTY_VAL;
                 }
 
-                char *keyPasswd = AS_STRING(entry->value)->chars;
+                char *keyPasswd = AS_CSTRING(entry->value);
                 if (keyPasswd[0] == '\0') {
                     continue;
                 }
