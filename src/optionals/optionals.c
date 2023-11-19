@@ -1,8 +1,9 @@
 #include "optionals.h"
 
 BuiltinModules modules[] = {
-    {"C", &createCModule, false},
+    {"Archive", &createArchiveModule, false},
     {"Argparse", &createArgParseModule, false},
+    {"C", &createCModule, false},
     {"Math", &createMathsModule, false},
     {"Env", &createEnvModule, true},
     {"IO", &createIOModule, false},

@@ -9,6 +9,13 @@ set(INCLUDE_DIR include/)
 list(FILTER sources EXCLUDE REGEX "(main|stringbuf|linenoise(-win32)?|utf8).c")
 list(FILTER headers EXCLUDE REGEX "(linenoise|stringbuf|utf8).h")
 
+set(ENABLE_VCPKG OFF CACHE BOOL "Determines if dependencies are being procured by the VCPKG package manager")
+
+if (ENABLE_VCPKG)
+    # curl is provided by VCPKG
+    set(DISABLE_HTTP ON CACHE BOOL "Determines if dependencies are being procured by the VCPKG package manager")
+endif(ENABLE_VCPKG)
+
 find_library(SQLITE_LIB SQLite3)
 set(THREADS)
 
@@ -19,6 +26,7 @@ if(DISABLE_HTTP)
 else()
     if (ENABLE_VCPKG)
         find_package(CURL REQUIRED)
+        find_package(ARCHIVE REQUIRED)
         list(APPEND libraries CURL::libcurl)
         include_directories(${CURL_INCLUDE_DIRS})
     else()

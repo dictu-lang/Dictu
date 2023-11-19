@@ -14,7 +14,7 @@ jobs:
       - name: Make dictu and run checkTests and orderDocs
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev libarchive-dev
           cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
           cmake --build ./build
           ./dictu ops/checkTests.du ci
@@ -39,7 +39,7 @@ jobs:
       - name: Make dictu and run tests (HTTP)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev libarchive-dev
           cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
           cmake --build ./build
           ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
@@ -87,7 +87,7 @@ jobs:
       - name: Make dictu and run examples
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev libarchive-dev
           cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
           cmake --build ./build
           ./dictu examples/runExamples.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
