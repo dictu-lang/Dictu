@@ -12,7 +12,6 @@
 #include "log.h"
 #include "http/http.h"
 #include "path.h"
-#include "c.h"
 #include "datetime.h"
 #include "socket.h"
 #include "net.h"

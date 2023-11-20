@@ -74,6 +74,19 @@ HTTP.head("https://httpbin.org/get", ["Content-Type: application/json"], 1);
 {"content": "", "headers": ["...", "..."], "statusCode": 200}
 ```
 
+### HTTP.options(String, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
+
+Sends a HTTP OPTIONS request to a given URL. Timeout is given in seconds.
+Returns a Result and unwraps to a Response upon success. 
+
+```cs
+HTTP.head("https://httpbin.org/options");
+HTTP.head("https://httpbin.org/options", ["Content-Type: application/json"]);
+HTTP.head("https://httpbin.org/options", ["Content-Type: application/json"], 1);
+
+{"content": "", "headers": ["...", "..."], "statusCode": 404}
+```
+
 ### HTTP.newClient(Dict) -> HttpClient
 
 Creates a new HTTP client with a given set of options.
@@ -134,6 +147,12 @@ Returns a Result and unwraps to a Response upon success.
 httpClient.head("https://httpbin.org/get");
 
 {"content": "", "headers": ["...", "..."], "statusCode": 200}
+```
+
+```cs
+httpClient.options("https://httpbin.org/options");
+
+{"content": "", "headers": ["...", "..."], "statusCode": 404}
 ```
 
 ### Response
