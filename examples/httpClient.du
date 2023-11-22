@@ -43,6 +43,13 @@ import System;
     print("Status Code: {}".format(res.unwrap().statusCode));
     print(res.unwrap().json().unwrap());
 
+    res = httpClient.options("https://httpbin.org/options", {});
+    if (not res.success()) {
+        print(res.unwrapError());
+        System.exit(1);
+    }
+    print("Headers: {}".format(res.unwrap().headers));
+
     System.exit(0);
 }
 

@@ -828,6 +828,99 @@ static Value head(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, errorString);
 }
 
+static Value options(DictuVM *vm, int argCount, Value *args) {
+    if (argCount < 0 || argCount > 3) {
+        runtimeError(vm, "options() takes between 1 and 3 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    long timeout = DEFAULT_REQUEST_TIMEOUT;
+    ObjList *headers = NULL;
+
+    if (argCount == 3) {
+        if (!IS_NUMBER(args[2])) {
+            runtimeError(vm, "Timeout passed to options() must be a number.");
+            return EMPTY_VAL;
+        }
+
+        timeout = AS_NUMBER(args[2]);
+        argCount--;
+    }
+
+    if (argCount == 2) {
+        if (!IS_LIST(args[1])) {
+            runtimeError(vm, "Headers passed to options() must be a list.");
+            return EMPTY_VAL;
+        }
+
+        headers = AS_LIST(args[1]);
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "URL passed to options() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    CURL *curl;
+    CURLcode curlResponse;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if (curl) {
+        Response response;
+        createResponse(vm, &response);
+        char *url = AS_CSTRING(args[0]);
+
+        struct curl_slist *list = NULL;
+
+        if (headers) {
+            if (!setRequestHeaders(vm, list, curl, headers)) {
+                curl_slist_free_all(list);
+                return EMPTY_VAL;
+            }
+        }
+
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "OPTIONS");
+        curl_easy_setopt(curl, CURLOPT_REQUEST_TARGET, "*");
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        /* Perform the request, res will get the return code */
+        curlResponse = curl_easy_perform(curl);
+
+        if (headers) {
+            curl_slist_free_all(list);
+        }
+
+        /* Check for errors */
+        if (curlResponse != CURLE_OK) {
+            /* always cleanup */
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            pop(vm);
+
+            char *errorString = (char *) curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
+        }
+
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, curl, response, true)));
+    }
+
+    /* always cleanup */
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+    pop(vm);
+
+    char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
+}
+
 typedef struct {
     CURL *curl;
 } HttpClient;
@@ -1231,6 +1324,97 @@ static Value httpClientHead(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, errorString);
 }
 
+static Value httpClientOptions(DictuVM *vm, int argCount, Value *args) {
+    if (argCount < 0 || argCount > 3) {
+        runtimeError(vm, "options() takes between 1 and 3 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    long timeout = DEFAULT_REQUEST_TIMEOUT;
+    ObjList *headers = NULL;
+
+    HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
+
+    if (argCount == 4) {
+        if (!IS_NUMBER(args[3])) {
+            runtimeError(vm, "Timeout passed to options() must be a number.");
+            return EMPTY_VAL;
+        }
+
+        timeout = AS_NUMBER(args[3]);
+        argCount--;
+    }
+
+    if (argCount == 3) {
+        if (!IS_LIST(args[2])) {
+            runtimeError(vm, "Headers passed to options() must be a list.");
+            return EMPTY_VAL;
+        }
+
+        headers = AS_LIST(args[2]);
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "URL passed to options() must be a string.");
+        return EMPTY_VAL;
+    }
+
+    CURLcode curlResponse;
+
+    if (httpClient) {
+        Response response;
+        createResponse(vm, &response);
+        char *url = AS_CSTRING(args[1]);
+
+        struct curl_slist *list = NULL;
+
+        if (headers) {
+            if (!setRequestHeaders(vm, list, httpClient->curl, headers)) {
+                curl_slist_free_all(list);
+                return EMPTY_VAL;
+            }
+        }
+
+        curl_easy_setopt(httpClient->curl, CURLOPT_URL, url);
+        curl_easy_setopt(httpClient->curl, CURLOPT_NOBODY, 1L);
+        curl_easy_setopt(httpClient->curl, CURLOPT_TIMEOUT, timeout);
+        curl_easy_setopt(httpClient->curl, CURLOPT_CUSTOMREQUEST, "OPTIONS");
+        curl_easy_setopt(httpClient->curl, CURLOPT_REQUEST_TARGET, "*");
+        curl_easy_setopt(httpClient->curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+        curl_easy_setopt(httpClient->curl, CURLOPT_HEADERFUNCTION, writeHeaders);
+        curl_easy_setopt(httpClient->curl, CURLOPT_HEADERDATA, &response);
+        curl_easy_setopt(httpClient->curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        /* Perform the request, res will get the return code */
+        curlResponse = curl_easy_perform(httpClient->curl);
+
+        if (headers) {
+            curl_slist_free_all(list);
+        }
+
+        /* Check for errors */
+        if (curlResponse != CURLE_OK) {
+            /* always cleanup */
+            curl_easy_cleanup(httpClient->curl);
+            curl_global_cleanup();
+            pop(vm);
+
+            char *errorString = (char *) curl_easy_strerror(curlResponse);
+            return newResultError(vm, errorString);
+        }
+
+        return newResultSuccess(vm, OBJ_VAL(endRequest(vm, httpClient->curl, response, true)));
+    }
+
+    /* always cleanup */
+    curl_easy_cleanup(httpClient->curl);
+    curl_global_cleanup();
+    pop(vm);
+
+    char *errorString = (char *) curl_easy_strerror(CURLE_FAILED_INIT);
+    return newResultError(vm, errorString);
+}
+
 Value newHttpClient(DictuVM *vm, ObjDict *opts) {
     ObjAbstract *abstract = newAbstract(vm, freeHttpClient, httpClientToString);
     push(vm, OBJ_VAL(abstract));
@@ -1374,6 +1558,7 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
     defineNative(vm, &abstract->values, "post", httpClientPost);
     defineNative(vm, &abstract->values, "put", httpClientPut);
     defineNative(vm, &abstract->values, "head", httpClientHead);
+    defineNative(vm, &abstract->values, "options", httpClientOptions);
     defineNative(vm, &abstract->values, "setTimeout", httpClientSetTimeout);
     defineNative(vm, &abstract->values, "setHeaders", httpClientSetHeaders);
     defineNative(vm, &abstract->values, "setInsecure", httpClientSetInsecure);
@@ -1647,6 +1832,7 @@ Value createHTTPModule(DictuVM *vm) {
     defineNative(vm, &module->values, "post", post);
     defineNative(vm, &module->values, "put", put);
     defineNative(vm, &module->values, "head", head);
+    defineNative(vm, &module->values, "options", options);
 
     defineNative(vm, &module->values, "newClient", newClient);
 
