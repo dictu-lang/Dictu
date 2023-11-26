@@ -39,8 +39,6 @@
 #include "../vm/vm.h"
 #include "../vm/memory.h"
 
-Value createCModule(DictuVM *vm);
-
 void getStrerror(char *buf, int error);
 
 #endif //dictu_c_h
