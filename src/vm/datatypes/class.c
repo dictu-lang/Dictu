@@ -38,7 +38,7 @@ static Value methods(DictuVM *vm, int argCount, Value *args) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
-    for (int i = 0; i <= klass->publicMethods.capacityMask; ++i) {
+    for (int i = 0; i < klass->publicMethods.capacity; ++i) {
         if (klass->publicMethods.entries[i].key == NULL) {
             continue;
         }

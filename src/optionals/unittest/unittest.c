@@ -31,7 +31,7 @@ static Value mockNative(DictuVM *vm, int argCount, Value *args) {
     pop(vm);
     push(vm, OBJ_VAL(mockedClass));
 
-    for (int i = 0; i <= klass->publicMethods.capacityMask; ++i) {
+    for (int i = 0; i < klass->publicMethods.capacity; ++i) {
         if (klass->publicMethods.entries[i].key == NULL) {
             continue;
         }
