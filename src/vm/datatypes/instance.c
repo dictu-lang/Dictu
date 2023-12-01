@@ -132,7 +132,7 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
 
     // Walk the inheritance chain
     while (klass != NULL) {
-        for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+        for (int i = 0; i < klass->variables.capacity; i++) {
             if (klass->variables.entries[i].key == NULL) {
                 continue;
             }
@@ -144,7 +144,7 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
             writeValueArray(vm, &fields->values, OBJ_VAL(klass->variables.entries[i].key));
         }
 
-        for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+        for (int i = 0; i < klass->constants.capacity; i++) {
             if (klass->constants.entries[i].key == NULL) {
                 continue;
             }
@@ -170,7 +170,7 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     ObjList *attributes = newList(vm);
     push(vm, OBJ_VAL(attributes));
     
-    for (int i = 0; i < instance->publicAttributes.capacityMask + 1; i++) {
+    for (int i = 0; i < instance->publicAttributes.capacity; i++) {
         if (instance->publicAttributes.entries[i].key == NULL) {
             continue;
         }
@@ -193,7 +193,7 @@ static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     ObjList *methods = newList(vm);
     push(vm, OBJ_VAL(methods));
 
-    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
+    for (int i = 0; i < instance->klass->publicMethods.capacity; ++i) {
         if (instance->klass->publicMethods.entries[i].key == NULL) {
             continue;
         }
@@ -295,7 +295,7 @@ static Value methods(DictuVM *vm, int argCount, Value *args) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
 
-    for (int i = 0; i <= instance->klass->publicMethods.capacityMask; ++i) {
+    for (int i = 0; i < instance->klass->publicMethods.capacity; ++i) {
         if (instance->klass->publicMethods.entries[i].key == NULL) {
             continue;
         }

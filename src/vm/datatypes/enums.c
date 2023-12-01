@@ -10,7 +10,7 @@ static Value values(DictuVM *vm, int argCount, Value *args) {
     ObjDict *dict = newDict(vm);
     push(vm, OBJ_VAL(dict));
 
-    for (int i = 0; i < objEnum->values.capacityMask + 1; ++i) {
+    for (int i = 0; i < objEnum->values.capacity; ++i) {
         if (objEnum->values.entries[i].key == NULL) {
             continue;
         }

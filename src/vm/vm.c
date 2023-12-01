@@ -2276,7 +2276,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
             // If super class is abstract, ensure we have defined all abstract methods
-            for (int i = 0; i < klass->abstractMethods.capacityMask + 1; i++) {
+            for (int i = 0; i < klass->abstractMethods.capacity; i++) {
                 if (klass->abstractMethods.entries[i].key == NULL) {
                     continue;
                 }
