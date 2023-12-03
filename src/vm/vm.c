@@ -1873,9 +1873,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                         index = string->length + index;
 
                     if (index >= 0 && index < string->length) {
+                        ObjString *newString = copyString(vm, &string->chars[index], 1);
                         pop(vm);
                         pop(vm);
-                        push(vm, OBJ_VAL(copyString(vm, &string->chars[index], 1)));
+                        push(vm, OBJ_VAL(newString));
                         DISPATCH();
                     }
 
