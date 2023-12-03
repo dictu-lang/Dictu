@@ -51,6 +51,8 @@ static void resetStack(DictuVM *vm) {
         unpack = false;                                                             \
     }
 
+#define INSTANCE_HAS_NO_ATTR_ERR RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars)
+
 void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
@@ -1139,7 +1141,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
                     }
 
-                    RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars);
+                    INSTANCE_HAS_NO_ATTR_ERR;
                 }
 
                 case OBJ_MODULE: {
@@ -1259,7 +1261,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("'%s' instance has no attribute1: '%s'.", instance->klass->name->chars, name->chars);
+                INSTANCE_HAS_NO_ATTR_ERR;
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
@@ -1369,7 +1371,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("'%s' instance has no attribute3: '%s'.", instance->klass->name->chars, name->chars);
+            INSTANCE_HAS_NO_ATTR_ERR;
         }
 
         CASE_CODE(SET_ATTRIBUTE): {
