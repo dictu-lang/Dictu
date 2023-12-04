@@ -72,15 +72,13 @@ static Value datetimeStrftime(DictuVM *vm, int argCount, Value *args){
 
     Datetime *datetime = AS_DATETIME(args[0]);
     struct tm tictoc;
-    tictoc.tm_sec = datetime->seconds;
-    tictoc.tm_min = datetime->minutes;
-    tictoc.tm_hour = datetime->hours;
-    tictoc.tm_mday = datetime->day;
-    tictoc.tm_mon = datetime->month;
-    tictoc.tm_year = datetime->year;
+    if(datetime->is_local){
+        localtime_r(&datetime->time, &tictoc);
+    }
+    else{
+        gmtime_r(&datetime->time, &tictoc);
+    }
     tictoc.tm_isdst = -1;
-    const time_t timestamp = mktime(&tictoc);
-    localtime_r(&timestamp, &tictoc);
     
      /**
      * strtime returns 0 when it fails to write - this would be due to the buffer
@@ -128,42 +126,18 @@ static Value datetimeGetTime(DictuVM *vm, int argCount, Value *args){
     }
 
     Datetime *datetime = AS_DATETIME(args[0]);
-    struct tm tictoc = {0};
-
-    tictoc.tm_sec = datetime->seconds;
-    tictoc.tm_min = datetime->minutes;
-    tictoc.tm_hour = datetime->hours;
-    tictoc.tm_mday = datetime->day;
-    tictoc.tm_mon = datetime->month;
-    tictoc.tm_year = datetime->year;
-    tictoc.tm_isdst = -1;
-    const time_t timestamp = mktime(&tictoc);
-
-    return NUMBER_VAL(timestamp+tictoc.tm_gmtoff);
+    return NUMBER_VAL(datetime->time);
 }
 #endif
 
 
-ObjAbstract* newDatetimeObj(
-    DictuVM *vm, 
-    unsigned char seconds, 
-    unsigned char minutes,
-    unsigned char hours,
-    unsigned char day,
-    unsigned char month,
-    unsigned short year
-    ) {
+ObjAbstract* newDatetimeObj( DictuVM *vm, long time, int is_local) {
     ObjAbstract *abstract = newAbstract(vm, freeDatetime, datetimeTypeToString);
     push(vm, OBJ_VAL(abstract));
 
     Datetime *datetime = createDatetime(vm);
-    datetime->seconds = seconds;
-    datetime->minutes = minutes;
-    datetime->hours = hours;
-    datetime->day = day;
-    datetime->month = month;
-    datetime->year = year;
-
+    datetime->time = time;
+    datetime->is_local = is_local;
     /**
      * Setup Queue object methods
      */
@@ -191,7 +165,7 @@ static Value nowNative(DictuVM *vm, int argCount, Value *args) {
     struct tm tictoc;
     localtime_r(&t, &tictoc);
 
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+    return OBJ_VAL(newDatetimeObj(vm, (long)t, true));
 }
 
 static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
@@ -206,7 +180,7 @@ static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
     struct tm tictoc;
     gmtime_r(&t, &tictoc);
 
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+    return OBJ_VAL(newDatetimeObj(vm, (long)t, false));
 }
 
 
@@ -221,7 +195,7 @@ static Value newUTCDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     time_t t = time(NULL);
     struct tm tictoc;
     gmtime_r(&t, &tictoc);
-    return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+    return OBJ_VAL(newDatetimeObj(vm, (long)t, false));
 }
 
 
@@ -234,10 +208,8 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        struct tm tictoc = {0};
         time_t num = (time_t)((long) AS_NUMBER(args[0]));
-        gmtime_r(&num, &tictoc);
-        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+        return OBJ_VAL(newDatetimeObj(vm, (long)num, false));
     }
 
     if (argCount == 0) {
@@ -245,7 +217,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         struct tm tictoc;
         localtime_r(&t, &tictoc);
 
-        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+        return OBJ_VAL(newDatetimeObj(vm, (long)t, true));
     }
 
     runtimeError(vm, "new() takes 0 or 1 arguments (%d given)", argCount);
@@ -270,7 +242,8 @@ static Value strptimeNative(DictuVM *vm, int argCount, Value *args) {
     tictoc.tm_isdst = -1;
 
     if (strptime(AS_CSTRING(args[1]), AS_CSTRING(args[0]), &tictoc) != NULL) {
-        return OBJ_VAL(newDatetimeObj(vm, tictoc.tm_sec, tictoc.tm_min, tictoc.tm_hour, tictoc.tm_mday, tictoc.tm_mon, tictoc.tm_year));
+        const time_t timestamp = mktime(&tictoc);
+        return OBJ_VAL(newDatetimeObj(vm, (long)timestamp+tictoc.tm_gmtoff, false));
     }
 
     return NIL_VAL;
