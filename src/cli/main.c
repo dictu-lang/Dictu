@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #ifdef _WIN32
 #include "../optionals/windowsapi.h"
+#define PATH_MAX MAX_PATH
 #else
 #include <unistd.h>
 #endif
