@@ -8,7 +8,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef _WIN32
+#include "../optionals/windowsapi.h"
+#else
 #include <unistd.h>
+#endif
 
 #define UNUSED(__x__) (void) __x__
 
