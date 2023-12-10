@@ -1,3 +1,4 @@
+#include <errno.h>
 #if defined(__linux__) || defined(_WIN32)
 #include <limits.h> 
 #elif defined(__APPLE__) || defined(__FreeBSD__)
@@ -89,8 +90,8 @@ char *getDictuPath() {
     char *dictuPath = calloc(PATH_MAX, sizeof(char) * PATH_MAX);
     char *tmp;
 
-    if ((tmp = getenv("DICTU_PATH")) != NULL ) {
-        strncpy(dictuPath, tmp, strlen(tmp));
+    if ((tmp = getenv("DICTU_PATH")) != NULL) {
+        strncat(dictuPath, tmp, strlen(tmp));
     } else {
         const char *home = getenv("HOME");
         strncpy(dictuPath, home, strlen(home));
@@ -105,9 +106,12 @@ static void repl(DictuVM *vm) {
     char *line;
 
     char *dictuPath = getDictuPath();
-    // create ${HOME}/.dictu. Silently fail if 
-    // already exists.
-    mkdir(dictuPath, 0700);
+
+    if (mkdir(dictuPath, 0700) == -1) {
+        fprintf(stderr, "Cannot create directory %s - %s\n", dictuPath, strerror(errno));
+        free(dictuPath);
+        exit(75);
+    }
 
     strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST));
 
