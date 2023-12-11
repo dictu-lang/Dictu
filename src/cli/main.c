@@ -1,6 +1,20 @@
+#include <errno.h>
+#if defined(__linux__) || defined(_WIN32)
+#include <limits.h> 
+#elif defined(__APPLE__) || defined(__FreeBSD__)
+#include <sys/syslimits.h> 
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#ifdef _WIN32
+#include "../optionals/windowsapi.h"
+#define PATH_MAX MAX_PATH
+#else
+#include <unistd.h>
+#endif
 
 #define UNUSED(__x__) (void) __x__
 
@@ -12,6 +26,9 @@
 #include "argparse.h"
 
 #include "linenoise/linenoise.h"
+
+#define DICTU_HOME "/.dictu"
+#define DICTU_HIST "/history.txt"
 
 static int matchStringLiteral(char* line, int i) {
     char quote = line[i];
@@ -66,10 +83,39 @@ static void memcpyAndAppendNul(char* dst, char* src, int len) {
     dst[len] = '\0';
 }
 
+// getDictuPath sets up the path to be used for saving history
+// amongst other things. The returned string needs to be freed
+// by the caller.
+char *getDictuPath() {
+    char *dictuPath = calloc(PATH_MAX, sizeof(char) * PATH_MAX);
+    char *tmp;
+
+    if ((tmp = getenv("DICTU_PATH")) != NULL) {
+        strncat(dictuPath, tmp, strlen(tmp));
+    } else {
+        const char *home = getenv("HOME");
+        strncpy(dictuPath, home, strlen(home));
+        strncat(dictuPath, DICTU_HOME, strlen(DICTU_HOME));
+    }
+
+    return dictuPath;
+}
+
 static void repl(DictuVM *vm) {
     printf(DICTU_STRING_VERSION);
     char *line;
-    linenoiseHistoryLoad("history.txt");
+
+    char *dictuPath = getDictuPath();
+
+    if (mkdir(dictuPath, 0700) == -1) {
+        fprintf(stderr, "Cannot create directory %s - %s\n", dictuPath, strerror(errno));
+        free(dictuPath);
+        exit(75);
+    }
+
+    strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST));
+
+    linenoiseHistoryLoad(dictuPath);
 
     while((line = linenoise(">>> ")) != NULL) {
         int statementLength = strlen(line);
@@ -77,7 +123,7 @@ static void repl(DictuVM *vm) {
         memcpyAndAppendNul(statement, line, statementLength);
 
         linenoiseHistoryAdd(line);
-        linenoiseHistorySave("history.txt");
+        linenoiseHistorySave(dictuPath);
 
         while (!matchBraces(statement)) {
             free(line);
@@ -101,12 +147,13 @@ static void repl(DictuVM *vm) {
             statementLength += lineLength;
 
             linenoiseHistoryAdd(line);
-            linenoiseHistorySave("history.txt");
+            linenoiseHistorySave(dictuPath);
         }
 
         dictuInterpret(vm, "repl", statement);
 
         free(line);
+        free(dictuPath);
         free(statement);
     }
 }
