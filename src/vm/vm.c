@@ -1645,7 +1645,12 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+                // if not found, try to load from the user's modules
+                memset(path, 0, PATH_MAX);
+                char *home_dir = getenv("HOME");
+                strcat(path, home_dir);
+                strcat(path, "/.dictu/modules/");
+                strcat(path, fileName->chars);
             }
 
             ObjString *pathObj = copyString(vm, path, strlen(path));
