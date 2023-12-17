@@ -107,8 +107,7 @@ static void repl(DictuVM *vm) {
 
     char *dictuPath = getDictuPath();
 
-    const int res = mkdir(dictuPath, 0700);
-    if (errno != EEXIST) {
+    if (mkdir(dictuPath, 0700) == -1 && errno != EEXIST) {
         fprintf(stderr, "Cannot create directory %s - %s\n", dictuPath, strerror(errno));
         free(dictuPath);
         exit(75);
