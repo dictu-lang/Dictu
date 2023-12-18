@@ -1,8 +1,13 @@
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#ifdef _WIN32
+#include "windowsapi.h"
+#else
+#include <unistd.h>
+#endif
 
 #include "common.h"
 #include "compiler.h"
@@ -26,6 +31,10 @@
 #include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
+
+#ifdef _WIN32
+#define getcwd(BUFFER, MAXLEN) _getcwd(BUFFER, MAXLEN)
+#endif
 
 static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
@@ -1645,11 +1654,15 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                // if not found, try to load from the user's modules
+                // if import is not found, try to load from the project's modules directory
+
                 memset(path, 0, PATH_MAX);
-                char *home_dir = getenv("HOME");
-                strcat(path, home_dir);
-                strcat(path, "/.dictu/modules/");
+
+                if (getcwd(path, sizeof(path)) == NULL) {
+                    RUNTIME_ERROR("Could not determine current working directiory.");
+                }
+
+                strcat(path, "/dictu_modules/");
                 strcat(path, fileName->chars);
             }
 
