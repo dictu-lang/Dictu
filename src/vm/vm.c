@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-#include "windowsapi.h"
+#include "../optionals/windowsapi.h"
 #else
 #include <unistd.h>
 #endif
