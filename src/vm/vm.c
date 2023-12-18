@@ -1645,7 +1645,7 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                // if import is not found, try to load from the project's modules directory
+                // if stdlib import is not found, try to load from the project's modules directory
 
                 if (!resolvePath("dictu_modules", fileName->chars, path)) {
                     RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
