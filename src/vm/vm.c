@@ -3,11 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#include "../optionals/windowsapi.h"
-#else
-#include <unistd.h>
-#endif
 
 #include "common.h"
 #include "compiler.h"
@@ -31,10 +26,6 @@
 #include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
-
-#ifdef _WIN32
-#define getcwd(BUFFER, MAXLEN) _getcwd(BUFFER, MAXLEN)
-#endif
 
 static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
@@ -1656,14 +1647,9 @@ static DictuInterpretResult run(DictuVM *vm) {
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
                 // if import is not found, try to load from the project's modules directory
 
-                memset(path, 0, PATH_MAX);
-
-                if (getcwd(path, sizeof(path)) == NULL) {
-                    RUNTIME_ERROR("Could not determine current working directiory.");
+                if (!resolvePath("dictu_modules", fileName->chars, path)) {
+                    RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
                 }
-
-                strcat(path, "/dictu_modules/");
-                strcat(path, fileName->chars);
             }
 
             ObjString *pathObj = copyString(vm, path, strlen(path));
