@@ -252,6 +252,20 @@ Set the ownership of a file or directory with the given path, uid, and gid.
 
 Note: This is not available on Windows systems.
 
+### System.rename(String, String)
+
+Rename the given file.
+
+```cs
+System.rename("old_file", "new_file");
+```
+
+### System.chown(String, Number, Number)
+
+Set the ownership of a file or directory with the given path, uid, and gid.
+
+Note: This is not available on Windows systems.
+
 ```cs
 System.chown("/path/to/file", 0, 0);
 ```

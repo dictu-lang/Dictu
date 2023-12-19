@@ -1,0 +1,28 @@
+/**
+ * rename.du
+ *
+ * Testing the System.rename() function
+ *
+ * rename() renames a file from the system
+ */
+from UnitTest import UnitTest;
+
+import System;
+
+class TestSystemRename < UnitTest {
+    setUp() {
+        with ("old_file", "w") {
+            file.write("test");
+        }
+    }
+
+    tearDown() {
+        System.remove("new_file");
+    }
+
+    testSystemRename() {
+        this.assertTruthy(System.rename("old_file", "new_file").success());
+    }
+}
+
+TestSystemRename().run();
