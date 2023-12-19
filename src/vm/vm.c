@@ -1,8 +1,8 @@
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -1645,7 +1645,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+                // if stdlib import is not found, try to load from the project's modules directory
+
+                if (!resolvePath("dictu_modules", fileName->chars, path)) {
+                    RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+                }
             }
 
             ObjString *pathObj = copyString(vm, path, strlen(path));
