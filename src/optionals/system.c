@@ -98,7 +98,7 @@ static Value chownNative(DictuVM *vm, int argCount, Value *args) {
         ERROR_RESULT;
     }
 
-    return newResultSuccess(vm, EMPTY_VAL);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value unameNative(DictuVM *vm, int argCount, Value *args) {
