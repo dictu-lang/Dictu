@@ -98,7 +98,7 @@ static Value chownNative(DictuVM *vm, int argCount, Value *args) {
         ERROR_RESULT;
     }
 
-    return newResultSuccess(vm, EMPTY_VAL);
+    return newResultSuccess(vm, NIL_VAL);
 }
 
 static Value unameNative(DictuVM *vm, int argCount, Value *args) {
@@ -490,6 +490,27 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
     return newResultSuccess(vm, NIL_VAL);
 }
 
+static Value renameNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "rename() takes 2 arguments (%d given).", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
+        runtimeError(vm, "rename() arguments must be strings.");
+        return EMPTY_VAL;
+    }
+
+    char *old = AS_CSTRING(args[0]);
+    char *new = AS_CSTRING(args[1]);
+
+    if (rename(old, new) != 0) {
+        return newResultError(vm, "failed to reaneme file");
+    }
+
+    return newResultSuccess(vm, NIL_VAL);
+}
+
 void initArgv(DictuVM *vm, Table *table, int argc, char **argv) {
     ObjList *list = newList(vm);
     push(vm, OBJ_VAL(list));
@@ -590,6 +611,7 @@ Value createSystemModule(DictuVM *vm) {
     defineNative(vm, &module->values, "sleep", sleepNative);
     defineNative(vm, &module->values, "exit", exitNative);
     defineNative(vm, &module->values, "chmod", chmodNative);
+    defineNative(vm, &module->values, "rename", renameNative);
 
     /**
      * Define System properties
