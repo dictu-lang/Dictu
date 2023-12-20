@@ -238,7 +238,7 @@ Shell
 $ echo $?; // 10
 ```
 
-### System.chmod(String, String)
+### System.chmod(String, String) -> Result\<Nil>
 
 Set the permissions on a file or directory.
 
@@ -246,13 +246,13 @@ Set the permissions on a file or directory.
 System.chmod("/usr/local/share", "755");
 ```
 
-### System.chown(String, Number, Number)
+### System.chown(String, Number, Number) -> Result\<Nil>
 
 Set the ownership of a file or directory with the given path, uid, and gid.
 
 Note: This is not available on Windows systems.
 
-### System.rename(String, String)
+### System.rename(String, String) -> Result\<Nil>
 
 Rename the given file.
 
@@ -260,7 +260,7 @@ Rename the given file.
 System.rename("old_file", "new_file");
 ```
 
-### System.chown(String, Number, Number)
+### System.chown(String, Number, Number) -> Result\<Nil>
 
 Set the ownership of a file or directory with the given path, uid, and gid.
 
