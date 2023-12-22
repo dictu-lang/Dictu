@@ -153,9 +153,10 @@ static void repl(DictuVM *vm) {
         dictuInterpret(vm, "repl", statement);
 
         free(line);
-        free(dictuPath);
         free(statement);
     }
+
+    free(dictuPath);
 }
 
 static char *readFile(const char *path) {
