@@ -281,9 +281,9 @@ static Value lastIndexOfString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *str = AS_CSTRING(args[0]);
+    const char *str = AS_CSTRING(args[0]);
+    const char *ss = AS_CSTRING(args[1]);
     const char *p = str;
-    char *ss = AS_CSTRING(args[1]);
     int found = !*ss;
 
     if (!found) {
