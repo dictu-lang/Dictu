@@ -200,6 +200,15 @@ Returns true if a string contains another string.
 To find the index of a given substring, use the `.find()` method. This method takes an optional second parameter which can be used to skip the first `n` number of appearances of the substring. This method returns `-1` if the substring could not be found. Otherwise, it returns the index of the string.
 
 ```cs
+"woolly woolly mammoth".lastIndexOf("woolly"); // 7
+"mammoth".lastIndexOf("woolly"); // -1
+```
+
+### string.lastIndexOf(String) -> Number
+
+Returns the last index of the given string. If the substring doesn't exist, -1 is returned.
+
+```cs
 "Hello, how are you?".find("how"); // 7
 "hello something hello".find("hello", 2); // 16 (Skipped first occurrence)
 "House".find("Lost Keys"); // -1 (Not found)

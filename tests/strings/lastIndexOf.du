@@ -1,0 +1,17 @@
+/**
+ * lastIndexOf.du
+ *
+ * Testing the str.lastIndexOf() method
+ *
+ * .lastIndexOf() returns the last index of the given string
+ */
+from UnitTest import UnitTest;
+
+class TestStringLastIndexOf < UnitTest {
+    testStringLower() {
+        this.assertEquals("woolly woolly mammoth".lastIndexOf("woolly"), 7);
+        this.assertEquals("mammoth".lastIndexOf("woolly"), -1);
+    }
+}
+
+TestStringLastIndexOf().run();

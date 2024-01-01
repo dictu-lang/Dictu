@@ -12,6 +12,7 @@ import "concat.du";
 import "startsWith.du";
 import "endsWith.du";
 import "find.du";
+import "lastIndexOf.du";
 import "contains.du";
 import "strip.du";
 import "format.du";
