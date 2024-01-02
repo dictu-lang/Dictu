@@ -9,8 +9,8 @@ from UnitTest import UnitTest;
 
 class TestStringLastIndexOf < UnitTest {
     testStringLower() {
-        this.assertEquals("woolly woolly mammoth".lastIndexOf("woolly"), 7);
-        this.assertEquals("mammoth".lastIndexOf("woolly"), -1);
+        this.assertEquals("woolly woolly mammoth".findLast("woolly"), 7);
+        this.assertEquals("mammoth".findLast("woolly"), -1);
     }
 }
 

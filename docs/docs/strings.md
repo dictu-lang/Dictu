@@ -204,7 +204,7 @@ To find the index of a given substring, use the `.find()` method. This method ta
 "mammoth".lastIndexOf("woolly"); // -1
 ```
 
-### string.lastIndexOf(String) -> Number
+### string.findLast(String) -> Number
 
 Returns the last index of the given string. If the substring doesn't exist, -1 is returned.
 

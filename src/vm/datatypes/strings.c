@@ -275,7 +275,7 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(position);
 }
 
-static Value lastIndexOfString(DictuVM *vm, int argCount, Value *args) {
+static Value findLastString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "lastInxedOf() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -605,7 +605,7 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);
     defineNative(vm, &vm->stringMethods, "find", findString);
-    defineNative(vm, &vm->stringMethods, "lastIndexOf", lastIndexOfString);
+    defineNative(vm, &vm->stringMethods, "findLast", findLastString);
     defineNative(vm, &vm->stringMethods, "replace", replaceString);
     defineNative(vm, &vm->stringMethods, "lower", lowerString);
     defineNative(vm, &vm->stringMethods, "upper", upperString);
