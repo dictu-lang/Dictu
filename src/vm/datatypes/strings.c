@@ -277,7 +277,7 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
 
 static Value findLastString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "lastInxedOf() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "findLast() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
