@@ -1,9 +1,9 @@
 /**
- * lastIndexOf.du
+ * findLast.du
  *
- * Testing the str.lastIndexOf() method
+ * Testing the str.findLast() method
  *
- * .lastIndexOf() returns the last index of the given string
+ * .findLast() returns the last index of the given string
  */
 from UnitTest import UnitTest;
 
