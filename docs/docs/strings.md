@@ -205,6 +205,15 @@ To find the index of a given substring, use the `.find()` method. This method ta
 "House".find("Lost Keys"); // -1 (Not found)
 ```
 
+### string.findLast(String) -> Number
+
+Returns the last index of the given string. If the substring doesn't exist, -1 is returned.
+
+```cs
+"woolly woolly mammoth".findLast("woolly"); // 7
+"mammoth".findLast("woolly"); // -1
+```
+
 ### string.leftStrip() -> String
 
 Strips whitespace from the left side of a string and returns the result.

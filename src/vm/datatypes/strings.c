@@ -275,6 +275,49 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(position);
 }
 
+static Value findLastString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "findLast() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    const char *str = AS_CSTRING(args[0]);
+    const char *ss = AS_CSTRING(args[1]);
+    const char *p = str;
+    int found = !*ss;
+
+    if (!found) {
+        while (*p) {
+            ++p;
+        }
+
+        const char *q = ss;
+        while (*q) {
+            ++q;
+        }
+
+        while (!found && !(p-str < q-ss)) {
+            const char *s = p;
+            const char *t = q;
+
+            while (t != ss && *(s-1) == *(t-1)) {
+                --s;
+                --t;
+            }
+
+            found = t == ss;
+
+            if (found) {
+                p = s;
+            } else {
+                --p;
+            }
+        }
+    }
+
+    return NUMBER_VAL(found ? p-str : -1);
+}
+
 static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError(vm, "replace() takes 2 arguments (%d given)", argCount);
@@ -562,6 +605,7 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "split", splitString);
     defineNative(vm, &vm->stringMethods, "contains", containsString);
     defineNative(vm, &vm->stringMethods, "find", findString);
+    defineNative(vm, &vm->stringMethods, "findLast", findLastString);
     defineNative(vm, &vm->stringMethods, "replace", replaceString);
     defineNative(vm, &vm->stringMethods, "lower", lowerString);
     defineNative(vm, &vm->stringMethods, "upper", upperString);

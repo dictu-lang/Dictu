@@ -1,0 +1,17 @@
+/**
+ * findLast.du
+ *
+ * Testing the str.findLast() method
+ *
+ * .findLast() returns the last index of the given string
+ */
+from UnitTest import UnitTest;
+
+class TestStringLastIndexOf < UnitTest {
+    testStringLower() {
+        this.assertEquals("woolly woolly mammoth".findLast("woolly"), 7);
+        this.assertEquals("mammoth".findLast("woolly"), -1);
+    }
+}
+
+TestStringLastIndexOf().run();
