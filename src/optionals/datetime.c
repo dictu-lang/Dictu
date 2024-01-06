@@ -12,6 +12,12 @@
 #endif
 
 #define AS_DATETIME(v) ((Datetime*)AS_ABSTRACT(v)->data)
+#define AS_DURATION(v) ((Duration*)AS_ABSTRACT(v)->data)
+
+
+static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args);
+static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args);
+static Value datetimeDelta(DictuVM *vm, int argCount, Value *args);
 
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
@@ -139,13 +145,17 @@ ObjAbstract* newDatetimeObj( DictuVM *vm, long time, int is_local) {
     datetime->time = time;
     datetime->is_local = is_local;
     /**
-     * Setup Queue object methods
+     * Setup Datetime object methods
      */
 
     defineNative(vm, &abstract->values, "strftime", datetimeStrftime);
     #ifdef HAS_STRPTIME
     defineNative(vm, &abstract->values, "getTime", datetimeGetTime);
     #endif
+
+    defineNative(vm, &abstract->values, "add", datetimeAddDuration);
+    defineNative(vm, &abstract->values, "sub", datetimeSubDuration);
+    defineNative(vm, &abstract->values, "delta", datetimeDelta);
 
     abstract->data = datetime;
     pop(vm);
@@ -250,6 +260,156 @@ static Value strptimeNative(DictuVM *vm, int argCount, Value *args) {
 }
 #endif
 
+
+// Duration object methods
+
+void freeDuration(DictuVM *vm, ObjAbstract *abstract) {
+    FREE(vm, Duration, abstract->data);
+}
+
+Duration* createDuration(DictuVM *vm) {
+    Duration *duration = ALLOCATE(vm, Duration, 1);
+    return duration;
+}
+
+
+char *durationTypeToString(ObjAbstract *abstract) {
+    UNUSED(abstract);
+
+    char *durationString = malloc(sizeof(char) * 11);
+    snprintf(durationString, 11, "<Duration>");
+    return durationString;
+}
+
+static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args){
+
+    if (argCount != 1) {
+        runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+    Datetime *datetime = AS_DATETIME(args[0]);
+    Duration *duration = AS_DURATION(args[1]);
+
+    struct tm* timeinfo = localtime(&datetime->time);
+
+    timeinfo->tm_sec += duration->seconds;
+
+    long newTime = mktime(timeinfo);
+
+    return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->is_local));
+}
+
+static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args){
+
+    if (argCount != 1) {
+        runtimeError(vm, "sub() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+    Datetime *datetime = AS_DATETIME(args[0]);
+    Duration *duration = AS_DURATION(args[1]);
+
+    struct tm* timeinfo = localtime(&datetime->time);
+
+    timeinfo->tm_sec -= duration->seconds;
+
+    long newTime = mktime(timeinfo);
+
+    return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->is_local));
+}
+
+ObjAbstract* newDurationObj( DictuVM *vm, unsigned long seconds) {
+    ObjAbstract *abstract = newAbstract(vm, freeDuration, durationTypeToString);
+    push(vm, OBJ_VAL(abstract));
+
+    Duration *duration = createDuration(vm);
+    duration->seconds = seconds;
+
+    abstract->data = duration;
+    pop(vm);
+
+    return abstract;
+}
+
+static Value datetimeDelta(DictuVM *vm, int argCount, Value *args) {
+    
+    if (argCount != 1) {
+        runtimeError(vm, "delta() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *datetimeOne = AS_DATETIME(args[0]);
+    Datetime *datetimeTwo = AS_DATETIME(args[1]);
+
+    return OBJ_VAL(newDurationObj(vm, labs(datetimeOne->time - datetimeTwo->time)));
+}
+
+
+#define HANDLE_DURATION_PARAM(key, field) \
+    if (strstr(key, #field)) { \
+        if (!IS_NUMBER(entry->value)) { \
+            runtimeError(vm, "Duration parameter key \"" #field "\" value must be a number"); \
+            return EMPTY_VAL; \
+        } \
+        field = (unsigned int)AS_NUMBER(entry->value); \
+    }
+
+static Value newDurationNative(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 1) {
+        runtimeError(vm, "duration() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_DICT(args[0])) {
+        runtimeError(vm, "duration() argument must be a dictionary");
+        return EMPTY_VAL;
+    }
+
+    ObjDict *opts = AS_DICT(args[0]);
+
+    unsigned int days = 0;
+    unsigned int seconds = 0;
+    unsigned int minutes = 0;
+    unsigned int hours = 0;
+    unsigned int weeks = 0;
+
+    if (opts->count != 0) {
+        for (int i = 0; i <= opts->capacityMask; i++) {
+            DictItem *entry = &opts->entries[i];
+            if (IS_EMPTY(entry->key)) {
+                continue;
+            }
+
+            char *key;
+
+            if (IS_STRING(entry->key)) {
+                ObjString *s = AS_STRING(entry->key);
+                key = s->chars;
+            } else {
+                runtimeError(vm, "Duration parameter key must be a string");
+                return EMPTY_VAL;
+            }
+
+
+            HANDLE_DURATION_PARAM(key, days)
+            else HANDLE_DURATION_PARAM(key, seconds)
+            else HANDLE_DURATION_PARAM(key, minutes)
+            else HANDLE_DURATION_PARAM(key, hours)
+            else HANDLE_DURATION_PARAM(key, weeks)
+            else {
+                runtimeError(vm, "unknown parameter key '%s' found in duration dictionary", key);
+                return EMPTY_VAL;
+            }
+        }
+    }
+
+    unsigned long final_seconds  = seconds + (60*minutes) + (3600*hours) + (24 * 3600 * days) + (24 * 3600 * 7 * weeks);
+
+    return OBJ_VAL(newDurationObj(vm, final_seconds));
+}
+
+
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
@@ -268,6 +428,8 @@ Value createDatetimeModule(DictuVM *vm) {
     #ifdef HAS_STRPTIME
     defineNative(vm, &module->values, "strptime", strptimeNative);
     #endif
+
+    defineNative(vm, &module->values, "duration", newDurationNative);
 
     /**
      * Define Datetime properties
