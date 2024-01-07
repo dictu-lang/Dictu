@@ -142,3 +142,50 @@ const datetime = Datetime.new();
 datetime.strftime(); // Sat Oct 21 21:44:25 2023
 ```
 
+
+## Duration
+
+A Duration object represents a time delta, the difference between two datetimes. This Duration object can be used to create new datetime objects, by performing operations such as addition and subtraction.
+
+### Datetime.duration(Dict) -> Duration
+
+Duration object is constructed by passing dictionary duration properties. weeks, days, hours, minutes and seconds are allowed properties.
+
+```cs
+import Datetime;
+const duration = Datetime.duration({'weeks':0, 'days': 1, 'seconds': 0, 'minutes': 0, 'hours': 0});
+```
+
+### datetimeObj.add(Duration) -> Datetime
+
+Returns a new Datetime object after adding given duration.
+
+```cs
+const duration = Datetime.duration({'weeks':0, 'days': 1, 'seconds': 0, 'minutes': 0, 'hours': 0});
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.add(duration).strftime(); // Thu Jan 02 00:00:00 2020
+```
+
+
+### datetimeObj.sub(Duration) -> Datetime
+
+Returns a new Datetime object after subtracting given duration.
+
+```cs
+const duration = Datetime.duration({'weeks':53});
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.sub(duration).strftime(); // Wed Jan 02 00:00:00 2019
+```
+
+### datetimeObj.delta(datetimeObj) -> Duration
+
+Returns a Duration object represents a delta with a given date.
+
+```cs
+var datetimeOne = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+var datetimeTwo = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-02 00:00:00");
+var duration = datetimeOne.delta(datetimeTwo); 
+
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-05-01 00:00:00");
+datetime.add(duration).strftime(); // Sat May 02 00:00:00 2020
+```
