@@ -277,3 +277,13 @@ Returns a new string with the original string repeated the given number of times
 "ba"+"na".repeat(2); // banana
 "la".repeat(2) + " land"; // lala land
 ```
+
+### string.isUpper() -> Boolean
+
+Returns a boolean indicating that the given string is an upper case letter.
+
+```cs
+"D".isUpper(); // true
+"d".isUpper() // false
+"Dog".isUpper() // false
+```

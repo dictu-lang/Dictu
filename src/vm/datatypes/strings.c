@@ -598,6 +598,29 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, temp, tempLen - 1));
 }
 
+static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "isUpper() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+
+    bool ret = false;
+
+    if (strlen(string) > 1) {
+        return ret;
+    }
+
+    char s = string[0];
+
+    if (s >= 'A' && s <= 'Z') {
+        ret = true;
+    }
+
+    return ret;
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -618,5 +641,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->stringMethods, "title", titleString);
     defineNative(vm, &vm->stringMethods, "repeat", repeatString);
+    defineNative(vm, &vm->stringMethods, "isUpper", isUpperString);
 
 }
