@@ -612,13 +612,32 @@ static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
         return ret;
     }
 
-    char s = string[0];
-
-    if (s >= 'A' && s <= 'Z') {
+    if (string[0] >= 'A' && string[0] <= 'Z') {
         ret = true;
     }
 
-    return ret;
+    return BOOL_VAL(ret);
+}
+
+static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "isLower() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+
+    bool ret = false;
+
+    if (strlen(string) > 1) {
+        return ret;
+    }
+
+    if (string[0] >= 'a' && string[0] <= 'z') {
+        ret = true;
+    }
+
+    return BOOL_VAL(ret);
 }
 
 void declareStringMethods(DictuVM *vm) {
@@ -642,5 +661,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "title", titleString);
     defineNative(vm, &vm->stringMethods, "repeat", repeatString);
     defineNative(vm, &vm->stringMethods, "isUpper", isUpperString);
+    defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
 
 }

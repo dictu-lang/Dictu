@@ -287,3 +287,13 @@ Returns a boolean indicating that the given string is an upper case letter.
 "d".isUpper() // false
 "Dog".isUpper() // false
 ```
+
+### string.isLower() -> Boolean
+
+Returns a boolean indicating that the given string is an lower case letter.
+
+```cs
+"D".isLower(); // false
+"d".isLower() // true
+"Dog".isLower() // false
+```
