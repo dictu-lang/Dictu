@@ -28,3 +28,4 @@ import "repeat.du";
 import "title.du";
 import "isUpper.du";
 import "isLower.du";
+import "wordCount.du";

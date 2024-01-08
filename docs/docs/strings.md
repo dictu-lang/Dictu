@@ -297,3 +297,14 @@ Returns a boolean indicating that the given string is an lower case letter.
 "d".isLower() // true
 "Dog".isLower() // false
 ```
+
+### string.wordCount() -> Number
+
+Returns the number of words in the given string.
+
+```cs
+"".wordCount(); // 0
+"This".wordCount(); // 1
+"This is a sentence".wordCount(); // 4
+"This is an even longer sentence".wordCount(); // 6
+```
