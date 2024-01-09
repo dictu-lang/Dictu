@@ -631,18 +631,19 @@ static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *string = AS_CSTRING(args[0]);
+    int len = strlen(string);
 
-    bool ret = false;
-
-    if (strlen(string) > 1) {
-        return ret;
+    if (len == 0) {
+        return BOOL_VAL(false);
     }
 
-    if (string[0] >= 'A' && string[0] <= 'Z') {
-        ret = true;
+    for (int i = 0; i < len; i++) {
+        if (!isupper(string[i]) && isalpha(string[i])) {
+            return BOOL_VAL(false);
+        }
     }
-
-    return BOOL_VAL(ret);
+    
+    return BOOL_VAL(true);
 }
 
 static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
@@ -652,18 +653,19 @@ static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
     }
 
     char *string = AS_CSTRING(args[0]);
+    int len = strlen(string);
 
-    bool ret = false;
-
-    if (strlen(string) > 1) {
-        return ret;
+    if (len == 0) {
+        return BOOL_VAL(false);
     }
 
-    if (string[0] >= 'a' && string[0] <= 'z') {
-        ret = true;
+    for (int i = 0; i < len; i++) {
+        if (!islower(string[i]) && isalpha(string[i])) {
+            return BOOL_VAL(false);
+        }
     }
-
-    return BOOL_VAL(ret);
+    
+    return BOOL_VAL(true);
 }
 
 void declareStringMethods(DictuVM *vm) {

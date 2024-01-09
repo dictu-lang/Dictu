@@ -285,22 +285,24 @@ Returns a boolean indicating that the given string is an upper case letter.
 ```cs
 "D".isUpper(); // true
 "d".isUpper() // false
+"G00D!".isUpper() // true
 "Dog".isUpper() // false
 ```
 
 ### string.isLower() -> Boolean
 
-Returns a boolean indicating that the given string is an lower case letter.
+Returns a boolean indicating that the given string is an lower case letter. Empty strings are considered false.
 
 ```cs
 "D".isLower(); // false
 "d".isLower() // true
+"g00d!".isLower() // true
 "Dog".isLower() // false
 ```
 
 ### string.wordCount() -> Number
 
-Returns the number of words in the given string.
+Returns the number of words in the given string. Empty strings are considered false.
 
 ```cs
 "".wordCount(); // 0

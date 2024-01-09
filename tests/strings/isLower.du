@@ -11,6 +11,8 @@ from UnitTest import UnitTest;
 class TestStringIsLower < UnitTest {
     testStringIsLower() {
         this.assertTruthy("d".isLower());
+        this.assertTruthy("dog".isLower());
+        this.assertTruthy("g00d!".isLower());
         this.assertFalsey("D".isLower());
         this.assertFalsey("Maple".isLower());
     }
