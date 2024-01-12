@@ -1,0 +1,20 @@
+/**
+ * isUpper.du
+ *
+ * Testing the str.isUpper() method
+ *
+ * .isUpper() returns a boolean indicating that the given string is 
+ * an upper case letter.
+ */
+from UnitTest import UnitTest;
+
+class TestStringIsUpper < UnitTest {
+    testStringIsUpper() {
+        this.assertTruthy("D".isUpper());
+        this.assertTruthy("DOG".isUpper());
+        this.assertTruthy("G00D!".isUpper());
+        this.assertFalsey("Maple".isUpper());
+    }
+}
+
+TestStringIsUpper().run();

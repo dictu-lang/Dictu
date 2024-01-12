@@ -1,0 +1,19 @@
+/**
+ * wordCount.du
+ *
+ * Testing the str.wordCount() method
+ *
+ * .wordCount() returns the number of words in the given string.
+ */
+from UnitTest import UnitTest;
+
+class TestStringWordCount < UnitTest {
+    testStringWordCount() {
+        this.assertEquals("".wordCount(), 0);
+        this.assertEquals("This".wordCount(), 1);
+        this.assertEquals("This is a sentence".wordCount(), 4);
+        this.assertEquals("This is an even longer sentence".wordCount(), 6);
+    }
+}
+
+TestStringWordCount().run();

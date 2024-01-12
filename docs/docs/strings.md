@@ -277,3 +277,36 @@ Returns a new string with the original string repeated the given number of times
 "ba"+"na".repeat(2); // banana
 "la".repeat(2) + " land"; // lala land
 ```
+
+### string.isUpper() -> Boolean
+
+Returns a boolean indicating that the given string is an upper case letter.
+
+```cs
+"D".isUpper(); // true
+"d".isUpper() // false
+"G00D!".isUpper() // true
+"Dog".isUpper() // false
+```
+
+### string.isLower() -> Boolean
+
+Returns a boolean indicating that the given string is an lower case letter. Empty strings are considered false.
+
+```cs
+"D".isLower(); // false
+"d".isLower() // true
+"g00d!".isLower() // true
+"Dog".isLower() // false
+```
+
+### string.wordCount() -> Number
+
+Returns the number of words in the given string. Empty strings are considered false.
+
+```cs
+"".wordCount(); // 0
+"This".wordCount(); // 1
+"This is a sentence".wordCount(); // 4
+"This is an even longer sentence".wordCount(); // 6
+```

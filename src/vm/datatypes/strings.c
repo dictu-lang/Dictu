@@ -545,6 +545,32 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(count);
 }
 
+static Value wordCountString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "count() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+    
+    int count = 0;
+    int len = strlen(string);
+    bool in = false;
+
+    for (int i = 0; i < len; i++) {
+        if (isspace(string[i])) {
+            in = false;
+        } else if(isalpha(string[i])) {
+            if(!in) {
+                in = true;
+                count++;
+            }
+        }
+    }
+
+    return NUMBER_VAL(count);
+}
+
 static Value titleString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "title() takes no arguments (%d given)", argCount);
@@ -598,6 +624,50 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, temp, tempLen - 1));
 }
 
+static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "isUpper() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+    int len = strlen(string);
+
+    if (len == 0) {
+        return BOOL_VAL(false);
+    }
+
+    for (int i = 0; i < len; i++) {
+        if (!isupper(string[i]) && isalpha(string[i])) {
+            return BOOL_VAL(false);
+        }
+    }
+    
+    return BOOL_VAL(true);
+}
+
+static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "isLower() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+    int len = strlen(string);
+
+    if (len == 0) {
+        return BOOL_VAL(false);
+    }
+
+    for (int i = 0; i < len; i++) {
+        if (!islower(string[i]) && isalpha(string[i])) {
+            return BOOL_VAL(false);
+        }
+    }
+    
+    return BOOL_VAL(true);
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -615,8 +685,11 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "rightStrip", rightStripString);
     defineNative(vm, &vm->stringMethods, "strip", stripString);
     defineNative(vm, &vm->stringMethods, "count", countString);
+    defineNative(vm, &vm->stringMethods, "wordCount", wordCountString);
     defineNative(vm, &vm->stringMethods, "toBool", boolNative); // Defined in util
     defineNative(vm, &vm->stringMethods, "title", titleString);
     defineNative(vm, &vm->stringMethods, "repeat", repeatString);
+    defineNative(vm, &vm->stringMethods, "isUpper", isUpperString);
+    defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
 
 }

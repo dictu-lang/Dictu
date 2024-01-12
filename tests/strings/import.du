@@ -26,3 +26,6 @@ import "toBool.du";
 import "escapeCodes.du";
 import "repeat.du";
 import "title.du";
+import "isUpper.du";
+import "isLower.du";
+import "wordCount.du";

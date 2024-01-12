@@ -1,0 +1,21 @@
+/**
+ * isLower.du
+ *
+ * Testing the str.isLower() method
+ *
+ * .isLower() returns a boolean indicating that the given string is 
+ * an lower case letter.
+ */
+from UnitTest import UnitTest;
+
+class TestStringIsLower < UnitTest {
+    testStringIsLower() {
+        this.assertTruthy("d".isLower());
+        this.assertTruthy("dog".isLower());
+        this.assertTruthy("g00d!".isLower());
+        this.assertFalsey("D".isLower());
+        this.assertFalsey("Maple".isLower());
+    }
+}
+
+TestStringIsLower().run();
