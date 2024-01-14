@@ -696,17 +696,17 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     char *string = AS_CSTRING(args[0]);
     int len = AS_NUMBER(args[1]);
 
-    int last_space = 0;
-    int counter = 0;
+    int last = 0;
+    int count = 0;
 
-    for (int current = 0; string[current] != '\0'; current++, counter++) {
-        if (isspace(string[current])) {
-            last_space = current;
+    for (int cur = 0; string[cur] != '\0'; cur++, count++) {
+        if (isspace(string[cur])) {
+            last = cur;
         }
 
-        if (counter >= len) {
-            string[last_space] = '\n';
-            counter = 0;
+        if (count >= len) {
+            string[last] = '\n';
+            count = 0;
         }
     }
 
