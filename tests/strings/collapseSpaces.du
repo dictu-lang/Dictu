@@ -1,0 +1,19 @@
+/**
+ * collapseSpaces.du
+ *
+ * Testing the str.collapseSpaces() method
+ *
+ * .collapseSpaces() returns a string with extraneous spaces removed.
+ */
+from UnitTest import UnitTest;
+
+class TestStringCollapseSpaces < UnitTest {
+    testStringCollapseSpaces() {
+        const testString = "This  is      a huge string of a       lot of spaces.";
+        const expected  = "This is a huge string of a lot of spaces.";
+        const res = testString.collapseSpaces();
+        this.assertEquals(res, expected);
+    }
+}
+
+TestStringCollapseSpaces().run();

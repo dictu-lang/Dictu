@@ -310,3 +310,11 @@ Returns the number of words in the given string. Empty strings are considered fa
 "This is a sentence".wordCount(); // 4
 "This is an even longer sentence".wordCount(); // 6
 ```
+
+### string.collapseSpaces() -> Number
+
+Returns a string with extraneous whitespace removed.
+
+```cs
+"This  is      a huge string of a       lot of spaces.".collapseSpaces(); // "This is a huge string of a lot of spaces."
+```
