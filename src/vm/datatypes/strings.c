@@ -738,5 +738,4 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
     defineNative(vm, &vm->stringMethods, "collapseSpaces", collapseSpacesString);
     defineNative(vm, &vm->stringMethods, "wrap", wrapString);
-
 }

@@ -122,4 +122,3 @@ void declareSetMethods(DictuVM *vm) {
     defineNative(vm, &vm->setMethods, "containsAll", containsAllSet);
     defineNative(vm, &vm->setMethods, "toBool", boolNative); // Defined in util
 }
-
