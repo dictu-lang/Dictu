@@ -687,6 +687,32 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, string, strlen(string) - 1));
 }
 
+static Value wrapString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "wrap() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    char *string = AS_CSTRING(args[0]);
+    int len = AS_NUMBER(args[1]);
+
+    int last_space = 0;
+    int counter = 0;
+
+    for (int current = 0; string[current] != '\0'; current++, counter++) {
+        if (isspace(string[current])) {
+            last_space = current;
+        }
+
+        if (counter >= len) {
+            string[last_space] = '\n';
+            counter = 0;
+        }
+    }
+
+    return OBJ_VAL(copyString(vm, string, strlen(string) - 1));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -711,5 +737,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "isUpper", isUpperString);
     defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
     defineNative(vm, &vm->stringMethods, "collapseSpaces", collapseSpacesString);
+    defineNative(vm, &vm->stringMethods, "wrap", wrapString);
 
 }

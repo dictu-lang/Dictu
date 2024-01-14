@@ -311,10 +311,18 @@ Returns the number of words in the given string. Empty strings are considered fa
 "This is an even longer sentence".wordCount(); // 6
 ```
 
-### string.collapseSpaces() -> Number
+### string.collapseSpaces() -> String
 
 Returns a string with extraneous whitespace removed.
 
 ```cs
 "This  is      a huge string of a       lot of spaces.".collapseSpaces(); // "This is a huge string of a lot of spaces."
+```
+
+### string.wrap() -> String
+
+Returns a new string with new lines inserted at the given length.
+
+```cs
+"This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not out business as to why, but we can provide the functionality for them to do so.".wrap(80);
 ```
