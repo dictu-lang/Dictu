@@ -77,6 +77,7 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
                                Value key) {
     uint32_t index = hashValue(key) & capacityMask;
     DictItem *tombstone = NULL;
+    uint32_t count = 0;
 
     for (;;) {
         DictItem *entry = &entries[index];
@@ -88,6 +89,8 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
             } else {
                 // We found a tombstone.
                 if (tombstone == NULL) tombstone = entry;
+                if (count >= (uint32_t)capacityMask)
+                  return tombstone;
             }
         } else if (valuesEqual(key, entry->key)) {
             // We found the key.
@@ -97,6 +100,7 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
 //        printf("%d - ", index);
         index = (index + 1) & capacityMask;
 //        printf("%d - mask: %d\n", index, capacityMask);
+        count++;
     }
 }
 
