@@ -16,7 +16,7 @@ static Value toStringSet(DictuVM *vm, int argCount, Value *args) {
 
 static Value valuesSet(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "keys() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "values() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     ObjSet *set = AS_SET(args[0]);
