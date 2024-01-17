@@ -13,7 +13,7 @@ class TestSetValues < UnitTest {
         s.add("dictu");
         var values = s.values();
         this.assertEquals(values.len(), 1);
-        this.assertEquals(values[0] == "dictu", true);
+        this.assertEquals(values[0], "dictu");
 
         s.add("!");
         values = s.values();
