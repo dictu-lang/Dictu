@@ -73,6 +73,15 @@ var mySet = set();
 mySet.add("Dictu!");
 ```
 
+### set.values() -> List
+
+Returns a list of all of the values in the set.
+
+```cs
+var mySet = set("foo", "bar", 123);
+const values = mySet.values(); // ["foo", "bar", 123]
+```
+
 ### set.contains(value) -> Boolean
 
 To check if a set contains a value use `.contains()`

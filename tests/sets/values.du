@@ -1,0 +1,33 @@
+/**
+ * values.du
+ *
+ * Testing the set.values() method
+ *
+ * .values() returns a list of all values in the set
+ */
+from UnitTest import UnitTest;
+
+class TestSetValues < UnitTest {
+    testSetValues() {
+        const s = set();
+        s.add("dictu");
+        var values = s.values();
+        this.assertEquals(values.len(), 1);
+        this.assertEquals(values[0], "dictu");
+
+        s.add("!");
+        values = s.values();
+        this.assertTruthy(values.contains("dictu"));
+        this.assertTruthy(values.contains("!"));
+
+
+        s.add(22);
+        values = s.values();
+        this.assertTruthy(values.contains("dictu"));
+        this.assertTruthy(values.contains("!"));
+        this.assertTruthy(values.contains(22));
+
+    }
+}
+
+TestSetValues().run();
