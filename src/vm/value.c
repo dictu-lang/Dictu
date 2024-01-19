@@ -77,7 +77,6 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
                                Value key) {
     uint32_t index = hashValue(key) & capacityMask;
     DictItem *tombstone = NULL;
-    uint32_t count = 0;
 
     for (;;) {
         DictItem *entry = &entries[index];
@@ -89,8 +88,6 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
             } else {
                 // We found a tombstone.
                 if (tombstone == NULL) tombstone = entry;
-                if (count >= (uint32_t)capacityMask)
-                  return tombstone;
             }
         } else if (valuesEqual(key, entry->key)) {
             // We found the key.
@@ -100,7 +97,6 @@ static DictItem *findDictEntry(DictItem *entries, int capacityMask,
 //        printf("%d - ", index);
         index = (index + 1) & capacityMask;
 //        printf("%d - mask: %d\n", index, capacityMask);
-        count++;
     }
 }
 
@@ -151,7 +147,10 @@ bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value) {
     entry->key = key;
     entry->value = value;
 
-    if (isNewKey) dict->count++;
+    if (isNewKey) {
+        dict->activeCount++;
+        dict->count++;
+    }
 
     return isNewKey;
 }
@@ -163,7 +162,7 @@ bool dictDelete(DictuVM *vm, ObjDict *dict, Value key) {
     if (IS_EMPTY(entry->key)) return false;
 
     // Place a tombstone in the entry.
-    dict->count--;
+    dict->activeCount--;
     entry->key = EMPTY_VAL;
     entry->value = BOOL_VAL(true);
 
@@ -433,12 +432,12 @@ static bool dictComparison(Value a, Value b) {
     ObjDict *dictB = AS_DICT(b);
 
     // Different lengths, not the same
-    if (dict->count != dictB->count)
+    if (dict->activeCount != dictB->activeCount)
         return false;
 
     // Lengths are the same, and dict 1 has 0 length
     // therefore both are empty
-    if (dict->count == 0)
+    if (dict->activeCount == 0)
         return true;
 
     for (int i = 0; i <= dict->capacityMask; ++i) {

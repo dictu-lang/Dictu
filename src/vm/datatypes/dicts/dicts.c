@@ -31,7 +31,7 @@ static Value lenDict(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjDict *dict = AS_DICT(args[0]);
-    return NUMBER_VAL(dict->count);
+    return NUMBER_VAL(dict->activeCount);
 }
 
 static Value keysDict(DictuVM *vm, int argCount, Value *args) {

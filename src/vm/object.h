@@ -146,6 +146,7 @@ typedef struct {
 struct sObjDict {
     Obj obj;
     int count;
+    int activeCount;
     int capacityMask;
     DictItem *entries;
 };
