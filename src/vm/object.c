@@ -167,6 +167,7 @@ ObjList *newList(DictuVM *vm) {
 ObjDict *newDict(DictuVM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
     dict->count = 0;
+    dict->activeCount = 0;
     dict->capacityMask = -1;
     dict->entries = NULL;
     return dict;

@@ -147,7 +147,10 @@ bool dictSet(DictuVM *vm, ObjDict *dict, Value key, Value value) {
     entry->key = key;
     entry->value = value;
 
-    if (isNewKey) dict->count++;
+    if (isNewKey) {
+        dict->activeCount++;
+        dict->count++;
+    }
 
     return isNewKey;
 }
@@ -159,7 +162,7 @@ bool dictDelete(DictuVM *vm, ObjDict *dict, Value key) {
     if (IS_EMPTY(entry->key)) return false;
 
     // Place a tombstone in the entry.
-    dict->count--;
+    dict->activeCount--;
     entry->key = EMPTY_VAL;
     entry->value = BOOL_VAL(true);
 
@@ -429,12 +432,12 @@ static bool dictComparison(Value a, Value b) {
     ObjDict *dictB = AS_DICT(b);
 
     // Different lengths, not the same
-    if (dict->count != dictB->count)
+    if (dict->activeCount != dictB->activeCount)
         return false;
 
     // Lengths are the same, and dict 1 has 0 length
     // therefore both are empty
-    if (dict->count == 0)
+    if (dict->activeCount == 0)
         return true;
 
     for (int i = 0; i <= dict->capacityMask; ++i) {
