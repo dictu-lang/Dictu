@@ -28,6 +28,7 @@
 #include "bigint.h"
 #include "object/object.h"
 #include "unittest/unittest.h"
+#include "ffi/ffi.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);
 
