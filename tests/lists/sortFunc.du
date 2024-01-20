@@ -1,0 +1,24 @@
+/**
+ * sortFunc.du
+ *
+ * Testing list sorting with custom callback
+ */
+from UnitTest import UnitTest;
+class A {
+    init(var name, var n) {}
+}
+
+class TestListSortFunc < UnitTest {
+    testListSortCallback() {
+        var list1 = [[1, "Dictu"], [-1, "SomeValue"], [5, "!"], [4, "Awesome"], [2, "is"]];
+        list1.sortFunc(def(a,b) => a[0] - b[0]);
+        this.assertEquals(list1, [[-1, "SomeValue"], [1, "Dictu"], [2, "is"], [4, "Awesome"], [5, "!"]]);
+    }
+    testListSortCallbackClass() {
+        var list = [A("T", 10), A("U", 15), A("C", 5), A("D", 1), A("I", 3)];
+        list.sortFunc(def(a,b) => a.n - b.n);
+        this.assertEquals(list.map(def (entry) => entry.n), [1, 3, 5, 10, 15]);
+        this.assertEquals(list.map(def (entry) => entry.name), ["D", "I", "C", "T", "U"]);
+    }
+}
+TestListSortFunc().run();

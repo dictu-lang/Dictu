@@ -14,6 +14,36 @@ def map(list, func) {
     return temp;
 }
 
+def sortFunc(list, func) {
+    if(list.len() < 2) {
+        return;
+    }
+    const partition = def (arr, start, end) => {
+        const pivot = arr[end];
+        var i = start - 1;
+        for(var t = start; t <= end-1; t+= 1) {
+            if(func(pivot, arr[t]) > 0) {
+                i+= 1;
+                const temp = arr[i];
+                arr[i] = arr[t];
+                arr[t] = temp;
+            }
+        }
+        const temp = arr[i+1];
+        arr[i+1] = arr[end];
+        arr[end] = temp;
+        return i + 1;
+    };
+    const quickSort = def(arr, start, end) => {
+        if(start < end) {
+            const p = partition(arr, start, end);
+            quickSort(arr, start, p - 1);
+            quickSort(arr, p + 1, end);
+        }
+    };
+    quickSort(list, 0, list.len()-1);
+}
+
 def filter(list, func=def(x) => x) {
     const temp = [];
 
