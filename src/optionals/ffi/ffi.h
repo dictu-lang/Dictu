@@ -6,6 +6,17 @@
 #include "../optionals.h"
 #include "../../vm/vm.h"
 
+#ifdef _WIN32
+#define LIB_EXTENSION ".dll"
+#define LIB_EXTENSION_STRLEN 4
+#elif __APPLE__
+#define LIB_EXTENSION ".dylib"
+#define LIB_EXTENSION_STRLEN 6
+#else
+#define LIB_EXTENSION ".so"
+#define LIB_EXTENSION_STRLEN 3
+#endif
+
 
 Value createFFIModule(DictuVM *vm);
 

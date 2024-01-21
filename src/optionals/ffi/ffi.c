@@ -131,6 +131,9 @@ Value createFFIModule(DictuVM *vm) {
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
     defineNative(vm, &module->values, "load", load);
+
+    defineNativeProperty(vm, &module->values, "suffix", OBJ_VAL(
+        copyString(vm, LIB_EXTENSION, LIB_EXTENSION_STRLEN)));
     pop(vm);
     pop(vm);
 
