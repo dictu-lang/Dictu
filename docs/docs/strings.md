@@ -319,7 +319,7 @@ Returns a string with extraneous whitespace removed.
 "This  is      a huge string of a       lot of spaces.".collapseSpaces(); // "This is a huge string of a lot of spaces."
 ```
 
-### string.wrap() -> String
+### string.wrap(Number) -> String
 
 Returns a new string with new lines inserted at the given length.
 
