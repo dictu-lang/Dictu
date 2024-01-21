@@ -674,17 +674,20 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *string = AS_CSTRING(args[0]);
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+    strcpy(temp, string->chars);
 
     int i, j;
-    for (i = j = 0; string[i]; ++i) {
-        if(!isspace(string[i]) || (i > 0 && !isspace(string[i-1]))) {
-            string[j++] = string[i];
+    for (i = j = 0; temp[i]; ++i) {
+        if(!isspace(temp[i]) || (i > 0 && !isspace(temp[i-1]))) {
+            temp[j++] = temp[i];
         }
     }
-    string[j+1] = '\0';
+    temp[j+1] = '\0';
+    temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, strlen(temp));
 
-    return OBJ_VAL(copyString(vm, string, strlen(string) - 1));
+    return OBJ_VAL(takeString(vm, temp, strlen(temp)-1));
 }
 
 static Value wrapString(DictuVM *vm, int argCount, Value *args) {
@@ -693,24 +696,28 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *string = AS_CSTRING(args[0]);
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+    
     int len = AS_NUMBER(args[1]);
 
     int last = 0;
     int count = 0;
 
-    for (int cur = 0; string[cur] != '\0'; cur++, count++) {
-        if (isspace(string[cur])) {
+    for (int cur = 0; string->chars[cur] != '\0'; cur++, count++) {
+        temp[cur] = string->chars[cur];
+
+        if (isspace(temp[cur])) {
             last = cur;
-        }
+        } 
 
         if (count >= len) {
-            string[last] = '\n';
+            temp[last] = '\n';
             count = 0;
         }
     }
 
-    return OBJ_VAL(copyString(vm, string, strlen(string) - 1));
+    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
 }
 
 void declareStringMethods(DictuVM *vm) {

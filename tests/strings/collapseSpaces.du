@@ -12,6 +12,7 @@ class TestStringCollapseSpaces < UnitTest {
         const testString = "This  is      a huge string of a       lot of spaces.";
         const expected  = "This is a huge string of a lot of spaces.";
         const res = testString.collapseSpaces();
+        print(res);
         this.assertEquals(res, expected);
     }
 }
