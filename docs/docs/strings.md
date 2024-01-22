@@ -324,5 +324,5 @@ Returns a string with extraneous whitespace removed.
 Returns a new string with new lines inserted at the given length.
 
 ```cs
-"This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not out business as to why, but we can provide the functionality for them to do so.".wrap(80);
+"This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not our business as to why, but we can provide the functionality for them to do so.".wrap(80);
 ```
