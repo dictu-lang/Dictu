@@ -236,7 +236,8 @@ print(list1); // [-1, 1, 2, 3, 4, 5, 10]
 
 #### list.sortFunc(Func)
 
-Sorts a list with a Custom Callback
+Sorts a list with a Custom Callback, The callback function passed to `.sortFunc` takes two elements of the list `a` and `b`.
+The return value should be a number whose sign indicates the relative order of the two elements: negative if `a` is less than `b`, positive if `a` is greater than `b`, and zero if they are equal.
 
 ```cs
 var list1 = [[1, "Dictu"], [-1, "SomeValue"], [5, "!"], [4, "Awesome"], [2, "is"]];
