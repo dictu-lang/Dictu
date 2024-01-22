@@ -668,6 +668,62 @@ static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL(true);
 }
 
+static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "collapseSpaces() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+    strcpy(temp, string->chars);
+
+    int i, j;
+    for (i = j = 0; temp[i]; ++i) {
+        if (!isspace(temp[i]) || (i > 0 && !isspace(temp[i-1]))) {
+            temp[j++] = temp[i];
+        }
+    }
+
+    temp[j+1] = '\0';
+
+    if (i != j) {
+        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, j + 1);
+    }
+
+    return OBJ_VAL(takeString(vm, temp, j));
+}
+
+static Value wrapString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "wrap() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+    
+    int len = AS_NUMBER(args[1]);
+
+    int last = 0;
+    int count = 0;
+
+    for (int cur = 0; string->chars[cur] != '\0'; cur++, count++) {
+        temp[cur] = string->chars[cur];
+
+        if (isspace(temp[cur])) {
+            last = cur;
+        } 
+
+        if (count >= len) {
+            temp[last] = '\n';
+            count = 0;
+        }
+    }
+
+    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -691,5 +747,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "repeat", repeatString);
     defineNative(vm, &vm->stringMethods, "isUpper", isUpperString);
     defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
-
+    defineNative(vm, &vm->stringMethods, "collapseSpaces", collapseSpacesString);
+    defineNative(vm, &vm->stringMethods, "wrap", wrapString);
 }
