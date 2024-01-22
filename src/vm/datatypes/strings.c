@@ -680,14 +680,18 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
 
     int i, j;
     for (i = j = 0; temp[i]; ++i) {
-        if(!isspace(temp[i]) || (i > 0 && !isspace(temp[i-1]))) {
+        if (!isspace(temp[i]) || (i > 0 && !isspace(temp[i-1]))) {
             temp[j++] = temp[i];
         }
     }
-    temp[j+1] = '\0';
-    temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, strlen(temp));
 
-    return OBJ_VAL(takeString(vm, temp, strlen(temp)-1));
+    temp[j+1] = '\0';
+
+    if (i != j) {
+        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, j);
+    }
+
+    return OBJ_VAL(takeString(vm, temp, j));
 }
 
 static Value wrapString(DictuVM *vm, int argCount, Value *args) {
