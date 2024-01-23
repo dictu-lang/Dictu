@@ -553,7 +553,7 @@ static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
   return newResultSuccess(vm, NIL_VAL);
 }
 
-static Value bufferSubAarray(DictuVM *vm, int argCount, Value *args) {
+static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
   size_t start = 0;
   size_t end = buffer->size;
@@ -609,7 +609,7 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
   defineNative(vm, &abstract->values, "resize", bufferResize);
   defineNative(vm, &abstract->values, "set", bufferSet);
   defineNative(vm, &abstract->values, "get", bufferGet);
-  defineNative(vm, &abstract->values, "subarray", bufferSubAarray);
+  defineNative(vm, &abstract->values, "subarray", bufferSubArray);
   defineNative(vm, &abstract->values, "string", bufferString);
   defineNative(vm, &abstract->values, "len", bufferLen);
 
