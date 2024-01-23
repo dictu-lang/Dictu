@@ -1,0 +1,283 @@
+---
+layout: default
+title: Buffer
+nav_order: 6
+parent: Standard Library
+---
+
+# Buffer
+{: .no_toc }
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Buffer
+To make use of the Buffer module an import is required.
+
+```js
+import Buffer;
+```
+
+### Buffer.new() -> Result\<Buffer>
+
+Returns a Result with a new buffer with the given size in bytes.
+
+```cs
+const buffer = Buffer.new(1024).unwrap();
+print(buffer);
+// <Buffer>
+```
+
+### Buffer.fromString(String) -> Result\<Buffer>
+
+Returns a Result with a new buffer created from the given string.
+
+```cs
+const buffer = Buffer.fromString("Dictu!").unwrap();
+print(buffer);
+// <Buffer>
+```
+
+### Buffer.resize(Number) -> Result\<Number>
+
+Resizes the buffer to the given size, the argument needs to be greater then 0 or the function will return a error.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+print(buffer.resize(16).unwrap());
+// 16
+```
+
+### Buffer.get(Number) -> Result\<Number>
+
+Returns the value of byte at the given index.
+```cs
+const buffer = Buffer.new("Dictu!").unwrap();
+print(buffer.get(0).unwrap());
+
+// 68 (ASCII value of 'D')
+```
+
+### Buffer.set(Number, Number) -> Result\<Number>
+
+Sets the given index of the buffer to the second argument.
+Returns a Number result with the new value.
+```cs
+const buffer = Buffer.fromString("dictu!").unwrap();
+buffer.set(0, 68).unwrap();
+print(buffer.string()); // "Dictu!"
+```
+
+### Buffer.subarray(Number: start -> Optional, Number: end -> Optional) -> Result\<Buffer>
+
+Returns a new Buffer with the optional given start and end parameters.
+* `start`: The start index within the buffer, default `0`
+* `end`: The end index within the buffer(non inclusive), default: `buffer.len()`
+```cs
+const buffer = Buffer.fromString("Dictu!").unwrap();
+const sub = buffer.subarray(0, buffer.len()-1).unwrap();
+print(sub.string()); // "Dictu"
+```
+
+### Buffer.string() -> String
+
+Returns a string representation of the buffer.
+```cs
+const buffer = Buffer.fromString("Dictu!").unwrap();
+const str = buffer.string();
+print(str); // "Dictu!"
+```
+
+### Buffer.len() -> Number
+
+Returns the byte length of the buffer.
+```cs
+const buffer = Buffer.new(9).unwrap();
+const len = buffer.len();
+print(len); // 9
+```
+
+### Buffer.writeString(Number, String) -> Result\<Nil>
+
+Sets a string into buffer given the starting index, if the string doesn't fit in the buffer a error is returned.
+```cs
+const buffer = Buffer.new(6).unwrap();
+buffer.writeString(0, "Dictu!");
+```
+
+### Buffer.readString(Number: start -> Optional, Number: end -> Optional) -> Result\<String>
+
+Returns a String with the optional given start and end parameters, this works very similar to subarray.
+* `start`: The start index within the buffer, default `0`
+* `end`: The end index within the buffer(non inclusive), default: `buffer.len()`
+```cs
+const buffer = Buffer.new(6).unwrap();
+buffer.writeString(0, "Dictu!");
+const sub = buffer.string(0, buffer.len()-1).unwrap();
+print(sub) // "Dictu"
+```
+
+### Buffer.readUInt64LE(Number) -> Result\<Number>
+
+Returns the u64(unsigned 8 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeUInt64LE(0, 12000);
+print(buffer.readUInt64LE(0).unwrap()) // 12000
+```
+
+### Buffer.readUInt32LE(Number) -> Result\<Number>
+
+Returns the u32(unsigned 4 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeUInt32LE(0, 1337);
+print(buffer.readUInt32LE(0).unwrap()) // 1337
+```
+
+### Buffer.readUInt16LE(Number) -> Result\<Number>
+
+Returns the u16(unsigned 2 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeUInt16LE(0, 1337);
+print(buffer.readUInt16LE(0).unwrap()) // 1337
+```
+
+### Buffer.readInt64LE(Number) -> Result\<Number>
+
+Returns the i64(signed 8 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeInt64LE(0, -12000);
+print(buffer.readInt64LE(0).unwrap()) // -12000
+```
+
+### Buffer.readInt32LE(Number) -> Result\<Number>
+
+Returns the i32(signed 4 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeUInt32LE(0, -1337);
+print(buffer.readUInt32LE(0).unwrap()) // -1337
+```
+
+### Buffer.readInt16LE(Number) -> Result\<Number>
+
+Returns the i16(signed 2 byte integer in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeUInt16LE(0, -1337);
+print(buffer.readUInt16LE(0).unwrap()) // -1337
+```
+
+### Buffer.writeUInt64LE(Number, Number) -> Result\<Number>
+
+Writes a u64(unsigned 8 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeUInt64LE(0, 12000);
+```
+
+### Buffer.writeUInt32LE(Number, Number) -> Result\<Number>
+
+Writes a u32(unsigned 4 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeUInt32LE(0, 1337);
+```
+
+### Buffer.writeUInt16LE(Number, Number) -> Result\<Number>
+
+Writes a u16(unsigned 2 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeUInt16LE(0, 1337);
+```
+
+### Buffer.writeInt64LE(Number, Number) -> Result\<Number>
+
+Writes a i64(signed 8 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeInt64LE(0, 12000);
+```
+
+### Buffer.writeInt32LE(Number, Number) -> Result\<Number>
+
+Writes a i32(signed 4 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeInt32LE(0, 1337);
+```
+
+### Buffer.writeInt16LE(Number, Number) -> Result\<Number>
+
+Writes a i16(signed 2 byte integer in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeInt16LE(0, 1337);
+```
+
+### Buffer.writeFloatLE(Number, Number) -> Result\<Number>
+
+Writes a float(4 byte signed floating point number in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeFloatLE(0, 14.34);
+```
+
+### Buffer.writeDoubleLE(Number, Number) -> Result\<Number>
+
+Writes a double(8 byte signed floating point number in little endian) at the index(the first argument).
+Returns a result with the set value or a error.
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeDoubleLE(0, 14.34);
+```
+
+### Buffer.readFloatLE(Number) -> Result\<Number>
+
+Returns the float(signed 4 byte floating point number in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeFloatLE(0, 14.34);
+print(buffer.readFloatLE(0).unwrap()) // 14.34
+```
+
+### Buffer.readDoubleLE(Number) -> Result\<Number>
+
+Returns the double(signed 8 byte floating point number in little endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeDoubleLE(0, 14.34);
+print(buffer.readDoubleLE(0).unwrap()) // 14.34
+```
