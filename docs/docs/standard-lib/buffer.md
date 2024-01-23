@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Buffer
-nav_order: 6
+nav_order: 4
 parent: Standard Library
 ---
 
