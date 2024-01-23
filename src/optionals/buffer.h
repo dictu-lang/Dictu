@@ -7,6 +7,8 @@
 #include "optionals.h"
 #include "../vm/vm.h"
 
+#define BUFFER_SIZE_MAX 2147483647
+
 Value createBufferModule(DictuVM *vm);
 
 #endif //dictu_math_h

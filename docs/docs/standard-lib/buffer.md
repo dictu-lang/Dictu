@@ -23,6 +23,8 @@ To make use of the Buffer module an import is required.
 import Buffer;
 ```
 
+The maximum byte size for a buffer is `2147483647 - 1`
+
 ### Buffer.new() -> Result\<Buffer>
 
 Returns a Result with a new buffer with the given size in bytes.

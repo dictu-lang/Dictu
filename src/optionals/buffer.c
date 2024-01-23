@@ -1,5 +1,5 @@
 #include "buffer.h"
-#include <string.h>
+#include <float.h>
 
 typedef struct {
   uint8_t *bytes;
@@ -48,6 +48,7 @@ uint8_t* getReadPtr(Buffer* buffer, size_t offset, size_t len){
         return NULL;
     return buffer->bytes+offset;
 }
+
 static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
     runtimeError(vm, "resize() takes 1 argument (%d given).", argCount);
@@ -60,8 +61,8 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
   }
 
   double capacity = AS_NUMBER(args[1]);
-  if (capacity <= 0) {
-    return newResultError(vm, "size must be greater than 0");
+  if (capacity <= 0 || capacity >= BUFFER_SIZE_MAX) {
+    return newResultError(vm, "size must be greater than 0 and smaller then 2147483647");
   }
   Buffer *buffer = AS_BUFFER(args[0]);
   buffer->bytes = realloc(buffer->bytes, capacity);
@@ -346,6 +347,9 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
   if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 8");
   memcpy(&value, ptr, sizeof(value));
+  const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
+  if(value > MAX_VALUE)
+     return newResultError(vm, "value would overflow internal reprentation");
   return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
@@ -407,6 +411,9 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
   if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 8");
   memcpy(&value, ptr, sizeof(value));
+    const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
+  if((uint64_t)value > MAX_VALUE)
+     return newResultError(vm, "value would overflow internal reprentation");
   return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
@@ -540,6 +547,43 @@ static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
   return newResultSuccess(vm, NIL_VAL);
 }
 
+static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
+  size_t start = 0;
+  size_t end = buffer->size;
+  int length = buffer->size;
+  if (argCount > 0) {
+    if (!IS_NUMBER(args[1])) {
+      runtimeError(vm, "readString() start argument must be a number");
+      return EMPTY_VAL;
+    }
+    double startParam = AS_NUMBER(args[1]);
+    if (startParam >= buffer->size) {
+            return newResultError(vm, "start greater or equals then buffer length");
+    } else {
+        start = startParam;
+        length = end - start;
+    }
+  }
+  if (argCount == 2) {
+    if (!IS_NUMBER(args[2])) {
+      runtimeError(vm, "readString() end argument must be a number");
+      return EMPTY_VAL;
+    }
+    double endParam = AS_NUMBER(args[2]);
+    if(endParam > buffer->size){
+        return newResultError(vm, "end greater then buffer length");
+    } else {
+        end = endParam;
+        length = end - start;
+    }
+  }
+  if(length <= 0){
+     return newResultError(vm, "length is 0");
+  }
+  return newResultSuccess(vm, OBJ_VAL(copyString(vm, (const char*)buffer->bytes+start, length)));
+}
+
 static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
   size_t start = 0;
@@ -602,6 +646,7 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
 
 
   defineNative(vm, &abstract->values, "writeString", bufferWriteString);
+  defineNative(vm, &abstract->values, "readString", bufferReadString);
 
   defineNative(vm, &abstract->values, "readUInt64LE", bufferReadUint64LE);
   defineNative(vm, &abstract->values, "readUInt32LE", bufferReadUint32LE);
@@ -644,8 +689,8 @@ static Value newBuffer(DictuVM *vm, int argCount, Value *args) {
   }
 
   double capacity = AS_NUMBER(args[0]);
-  if (capacity <= 0) {
-    return newResultError(vm, "capacity must be greater than 0");
+  if (capacity <= 0 || capacity >= BUFFER_SIZE_MAX) {
+    return newResultError(vm, "capacity must be greater than 0 and less then 2147483647");
   }
 
   return newResultSuccess(vm, OBJ_VAL(newBufferObj(vm, capacity)));
