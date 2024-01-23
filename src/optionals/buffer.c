@@ -19,9 +19,9 @@ void freeBuffer(DictuVM *vm, ObjAbstract *abstract) {
 char *bufferToString(ObjAbstract *abstract) {
 UNUSED(abstract);
 
-  char *queueString = malloc(sizeof(char) * 9);
-  snprintf(queueString, 9, "<Buffer>");
-  return queueString;
+  char *bufferString = malloc(sizeof(char) * 9);
+  snprintf(bufferString, 9, "<Buffer>");
+  return bufferString;
 }
 
 void grayBuffer(DictuVM *vm, ObjAbstract *abstract) {
@@ -36,6 +36,18 @@ bool ensureSize(Buffer* buffer, size_t offset, size_t size){
     return buffer->size - offset >= size;
 }
 
+bool writeInternal(Buffer* buffer, size_t offset, uint8_t* data, size_t len){
+    if(!ensureSize(buffer, offset, len))
+        return false;
+    memcpy(buffer->bytes+offset, data, len);
+    return true;
+}
+
+uint8_t* getReadPtr(Buffer* buffer, size_t offset, size_t len){
+    if(!ensureSize(buffer, offset, len))
+        return NULL;
+    return buffer->bytes+offset;
+}
 static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
     runtimeError(vm, "resize() takes 1 argument (%d given).", argCount);
@@ -43,17 +55,18 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
   }
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "resize() argument must be a numbers");
+    runtimeError(vm, "resize() size argument must be a number");
     return EMPTY_VAL;
   }
 
   double capacity = AS_NUMBER(args[1]);
   if (capacity <= 0) {
-    return newResultError(vm, "capacity must be greater than 0");
+    return newResultError(vm, "size must be greater than 0");
   }
   Buffer *buffer = AS_BUFFER(args[0]);
   buffer->bytes = realloc(buffer->bytes, capacity);
   if (capacity > buffer->size) {
+    // 0 init everything if we grew the buffer
     size_t added = capacity - buffer->size;
     memset(buffer->bytes + buffer->size, 0, added);
   }
@@ -76,177 +89,152 @@ static Value bufferString(DictuVM *vm, int argCount, Value *args) {
     runtimeError(vm, "string() takes no arguments");
     return EMPTY_VAL;
   }
-    Buffer *buffer = AS_BUFFER(args[0]);
+  Buffer *buffer = AS_BUFFER(args[0]);
 
    return OBJ_VAL(copyString(vm, (const char*)buffer->bytes, buffer->size));
 }
 
 static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeUint16LE() takes 2 argument");
+    runtimeError(vm, "writeUInt16LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUint16LE() index argument must be a numbers");
+    runtimeError(vm, "writeUInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUint16LE() value argument must be a numbers");
+    runtimeError(vm, "writeUInt16LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   uint16_t correctVal = (uint16_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(uint16_t))){
-     return newResultError(vm, "index must be smaller then buffer size -2");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(uint16_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size -2");
+    return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeUint32LE() takes 2 argument");
+    runtimeError(vm, "writeUInt32LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUint32LE() index argument must be a numbers");
+    runtimeError(vm, "writeUInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUint32LE() value argument must be a numbers");
+    runtimeError(vm, "writeUInt32LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   uint32_t correctVal = (uint32_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(uint32_t))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(uint32_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 4");
+    return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeUint64LE() takes 2 argument");
+    runtimeError(vm, "writeUInt64LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUint64LE() index argument must be a numbers");
+    runtimeError(vm, "writeUInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
-    if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUint64LE() value argument must be a numbers");
+  if (!IS_NUMBER(args[2])) {
+    runtimeError(vm, "writeUInt64LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   uint64_t correctVal = (uint64_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(uint64_t))){
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
      return newResultError(vm, "index must be smaller then buffer size - 8");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(uint64_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeint64LE() takes 2 argument");
+    runtimeError(vm, "writeInt64LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeint64LE() index argument must be a numbers");
+    runtimeError(vm, "writeInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeint64LE() value argument must be a numbers");
+    runtimeError(vm, "writeInt64LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
-
   int64_t correctVal = (int64_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(int64_t))){
-     return newResultError(vm, "index must be smaller then buffer size - 8");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(int64_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 8");
+  return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeint32LE() takes 2 argument");
+    runtimeError(vm, "writeInt32LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeint32LE() index argument must be a numbers");
+    runtimeError(vm, "writeInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeint32LE() value argument must be a numbers");
+    runtimeError(vm, "writeInt32LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   int32_t correctVal = (int32_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(int32_t))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(int32_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 4");
+  return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 2) {
-    runtimeError(vm, "writeint16LE() takes 2 argument");
+    runtimeError(vm, "writeInt16LE() takes 2 argument");
     return EMPTY_VAL;
   }
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeint16LE() index argument must be a numbers");
+    runtimeError(vm, "writeInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeint16LE() value argument must be a numbers");
+    runtimeError(vm, "writeInt16LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   int16_t correctVal = (int16_t)value;
-
-  if(!ensureSize(buffer, index, sizeof(int16_t))){
-     return newResultError(vm, "index must be smaller then buffer size - 2");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(int16_t));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 2");
+    return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
@@ -257,24 +245,20 @@ static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeFloatLE() index argument must be a numbers");
+    runtimeError(vm, "writeFloatLE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeFloatLE() value argument must be a numbers");
+    runtimeError(vm, "writeFloatLE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value = AS_NUMBER(args[2]);
 
   float correctVal = (float)value;
-
-  if(!ensureSize(buffer, index, sizeof(float))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(float));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 4");
+  return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
@@ -285,11 +269,11 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeDoubleLE() index argument must be a numbers");
+    runtimeError(vm, "writeDoubleLE() index argument must be a number");
     return EMPTY_VAL;
   }
     if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeDoubleLE() value argument must be a numbers");
+    runtimeError(vm, "writeDoubleLE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -297,12 +281,9 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
 
   double correctVal = value;
 
-  if(!ensureSize(buffer, index, sizeof(double))){
-     return newResultError(vm, "index must be smaller then buffer size - 8");
-  }
-  uint8_t* ptr = (uint8_t*)&correctVal;
-  memcpy(buffer->bytes+(size_t)index, ptr, sizeof(double));
-    return newResultSuccess(vm, NUMBER_VAL(value));
+  if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 8");
+  return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
 static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
@@ -313,16 +294,17 @@ static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readDoubleLE() index argument must be a numbers");
+    runtimeError(vm, "readDoubleLE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   double value;
-  if(!ensureSize(buffer, index, sizeof(value))){
+
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 8");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
@@ -333,136 +315,141 @@ static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readFloatLE() index argument must be a numbers");
+    runtimeError(vm, "readFloatLE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   float value;
-  if(!ensureSize(buffer, index, sizeof(value))){
+
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readUint64LE() takes 1 argument");
+    runtimeError(vm, "readUInt64LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUint64LE() index argument must be a numbers");
+    runtimeError(vm, "readUInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   uint64_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
+
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 8");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadUint32LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readUint32LE() takes 1 argument");
+    runtimeError(vm, "readUInt32LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUint32LE() index argument must be a numbers");
+    runtimeError(vm, "readUInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   uint32_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadUint16LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readUint16LE() takes 1 argument");
+    runtimeError(vm, "readUInt16LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUint16LE() index argument must be a numbers");
+    runtimeError(vm, "readUInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
+
   uint16_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
+     return newResultError(vm, "index must be smaller then buffer size - 2");
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readint64LE() takes 1 argument");
+    runtimeError(vm, "readInt64LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readint64LE() index argument must be a numbers");
+    runtimeError(vm, "readInt64LE() index argument must be a numbers");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
   int64_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
+     return newResultError(vm, "index must be smaller then buffer size - 8");
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readint32LE() takes 1 argument");
+    runtimeError(vm, "readInt32LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readint32LE() index argument must be a numbers");
+    runtimeError(vm, "readInt32LE() index argument must be a numbers");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
+
   int32_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
      return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
   if (argCount != 1) {
-    runtimeError(vm, "readint32LE() takes 1 argument");
+    runtimeError(vm, "readInt16LE() takes 1 argument");
     return EMPTY_VAL;
   }
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readint32LE() index argument must be a numbers");
+    runtimeError(vm, "readInt16LE() index argument must be a numbers");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
+
   int16_t value;
-  if(!ensureSize(buffer, index, sizeof(value))){
-     return newResultError(vm, "index must be smaller then buffer size - 4");
-  }
-  memcpy(&value, buffer->bytes+(size_t)index, sizeof(value));
- return newResultSuccess(vm, NUMBER_VAL(value));
+  uint8_t* ptr = getReadPtr(buffer, index, sizeof(value));
+  if(ptr == NULL)
+     return newResultError(vm, "index must be smaller then buffer size - 2");
+  memcpy(&value, ptr, sizeof(value));
+  return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
 
