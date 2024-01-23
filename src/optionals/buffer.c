@@ -55,7 +55,7 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
   buffer->bytes = realloc(buffer->bytes, capacity);
   if (capacity > buffer->size) {
     size_t added = capacity - buffer->size;
-    memset(buffer->bytes + added, 0, added);
+    memset(buffer->bytes + buffer->size, 0, added);
   }
   buffer->size = capacity;
   return newResultSuccess(vm, args[0]);
