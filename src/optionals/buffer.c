@@ -398,7 +398,7 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt64LE() index argument must be a numbers");
+    runtimeError(vm, "readInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -418,7 +418,7 @@ static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt32LE() index argument must be a numbers");
+    runtimeError(vm, "readInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -439,7 +439,7 @@ static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
   Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt16LE() index argument must be a numbers");
+    runtimeError(vm, "readInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -460,7 +460,7 @@ static Value bufferGet(DictuVM *vm, int argCount, Value *args) {
   }
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "get() argument must be a numbers");
+    runtimeError(vm, "get() argument must be a number");
     return EMPTY_VAL;
   }
 
@@ -483,12 +483,12 @@ static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
   }
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "set() index argument must be a numbers");
+    runtimeError(vm, "set() index argument must be a number");
     return EMPTY_VAL;
   }
 
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "set() value argument must be a numbers");
+    runtimeError(vm, "set() value argument must be a number");
     return EMPTY_VAL;
   }
 
@@ -514,7 +514,7 @@ static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
   }
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeString() index argument must be a numbers");
+    runtimeError(vm, "writeString() index argument must be a number");
     return EMPTY_VAL;
   }
 
@@ -657,14 +657,14 @@ static Value newBufferFromString(DictuVM *vm, int argCount, Value *args) {
     return EMPTY_VAL;
   }
 
-  if (!IS_NUMBER(args[0])) {
+  if (!IS_STRING(args[0])) {
     runtimeError(vm, "fromString() argument must be a string");
     return EMPTY_VAL;
   }
 
   ObjString* str = AS_STRING(args[0]);
   if (str->length <= 0) {
-    return newResultError(vm, "capacity must be greater than 0");
+    return newResultError(vm, "string length needs to be greater then 0");
   }
   ObjAbstract* b = newBufferObj(vm, str->length);
   Buffer* buffer = (Buffer*) b->data;
