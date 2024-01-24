@@ -36,16 +36,11 @@ void grayBuffer(DictuVM *vm, ObjAbstract *abstract) {
 uint8_t *swap(uint8_t *ptr, size_t len, bool bigEndian) {
   if (len < 2)
     return ptr;
-  if (!bigEndian) {
-#ifdef IS_BIG_ENDIAN
-#else
+  if (!bigEndian && !IS_BIG_ENDIAN) {
     return ptr;
-#endif
-  } else {
-#ifndef IS_BIG_ENDIAN
-#else
+  } else if(IS_BIG_ENDIAN && bigEndian) {
+
     return ptr;
-#endif
   }
   int start = 0;
   int end = (len)-1;
