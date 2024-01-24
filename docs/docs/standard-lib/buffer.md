@@ -290,7 +290,7 @@ Writes a u64(unsigned 8 byte integer in big endian) at the index(the first argum
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(8).unwrap();
-buffer.writeUInt64LE(0, 12000);
+buffer.writeUInt64BE(0, 12000);
 ```
 
 ### Buffer.writeUInt32BE(Number, Number) -> Result\<Number>
@@ -299,7 +299,7 @@ Writes a u32(unsigned 4 byte integer in big endian) at the index(the first argum
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(4).unwrap();
-buffer.writeUInt32LE(0, 1337);
+buffer.writeUInt32BE(0, 1337);
 ```
 
 ### Buffer.writeUInt16BE(Number, Number) -> Result\<Number>
@@ -308,7 +308,7 @@ Writes a u16(unsigned 2 byte integer in big endian) at the index(the first argum
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(2).unwrap();
-buffer.writeUInt16LE(0, 1337);
+buffer.writeUInt16BE(0, 1337);
 ```
 
 ### Buffer.writeInt64BE(Number, Number) -> Result\<Number>
@@ -317,7 +317,7 @@ Writes a i64(signed 8 byte integer in big endian) at the index(the first argumen
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(8).unwrap();
-buffer.writeInt64LE(0, 12000);
+buffer.writeInt64BE(0, 12000);
 ```
 
 ### Buffer.writeInt32BE(Number, Number) -> Result\<Number>
@@ -326,7 +326,7 @@ Writes a i32(signed 4 byte integer in big endian) at the index(the first argumen
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(4).unwrap();
-buffer.writeInt32LE(0, 1337);
+buffer.writeInt32BE(0, 1337);
 ```
 
 ### Buffer.writeInt16BE(Number, Number) -> Result\<Number>
@@ -335,7 +335,7 @@ Writes a i16(signed 2 byte integer in big endian) at the index(the first argumen
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(2).unwrap();
-buffer.writeInt16LE(0, 1337);
+buffer.writeInt16BE(0, 1337);
 ```
 
 ### Buffer.writeFloatBE(Number, Number) -> Result\<Number>
@@ -344,7 +344,7 @@ Writes a float(4 byte signed floating point number in big endian) at the index(t
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(4).unwrap();
-buffer.writeFloatLE(0, 14.34);
+buffer.writeFloatBE(0, 14.34);
 ```
 
 ### Buffer.writeDoubleBE(Number, Number) -> Result\<Number>
@@ -353,7 +353,7 @@ Writes a double(8 byte signed floating point number in big endian) at the index(
 Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(8).unwrap();
-buffer.writeDoubleLE(0, 14.34);
+buffer.writeDoubleBE(0, 14.34);
 ```
 
 ### Buffer.readFloatBE(Number) -> Result\<Number>
@@ -363,8 +363,8 @@ Returns a result with the value or a error.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
-buffer.writeFloatLE(0, 14.34);
-print(buffer.readFloatLE(0).unwrap()) // 14.34
+buffer.writeFloatBE(0, 14.34);
+print(buffer.readFloatBE(0).unwrap()) // 14.34
 ```
 
 ### Buffer.readDoubleBE(Number) -> Result\<Number>
@@ -374,6 +374,6 @@ Returns a result with the value or a error.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
-buffer.writeDoubleLE(0, 14.34);
-print(buffer.readDoubleLE(0).unwrap()) // 14.34
+buffer.writeDoubleBE(0, 14.34);
+print(buffer.readDoubleBE(0).unwrap()) // 14.34
 ```
