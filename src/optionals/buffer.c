@@ -125,18 +125,23 @@ static Value bufferString(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeUInt16LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeUInt16BE() takes 2 argument"
+                                       : "writeUInt16LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUInt16LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt16BE() index argument must be a number"
+                         : "writeUInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUInt16LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt16BE() value argument must be a number"
+                         : "writeUInt16LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -153,18 +158,23 @@ static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeUInt32LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeUInt32BE() takes 2 argument"
+                                       : "writeUInt32LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUInt32LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt32BE() index argument must be a number"
+                         : "writeUInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUInt32LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt32BE() value argument must be a number"
+                         : "writeUInt32LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -180,18 +190,23 @@ static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeUInt64LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeUInt64BE() takes 2 argument"
+                                       : "writeUInt64LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeUInt64LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt64BE() index argument must be a number"
+                         : "writeUInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeUInt64LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeUInt64BE() value argument must be a number"
+                         : "writeUInt64LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -207,18 +222,23 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeInt64LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeInt64BE() takes 2 argument"
+                                       : "writeInt64LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeInt64LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt64BE() index argument must be a number"
+                         : "writeInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeInt64LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt64BE() value argument must be a number"
+                         : "writeInt64LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -233,18 +253,23 @@ static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeInt32LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeInt32BE() takes 2 argument"
+                                       : "writeInt32LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeInt32LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt32BE() index argument must be a number"
+                         : "writeInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeInt32LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt32BE() value argument must be a number"
+                         : "writeInt32LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -260,18 +285,23 @@ static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeInt16LE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeInt16BE() takes 2 argument"
+                                       : "writeInt16LE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeInt16LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt16BE() index argument must be a number"
+                         : "writeInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeInt16LE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeInt16BE() value argument must be a number"
+                         : "writeInt16LE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -287,18 +317,23 @@ static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeFloatLE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeFloatBE() takes 2 argument"
+                                       : "writeFloatLE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeFloatLE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeFloatBE() index argument must be a number"
+                         : "writeFloatLE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeFloatLE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeFloatBE() value argument must be a number"
+                         : "writeFloatLE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -314,18 +349,23 @@ static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 2) {
-    runtimeError(vm, "writeDoubleLE() takes 2 argument");
+    runtimeError(vm, buffer->bigEndian ? "writeDoubleBE() takes 2 argument"
+                                       : "writeDoubleLE() takes 2 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "writeDoubleLE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeDoubleBE() index argument must be a number"
+                         : "writeDoubleLE() index argument must be a number");
     return EMPTY_VAL;
   }
   if (!IS_NUMBER(args[2])) {
-    runtimeError(vm, "writeDoubleLE() value argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "writeDoubleBE() value argument must be a number"
+                         : "writeDoubleLE() value argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -342,14 +382,17 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readDoubleLE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readDoubleBE() takes 1 argument"
+                                       : "readDoubleLE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readDoubleLE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readDoubleBE() index argument must be a number"
+                         : "readDoubleLE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -365,14 +408,17 @@ static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readFloatLE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readFloatBE() takes 1 argument"
+                                       : "readFloatLE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readFloatLE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readFloatBE() index argument must be a number"
+                         : "readFloatLE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -387,14 +433,17 @@ static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readUInt64LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readUInt64BE() takes 1 argument"
+                                       : "readUInt64LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUInt64LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readUInt64BE() index argument must be a number"
+                         : "readUInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -412,14 +461,17 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadUint32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readUInt32LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readUInt32BE() takes 1 argument"
+                                       : "readUInt32LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUInt32LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readUInt32BE() index argument must be a number"
+                         : "readUInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -433,14 +485,17 @@ static Value bufferReadUint32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadUint16LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readUInt16LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readUInt16BE() takes 1 argument"
+                                       : "readUInt16LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readUInt16LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readUInt16BE() index argument must be a number"
+                         : "readUInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -455,14 +510,17 @@ static Value bufferReadUint16LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readInt64LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readInt64BE() takes 1 argument"
+                                       : "readInt64LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt64LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readInt64BE() index argument must be a number"
+                         : "readInt64LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -479,14 +537,17 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readInt32LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readInt32BE() takes 1 argument"
+                                       : "readInt32LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt32LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readInt32BE() index argument must be a number"
+                         : "readInt32LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -501,14 +562,17 @@ static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
+  Buffer *buffer = AS_BUFFER(args[0]);
   if (argCount != 1) {
-    runtimeError(vm, "readInt16LE() takes 1 argument");
+    runtimeError(vm, buffer->bigEndian ? "readInt16BE() takes 1 argument"
+                                       : "readInt16LE() takes 1 argument");
     return EMPTY_VAL;
   }
-  Buffer *buffer = AS_BUFFER(args[0]);
 
   if (!IS_NUMBER(args[1])) {
-    runtimeError(vm, "readInt16LE() index argument must be a number");
+    runtimeError(vm, buffer->bigEndian
+                         ? "readInt16BE() index argument must be a number"
+                         : "readInt16LE() index argument must be a number");
     return EMPTY_VAL;
   }
   double index = AS_NUMBER(args[1]);
@@ -806,7 +870,6 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
   defineNative(vm, &abstract->values, "writeFloatLE", bufferWritefloat32LE);
   defineNative(vm, &abstract->values, "writeDoubleLE", bufferWritefloat64LE);
 
-
   defineNative(vm, &abstract->values, "readUInt64BE", bufferReadUint64BE);
   defineNative(vm, &abstract->values, "readUInt32BE", bufferReadUint32BE);
   defineNative(vm, &abstract->values, "readUInt16BE", bufferReadUint16BE);
@@ -880,7 +943,6 @@ Value createBufferModule(DictuVM *vm) {
   push(vm, OBJ_VAL(name));
   ObjModule *module = newModule(vm, name);
   push(vm, OBJ_VAL(module));
-
 
   defineNative(vm, &module->values, "new", newBuffer);
   defineNative(vm, &module->values, "fromString", newBufferFromString);
