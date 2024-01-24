@@ -5,6 +5,7 @@
 
 #include "../optionals.h"
 #include "../../vm/vm.h"
+#include "../json.h"
 
 Value createObjectModule(DictuVM *vm);
 

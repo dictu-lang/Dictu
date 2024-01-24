@@ -1,0 +1,30 @@
+/**
+ * prettyPrint.du
+ *
+ * Testing the Object.prettyPrint method
+ */
+from UnitTest import UnitTest;
+
+import Object;
+
+class Test {}
+
+class TestObjectPrettyPrint < UnitTest {
+    testObjectPrettyPrint() {
+        this.assertEquals(Object.prettyPrint(1).unwrap(), "1");
+        this.assertEquals(Object.prettyPrint("1").unwrap(), '"1"');
+        this.assertEquals(Object.prettyPrint([1, 2, 3]).unwrap(), '[1, 2, 3]');
+        this.assertEquals(Object.prettyPrint({"a": 1}).unwrap(), '{"a": 1}');
+        this.assertEquals(Object.prettyPrint(nil).unwrap(), 'null');
+        this.assertEquals(Object.prettyPrint(true).unwrap(), 'true');
+        this.assertEquals(Object.prettyPrint(false).unwrap(), 'false');
+        this.assertError(Object.prettyPrint(Test()));
+    }
+
+    testObjectPrettyPrintWithIndent() {
+        this.assertEquals(Object.prettyPrint([1, 2, 3], 2).unwrap(), '[\n  1,\n  2,\n  3\n]');
+        this.assertEquals(Object.prettyPrint({"a": 1}, 2).unwrap(), '{\n  "a": 1\n}');
+    }
+}
+
+TestObjectPrettyPrint().run();

@@ -171,7 +171,7 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
     return NULL;
 }
 
-static Value stringify(DictuVM *vm, int argCount, Value *args) {
+Value stringify(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
         runtimeError(vm, "stringify() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;

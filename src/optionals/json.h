@@ -7,5 +7,6 @@
 #include "../vm/vm.h"
 
 Value createJSONModule(DictuVM *vm);
+Value stringify(DictuVM *vm, int argCount, Value *args);
 
 #endif //dictu_json_h
