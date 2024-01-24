@@ -61,3 +61,27 @@ This method will return a string of the object's hash value.
 ```cs
 Object.hash("Dictu");
 ```
+
+### Object.prettyPrint(Value, indent -> Optional) -> Result\<String>
+
+This method will return a string representation of the given value.
+
+**NOTE** Strings, dicts, lists, numbers, and nil are valid values for pretty printing at this time.
+
+```cs
+Object.prettyPrint([1, 2, 3]).unwrap();
+
+// Output
+'[1, 2, 3]'
+```
+
+```cs
+Object.prettyPrint({"a": 1}, 4).unwrap()
+
+// Output
+'
+{
+    "a": 1
+}
+'
+```
