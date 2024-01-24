@@ -115,7 +115,7 @@ static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
 
   uint16_t correctVal = (uint16_t)value;
   if(!writeInternal(buffer, index, (uint8_t*)&correctVal, sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size -2");
+        return newResultError(vm, "index must be smaller then buffer size - 2");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -349,7 +349,7 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
   memcpy(&value, ptr, sizeof(value));
   const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
   if(value > MAX_VALUE)
-     return newResultError(vm, "value would overflow internal reprentation");
+     return newResultError(vm, "value would overflow internal representation");
   return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
@@ -413,7 +413,7 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
   memcpy(&value, ptr, sizeof(value));
     const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
   if((uint64_t)value > MAX_VALUE)
-     return newResultError(vm, "value would overflow internal reprentation");
+     return newResultError(vm, "value would overflow internal representation");
   return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
