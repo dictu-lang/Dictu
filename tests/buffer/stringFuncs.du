@@ -1,0 +1,49 @@
+/**
+* stringFuncs.du
+*
+* Testing the buffer.readString() and buffer.writeString() methods
+*
+* .writeString(Number -> Optional) writes a string into the buffer
+* .readString(Number -> Optional, Number -> Optional) returns a result of the string given optionally index and end.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferStringFuncs < UnitTest {
+
+    testBufferReadString() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        var res = b.readString(0, b.len()-1);
+        this.assertEquals(res.success(), true);
+        this.assertEquals(res.unwrap(), "Dictu");
+        res = b.readString(2);
+        this.assertEquals(res.success(), true);
+        this.assertEquals(res.unwrap(), "ctu!");
+    }
+    testBufferWriteString() {
+        const b = Buffer.new(10).unwrap();
+        const res = b.writeString(0, "Dictu!");
+        this.assertEquals(res.success(), true);
+    }
+    testBufferWriteStringOutOfBounds() {
+        const b = Buffer.new(4).unwrap();
+        const res = b.writeString(0, "Dictu!");
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "buffer is not large enough to fit the string");
+    }
+    testBufferReadStringOutOfBounds() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        var res = b.readString(23);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "start greater or equals then buffer length");
+        res = b.readString(3,3);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "string length is 0");
+        res = b.readString(3,34);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "end greater then buffer length");
+    }
+
+}
+
+TestBufferStringFuncs().run();

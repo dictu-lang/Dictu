@@ -1,0 +1,32 @@
+/**
+* get.du
+*
+* Testing the buffer.get() method
+*
+* .get(Number) returns the given vaue at the index.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferGet < UnitTest {
+    testBufferGet() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        const check = b.values();
+        for(var i = 0; i < b.len(); i+= 1) {
+            const res = b.get(i);
+            this.assertEquals(res.success(), true);
+            this.assertEquals(res.unwrap(), check[i]);
+        }
+    }
+    testBufferGetOutOfBounds() {
+        const b = Buffer.new(4).unwrap();
+        var res = b.get(4);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "index must be smaller then buffer size");
+        res = b.get(-1);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "index must be greater than -1");
+    }
+}
+
+TestBufferGet().run();

@@ -1,0 +1,58 @@
+/**
+* integers.du
+*
+* Testing the buffer integers methods.
+*
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferIntegers < UnitTest {
+    runTest(size, v, f, rf) {
+        const buffer = Buffer.new(size).unwrap();
+        var res = f(buffer, v, false);
+        this.assertEquals(res.success(), true);
+        res = rf(buffer, false);
+        const leArray = buffer.values();
+        this.assertEquals(res.success(), true);
+        this.assertEquals(res.unwrap(), v);
+        res = f(buffer, v, true);
+        this.assertEquals(res.success(), true);
+        res = rf(buffer, true);
+        this.assertEquals(res.success(), true);
+        this.assertEquals(res.unwrap(), v);
+        const beArray = buffer.values();
+        leArray.reverse();
+        this.assertEquals(leArray, beArray);
+    }
+    testBufferIntegers() {
+        this.runTest(2, 2000, def(buffer, v, bigEndian) => bigEndian ? buffer.writeUInt16BE(0, v) : buffer.writeUInt16LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readUInt16BE(0) : buffer.readUInt16LE(0));
+        this.runTest(2, -4321, def(buffer, v, bigEndian) => bigEndian ? buffer.writeInt16BE(0, v) : buffer.writeInt16LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readInt16BE(0) : buffer.readInt16LE(0));
+
+        this.runTest(4, 2300, def(buffer, v, bigEndian) => bigEndian ? buffer.writeUInt32BE(0, v) : buffer.writeUInt32LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readUInt32BE(0) : buffer.readUInt32LE(0));
+        this.runTest(4, -2345, def(buffer, v, bigEndian) => bigEndian ? buffer.writeInt32BE(0, v) : buffer.writeInt32LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readInt32BE(0) : buffer.readInt32LE(0));
+
+        this.runTest(8, 20000000, def(buffer, v, bigEndian) => bigEndian ? buffer.writeUInt64BE(0, v) : buffer.writeUInt64LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readUInt64BE(0) : buffer.readUInt64LE(0));
+        this.runTest(8, -20000000, def(buffer, v, bigEndian) => bigEndian ? buffer.writeInt64BE(0, v) : buffer.writeInt64LE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readInt64BE(0) : buffer.readInt64LE(0));
+
+        this.runTest(8, 234.34534, def(buffer, v, bigEndian) => bigEndian ? buffer.writeDoubleBE(0, v) : buffer.writeDoubleLE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readDoubleBE(0) : buffer.readDoubleLE(0));
+        this.runTest(8, -234.34534, def(buffer, v, bigEndian) => bigEndian ? buffer.writeDoubleBE(0, v) : buffer.writeDoubleLE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readDoubleBE(0) : buffer.readDoubleLE(0));
+
+        this.runTest(4, 1, def(buffer, v, bigEndian) => bigEndian ? buffer.writeFloatBE(0, v) : buffer.writeFloatLE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readFloatBE(0) : buffer.readFloatLE(0));
+        this.runTest(4, -1, def(buffer, v, bigEndian) => bigEndian ? buffer.writeFloatBE(0, v) : buffer.writeFloatLE(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readFloatBE(0) : buffer.readFloatLE(0));
+
+    }
+
+}
+
+TestBufferIntegers().run();

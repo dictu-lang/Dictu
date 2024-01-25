@@ -1,0 +1,15 @@
+/**
+* import.du
+*
+* General import file for all the Buffer tests
+*/
+
+// buffer.values and buffer.len are used a lot throughout the tests.
+import "allocate.du";
+import "set.du";
+import "get.du";
+import "resize.du";
+import "string.du";
+import "stringFuncs.du";
+import "subarray.du";
+import "integers.du";

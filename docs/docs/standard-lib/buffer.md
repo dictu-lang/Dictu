@@ -104,6 +104,16 @@ const len = buffer.len();
 print(len); // 9
 ```
 
+### Buffer.values() -> List
+
+Returns a list with the integer values of the buffer.
+```cs
+const buffer = Buffer.fromString("Dictu!").unwrap();
+const v = buffer.values();
+print(v); // [68, 105, 99, 116, 117, 33]
+```
+
+
 ### Buffer.writeString(Number, String) -> Result\<Nil>
 
 Sets a string into buffer given the starting index, if the string doesn't fit in the buffer a error is returned.

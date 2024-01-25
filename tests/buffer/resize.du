@@ -1,0 +1,36 @@
+/**
+* resize.du
+*
+* Testing the buffer.resize() methods
+*
+* .resize(Number) resizes the Buffer to the given size
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferResize < UnitTest {
+
+    testBufferResize() {
+        const b = Buffer.new(10).unwrap();
+        this.assertEquals(b.len(), 10);
+        this.assertEquals(b.values(), [0,0,0,0,0,0,0,0,0,0]);
+        b.resize(15);
+        this.assertEquals(b.len(), 15);
+        this.assertEquals(b.values(), [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
+        b.resize(1);
+        this.assertEquals(b.len(), 1);
+        this.assertEquals(b.values(), [0]);
+    }
+    testBufferResizeOutOfBounds() {
+        const b = Buffer.new(5).unwrap();
+        var res = b.resize(-1);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller then 2147483647");
+        res = b.resize(2147483647);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller then 2147483647");
+    }
+
+}
+
+TestBufferResize().run();

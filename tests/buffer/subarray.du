@@ -1,0 +1,46 @@
+/**
+* subarray.du
+*
+* Testing the buffer.subarray() method.
+*
+* .subarray(Number -> Optional, Number -> Optional) returns a subarray given optionally the index and end.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferSubArray < UnitTest {
+
+    testBufferSubarray() {
+        const b = Buffer.new(10).unwrap();
+        var sub = b.subarray(0);
+        this.assertEquals(sub.success(), true);
+        var v = sub.unwrap();
+        this.assertEquals(v.values(), b.values());
+        sub = b.subarray(5);
+        this.assertEquals(sub.success(), true);
+        v = sub.unwrap();
+        this.assertEquals(v.values(), [0,0,0,0,0]);
+    }
+    testBufferSubarrayStr() {
+        const b = Buffer.fromString("Dictu is awesome!").unwrap();
+        const sub = b.subarray(0, 5);
+        this.assertEquals(sub.success(), true);
+        const v = sub.unwrap();
+        this.assertEquals(v.string(), "Dictu");
+    }
+    testBufferSubarrayOutOfBounds() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        var res = b.subarray(25);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "start greater or equals then buffer length");
+        res = b.subarray(0, 25);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "end greater then buffer length");
+        res = b.subarray(0, 0);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "array length is 0");
+
+    }
+}
+
+TestBufferSubArray().run();
