@@ -25,7 +25,12 @@ class TestBufferIntegers < UnitTest {
         leArray.reverse();
         this.assertEquals(leArray, beArray);
     }
+
     testBufferIntegers() {
+
+        this.runTest(1, -123, def(buffer, v, bigEndian) => bigEndian ? buffer.writeInt8(0, v) : buffer.writeInt8(0, v),
+        def(buffer, bigEndian) => bigEndian ? buffer.readInt8(0) : buffer.readInt8(0));
+
         this.runTest(2, 2000, def(buffer, v, bigEndian) => bigEndian ? buffer.writeUInt16BE(0, v) : buffer.writeUInt16LE(0, v),
         def(buffer, bigEndian) => bigEndian ? buffer.readUInt16BE(0) : buffer.readUInt16LE(0));
         this.runTest(2, -4321, def(buffer, v, bigEndian) => bigEndian ? buffer.writeInt16BE(0, v) : buffer.writeInt16LE(0, v),

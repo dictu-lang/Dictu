@@ -138,6 +138,7 @@ print(sub) // "Dictu"
 
 Returns the u64(unsigned 8 byte integer in little endian) value given the starting index.
 Returns a result with the value or a error.
+**Note**: The maximum value supported is: `9007199254740992`, if a read of a larger value is attempted a error is returned.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
@@ -185,8 +186,8 @@ Returns a result with the value or a error.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
-buffer.writeUInt32LE(0, -1337);
-print(buffer.readUInt32LE(0).unwrap()) // -1337
+buffer.writeInt32LE(0, -1337);
+print(buffer.readInt32LE(0).unwrap()) // -1337
 ```
 
 ### Buffer.readInt16LE(Number) -> Result\<Number>
@@ -196,8 +197,20 @@ Returns a result with the value or a error.
 
 ```cs
 const buffer = Buffer.new(2).unwrap();
-buffer.writeUInt16LE(0, -1337);
-print(buffer.readUInt16LE(0).unwrap()) // -1337
+buffer.writeInt16LE(0, -1337);
+print(buffer.readInt16LE(0).unwrap()) // -1337
+```
+
+### Buffer.readInt8(Number) -> Result\<Number>
+
+Returns the i8(signed 1 byte integer) value given the starting index.
+Returns a result with the value or a error.
+**Note**: For the unsigned equivalent use get().
+
+```cs
+const buffer = Buffer.new(1).unwrap();
+buffer.writeUInt8(0, -12);
+print(buffer.readInt8(0).unwrap()) // -12
 ```
 
 ### Buffer.writeUInt64LE(Number, Number) -> Result\<Number>
@@ -252,6 +265,17 @@ Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(2).unwrap();
 buffer.writeInt16LE(0, 1337);
+```
+
+### Buffer.writeInt8(Number, Number) -> Result\<Number>
+
+Writes a i8(signed 1 byte integer) at the index(the first argument).
+Returns a result with the set value or a error.
+**Note**: For the unsigned equivalent use set().
+
+```cs
+const buffer = Buffer.new(1).unwrap();
+buffer.writeInt8(0, -12);
 ```
 
 ### Buffer.writeFloatLE(Number, Number) -> Result\<Number>
@@ -364,6 +388,73 @@ Returns a result with the set value or a error.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeDoubleBE(0, 14.34);
+```
+
+### Buffer.readUInt64BE(Number) -> Result\<Number>
+
+Returns the u64(unsigned 8 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+**Note**: The maximum value supported is: `9007199254740992`, if a read of a larger value is attempted a error is returned.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeUInt64BE(0, 12000);
+print(buffer.readUInt64BE(0).unwrap()) // 12000
+```
+
+### Buffer.readUInt32BE(Number) -> Result\<Number>
+
+Returns the u32(unsigned 4 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeUInt32BE(0, 1337);
+print(buffer.readUInt32BE(0).unwrap()) // 1337
+```
+
+### Buffer.readUInt16BE(Number) -> Result\<Number>
+
+Returns the u16(unsigned 2 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeUInt16BE(0, 1337);
+print(buffer.readUInt16BE(0).unwrap()) // 1337
+```
+
+### Buffer.readInt64BE(Number) -> Result\<Number>
+
+Returns the i64(signed 8 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(8).unwrap();
+buffer.writeInt64BE(0, -12000);
+print(buffer.readInt64BE(0).unwrap()) // -12000
+```
+
+### Buffer.readInt32BE(Number) -> Result\<Number>
+
+Returns the i32(signed 4 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(4).unwrap();
+buffer.writeInt32BE(0, -1337);
+print(buffer.readInt32BE(0).unwrap()) // -1337
+```
+
+### Buffer.readInt16BE(Number) -> Result\<Number>
+
+Returns the i16(signed 2 byte integer in big endian) value given the starting index.
+Returns a result with the value or a error.
+
+```cs
+const buffer = Buffer.new(2).unwrap();
+buffer.writeInt16BE(0, -1337);
+print(buffer.readInt16BE(0).unwrap()) // -1337
 ```
 
 ### Buffer.readFloatBE(Number) -> Result\<Number>

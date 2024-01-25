@@ -134,7 +134,35 @@ static Value bufferString(DictuVM *vm, int argCount, Value *args) {
 
     return OBJ_VAL(copyString(vm, (const char *)buffer->bytes, buffer->size));
 }
+static Value bufferWriteint8(DictuVM *vm, int argCount, Value *args) {
+    Buffer *buffer = AS_BUFFER(args[0]);
+    if (argCount != 2) {
+        runtimeError(vm, "writeInt8() takes 2 argument");
+        return EMPTY_VAL;
+    }
 
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm,
+                      "writeInt8() index argument must be a number");
+        return EMPTY_VAL;
+    }
+    if (!IS_NUMBER(args[2])) {
+        runtimeError(vm,
+                    "writeInt8() value argument must be a number");
+        return EMPTY_VAL;
+    }
+    double index = AS_NUMBER(args[1]);
+    double value = AS_NUMBER(args[2]);
+
+    int8_t correctVal = (int8_t)value;
+
+    if (!writeInternal(
+            buffer, index,
+            swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
+            sizeof(correctVal)))
+        return newResultError(vm, "index must be smaller then buffer size - 1");
+    return newResultSuccess(vm, NUMBER_VAL(correctVal));
+}
 static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
@@ -487,10 +515,13 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "index must be smaller then buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
+
+    // Above this value theres no guarantee that the integer value is correctly represented,
+    // so if are above that we don't allow it, 
     const uint64_t MAX_VALUE = 9007199254740992;
     if (value > MAX_VALUE){
         return newResultError(vm,
-                              "value too large for internal internal representation");
+                              "value too large for internal representation");
     }
     return newResultSuccess(vm, NUMBER_VAL(value));
 }
@@ -616,6 +647,28 @@ static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
         return newResultError(vm, "index must be smaller then buffer size - 2");
+    memcpy(&value, ptr, sizeof(value));
+    swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
+    return newResultSuccess(vm, NUMBER_VAL(value));
+}
+
+static Value bufferReadint8(DictuVM *vm, int argCount, Value *args) {
+    Buffer *buffer = AS_BUFFER(args[0]);
+    if (argCount != 1) {
+        runtimeError(vm, "readInt8() takes 1 argument");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        runtimeError(vm, "readInt8() index argument must be a number");
+        return EMPTY_VAL;
+    }
+    double index = AS_NUMBER(args[1]);
+
+    int8_t value;
+    uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
+    if (ptr == NULL)
+        return newResultError(vm, "index must be smaller then buffer size - 1");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -897,6 +950,7 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
     defineNative(vm, &abstract->values, "readInt64LE", bufferReadint64LE);
     defineNative(vm, &abstract->values, "readInt32LE", bufferReadint32LE);
     defineNative(vm, &abstract->values, "readInt16LE", bufferReadint16LE);
+    defineNative(vm, &abstract->values, "readInt8", bufferReadint8);
 
     defineNative(vm, &abstract->values, "readFloatLE", bufferReadfloat32LE);
     defineNative(vm, &abstract->values, "readDoubleLE", bufferReadfloat64LE);
@@ -907,6 +961,7 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
     defineNative(vm, &abstract->values, "writeInt64LE", bufferWriteint64LE);
     defineNative(vm, &abstract->values, "writeInt32LE", bufferWriteint32LE);
     defineNative(vm, &abstract->values, "writeInt16LE", bufferWriteint16LE);
+    defineNative(vm, &abstract->values, "writeInt8", bufferWriteint8);
 
     defineNative(vm, &abstract->values, "writeFloatLE", bufferWritefloat32LE);
     defineNative(vm, &abstract->values, "writeDoubleLE", bufferWritefloat64LE);
