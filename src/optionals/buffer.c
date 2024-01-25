@@ -486,11 +486,12 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
     if (ptr == NULL)
         return newResultError(vm, "index must be smaller then buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
-    const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
-    if (value > MAX_VALUE)
-        return newResultError(vm,
-                              "value would overflow internal representation");
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
+    const uint64_t MAX_VALUE = 9007199254740992;
+    if (value > MAX_VALUE){
+        return newResultError(vm,
+                              "value too large for internal internal representation");
+    }
     return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
@@ -565,10 +566,7 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
     if (ptr == NULL)
         return newResultError(vm, "index must be smaller then buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
-    const uint64_t MAX_VALUE = (uint64_t)DBL_MAX;
-    if ((uint64_t)value > MAX_VALUE)
-        return newResultError(vm,
-                              "value would overflow internal representation");
+
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
 }
