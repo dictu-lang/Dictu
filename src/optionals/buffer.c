@@ -1,5 +1,4 @@
 #include "buffer.h"
-#include <float.h>
 
 typedef struct {
     uint8_t *bytes;

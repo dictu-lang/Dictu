@@ -1,11 +1,9 @@
 #ifndef dictu_buffer_h
 #define dictu_buffer_h
 
-#include <string.h>
 
 #include "optionals.h"
 #include "../vm/vm.h"
-#include <stdint.h>
 
 #define BUFFER_SIZE_MAX 2147483647
 
