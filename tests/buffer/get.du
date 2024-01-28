@@ -3,7 +3,7 @@
 *
 * Testing the buffer.get() method
 *
-* .get(Number) returns the given vaue at the index.
+* .get(Number) returns the given value at the index.
 */
 from UnitTest import UnitTest;
 import Buffer;

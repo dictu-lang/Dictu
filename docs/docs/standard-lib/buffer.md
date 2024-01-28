@@ -47,7 +47,7 @@ print(buffer);
 
 ### Buffer.resize(Number) -> Result\<Number>
 
-Resizes the buffer to the given size, the argument needs to be greater then 0 or the function will return a error.
+Resizes the buffer to the given size. The argument needs to be greater than 0 or the function will return an error.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
@@ -116,7 +116,7 @@ print(v); // [68, 105, 99, 116, 117, 33]
 
 ### Buffer.writeString(Number, String) -> Result\<Nil>
 
-Sets a string into buffer given the starting index, if the string doesn't fit in the buffer a error is returned.
+Sets a string into buffer given the starting index. If the string doesn't fit in the buffer an error is returned.
 ```cs
 const buffer = Buffer.new(6).unwrap();
 buffer.writeString(0, "Dictu!");
@@ -137,7 +137,7 @@ print(sub) // "Dictu"
 ### Buffer.readUInt64LE(Number) -> Result\<Number>
 
 Returns the u64(unsigned 8 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 **Note**: The maximum value supported is: `9007199254740992`, if a read of a larger value is attempted a error is returned.
 
 ```cs
@@ -149,7 +149,7 @@ print(buffer.readUInt64LE(0).unwrap()) // 12000
 ### Buffer.readUInt32LE(Number) -> Result\<Number>
 
 Returns the u32(unsigned 4 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -160,7 +160,7 @@ print(buffer.readUInt32LE(0).unwrap()) // 1337
 ### Buffer.readUInt16LE(Number) -> Result\<Number>
 
 Returns the u16(unsigned 2 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(2).unwrap();
@@ -171,7 +171,7 @@ print(buffer.readUInt16LE(0).unwrap()) // 1337
 ### Buffer.readInt64LE(Number) -> Result\<Number>
 
 Returns the i64(signed 8 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
@@ -182,7 +182,7 @@ print(buffer.readInt64LE(0).unwrap()) // -12000
 ### Buffer.readInt32LE(Number) -> Result\<Number>
 
 Returns the i32(signed 4 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -193,7 +193,7 @@ print(buffer.readInt32LE(0).unwrap()) // -1337
 ### Buffer.readInt16LE(Number) -> Result\<Number>
 
 Returns the i16(signed 2 byte integer in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(2).unwrap();
@@ -204,7 +204,7 @@ print(buffer.readInt16LE(0).unwrap()) // -1337
 ### Buffer.readInt8(Number) -> Result\<Number>
 
 Returns the i8(signed 1 byte integer) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 **Note**: For the unsigned equivalent use get().
 
 ```cs
@@ -216,7 +216,7 @@ print(buffer.readInt8(0).unwrap()) // -12
 ### Buffer.writeUInt64LE(Number, Number) -> Result\<Number>
 
 Writes a u64(unsigned 8 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeUInt64LE(0, 12000);
@@ -225,7 +225,7 @@ buffer.writeUInt64LE(0, 12000);
 ### Buffer.writeUInt32LE(Number, Number) -> Result\<Number>
 
 Writes a u32(unsigned 4 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeUInt32LE(0, 1337);
@@ -234,7 +234,7 @@ buffer.writeUInt32LE(0, 1337);
 ### Buffer.writeUInt16LE(Number, Number) -> Result\<Number>
 
 Writes a u16(unsigned 2 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(2).unwrap();
 buffer.writeUInt16LE(0, 1337);
@@ -243,7 +243,7 @@ buffer.writeUInt16LE(0, 1337);
 ### Buffer.writeInt64LE(Number, Number) -> Result\<Number>
 
 Writes a i64(signed 8 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeInt64LE(0, 12000);
@@ -252,7 +252,7 @@ buffer.writeInt64LE(0, 12000);
 ### Buffer.writeInt32LE(Number, Number) -> Result\<Number>
 
 Writes a i32(signed 4 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeInt32LE(0, 1337);
@@ -261,7 +261,7 @@ buffer.writeInt32LE(0, 1337);
 ### Buffer.writeInt16LE(Number, Number) -> Result\<Number>
 
 Writes a i16(signed 2 byte integer in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(2).unwrap();
 buffer.writeInt16LE(0, 1337);
@@ -270,7 +270,7 @@ buffer.writeInt16LE(0, 1337);
 ### Buffer.writeInt8(Number, Number) -> Result\<Number>
 
 Writes a i8(signed 1 byte integer) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 **Note**: For the unsigned equivalent use set().
 
 ```cs
@@ -281,7 +281,7 @@ buffer.writeInt8(0, -12);
 ### Buffer.writeFloatLE(Number, Number) -> Result\<Number>
 
 Writes a float(4 byte signed floating point number in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeFloatLE(0, 14.34);
@@ -290,7 +290,7 @@ buffer.writeFloatLE(0, 14.34);
 ### Buffer.writeDoubleLE(Number, Number) -> Result\<Number>
 
 Writes a double(8 byte signed floating point number in little endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeDoubleLE(0, 14.34);
@@ -299,7 +299,7 @@ buffer.writeDoubleLE(0, 14.34);
 ### Buffer.readFloatLE(Number) -> Result\<Number>
 
 Returns the float(signed 4 byte floating point number in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -310,7 +310,7 @@ print(buffer.readFloatLE(0).unwrap()) // 14.34
 ### Buffer.readDoubleLE(Number) -> Result\<Number>
 
 Returns the double(signed 8 byte floating point number in little endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
@@ -321,7 +321,7 @@ print(buffer.readDoubleLE(0).unwrap()) // 14.34
 ### Buffer.writeUInt64BE(Number, Number) -> Result\<Number>
 
 Writes a u64(unsigned 8 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeUInt64BE(0, 12000);
@@ -330,7 +330,7 @@ buffer.writeUInt64BE(0, 12000);
 ### Buffer.writeUInt32BE(Number, Number) -> Result\<Number>
 
 Writes a u32(unsigned 4 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeUInt32BE(0, 1337);
@@ -339,7 +339,7 @@ buffer.writeUInt32BE(0, 1337);
 ### Buffer.writeUInt16BE(Number, Number) -> Result\<Number>
 
 Writes a u16(unsigned 2 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(2).unwrap();
 buffer.writeUInt16BE(0, 1337);
@@ -348,7 +348,7 @@ buffer.writeUInt16BE(0, 1337);
 ### Buffer.writeInt64BE(Number, Number) -> Result\<Number>
 
 Writes a i64(signed 8 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeInt64BE(0, 12000);
@@ -357,7 +357,7 @@ buffer.writeInt64BE(0, 12000);
 ### Buffer.writeInt32BE(Number, Number) -> Result\<Number>
 
 Writes a i32(signed 4 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeInt32BE(0, 1337);
@@ -366,7 +366,7 @@ buffer.writeInt32BE(0, 1337);
 ### Buffer.writeInt16BE(Number, Number) -> Result\<Number>
 
 Writes a i16(signed 2 byte integer in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(2).unwrap();
 buffer.writeInt16BE(0, 1337);
@@ -375,7 +375,7 @@ buffer.writeInt16BE(0, 1337);
 ### Buffer.writeFloatBE(Number, Number) -> Result\<Number>
 
 Writes a float(4 byte signed floating point number in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(4).unwrap();
 buffer.writeFloatBE(0, 14.34);
@@ -384,7 +384,7 @@ buffer.writeFloatBE(0, 14.34);
 ### Buffer.writeDoubleBE(Number, Number) -> Result\<Number>
 
 Writes a double(8 byte signed floating point number in big endian) at the index(the first argument).
-Returns a result with the set value or a error.
+Returns a result with the set value or an error incase the byte size from the start index would exceed the buffer bounds.
 ```cs
 const buffer = Buffer.new(8).unwrap();
 buffer.writeDoubleBE(0, 14.34);
@@ -393,7 +393,7 @@ buffer.writeDoubleBE(0, 14.34);
 ### Buffer.readUInt64BE(Number) -> Result\<Number>
 
 Returns the u64(unsigned 8 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 **Note**: The maximum value supported is: `9007199254740992`, if a read of a larger value is attempted a error is returned.
 
 ```cs
@@ -405,7 +405,7 @@ print(buffer.readUInt64BE(0).unwrap()) // 12000
 ### Buffer.readUInt32BE(Number) -> Result\<Number>
 
 Returns the u32(unsigned 4 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -416,7 +416,7 @@ print(buffer.readUInt32BE(0).unwrap()) // 1337
 ### Buffer.readUInt16BE(Number) -> Result\<Number>
 
 Returns the u16(unsigned 2 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(2).unwrap();
@@ -427,7 +427,7 @@ print(buffer.readUInt16BE(0).unwrap()) // 1337
 ### Buffer.readInt64BE(Number) -> Result\<Number>
 
 Returns the i64(signed 8 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
@@ -438,7 +438,7 @@ print(buffer.readInt64BE(0).unwrap()) // -12000
 ### Buffer.readInt32BE(Number) -> Result\<Number>
 
 Returns the i32(signed 4 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -449,7 +449,7 @@ print(buffer.readInt32BE(0).unwrap()) // -1337
 ### Buffer.readInt16BE(Number) -> Result\<Number>
 
 Returns the i16(signed 2 byte integer in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(2).unwrap();
@@ -460,7 +460,7 @@ print(buffer.readInt16BE(0).unwrap()) // -1337
 ### Buffer.readFloatBE(Number) -> Result\<Number>
 
 Returns the float(signed 4 byte floating point number in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(4).unwrap();
@@ -471,7 +471,7 @@ print(buffer.readFloatBE(0).unwrap()) // 14.34
 ### Buffer.readDoubleBE(Number) -> Result\<Number>
 
 Returns the double(signed 8 byte floating point number in big endian) value given the starting index.
-Returns a result with the value or a error.
+If the given index + byte length does exceed the buffer bounds an error is returned.
 
 ```cs
 const buffer = Buffer.new(8).unwrap();
