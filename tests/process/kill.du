@@ -18,7 +18,7 @@ class TestProcessKill < UnitTest {
     }
 
     testProcessKillNoSignal() {
-        Process.exec(["sleep", "100"]);
+        Process.exec(["sleep", "3600"]);
 
         const out = Process.run(["pgrep", "sleep"], true).unwrap();
         const pids = out.split("\n");
