@@ -598,6 +598,13 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
     memcpy(&value, ptr, sizeof(value));
 
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
+    // Above this value theres no guarantee that the integer value is correctly represented,
+    // so if are above that we don't allow it, 
+    const int64_t MAX_VALUE = 9007199254740992;
+    if (value > MAX_VALUE || value < -MAX_VALUE){
+        return newResultError(vm,
+                              "value too large for internal representation");
+    }
     return newResultSuccess(vm, NUMBER_VAL(value));
 }
 
