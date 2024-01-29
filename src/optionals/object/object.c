@@ -69,11 +69,6 @@ static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
 }
 
 Value createObjectModule(DictuVM *vm) {
-    ObjString *name = copyString(vm, "Object", 6);
-    push(vm, OBJ_VAL(name));
-    ObjModule *module = newModule(vm, name);
-    push(vm, OBJ_VAL(module));
-
     ObjClosure *closure = compileModuleToClosure(vm, "Object", DICTU_OBJECT_SOURCE);
 
     if (closure == NULL) {
@@ -89,7 +84,7 @@ Value createObjectModule(DictuVM *vm) {
     defineNative(vm, &closure->function->module->values, "getClassRef", objectGetClassRef);
     defineNative(vm, &closure->function->module->values, "hash", objectHash);
 
-    defineNative(vm, &module->values, "prettyPrint", objectPrettyPrint);
+    defineNative(vm, &closure->function->module->values, "prettyPrint", objectPrettyPrint);
 
     pop(vm);
 
