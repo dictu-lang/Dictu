@@ -24,21 +24,12 @@ char *bufferToString(ObjAbstract *abstract) {
     return bufferString;
 }
 
-void grayBuffer(DictuVM *vm, ObjAbstract *abstract) {
-    (void)vm;
-    Buffer *ffi = (Buffer *)abstract->data;
-
-    if (ffi == NULL)
-        return;
-}
-
 uint8_t *swap(uint8_t *ptr, size_t len, bool bigEndian) {
     if (len < 2)
         return ptr;
     if (!bigEndian && !IS_BIG_ENDIAN) {
         return ptr;
     } else if (IS_BIG_ENDIAN && bigEndian) {
-
         return ptr;
     }
     int start = 0;
@@ -994,7 +985,6 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
     defineNative(vm, &abstract->values, "writeDoubleBE", bufferWritefloat64BE);
 
     abstract->data = buffer;
-    abstract->grayFunc = grayBuffer;
     pop(vm);
 
     return abstract;
