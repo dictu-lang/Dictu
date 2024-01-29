@@ -35,13 +35,13 @@ class TestBufferStringFuncs < UnitTest {
         const b = Buffer.fromString("Dictu!").unwrap();
         var res = b.readString(23);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "start greater or equals then buffer length");
+        this.assertEquals(res.unwrapError(), "start greater or equals than buffer length");
         res = b.readString(3,3);
         this.assertEquals(res.success(), false);
         this.assertEquals(res.unwrapError(), "string length is 0");
         res = b.readString(3,34);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "end greater then buffer length");
+        this.assertEquals(res.unwrapError(), "end greater than buffer length");
     }
 
 }

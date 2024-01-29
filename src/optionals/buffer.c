@@ -85,7 +85,7 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
     double capacity = AS_NUMBER(args[1]);
     if (capacity <= 0 || capacity >= BUFFER_SIZE_MAX) {
         return newResultError(
-            vm, "size must be greater than 0 and smaller then 2147483647");
+            vm, "size must be greater than 0 and smaller than 2147483647");
     }
     Buffer *buffer = AS_BUFFER(args[0]);
     buffer->bytes = realloc(buffer->bytes, capacity);
@@ -159,7 +159,7 @@ static Value bufferWriteint8(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 1");
+        return newResultError(vm, "index must be smaller than buffer size - 1");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
@@ -194,7 +194,7 @@ static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 2");
+        return newResultError(vm, "index must be smaller than buffer size - 2");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -229,7 +229,7 @@ static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -264,7 +264,7 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -297,7 +297,7 @@ static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -331,7 +331,7 @@ static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -365,7 +365,7 @@ static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 2");
+        return newResultError(vm, "index must be smaller than buffer size - 2");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -399,7 +399,7 @@ static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -435,7 +435,7 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
             buffer, index,
             swap((uint8_t *)&correctVal, sizeof(correctVal), buffer->bigEndian),
             sizeof(correctVal)))
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     return newResultSuccess(vm, NUMBER_VAL(correctVal));
 }
 
@@ -459,7 +459,7 @@ static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
 
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
 
@@ -485,7 +485,7 @@ static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
 
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -511,7 +511,7 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
 
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
 
@@ -544,7 +544,7 @@ static Value bufferReadUint32LE(DictuVM *vm, int argCount, Value *args) {
     uint32_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -570,7 +570,7 @@ static Value bufferReadUint16LE(DictuVM *vm, int argCount, Value *args) {
     uint16_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 2");
+        return newResultError(vm, "index must be smaller than buffer size - 2");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -594,7 +594,7 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
     int64_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 8");
+        return newResultError(vm, "index must be smaller than buffer size - 8");
     memcpy(&value, ptr, sizeof(value));
 
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
@@ -627,7 +627,7 @@ static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
     int32_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 4");
+        return newResultError(vm, "index must be smaller than buffer size - 4");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -652,7 +652,7 @@ static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
     int16_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 2");
+        return newResultError(vm, "index must be smaller than buffer size - 2");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -674,7 +674,7 @@ static Value bufferReadint8(DictuVM *vm, int argCount, Value *args) {
     int8_t value;
     uint8_t *ptr = getReadPtr(buffer, index, sizeof(value));
     if (ptr == NULL)
-        return newResultError(vm, "index must be smaller then buffer size - 1");
+        return newResultError(vm, "index must be smaller than buffer size - 1");
     memcpy(&value, ptr, sizeof(value));
     swap((uint8_t *)&value, sizeof(value), buffer->bigEndian);
     return newResultSuccess(vm, NUMBER_VAL(value));
@@ -772,7 +772,7 @@ static Value bufferGet(DictuVM *vm, int argCount, Value *args) {
     }
     Buffer *buffer = AS_BUFFER(args[0]);
     if (index >= buffer->size) {
-        return newResultError(vm, "index must be smaller then buffer size");
+        return newResultError(vm, "index must be smaller than buffer size");
     }
 
     return newResultSuccess(vm, NUMBER_VAL(buffer->bytes[(size_t)index]));
@@ -801,7 +801,7 @@ static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
     }
     Buffer *buffer = AS_BUFFER(args[0]);
     if (index >= buffer->size) {
-        return newResultError(vm, "index must be smaller then buffer size");
+        return newResultError(vm, "index must be smaller than buffer size");
     }
 
     buffer->bytes[(size_t)index] = (uint8_t)value;
@@ -833,7 +833,7 @@ static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
     }
     Buffer *buffer = AS_BUFFER(args[0]);
     if (index >= buffer->size) {
-        return newResultError(vm, "index must be smaller then buffer size");
+        return newResultError(vm, "index must be smaller than buffer size");
     }
 
     if (buffer->size - index < str->length) {
@@ -857,7 +857,7 @@ static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
         double startParam = AS_NUMBER(args[1]);
         if (startParam >= buffer->size) {
             return newResultError(vm,
-                                  "start greater or equals then buffer length");
+                                  "start greater or equals than buffer length");
         } else {
             start = startParam;
             length = end - start;
@@ -870,7 +870,7 @@ static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
         }
         double endParam = AS_NUMBER(args[2]);
         if (endParam > buffer->size) {
-            return newResultError(vm, "end greater then buffer length");
+            return newResultError(vm, "end greater than buffer length");
         } else {
             end = endParam;
             length = end - start;
@@ -897,7 +897,7 @@ static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
         double startParam = AS_NUMBER(args[1]);
         if (startParam >= buffer->size) {
             return newResultError(vm,
-                                  "start greater or equals then buffer length");
+                                  "start greater or equals than buffer length");
         } else {
             start = startParam;
             length = end - start;
@@ -910,7 +910,7 @@ static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
         }
         double endParam = AS_NUMBER(args[2]);
         if (endParam > buffer->size) {
-            return newResultError(vm, "end greater then buffer length");
+            return newResultError(vm, "end greater than buffer length");
         } else {
             end = endParam;
             length = end - start;
@@ -1013,7 +1013,7 @@ static Value newBuffer(DictuVM *vm, int argCount, Value *args) {
     double capacity = AS_NUMBER(args[0]);
     if (capacity <= 0 || capacity >= BUFFER_SIZE_MAX) {
         return newResultError(
-            vm, "capacity must be greater than 0 and less then 2147483647");
+            vm, "capacity must be greater than 0 and less than 2147483647");
     }
 
     return newResultSuccess(vm, OBJ_VAL(newBufferObj(vm, capacity)));
@@ -1032,7 +1032,7 @@ static Value newBufferFromString(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *str = AS_STRING(args[0]);
     if (str->length <= 0) {
-        return newResultError(vm, "string length needs to be greater then 0");
+        return newResultError(vm, "string length needs to be greater than 0");
     }
     ObjAbstract *b = newBufferObj(vm, str->length);
     Buffer *buffer = (Buffer *)b->data;

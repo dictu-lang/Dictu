@@ -32,10 +32,10 @@ class TestBufferSubArray < UnitTest {
         const b = Buffer.fromString("Dictu!").unwrap();
         var res = b.subarray(25);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "start greater or equals then buffer length");
+        this.assertEquals(res.unwrapError(), "start greater or equals than buffer length");
         res = b.subarray(0, 25);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "end greater then buffer length");
+        this.assertEquals(res.unwrapError(), "end greater than buffer length");
         res = b.subarray(0, 0);
         this.assertEquals(res.success(), false);
         this.assertEquals(res.unwrapError(), "array length is 0");

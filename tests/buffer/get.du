@@ -22,7 +22,7 @@ class TestBufferGet < UnitTest {
         const b = Buffer.new(4).unwrap();
         var res = b.get(4);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "index must be smaller then buffer size");
+        this.assertEquals(res.unwrapError(), "index must be smaller than buffer size");
         res = b.get(-1);
         this.assertEquals(res.success(), false);
         this.assertEquals(res.unwrapError(), "index must be greater than -1");

@@ -25,10 +25,10 @@ class TestBufferResize < UnitTest {
         const b = Buffer.new(5).unwrap();
         var res = b.resize(-1);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller then 2147483647");
+        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller than 2147483647");
         res = b.resize(2147483647);
         this.assertEquals(res.success(), false);
-        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller then 2147483647");
+        this.assertEquals(res.unwrapError(), "size must be greater than 0 and smaller than 2147483647");
     }
 
 }
