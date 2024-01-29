@@ -65,7 +65,17 @@ static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    return OBJ_VAL(stringify(vm, argCount, args));
+    Value out = stringify(vm, argCount, args);
+    ObjResult *res = AS_RESULT(out);
+    if (res->status == ERR) {
+        runtimeError(vm, AS_CSTRING(res->value));
+        return EMPTY_VAL;
+    }
+    
+    printValue(res->value);
+    printf("\n");
+
+    return NIL_VAL;
 }
 
 Value createObjectModule(DictuVM *vm) {
