@@ -12,7 +12,7 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity);
 
 void freeBuffer(DictuVM *vm, ObjAbstract *abstract) {
     Buffer *buffer = (Buffer *)abstract->data;
-    free(buffer->bytes);
+    FREE_ARRAY(vm, uint8_t, buffer->bytes, buffer->size);
     FREE(vm, Buffer, abstract->data);
 }
 
@@ -88,7 +88,7 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
             vm, "size must be greater than 0 and smaller than 2147483647");
     }
     Buffer *buffer = AS_BUFFER(args[0]);
-    buffer->bytes = realloc(buffer->bytes, capacity);
+    buffer->bytes = reallocate(vm, buffer->bytes, buffer->size, capacity);
     if (capacity > buffer->size) {
         // 0 init everything if we grew the buffer
         size_t added = capacity - buffer->size;
@@ -933,7 +933,8 @@ ObjAbstract *newBufferObj(DictuVM *vm, double capacity) {
 
     Buffer *buffer = ALLOCATE(vm, Buffer, 1);
     buffer->bigEndian = false;
-    buffer->bytes = calloc(1, capacity);
+    buffer->bytes = ALLOCATE(vm, uint8_t, capacity);
+    memset(buffer->bytes, 0, capacity);
     buffer->size = capacity;
 
     /**
