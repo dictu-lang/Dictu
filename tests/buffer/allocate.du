@@ -1,0 +1,27 @@
+/**
+* allocate.du
+*
+* Testing the buffer.new() and buffer.fromString() methods
+*
+* .new(Number) creates a new Buffer with the given size.
+* .newFromString(String) creates a Buffer from the given String.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferAllocate < UnitTest {
+
+    testBufferAllocate() {
+        const b = Buffer.new(10).unwrap();
+        this.assertEquals(b.len(), 10);
+        this.assertEquals(b.values(), [0,0,0,0,0,0,0,0,0,0]);
+    }
+    testBufferAllocateString() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        this.assertEquals(b.len(), 6);
+        this.assertEquals(b.string(), "Dictu!");
+    }
+
+}
+
+TestBufferAllocate().run();
