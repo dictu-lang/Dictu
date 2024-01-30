@@ -62,21 +62,21 @@ This method will return a string of the object's hash value.
 Object.hash("Dictu");
 ```
 
-### Object.prettyPrint(Value, Number: indent -> Optional) -> Result\<String>
+### Object.prettyPrint(Value, Number: indent -> Optional)
 
-This method will return a string representation of the given value.
+This method will output to stdout a string representation of the given value.
 
 **NOTE** Strings, dicts, lists, numbers, booleans, and nil are valid values for pretty printing at this time.
 
 ```cs
-Object.prettyPrint([1, 2, 3]).unwrap();
+Object.prettyPrint([1, 2, 3]);
 
 // Output
 '[1, 2, 3]'
 ```
 
 ```cs
-Object.prettyPrint({"a": 1}, 4).unwrap();
+Object.prettyPrint({"a": 1}, 4);
 
 // Output
 '
