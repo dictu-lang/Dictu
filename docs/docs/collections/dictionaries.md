@@ -146,7 +146,7 @@ myDict.forEach(def (key, value) => {
 });
 ```
 
-### dict.merge(Dict)
+### dict.merge(Dict) -> Dict
 
 To merge two dicts together we use `.merge`. This operation will take a shallow copy of the dict the `.merge` method
 was called on and add any items from the dictionary passed into the method. If there are keys that exist in both dictionaries
@@ -159,4 +159,20 @@ const dictTwo = {"key3": 4,"key1":0};
 const mergedDict = dictOne.merge(dictTwo);
 
 mergedDict; //{"key2": 3, "key": 1, "key3": 4, "key1": 0}
+```
+
+### dict.toObj(Dict, Object) -> Object
+
+Returns an object created from the given dict and class ref. Dictionary fields that aren't strings are converted to strings and set on the object. To retrieve those fields, use the `.getAttribute(String)` method.
+
+```cs
+class A {}
+
+const dict = {"key": 1, "key1": 2, "key2": 3};
+const obj = dict.toObj(A());
+
+obj; // <A instance>
+obj.key // 1
+obj.key1 // 2
+obj.key2 // 3
 ```
