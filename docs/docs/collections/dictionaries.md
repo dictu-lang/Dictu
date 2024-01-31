@@ -38,14 +38,14 @@ Updating a value within a dictionary uses the same syntax, except you supply a v
 
 ```cs
 var myDict = {"key": 1, "key1": true};
-var myDict["key"] = false; // {"key": false, "key1": true}
+myDict["key"] = false; // {"key": false, "key1": true}
 ```
 
 Adding a value to a dictionary is the same as updating a value, however if the key does not exist it is created.
 
 ```cs
 var myDict = {"key": 1, "key1": true};
-var myDict["key2"] = nil; // {"key": false, "key1": true, "key3": nil}
+myDict["key2"] = nil; // {"key": 1, "key1": true, "key2": nil}
 ```
 
 ### dict.get(String, value: default -> Optional) -> Dict
