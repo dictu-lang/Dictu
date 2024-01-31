@@ -4,10 +4,6 @@
  *
  * We should always strive to write methods in C where possible.
  */
-
-import Object;
-
-
 def forEach(dict, func) {
     const dictKeys = dict.keys();
 
