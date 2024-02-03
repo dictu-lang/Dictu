@@ -1,27 +1,59 @@
 #include "ffi.h"
 #include <dlfcn.h>
 
-
 typedef struct {
-    void* library;
-    char* path;
+    void *library;
+    char *path;
     int size;
-    char** names;
+    char **names;
 } FFIInstance;
 
 typedef struct _vm_external vm_external;
 
 typedef Value function_definition_t(DictuVM *vm, int argCount, Value *args);
+typedef int init_func_definition_t(void **function_ptrs);
 
-#define AS_FFI_INSTANCE(v) ((FFIInstance*)AS_ABSTRACT(v)->data)
+#define AS_FFI_INSTANCE(v) ((FFIInstance *)AS_ABSTRACT(v)->data)
 
+void *ffi_function_pointers[] = {
+    &copyString,
+    &newList,
+    &newDict,
+    &newSet,
+    &newFile,
+    &newAbstract,
+    &newResult,
+    &newResultSuccess,
+    &newResultError,
+    &push,
+    &peek,
+    &runtimeError,
+    &pop,
+    &isFalsey,
+    &valuesEqual,
+    &initValueArray,
+    &writeValueArray,
+    &freeValueArray,
+    &dictSet,
+    &dictGet,
+    &dictDelete,
+    &setGet,
+    &setInsert,
+    &setDelete,
+    &valueToString,
+    &valueTypeToString,
+    &printValue,
+    &printValueError,
+    &compareStringLess,
+    &compareStringGreater
+};
 
 void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
-    FFIInstance *instance = (FFIInstance*)abstract->data;
+    FFIInstance *instance = (FFIInstance *)abstract->data;
     free(instance->path);
-    if(instance->size > 0){
-        for(int i = 0; i < instance->size; i++){
-            if(instance->names[i] != NULL)
+    if (instance->size > 0) {
+        for (int i = 0; i < instance->size; i++) {
+            if (instance->names[i] != NULL)
                 free(instance->names[i]);
         }
         free(instance->names);
@@ -33,44 +65,45 @@ void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
 char *ffiToString(ObjAbstract *abstract) {
     UNUSED(abstract);
 
-    char *ffiString = malloc(sizeof(char) * 11+3);
-    snprintf(ffiString, 11+3, "<FFIInstance>");
+    char *ffiString = malloc(sizeof(char) * 11 + 3);
+    snprintf(ffiString, 11 + 3, "<FFIInstance>");
     return ffiString;
 }
 
 void grayFFI(DictuVM *vm, ObjAbstract *abstract) {
     (void)vm;
-    FFIInstance *ffi = (FFIInstance*)abstract->data;
+    FFIInstance *ffi = (FFIInstance *)abstract->data;
 
-    if (ffi == NULL) return;
-
+    if (ffi == NULL)
+        return;
 }
 static Value ffiInstanceInvoke(DictuVM *vm, int argCount, Value *args) {
-    if(argCount < 1){
-        runtimeError(vm, "invoke() takes at least one argument (%d given)", argCount-1);
+    if (argCount < 1) {
+        runtimeError(vm, "invoke() takes at least one argument (%d given)",
+                     argCount - 1);
         return EMPTY_VAL;
     }
-    FFIInstance* instance = AS_FFI_INSTANCE(args[0]);
-    ObjString* symbol = AS_STRING(args[1]);
+    FFIInstance *instance = AS_FFI_INSTANCE(args[0]);
+    ObjString *symbol = AS_STRING(args[1]);
     bool found = false;
-    for(int i = 0; i < instance->size; i++) {
-        if(instance->names[i]) {
-            if(strcmp(instance->names[i], symbol->chars) == 0){
+    for (int i = 0; i < instance->size; i++) {
+        if (instance->names[i]) {
+            if (strcmp(instance->names[i], symbol->chars) == 0) {
                 found = true;
                 break;
             }
         }
     }
-    if(!found){
+    if (!found) {
         runtimeError(vm, "symbol not found: %s", symbol->chars);
         return EMPTY_VAL;
     }
-    function_definition_t* ptr = dlsym(instance->library, symbol->chars);
+    function_definition_t *ptr = dlsym(instance->library, symbol->chars);
     Value res = EMPTY_VAL;
-    if(argCount == 1)
+    if (argCount == 1)
         res = ptr(vm, 0, NULL);
     else
-        res = ptr(vm, argCount-1, args+2);
+        res = ptr(vm, argCount - 1, args + 2);
     return res;
 }
 
@@ -79,35 +112,43 @@ static Value load(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "load() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
-    ObjString* path = AS_STRING(args[0]);
+    ObjString *path = AS_STRING(args[0]);
     void *library = dlopen(path->chars, RTLD_LAZY);
-    if(!library) {
+    if (!library) {
         runtimeError(vm, "Couldn't load shared object: %s", path->chars);
         return EMPTY_VAL;
     }
-    ObjList* symbols = AS_LIST(args[1]);
+    init_func_definition_t *init_func =
+        dlsym(library, "dictu_internal_ffi_init");
+    // call init function to give ffi module the required pointers to the function of the vm.
+    if (!init_func || init_func((void**)&ffi_function_pointers) != 0) {
+        runtimeError(vm, "Couldn't initialize ffi api: %s", path->chars);
+        dlclose(library);
+        return EMPTY_VAL;
+    }
+    ObjList *symbols = AS_LIST(args[1]);
     ObjAbstract *abstract = newAbstract(vm, freeFFI, ffiToString);
     push(vm, OBJ_VAL(abstract));
     FFIInstance *instance = ALLOCATE(vm, FFIInstance, 1);
-    instance->path = malloc(path->length+1);
+    instance->path = malloc(path->length + 1);
     instance->path[path->length] = '\0';
     memcpy(instance->path, path->chars, path->length);
 
     instance->library = library;
     instance->size = symbols->values.count;
-    if(instance->size > 0) {
-        instance->names = malloc(sizeof(char*) * instance->size);
-        for(int i = 0; i< symbols->values.count; i+= 1){
+    if (instance->size > 0) {
+        instance->names = malloc(sizeof(char *) * instance->size);
+        for (int i = 0; i < symbols->values.count; i += 1) {
             Value v = symbols->values.values[i];
-            if(!IS_STRING(v)) {
+            if (!IS_STRING(v)) {
                 instance->names[i] = NULL;
             } else {
-                ObjString* sym = AS_STRING(v);
-                if(dlsym(instance->library, sym->chars) == NULL){
+                ObjString *sym = AS_STRING(v);
+                if (dlsym(instance->library, sym->chars) == NULL) {
                     runtimeError(vm, "Couldn't load symbol: %s", sym->chars);
                     return EMPTY_VAL;
                 }
-                instance->names[i] = malloc(sym->length+1);
+                instance->names[i] = malloc(sym->length + 1);
                 instance->names[i][sym->length] = '\0';
                 memcpy(instance->names[i], sym->chars, sym->length);
             }
@@ -132,8 +173,9 @@ Value createFFIModule(DictuVM *vm) {
     push(vm, OBJ_VAL(module));
     defineNative(vm, &module->values, "load", load);
 
-    defineNativeProperty(vm, &module->values, "suffix", OBJ_VAL(
-        copyString(vm, LIB_EXTENSION, LIB_EXTENSION_STRLEN)));
+    defineNativeProperty(
+        vm, &module->values, "suffix",
+        OBJ_VAL(copyString(vm, LIB_EXTENSION, LIB_EXTENSION_STRLEN)));
     pop(vm);
     pop(vm);
 
