@@ -4,5 +4,4 @@ const mod = FFI.load("./build/libffi-test{}".format(FFI.suffix), ["dictu_ffi_tes
 for(var i = 0; i < 25; i+=1) {
   print(mod.invoke("dictu_ffi_test", 20, i*2));
   print(mod.invoke("dictu_ffi_test_str"));
-  // Weißenseer Weg 7
 }
