@@ -29,3 +29,5 @@ import "title.du";
 import "isUpper.du";
 import "isLower.du";
 import "wordCount.du";
+import "collapseSpaces.du";
+import "wrap.du";

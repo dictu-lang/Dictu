@@ -21,3 +21,16 @@ def merge(dict, anotherDict) {
 
     return newDict;
 }
+
+def toObj(dict, obj) {
+    dict.forEach(def(k, v) => {
+        if (type(k) != 'string') {
+            const fieldName = k.toString();
+            obj.setAttribute(fieldName, v);
+            return;
+        }
+        obj.setAttribute(k, v);
+    });
+
+    return obj;
+}

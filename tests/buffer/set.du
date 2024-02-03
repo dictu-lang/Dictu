@@ -1,0 +1,33 @@
+/**
+* set.du
+*
+* Testing the buffer.set() method
+*
+* .set(Number, Number) sets a given integer value into the buffer;
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferSet < UnitTest {
+    testBufferSet() {
+        const b = Buffer.new(8).unwrap();
+        const check = [];
+        for(var i = 0; i < b.len(); i+= 1) {
+            const res = b.set(i, i*2);
+            this.assertEquals(res.success(), true);
+            check.push(i*2);
+        }
+        this.assertEquals(b.values(), check);
+    }
+    testBufferSetOutOfBounds() {
+        const b = Buffer.new(4).unwrap();
+        var res = b.set(4, 0);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "index must be smaller than buffer size");
+        res = b.set(-1, 0);
+        this.assertEquals(res.success(), false);
+        this.assertEquals(res.unwrapError(), "index must be greater than -1");
+    }
+}
+
+TestBufferSet().run();

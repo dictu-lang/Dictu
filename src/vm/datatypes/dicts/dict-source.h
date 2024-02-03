@@ -4,6 +4,10 @@
 " *\n" \
 " * We should always strive to write methods in C where possible.\n" \
 " */\n" \
+"\n" \
+"import Object;\n" \
+"\n" \
+"\n" \
 "def forEach(dict, func) {\n" \
 "    const dictKeys = dict.keys();\n" \
 "\n" \
@@ -20,5 +24,18 @@
 "    });\n" \
 "\n" \
 "    return newDict;\n" \
+"}\n" \
+"\n" \
+"def toObj(dict, obj) {\n" \
+"    dict.forEach(def(k, v) => {\n" \
+"        if (type(k) != 'string') {\n" \
+"            const fieldName = k.toString();\n" \
+"            obj.setAttribute(fieldName, v);\n" \
+"            return;\n" \
+"        }\n" \
+"        obj.setAttribute(k, v);\n" \
+"    });\n" \
+"\n" \
+"    return obj;\n" \
 "}\n" \
 

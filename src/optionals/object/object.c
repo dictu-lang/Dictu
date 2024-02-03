@@ -59,6 +59,25 @@ static Value objectHash(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, (char *)str, 21));
 }
 
+static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1 && argCount != 2) {
+        runtimeError(vm, "prettyPrint() takes 1 or arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Value out = stringify(vm, argCount, args);
+    ObjResult *res = AS_RESULT(out);
+    if (res->status == ERR) {
+        runtimeError(vm, AS_CSTRING(res->value));
+        return EMPTY_VAL;
+    }
+    
+    printValue(res->value);
+    printf("\n");
+
+    return NIL_VAL;
+}
+
 Value createObjectModule(DictuVM *vm) {
     ObjClosure *closure = compileModuleToClosure(vm, "Object", DICTU_OBJECT_SOURCE);
 
@@ -74,6 +93,8 @@ Value createObjectModule(DictuVM *vm) {
     defineNative(vm, &closure->function->module->values, "__getClassRef", objectGetClassRefInternal);
     defineNative(vm, &closure->function->module->values, "getClassRef", objectGetClassRef);
     defineNative(vm, &closure->function->module->values, "hash", objectHash);
+
+    defineNative(vm, &closure->function->module->values, "prettyPrint", objectPrettyPrint);
 
     pop(vm);
 

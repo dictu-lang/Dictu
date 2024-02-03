@@ -1,0 +1,19 @@
+/**
+* string.du
+*
+* Testing the buffer.string() method
+*
+* .string() returns a string of the buffer.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferString < UnitTest {
+
+    testBufferString() {
+        const b = Buffer.fromString("Dictu!").unwrap();
+        this.assertEquals(b.string(), "Dictu!");
+    }
+}
+
+TestBufferString().run();

@@ -1,0 +1,34 @@
+/**
+* toObj.du
+*
+* Testing the dict.toObj() method
+*
+* .toObj() returns an object created from the given dict and class ref.
+*/
+from UnitTest import UnitTest;
+
+
+class Test {}
+
+class TestDictToObj < UnitTest {
+    testDictToObj() {
+        const myDict = {
+            "key": 1, 
+            "key1": true, 
+            true: false, 
+            false: true, 
+            nil: 10, 
+            10: nil, 
+            10.5: 10.5
+        };
+        const obj = myDict.toObj(Test());
+        this.assertNotNil(obj);
+        this.assertEquals(obj.key, 1);
+        this.assertEquals(obj.getAttribute("true"), false);
+        this.assertEquals(obj.getAttribute("false"), true);
+        this.assertEquals(obj.getAttribute("nil"), 10);
+        this.assertEquals(obj.getAttribute("10.5"), 10.5);
+    }
+}
+
+TestDictToObj().run();

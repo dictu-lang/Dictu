@@ -19,7 +19,7 @@ import JSON;
 
 HTTP.get("https://api.coindesk.com/v1/bpi/currentprice.json").match(
     def (response) => {
-        const data = JSON.parse(response["content"]).unwrap();
+        const data = JSON.parse(response.content).unwrap();
         print("${} per BTC".format(data["bpi"]["USD"]["rate"])); // $10,577.70 per BTC
     },
     def (error) => print(error)

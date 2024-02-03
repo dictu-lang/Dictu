@@ -27,6 +27,7 @@
 #include "stack.h"
 #include "bigint.h"
 #include "object/object.h"
+#include "buffer.h"
 #include "unittest/unittest.h"
 #include "ffi/ffi.h"
 

@@ -31,6 +31,7 @@ BuiltinModules modules[] = {
     {"HTTP", &createHTTPModule, true},
 #endif
     {"BigInt", &createBigIntModule, false},
+    {"Buffer", &createBufferModule, false},
     {"FFI", &createFFIModule, false},
     {NULL, NULL, false}
 };
