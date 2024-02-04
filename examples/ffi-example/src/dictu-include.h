@@ -407,6 +407,7 @@ struct sObjAbstract {
     AbstractFreeFn func;
     AbstractGrayFn grayFunc;
     AbstractTypeFn type;
+    bool excludeSelf;
 };
 
 typedef enum {

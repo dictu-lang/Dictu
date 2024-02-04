@@ -365,6 +365,19 @@ static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
     return true;
 }
 
+static bool callNativeMethodExcludeSelf(DictuVM *vm, Value method, int argCount) {
+    NativeFn native = AS_NATIVE(method);
+
+    Value result = native(vm, argCount, vm->stackTop - (argCount-1) - 1);
+
+    if (IS_EMPTY(result))
+        return false;
+
+    vm->stackTop -= argCount + 1;
+    push(vm, result);
+    return true;
+}
+
 static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount, bool unpack) {
     HANDLE_UNPACK
@@ -645,6 +658,8 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
 
                 Value value;
                 if (tableGet(&abstract->values, name, &value)) {
+                    if(abstract->excludeSelf)
+                         return callNativeMethodExcludeSelf(vm, value, argCount);
                     return callNativeMethod(vm, value, argCount);
                 }
 
