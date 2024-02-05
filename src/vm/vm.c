@@ -1172,6 +1172,18 @@ static DictuInterpretResult run(DictuVM *vm) {
                     RUNTIME_ERROR("'%s' module has no attribute: '%s'.", module->name->chars, name->chars);
                 }
 
+                case OBJ_ABSTRACT: {
+                    ObjAbstract *abstract = AS_ABSTRACT(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&abstract->values, name, &value)) {
+                        pop(vm); // Abstract.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+                    RUNTIME_ERROR("'no attribute: '%s'.",name->chars);
+                }
+
                 case OBJ_CLASS: {
                     ObjClass *klass = AS_CLASS(receiver);
                     // Used to keep a reference to the class for the runtime error below

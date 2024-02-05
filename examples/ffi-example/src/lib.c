@@ -15,5 +15,8 @@ Value dictu_ffi_test_str(DictuVM *vm, int argCount, Value *args) {
 int dictu_ffi_init(DictuVM *vm, Table *method_table) {
   defineNative(vm, method_table, "dictu_ffi_test", dictu_ffi_test);
   defineNative(vm, method_table, "dictu_ffi_test_str", dictu_ffi_test_str);
+  defineNativeProperty(
+    vm, method_table, "test",
+        OBJ_VAL(copyString(vm, "Dictu!", 6)));
   return 0;
 }
