@@ -1,21 +1,28 @@
 #ifndef dictumod_include_h
 #define dictumod_include_h
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define UNUSED(__x__) (void) __x__
+// This is used ti determine if we can safely load the function pointers without
+// UB.
+#define FFI_MOD_API_VERSION 1
+
+#define UNUSED(__x__) (void)__x__
 
 #define MAX_ERROR_LEN 256
 
-#define ERROR_RESULT             \
-do {                             \
-char buf[MAX_ERROR_LEN];         \
-getStrerror(buf, errno);         \
-return newResultError(vm, buf);  \
-} while (false)
+#define ERROR_RESULT                                                           \
+    do {                                                                       \
+        char buf[MAX_ERROR_LEN];                                               \
+        getStrerror(buf, errno);                                               \
+        return newResultError(vm, buf);                                        \
+    } while (false)
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -68,7 +75,7 @@ typedef struct sObj Obj;
 typedef struct sObjString ObjString;
 typedef struct sObjList ObjList;
 typedef struct sObjDict ObjDict;
-typedef struct sObjSet  ObjSet;
+typedef struct sObjSet ObjSet;
 typedef struct sObjFile ObjFile;
 typedef struct sObjAbstract ObjAbstract;
 typedef struct sObjResult ObjResult;
@@ -80,37 +87,36 @@ typedef struct sObjResult ObjResult;
 #define QNAN ((uint64_t)0x7ffc000000000000)
 
 // Tag values for the different singleton values.
-#define TAG_NIL    1
-#define TAG_FALSE  2
-#define TAG_TRUE   3
-#define TAG_EMPTY  4
+#define TAG_NIL 1
+#define TAG_FALSE 2
+#define TAG_TRUE 3
+#define TAG_EMPTY 4
 
 typedef uint64_t Value;
 
-#define IS_BOOL(v)    (((v) | 1) == TRUE_VAL)
-#define IS_NIL(v)     ((v) == NIL_VAL)
-#define IS_EMPTY(v)   ((v) == EMPTY_VAL)
+#define IS_BOOL(v) (((v) | 1) == TRUE_VAL)
+#define IS_NIL(v) ((v) == NIL_VAL)
+#define IS_EMPTY(v) ((v) == EMPTY_VAL)
 // If the NaN bits are set, it's not a number.
-#define IS_NUMBER(v)  (((v) & QNAN) != QNAN)
-#define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
+#define IS_NUMBER(v) (((v)&QNAN) != QNAN)
+#define IS_OBJ(v) (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
 
-#define AS_BOOL(v)    ((v) == TRUE_VAL)
-#define AS_NUMBER(v)  valueToNum(v)
-#define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
+#define AS_BOOL(v) ((v) == TRUE_VAL)
+#define AS_NUMBER(v) valueToNum(v)
+#define AS_OBJ(v) ((Obj *)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
 
-#define BOOL_VAL(boolean)   ((boolean) ? TRUE_VAL : FALSE_VAL)
-#define FALSE_VAL           ((Value)(uint64_t)(QNAN | TAG_FALSE))
-#define TRUE_VAL            ((Value)(uint64_t)(QNAN | TAG_TRUE))
-#define NIL_VAL             ((Value)(uint64_t)(QNAN | TAG_NIL))
-#define EMPTY_VAL           ((Value)(uint64_t)(QNAN | TAG_EMPTY))
-#define NUMBER_VAL(num)   numToValue(num)
+#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)
+#define FALSE_VAL ((Value)(uint64_t)(QNAN | TAG_FALSE))
+#define TRUE_VAL ((Value)(uint64_t)(QNAN | TAG_TRUE))
+#define NIL_VAL ((Value)(uint64_t)(QNAN | TAG_NIL))
+#define EMPTY_VAL ((Value)(uint64_t)(QNAN | TAG_EMPTY))
+#define NUMBER_VAL(num) numToValue(num)
 // The triple casting is necessary here to satisfy some compilers:
 // 1. (uintptr_t) Convert the pointer to a number of the right size.
 // 2. (uint64_t)  Pad it up to 64 bits in 32-bit builds.
 // 3. Or in the bits to make a tagged Nan.
 // 4. Cast to a typedef'd value.
-#define OBJ_VAL(obj) \
-    (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj))
+#define OBJ_VAL(obj) (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj))
 
 // A union to let us reinterpret a double as raw bits and back.
 typedef union {
@@ -149,43 +155,44 @@ typedef struct {
     Entry *entries;
 } Table;
 
+#define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
-#define OBJ_TYPE(value)         (AS_OBJ(value)->type)
+#define AS_MODULE(value) ((ObjModule *)AS_OBJ(value))
+#define AS_BOUND_METHOD(value) ((ObjBoundMethod *)AS_OBJ(value))
+#define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
+#define AS_ENUM(value) ((ObjEnum *)AS_OBJ(value))
+#define AS_CLOSURE(value) ((ObjClosure *)AS_OBJ(value))
+#define AS_FUNCTION(value) ((ObjFunction *)AS_OBJ(value))
+#define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
+#define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
+#define AS_STRING(value) ((ObjString *)AS_OBJ(value))
+#define AS_CSTRING(value) (((ObjString *)AS_OBJ(value))->chars)
+#define AS_LIST(value) ((ObjList *)AS_OBJ(value))
+#define AS_DICT(value) ((ObjDict *)AS_OBJ(value))
+#define AS_SET(value) ((ObjSet *)AS_OBJ(value))
+#define AS_FILE(value) ((ObjFile *)AS_OBJ(value))
+#define AS_ABSTRACT(value) ((ObjAbstract *)AS_OBJ(value))
+#define AS_RESULT(value) ((ObjResult *)AS_OBJ(value))
 
-#define AS_MODULE(value)        ((ObjModule*)AS_OBJ(value))
-#define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
-#define AS_CLASS(value)         ((ObjClass*)AS_OBJ(value))
-#define AS_ENUM(value)          ((ObjEnum*)AS_OBJ(value))
-#define AS_CLOSURE(value)       ((ObjClosure*)AS_OBJ(value))
-#define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
-#define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
-#define AS_NATIVE(value)        (((ObjNative*)AS_OBJ(value))->function)
-#define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
-#define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
-#define AS_LIST(value)          ((ObjList*)AS_OBJ(value))
-#define AS_DICT(value)          ((ObjDict*)AS_OBJ(value))
-#define AS_SET(value)           ((ObjSet*)AS_OBJ(value))
-#define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
-#define AS_ABSTRACT(value)      ((ObjAbstract*)AS_OBJ(value))
-#define AS_RESULT(value)        ((ObjResult*)AS_OBJ(value))
-
-#define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
-#define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
-#define IS_CLASS(value)           isObjType(value, OBJ_CLASS)
-#define IS_DEFAULT_CLASS(value)   isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
-#define IS_TRAIT(value)           isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
-#define IS_ENUM(value)            isObjType(value, OBJ_ENUM)
-#define IS_CLOSURE(value)         isObjType(value, OBJ_CLOSURE)
-#define IS_FUNCTION(value)        isObjType(value, OBJ_FUNCTION)
-#define IS_INSTANCE(value)        isObjType(value, OBJ_INSTANCE)
-#define IS_NATIVE(value)          isObjType(value, OBJ_NATIVE)
-#define IS_STRING(value)          isObjType(value, OBJ_STRING)
-#define IS_LIST(value)            isObjType(value, OBJ_LIST)
-#define IS_DICT(value)            isObjType(value, OBJ_DICT)
-#define IS_SET(value)             isObjType(value, OBJ_SET)
-#define IS_FILE(value)            isObjType(value, OBJ_FILE)
-#define IS_ABSTRACT(value)        isObjType(value, OBJ_ABSTRACT)
-#define IS_RESULT(value)          isObjType(value, OBJ_RESULT)
+#define IS_MODULE(value) isObjType(value, OBJ_MODULE)
+#define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
+#define IS_CLASS(value) isObjType(value, OBJ_CLASS)
+#define IS_DEFAULT_CLASS(value)                                                \
+    isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_DEFAULT
+#define IS_TRAIT(value)                                                        \
+    isObjType(value, OBJ_CLASS) && AS_CLASS(value)->type == CLASS_TRAIT
+#define IS_ENUM(value) isObjType(value, OBJ_ENUM)
+#define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
+#define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
+#define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
+#define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
+#define IS_STRING(value) isObjType(value, OBJ_STRING)
+#define IS_LIST(value) isObjType(value, OBJ_LIST)
+#define IS_DICT(value) isObjType(value, OBJ_DICT)
+#define IS_SET(value) isObjType(value, OBJ_SET)
+#define IS_FILE(value) isObjType(value, OBJ_FILE)
+#define IS_ABSTRACT(value) isObjType(value, OBJ_ABSTRACT)
+#define IS_RESULT(value) isObjType(value, OBJ_RESULT)
 
 typedef enum {
     OBJ_MODULE,
@@ -206,16 +213,9 @@ typedef enum {
     OBJ_UPVALUE
 } ObjType;
 
-typedef enum {
-    CLASS_DEFAULT,
-    CLASS_ABSTRACT,
-    CLASS_TRAIT
-} ClassType;
+typedef enum { CLASS_DEFAULT, CLASS_ABSTRACT, CLASS_TRAIT } ClassType;
 
-typedef enum {
-    ACCESS_PUBLIC,
-    ACCESS_PRIVATE
-} AccessLevel;
+typedef enum { ACCESS_PUBLIC, ACCESS_PRIVATE } AccessLevel;
 
 typedef enum {
     TYPE_FUNCTION,
@@ -252,8 +252,8 @@ typedef struct sUpvalue {
 
 typedef struct {
     Obj obj;
-    ObjString* name;
-    ObjString* path;
+    ObjString *name;
+    ObjString *path;
     Table values;
 } ObjModule;
 
@@ -275,7 +275,7 @@ typedef struct {
     ObjString *name;
     FunctionType type;
     AccessLevel accessLevel;
-    ObjModule* module;
+    ObjModule *module;
     int propertyCount;
     int *propertyNames;
     int *propertyIndexes;
@@ -283,7 +283,6 @@ typedef struct {
     int *privatePropertyNames;
     int *privatePropertyIndexes;
 } ObjFunction;
-
 
 #define STACK_MAX (64 * UINT8_COUNT)
 typedef struct {
@@ -341,7 +340,9 @@ struct _vm {
 #define DICTU_MINOR_VERSION "29"
 #define DICTU_PATCH_VERSION "0"
 
-#define DICTU_STRING_VERSION "Dictu Version: " DICTU_MAJOR_VERSION "." DICTU_MINOR_VERSION "." DICTU_PATCH_VERSION "\n"
+#define DICTU_STRING_VERSION                                                   \
+    "Dictu Version: " DICTU_MAJOR_VERSION "." DICTU_MINOR_VERSION              \
+    "." DICTU_PATCH_VERSION "\n"
 
 typedef struct _vm DictuVM;
 
@@ -398,7 +399,7 @@ struct sObjFile {
 
 typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
 typedef void (*AbstractGrayFn)(DictuVM *vm, ObjAbstract *abstract);
-typedef char* (*AbstractTypeFn)(ObjAbstract *abstract);
+typedef char *(*AbstractTypeFn)(ObjAbstract *abstract);
 
 struct sObjAbstract {
     Obj obj;
@@ -410,17 +411,13 @@ struct sObjAbstract {
     bool excludeSelf;
 };
 
-typedef enum {
-    SUCCESS,
-    ERR
-} ResultStatus;
+typedef enum { SUCCESS, ERR } ResultStatus;
 
 struct sObjResult {
     Obj obj;
     ResultStatus status;
     Value value;
 };
-
 
 typedef struct sObjClass {
     Obj obj;
@@ -466,7 +463,8 @@ typedef ObjSet *newSet_t(DictuVM *vm);
 
 typedef ObjFile *newFile_t(DictuVM *vm);
 
-typedef ObjAbstract *newAbstract_t(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type);
+typedef ObjAbstract *newAbstract_t(DictuVM *vm, AbstractFreeFn func,
+                                   AbstractTypeFn type);
 
 typedef ObjResult *newResult_t(DictuVM *vm, ResultStatus status, Value value);
 
@@ -516,105 +514,127 @@ typedef bool compareStringLess_t(Value a, Value b);
 
 typedef bool compareStringGreater_t(Value a, Value b);
 
+typedef void defineNative_t(DictuVM *vm, Table *table, const char *name,
+                            NativeFn function);
 
-copyString_t* copyString = NULL;
+typedef void defineNativeProperty_t(DictuVM *vm, Table *table, const char *name,
+                                    Value value);
 
-newList_t* newList = NULL;
+copyString_t *copyString = NULL;
 
-newDict_t* newDict = NULL;
+newList_t *newList = NULL;
 
-newSet_t* newSet = NULL;
+newDict_t *newDict = NULL;
 
-newFile_t* newFile = NULL;
+newSet_t *newSet = NULL;
 
-newAbstract_t* newAbstract = NULL;
+newFile_t *newFile = NULL;
 
-newResult_t* newResult = NULL;
+newAbstract_t *newAbstract = NULL;
 
-newResultSuccess_t* newResultSuccess = NULL;
+newResult_t *newResult = NULL;
 
-newResultError_t* newResultError = NULL;
+newResultSuccess_t *newResultSuccess = NULL;
 
-push_t* push = NULL;
+newResultError_t *newResultError = NULL;
 
-peek_t* peek = NULL;
+push_t *push = NULL;
 
-runtimeError_t* runtimeError = NULL;
+peek_t *peek = NULL;
 
-pop_t* pop = NULL;
+runtimeError_t *runtimeError = NULL;
 
-isFalsey_t* isFalsey = NULL;
+pop_t *pop = NULL;
 
-valuesEqual_t* valuesEqual = NULL;
+isFalsey_t *isFalsey = NULL;
 
-initValueArray_t* initValueArray = NULL;
+valuesEqual_t *valuesEqual = NULL;
 
-writeValueArray_t* writeValueArray = NULL;
+initValueArray_t *initValueArray = NULL;
 
-freeValueArray_t* freeValueArray = NULL;
+writeValueArray_t *writeValueArray = NULL;
 
-dictSet_t* dictSet = NULL;
+freeValueArray_t *freeValueArray = NULL;
 
-dictGet_t* dictGet = NULL;
+dictSet_t *dictSet = NULL;
 
-dictDelete_t* dictDelete = NULL;
+dictGet_t *dictGet = NULL;
 
-setGet_t* setGet = NULL;
+dictDelete_t *dictDelete = NULL;
 
-setInsert_t* setInsert = NULL;
+setGet_t *setGet = NULL;
 
-setDelete_t* setDelete = NULL;
+setInsert_t *setInsert = NULL;
 
-valueToString_t* valueToString = NULL;
+setDelete_t *setDelete = NULL;
 
-valueTypeToString_t* valueTypeToString = NULL;
+valueToString_t *valueToString = NULL;
 
-printValue_t* printValue = NULL;
+valueTypeToString_t *valueTypeToString = NULL;
 
-printValueError_t* printValueError = NULL;
+printValue_t *printValue = NULL;
 
-compareStringLess_t* compareStringLess = NULL;
+printValueError_t *printValueError = NULL;
 
-compareStringGreater_t* compareStringGreater = NULL;
+compareStringLess_t *compareStringLess = NULL;
 
-int dictu_internal_ffi_init(void** function_ptrs) {
-    if(copyString != NULL){
+compareStringGreater_t *compareStringGreater = NULL;
+
+defineNative_t *defineNative = NULL;
+
+defineNativeProperty_t *defineNativeProperty = NULL;
+
+// This needs to be implemented by the user and register all functions
+int dictu_ffi_init(DictuVM *vm, Table *method_table);
+
+int dictu_internal_ffi_init(void **function_ptrs, DictuVM *vm,
+                            Table *methodTable, int vm_ffi_version) {
+    if (copyString != NULL) {
         // we already initialized.
         return 1;
     }
+    if (vm_ffi_version > FFI_MOD_API_VERSION)
+        return 2;
     size_t count = 0;
 
-    copyString = (copyString_t*) function_ptrs[count++];
-    newList = (newList_t*) function_ptrs[count++];
-    newDict = (newDict_t*) function_ptrs[count++];
-    newSet = (newSet_t*) function_ptrs[count++];
-    newFile = (newFile_t*) function_ptrs[count++];
-    newAbstract = (newAbstract_t*) function_ptrs[count++];
-    newResult = (newResult_t*) function_ptrs[count++];
-    newResultSuccess = (newResultSuccess_t*) function_ptrs[count++];
-    newResultError = (newResultError_t*) function_ptrs[count++];
-    push = (push_t*) function_ptrs[count++];
-    peek = (peek_t*) function_ptrs[count++];
-    runtimeError = (runtimeError_t*) function_ptrs[count++];
-    pop = (pop_t*) function_ptrs[count++];
-    isFalsey = (isFalsey_t*) function_ptrs[count++];
-    valuesEqual = (valuesEqual_t*) function_ptrs[count++];
-    initValueArray = (initValueArray_t*) function_ptrs[count++];
-    writeValueArray = (writeValueArray_t*) function_ptrs[count++];
-    freeValueArray = (freeValueArray_t*) function_ptrs[count++];
-    dictSet = (dictSet_t*) function_ptrs[count++];
-    dictGet = (dictGet_t*) function_ptrs[count++];
-    dictDelete = (dictDelete_t*) function_ptrs[count++];
-    setGet = (setGet_t*) function_ptrs[count++];
-    setInsert = (setInsert_t*) function_ptrs[count++];
-    setDelete = (setDelete_t*) function_ptrs[count++];
-    valueToString = (valueToString_t*) function_ptrs[count++];
-    valueTypeToString = (valueTypeToString_t*) function_ptrs[count++];
-    printValue = (printValue_t*) function_ptrs[count++];
-    printValueError = (printValueError_t*) function_ptrs[count++];
-    compareStringLess = (compareStringLess_t*) function_ptrs[count++];
-    compareStringGreater = (compareStringGreater_t*) function_ptrs[count++];
+    copyString = (copyString_t *)function_ptrs[count++];
+    newList = (newList_t *)function_ptrs[count++];
+    newDict = (newDict_t *)function_ptrs[count++];
+    newSet = (newSet_t *)function_ptrs[count++];
+    newFile = (newFile_t *)function_ptrs[count++];
+    newAbstract = (newAbstract_t *)function_ptrs[count++];
+    newResult = (newResult_t *)function_ptrs[count++];
+    newResultSuccess = (newResultSuccess_t *)function_ptrs[count++];
+    newResultError = (newResultError_t *)function_ptrs[count++];
+    push = (push_t *)function_ptrs[count++];
+    peek = (peek_t *)function_ptrs[count++];
+    runtimeError = (runtimeError_t *)function_ptrs[count++];
+    pop = (pop_t *)function_ptrs[count++];
+    isFalsey = (isFalsey_t *)function_ptrs[count++];
+    valuesEqual = (valuesEqual_t *)function_ptrs[count++];
+    initValueArray = (initValueArray_t *)function_ptrs[count++];
+    writeValueArray = (writeValueArray_t *)function_ptrs[count++];
+    freeValueArray = (freeValueArray_t *)function_ptrs[count++];
+    dictSet = (dictSet_t *)function_ptrs[count++];
+    dictGet = (dictGet_t *)function_ptrs[count++];
+    dictDelete = (dictDelete_t *)function_ptrs[count++];
+    setGet = (setGet_t *)function_ptrs[count++];
+    setInsert = (setInsert_t *)function_ptrs[count++];
+    setDelete = (setDelete_t *)function_ptrs[count++];
+    valueToString = (valueToString_t *)function_ptrs[count++];
+    valueTypeToString = (valueTypeToString_t *)function_ptrs[count++];
+    printValue = (printValue_t *)function_ptrs[count++];
+    printValueError = (printValueError_t *)function_ptrs[count++];
+    compareStringLess = (compareStringLess_t *)function_ptrs[count++];
+    compareStringGreater = (compareStringGreater_t *)function_ptrs[count++];
+    defineNative = (defineNative_t *)function_ptrs[count++];
+    defineNativeProperty = (defineNativeProperty_t *)function_ptrs[count++];
+    int initResult = dictu_ffi_init(vm, methodTable);
+    if (initResult > 0)
+        return 3 + initResult;
     return 0;
 }
-
+#ifdef __cplusplus
+}
+#endif
 #endif

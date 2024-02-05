@@ -17,6 +17,10 @@
 #define LIB_EXTENSION_STRLEN 3
 #endif
 
+// This is used to determine if we can safely load the function pointers without UB,
+// if this is greater then the version from the mod we error in the internal mod load function.
+#define DICTU_FFI_API_VERSION 1
+
 
 Value createFFIModule(DictuVM *vm);
 

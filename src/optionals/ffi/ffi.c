@@ -9,7 +9,7 @@ typedef struct {
 typedef struct _vm_external vm_external;
 
 typedef Value function_definition_t(DictuVM *vm, int argCount, Value *args);
-typedef int init_func_definition_t(void **function_ptrs);
+typedef int init_func_definition_t(void **function_ptrs, DictuVM* vm, Table* table, int vm_ffi_version);
 
 // #define AS_FFI_INSTANCE(v) ((FFIInstance *)AS_ABSTRACT(v)->data)
 
@@ -43,7 +43,9 @@ void *ffi_function_pointers[] = {
     &printValue,
     &printValueError,
     &compareStringLess,
-    &compareStringGreater
+    &compareStringGreater,
+    &defineNative,
+    &defineNativeProperty
 };
 
 void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
@@ -70,8 +72,8 @@ void grayFFI(DictuVM *vm, ObjAbstract *abstract) {
 }
 
 static Value load(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 2) {
-        runtimeError(vm, "load() takes 2 arguments (%d given)", argCount);
+    if (argCount != 1) {
+        runtimeError(vm, "load() takes one argument (%d given)", argCount);
         return EMPTY_VAL;
     }
     ObjString *path = AS_STRING(args[0]);
@@ -80,38 +82,38 @@ static Value load(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "Couldn't load shared object: %s", path->chars);
         return EMPTY_VAL;
     }
-    init_func_definition_t *init_func =
+    ObjAbstract *abstract = newAbstractExcludeSelf(vm, freeFFI, ffiToString);
+    push(vm, OBJ_VAL(abstract));
+        init_func_definition_t *init_func =
         dlsym(library, "dictu_internal_ffi_init");
     // call init function to give ffi module the required pointers to the function of the vm.
-    if (!init_func || init_func((void**)&ffi_function_pointers) != 0) {
+    if (!init_func) {
         runtimeError(vm, "Couldn't initialize ffi api: %s", path->chars);
         dlclose(library);
         return EMPTY_VAL;
     }
-    ObjList *symbols = AS_LIST(args[1]);
-    ObjAbstract *abstract = newAbstractExcludeSelf(vm, freeFFI, ffiToString);
-    push(vm, OBJ_VAL(abstract));
+    int initResult = init_func((void**)&ffi_function_pointers, vm, &abstract->values, DICTU_FFI_API_VERSION);
+    if(initResult == 1){
+        runtimeError(vm, "FFI mod already initialized: %s", path->chars);
+        dlclose(library);
+        return EMPTY_VAL;
+    }
+    if(initResult == 2){
+        runtimeError(vm, "FFI api version is newer then mod version: %s, required FFI version: %d", path->chars, DICTU_FFI_API_VERSION);
+        dlclose(library);
+        return EMPTY_VAL;
+    }
+    if(initResult > 3){
+        runtimeError(vm, "Mod init function returned a error: %s, error code: %d", path->chars, initResult-3);
+        dlclose(library);
+        return EMPTY_VAL;
+    }
     FFIInstance *instance = ALLOCATE(vm, FFIInstance, 1);
     instance->path = malloc(path->length + 1);
     instance->path[path->length] = '\0';
     memcpy(instance->path, path->chars, path->length);
 
     instance->library = library;
-    if (symbols->values.count) {
-        for (int i = 0; i < symbols->values.count; i += 1) {
-            Value v = symbols->values.values[i];
-            if (IS_STRING(v))  {
-                ObjString *sym = AS_STRING(v);
-                void* funcptr = dlsym(instance->library, sym->chars);
-                if(!funcptr) {
-                    runtimeError(vm, "Couldn't find symbol: %s in %s", sym->chars, path->chars);
-                    dlclose(library);
-                    return EMPTY_VAL;
-                }
-                defineNative(vm, &abstract->values, sym->chars, funcptr);
-            }
-        }
-    } 
 
     abstract->data = instance;
     abstract->grayFunc = grayFFI;

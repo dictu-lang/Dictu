@@ -11,3 +11,9 @@ Value dictu_ffi_test(DictuVM *vm, int argCount, Value *args) {
 Value dictu_ffi_test_str(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, "Hello world", 11));
 }
+
+int dictu_ffi_init(DictuVM *vm, Table *method_table) {
+  defineNative(vm, method_table, "dictu_ffi_test", dictu_ffi_test);
+  defineNative(vm, method_table, "dictu_ffi_test_str", dictu_ffi_test_str);
+  return 0;
+}

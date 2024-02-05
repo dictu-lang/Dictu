@@ -1,6 +1,6 @@
 import FFI;
 
-const mod = FFI.load("./build/libffi-test{}".format(FFI.suffix), ["dictu_ffi_test", "dictu_ffi_test_str"]);
+const mod = FFI.load("./build/libffi-test{}".format(FFI.suffix));
 for(var i = 0; i < 25; i+=1) {
   print(mod.dictu_ffi_test(1, i*2));
   print(mod.dictu_ffi_test_str());
