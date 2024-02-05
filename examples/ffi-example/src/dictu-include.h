@@ -587,6 +587,9 @@ defineNativeProperty_t *defineNativeProperty = NULL;
 // This needs to be implemented by the user and register all functions
 int dictu_ffi_init(DictuVM *vm, Table *method_table);
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 int dictu_internal_ffi_init(void **function_ptrs, DictuVM *vm,
                             Table *methodTable, int vm_ffi_version) {
     if (copyString != NULL) {
