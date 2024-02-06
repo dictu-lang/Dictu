@@ -6,64 +6,63 @@
 #endif
 
 typedef struct {
-    #ifdef _WIN32
+#ifdef _WIN32
     HMODULE library;
-    #else
+#else
     void *library;
-    #endif
+#endif
     char *path;
 } FFIInstance;
 
 typedef struct _vm_external vm_external;
 
 typedef Value function_definition_t(DictuVM *vm, int argCount, Value *args);
-typedef int init_func_definition_t(void **function_ptrs, DictuVM* vm, Table* table, int vm_ffi_version);
+typedef int init_func_definition_t(void **function_ptrs, DictuVM *vm,
+                                   Table *table, int vm_ffi_version);
 
 // #define AS_FFI_INSTANCE(v) ((FFIInstance *)AS_ABSTRACT(v)->data)
 
-void *ffi_function_pointers[] = {
-    &copyString,
-    &newList,
-    &newDict,
-    &newSet,
-    &newFile,
-    &newAbstract,
-    &newResult,
-    &newResultSuccess,
-    &newResultError,
-    &push,
-    &peek,
-    &runtimeError,
-    &pop,
-    &isFalsey,
-    &valuesEqual,
-    &initValueArray,
-    &writeValueArray,
-    &freeValueArray,
-    &dictSet,
-    &dictGet,
-    &dictDelete,
-    &setGet,
-    &setInsert,
-    &setDelete,
-    &valueToString,
-    &valueTypeToString,
-    &printValue,
-    &printValueError,
-    &compareStringLess,
-    &compareStringGreater,
-    &defineNative,
-    &defineNativeProperty
-};
+void *ffi_function_pointers[] = {&copyString,
+                                 &newList,
+                                 &newDict,
+                                 &newSet,
+                                 &newFile,
+                                 &newAbstract,
+                                 &newResult,
+                                 &newResultSuccess,
+                                 &newResultError,
+                                 &push,
+                                 &peek,
+                                 &runtimeError,
+                                 &pop,
+                                 &isFalsey,
+                                 &valuesEqual,
+                                 &initValueArray,
+                                 &writeValueArray,
+                                 &freeValueArray,
+                                 &dictSet,
+                                 &dictGet,
+                                 &dictDelete,
+                                 &setGet,
+                                 &setInsert,
+                                 &setDelete,
+                                 &valueToString,
+                                 &valueTypeToString,
+                                 &printValue,
+                                 &printValueError,
+                                 &compareStringLess,
+                                 &compareStringGreater,
+                                 &defineNative,
+                                 &defineNativeProperty};
 
 void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
     FFIInstance *instance = (FFIInstance *)abstract->data;
     free(instance->path);
-    #ifdef _WIN32
+#ifdef _WIN32
     FreeLibrary(instance->library);
-    #else
+#else
     dlclose(instance->library);
-    #endif
+#endif
     FREE(vm, FFIInstance, abstract->data);
 }
 
@@ -89,59 +88,66 @@ static Value load(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
     ObjString *path = AS_STRING(args[0]);
-    #ifdef _WIN32
+#ifdef _WIN32
     HMODULE library = LoadLibrary(path->chars);
-    #else
+#else
     void *library = dlopen(path->chars, RTLD_LAZY);
-    #endif
+#endif
     if (!library) {
         runtimeError(vm, "Couldn't load shared object: %s", path->chars);
         return EMPTY_VAL;
     }
     ObjAbstract *abstract = newAbstractExcludeSelf(vm, freeFFI, ffiToString);
     push(vm, OBJ_VAL(abstract));
-    #ifdef _WIN32
+#ifdef _WIN32
     FARPROC init_func = GetProcAddress(library, "dictu_internal_ffi_init");
-    #else
+#else
     init_func_definition_t *init_func =
         dlsym(library, "dictu_internal_ffi_init");
-    #endif
-    // call init function to give ffi module the required pointers to the function of the vm.
+#endif
+    // call init function to give ffi module the required pointers to the
+    // function of the vm.
     if (!init_func) {
         runtimeError(vm, "Couldn't initialize ffi api: %s", path->chars);
-        #ifdef _WIN32
-    FreeLibrary(library);
-    #else
-    dlclose(library);
-    #endif
+#ifdef _WIN32
+        FreeLibrary(library);
+#else
+        dlclose(library);
+#endif
         return EMPTY_VAL;
     }
-    int initResult = init_func((void**)&ffi_function_pointers, vm, &abstract->values, DICTU_FFI_API_VERSION);
-    if(initResult == 1){
+    int initResult = init_func((void **)&ffi_function_pointers, vm,
+                               &abstract->values, DICTU_FFI_API_VERSION);
+    if (initResult == 1) {
         runtimeError(vm, "FFI mod already initialized: %s", path->chars);
-    #ifdef _WIN32
-    FreeLibrary(library);
-    #else
-    dlclose(library);
-    #endif    
+#ifdef _WIN32
+        FreeLibrary(library);
+#else
+        dlclose(library);
+#endif
         return EMPTY_VAL;
     }
-    if(initResult == 2){
-        runtimeError(vm, "FFI api version is newer then mod version: %s, required FFI version: %d", path->chars, DICTU_FFI_API_VERSION);
-    #ifdef _WIN32
-    FreeLibrary(library);
-    #else
-    dlclose(library);
-    #endif    
+    if (initResult == 2) {
+        runtimeError(vm,
+                     "FFI api version is newer then mod version: %s, required "
+                     "FFI version: %d",
+                     path->chars, DICTU_FFI_API_VERSION);
+#ifdef _WIN32
+        FreeLibrary(library);
+#else
+        dlclose(library);
+#endif
         return EMPTY_VAL;
     }
-    if(initResult > 3){
-        runtimeError(vm, "Mod init function returned a error: %s, error code: %d", path->chars, initResult-3);
-    #ifdef _WIN32
-    FreeLibrary(library);
-    #else
-    dlclose(library);
-    #endif
+    if (initResult > 3) {
+        runtimeError(vm,
+                     "Mod init function returned a error: %s, error code: %d",
+                     path->chars, initResult - 3);
+#ifdef _WIN32
+        FreeLibrary(library);
+#else
+        dlclose(library);
+#endif
         return EMPTY_VAL;
     }
     FFIInstance *instance = ALLOCATE(vm, FFIInstance, 1);
