@@ -1,8 +1,16 @@
 #include "ffi.h"
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
 
 typedef struct {
+    #ifdef _WIN32
+    HMODULE library;
+    #else
     void *library;
+    #endif
     char *path;
 } FFIInstance;
 
@@ -51,7 +59,11 @@ void *ffi_function_pointers[] = {
 void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
     FFIInstance *instance = (FFIInstance *)abstract->data;
     free(instance->path);
+    #ifdef _WIN32
+    FreeLibrary(instance->library);
+    #else
     dlclose(instance->library);
+    #endif
     FREE(vm, FFIInstance, abstract->data);
 }
 
@@ -77,35 +89,59 @@ static Value load(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
     ObjString *path = AS_STRING(args[0]);
+    #ifdef _WIN32
+    HMODULE library = LoadLibrary(path->chars);
+    #else
     void *library = dlopen(path->chars, RTLD_LAZY);
+    #endif
     if (!library) {
         runtimeError(vm, "Couldn't load shared object: %s", path->chars);
         return EMPTY_VAL;
     }
     ObjAbstract *abstract = newAbstractExcludeSelf(vm, freeFFI, ffiToString);
     push(vm, OBJ_VAL(abstract));
-        init_func_definition_t *init_func =
+    #ifdef _WIN32
+    FARPROC init_func = GetProcAddress(library, "dictu_internal_ffi_init");
+    #else
+    init_func_definition_t *init_func =
         dlsym(library, "dictu_internal_ffi_init");
+    #endif
     // call init function to give ffi module the required pointers to the function of the vm.
     if (!init_func) {
         runtimeError(vm, "Couldn't initialize ffi api: %s", path->chars);
-        dlclose(library);
+        #ifdef _WIN32
+    FreeLibrary(library);
+    #else
+    dlclose(library);
+    #endif
         return EMPTY_VAL;
     }
     int initResult = init_func((void**)&ffi_function_pointers, vm, &abstract->values, DICTU_FFI_API_VERSION);
     if(initResult == 1){
         runtimeError(vm, "FFI mod already initialized: %s", path->chars);
-        dlclose(library);
+    #ifdef _WIN32
+    FreeLibrary(library);
+    #else
+    dlclose(library);
+    #endif    
         return EMPTY_VAL;
     }
     if(initResult == 2){
         runtimeError(vm, "FFI api version is newer then mod version: %s, required FFI version: %d", path->chars, DICTU_FFI_API_VERSION);
-        dlclose(library);
+    #ifdef _WIN32
+    FreeLibrary(library);
+    #else
+    dlclose(library);
+    #endif    
         return EMPTY_VAL;
     }
     if(initResult > 3){
         runtimeError(vm, "Mod init function returned a error: %s, error code: %d", path->chars, initResult-3);
-        dlclose(library);
+    #ifdef _WIN32
+    FreeLibrary(library);
+    #else
+    dlclose(library);
+    #endif
         return EMPTY_VAL;
     }
     FFIInstance *instance = ALLOCATE(vm, FFIInstance, 1);
