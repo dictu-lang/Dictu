@@ -27,6 +27,43 @@ nav_order: 3
 | Nil | `nil` | Used to signify no value (much like null in other languages) |
 | Result | `Success`, `Error` | See [Error Handling section.](/docs/error-handling) |
 
+## Truthy / Falsey
+
+Truthy / Falsey are terms that describe a value that will evaluate to either true or false. This, however, is not the same 
+as the value equalling the boolean value of true or false.
+
+The table below describes falsey types for built-in data types, any other value would evaluate to truthy. 
+
+| Type | Example                                       | Note                        |
+| --- |-----------------------------------------------|-----------------------------|
+| String | `''`, `""`                                    | A string of 0 length.       |
+| Number | `0`                                           | The value `0`.              |
+| Boolean | `false`                                | The value `false`.          |
+| List | `[]`                         | A list of 0 length.         |
+| Dictionary | `{}` | A dictionary with 0 length. |
+| Set | `set()`                                | A set with 0 length.        |
+| Nil | `nil`                                         | The value `nil`             |
+| Result | `Error`                                | A result in Error state.    |
+
+### Example
+
+This means we can use these values in a conditional check without the need for an explicit value check
+
+```cs
+const someList = [1, 2, 3].filter(def (x) => x > 3);
+
+if (someList) {
+    // The list has values within it
+    ...
+}
+
+const someResult = ...; // Some action that returns a Result
+
+if (not someResult) {
+    print("Error!");
+}
+```
+
 ## Declaring a variable
 
 ```cs
