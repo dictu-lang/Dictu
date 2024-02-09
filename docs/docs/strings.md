@@ -326,3 +326,19 @@ Returns a new string with new lines inserted at the given length.
 ```cs
 "This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not our business as to why, but we can provide the functionality for them to do so.".wrap(80);
 ```
+
+### string.snakeToCamelCase() -> String
+
+Returns a new string converted from snake case to camel case.
+
+```cs
+"example_of_snake_case".snakeToCamelCase(); // exampleOfSnakeCase
+```
+
+### string.camelToSnakeCase() -> String
+
+Returns a new string converted from camel case to snake case.
+
+```cs
+"exampleOfSnakeCase".camelToSnakeCase(); // example_of_snake_case
+```

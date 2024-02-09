@@ -753,18 +753,19 @@ static Value snakeToCamelCaseString(DictuVM *vm, int argCount, Value *args) {
 
 static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "camelToSanekCase() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "camelToSnakeCase() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     ObjString *string = AS_STRING(args[0]);
-    char *temp = ALLOCATE(vm, char, string->length + 1);
+    char *temp = ALLOCATE(vm, char, (string->length * 2) + 1);
     
     int i, j;
     for (i = j = 0; i < string->length; i++, j++) {
         if (isupper(string->chars[i])) {
-            temp[j] = string->chars[i+1];
-            i++;
+            temp[j] = '_';
+            j++;
+            temp[j] = tolower(string->chars[i]);
         } else {
             temp[j] = string->chars[i];
         }
@@ -772,10 +773,10 @@ static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
     temp[j+1] = '\0';
 
     if (i != j) {
-        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, strlen(temp) + 1);
+        temp = SHRINK_ARRAY(vm, temp, char, (string->length * 2) + 1, strlen(temp) + 1);
     }
 
-    return OBJ_VAL(takeString(vm, temp, j));
+    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
 }
 
 void declareStringMethods(DictuVM *vm) {
