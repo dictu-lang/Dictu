@@ -329,7 +329,7 @@ Returns a new string with new lines inserted at the given length.
 
 ### string.snakeToCamelCase() -> String
 
-Returns a new string converted from snake case to camel case.
+Returns a new string converted from snake case to camel case. If the string doesn't contain and underscore or isn't at least 3 characters long, the original string is returned.
 
 ```cs
 "example_of_snake_case".snakeToCamelCase(); // exampleOfSnakeCase
@@ -337,7 +337,7 @@ Returns a new string converted from snake case to camel case.
 
 ### string.camelToSnakeCase() -> String
 
-Returns a new string converted from camel case to snake case.
+Returns a new string converted from camel case to snake case. If the string is less than 2 characters or doesn't contain any upper case letters, the original string is returned.
 
 ```cs
 "exampleOfSnakeCase".camelToSnakeCase(); // example_of_snake_case
