@@ -802,7 +802,7 @@ static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
         temp = SHRINK_ARRAY(vm, temp, char, (string->length * 2) + 1, j + 1);
     }
 
-    return OBJ_VAL(takeString(vm, temp, strlen(temp)));
+    return OBJ_VAL(takeString(vm, temp, j));
 }
 
 void declareStringMethods(DictuVM *vm) {
