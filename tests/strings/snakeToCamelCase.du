@@ -10,6 +10,10 @@ from UnitTest import UnitTest;
 class TestStringSnakeToCamelCase < UnitTest {
     testStringSnakeToCamelCase() {
         this.assertEquals("example_of_snake_case".snakeToCamelCase(), "exampleOfSnakeCase");
+        this.assertEquals("a_b".snakeToCamelCase(), "aB");
+        this.assertEquals("example_of_a_much_longer_string_to_test".snakeToCamelCase(), "exampleOfAMuchLongerStringToTest");
+        this.assertEquals("_".snakeToCamelCase(), "_");
+        this.assertEquals("stringWithNoUnderscore".snakeToCamelCase(), "stringWithNoUnderscore");
     }
 }
 

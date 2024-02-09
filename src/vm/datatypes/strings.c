@@ -731,6 +731,14 @@ static Value snakeToCamelCaseString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+
+    if (string->length < 3) {
+        return OBJ_VAL(string);
+    }
+    if (strchr(string->chars, '_') == NULL) {
+        return OBJ_VAL(string);
+    }
+
     char *temp = ALLOCATE(vm, char, string->length + 1);
     
     int i, j;
@@ -758,9 +766,27 @@ static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+
+    if (string->length < 2) {
+        return OBJ_VAL(string);
+    }
+
+    bool upperCaseFound = false;
+
+    int i, j;
+    for (i = 0; i < string->length; i++) {
+        if (isupper(string->chars[i])) {
+            upperCaseFound = true;
+            break;
+        }
+    }
+
+    if (!upperCaseFound) {
+        return OBJ_VAL(string);
+    }
+
     char *temp = ALLOCATE(vm, char, (string->length * 2) + 1);
     
-    int i, j;
     for (i = j = 0; i < string->length; i++, j++) {
         if (isupper(string->chars[i])) {
             temp[j] = '_';
