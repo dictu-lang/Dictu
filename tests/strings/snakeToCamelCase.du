@@ -1,0 +1,16 @@
+/**
+ * snakeToCamelCase.du
+ *
+ * Testing the str.snakeToCamelCase() method
+ *
+ * .snakeToCamelCase() returns a new string converted from snake case to camel case. 
+ */
+from UnitTest import UnitTest;
+
+class TestStringSnakeToCamelCase < UnitTest {
+    testStringSnakeToCamelCase() {
+        this.assertEquals("example_of_snake_case".snakeToCamelCase(), "exampleOfSnakeCase");
+    }
+}
+
+TestStringSnakeToCamelCase().run();
