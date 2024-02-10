@@ -9,12 +9,12 @@ Value dictu_ffi_test(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(a+b);
 }
 Value dictu_ffi_test_str(DictuVM *vm, int argCount, Value *args) {
-    return OBJ_VAL(copyString(vm, "Hello world", 11));
+    return OBJ_VAL(copyString(vm, "Hello From Dictu FFI module!", 28));
 }
 
 int dictu_ffi_init(DictuVM *vm, Table *method_table) {
-  defineNative(vm, method_table, "dictu_ffi_test", dictu_ffi_test);
-  defineNative(vm, method_table, "dictu_ffi_test_str", dictu_ffi_test_str);
+  defineNative(vm, method_table, "dictuFFITestAdd", dictu_ffi_test);
+  defineNative(vm, method_table, "dictuFFITestStr", dictu_ffi_test_str);
   defineNativeProperty(
     vm, method_table, "test",
         OBJ_VAL(copyString(vm, "Dictu!", 6)));

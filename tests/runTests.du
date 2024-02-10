@@ -54,6 +54,7 @@ import "hashlib/import.du";
 import "object/import.du";
 import "term/import.du";
 import "buffer/import.du";
+import "ffi/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

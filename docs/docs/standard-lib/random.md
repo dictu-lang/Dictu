@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Random
-nav_order: 19
+nav_order: 20
 parent: Standard Library
 ---
 
