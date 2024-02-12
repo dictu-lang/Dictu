@@ -112,6 +112,12 @@ int dictu_ffi_init(DictuVM *vm, Table *method_table) {
 }
 ```
 
+### Constants
+
+| Constant        | Description                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| FFI.suffix      | The system specific shared library suffix with the period(`.`): .dll/.so/.dylib.                  |
+
 ```cs
 import FFI;
 const mod = FFI.load("/path/to/library.so");
