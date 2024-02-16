@@ -20,7 +20,6 @@ typedef Value function_definition_t(DictuVM *vm, int argCount, Value *args);
 typedef int init_func_definition_t(void **function_ptrs, DictuVM *vm,
                                    Table *table, int vm_ffi_version);
 
-// #define AS_FFI_INSTANCE(v) ((FFIInstance *)AS_ABSTRACT(v)->data)
 
 void *ffi_function_pointers[] = {&copyString,
                                  &newList,
