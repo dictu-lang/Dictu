@@ -299,6 +299,7 @@ typedef struct {
 } CallFrame;
 
 struct _vm {
+    void* _compilerStub;
     Value stack[STACK_MAX];
     Value *stackTop;
     bool repl;
