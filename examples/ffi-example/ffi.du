@@ -1,0 +1,16 @@
+import FFI;
+import System;
+
+var mod = nil;
+
+if(System.platform == "windows") {
+    mod = FFI.load("./build/Release/ffi-test{}".format(FFI.suffix));
+} else {
+    mod = FFI.load("./build/libffi-test{}".format(FFI.suffix));
+}
+
+for(var i = 0; i < 25; i+=1) {
+    print(mod.dictu_ffi_test(1, i*2));
+    print(mod.dictu_ffi_test_str());
+}
+print(mod.test);

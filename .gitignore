@@ -31,3 +31,4 @@ test1.du
 /.env
 /vcpkg_installed
 /Release
+examples/ffi-example/build
