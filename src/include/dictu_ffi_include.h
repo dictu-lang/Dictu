@@ -1,5 +1,5 @@
-#ifndef dictumod_include_h
-#define dictumod_include_h
+#ifndef dictu_ffi_include_h
+#define dictu_ffi_include_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -596,7 +596,7 @@ int dictu_internal_ffi_init(void **function_ptrs, DictuVM *vm,
         // we already initialized.
         return 1;
     }
-    if (vm_ffi_version > FFI_MOD_API_VERSION)
+    if (FFI_MOD_API_VERSION > vm_ffi_version)
         return 2;
     size_t count = 0;
 

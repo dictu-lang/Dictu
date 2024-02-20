@@ -1,4 +1,4 @@
-#include "dictu-include.h"
+#include <dictu_ffi_include.h>
 
 Value dictu_ffi_test(DictuVM *vm, int argCount, Value *args) {
     if(argCount != 2 || !IS_NUMBER(args[0]) || !IS_NUMBER(args[1])){

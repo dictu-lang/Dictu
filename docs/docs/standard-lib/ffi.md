@@ -24,7 +24,7 @@ import FFI;
 ### Creating a module
 Creating a FFI module requires building a dynamically shared library(.dll/.dylib/.so).
 
-To build a module theres only a single header needed [dictu-include.h]().
+To build a module theres only a single header needed [dictu_ffi_include.h](https://github.com/dictu-lang/Dictu/blob/develop/src/include/dictu_ffi_include.h).
 The header contains definitions, function declerations and function pointers(set at runtime automatically) for anything needed to interact with the DictuVM.
 Further it contains the following function decleration:
 ```c
@@ -38,7 +38,7 @@ Upon loading the module(shared library) in dictu, the vm will load and invoke th
 **NOTE: do not use vm functions before the init function is called since functions wont be available yet!**
 
 Within the function you can then define properties and functions which will then be available from dictu.
-The functions must follow this signature, the types are defined in the `dictu-include.h` header:
+The functions must follow this signature, the types are defined in the `dictu_ffi_include.h` header:
 ```c
 Value ffi_function(DictuVM *vm, int argCount, Value *args);
 ```
@@ -48,6 +48,8 @@ Value ffi_function(DictuVM *vm, int argCount, Value *args);
 #### Functions
 Given the following c code:
 ```c
+#include <dictu_ffi_include.h>
+//...
 Value dictu_ffi_function(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(copyString(vm, "Hello From Dictu FFI module!", 28));
 }
@@ -56,13 +58,14 @@ int dictu_ffi_init(DictuVM *vm, Table *method_table) {
     // ...
   defineNative(vm, method_table, "getString", dictu_ffi_function);
    // ...
+  return 0;
 }
 ```
 In dictu you can do
 ```cs
 import FFI;
 
-const mod = FFI.load("/path/to/library.so");
+const mod = FFI.load("/path/to/library{}".format(FFI.suffix));
 const str = mod.getString(); // "Hello From Dictu FFI module!"
 ```
 
@@ -73,7 +76,7 @@ Given the following c code:
 int dictu_ffi_init(DictuVM *vm, Table *method_table) {
     // ...
     defineNativeProperty(
-    vm, method_table, "propName",
+    vm, method_table, "foo",
         OBJ_VAL(copyString(vm, "Dictu!", 6)));
    // ...
 }
@@ -82,13 +85,13 @@ In dictu you can do
 ```cs
 import FFI;
 
-const mod = FFI.load("/path/to/library.so");
-const str = mod.propName; // Dictu!
+const mod = FFI.load("/path/to/library{}".format(FFI.suffix));
+const str = mod.foo; // Dictu!
 ```
 
 Here a entire example from the [ffi-example]():
 ```c
-#include "dictu-include.h"
+#include <dictu_ffi_include.h>
 
 Value dictu_ffi_test(DictuVM *vm, int argCount, Value *args) {
     if(argCount != 2 || !IS_NUMBER(args[0]) || !IS_NUMBER(args[1])){
@@ -120,7 +123,7 @@ int dictu_ffi_init(DictuVM *vm, Table *method_table) {
 
 ```cs
 import FFI;
-const mod = FFI.load("/path/to/library.so");
+const mod = FFI.load("/path/to/library{}".format(FFI.suffix));
 print(mod.test); // Dictu!
 print(mod.dictuFFITestStr()); // "Hello From Dictu FFI module!"
 print(mod.dictuFFITestAdd(22, 22)); // 44
@@ -128,9 +131,9 @@ print(mod.dictuFFITestAdd(22)); // nil
 ```
 
 ### FFI.load(String) -> FFIInstance
-Load a module, the Shared library **MUST** include the `dictu-include.h` header and have `dictu_ffi_init` defined otherwise it might lead to UB.
+Load a module, the Shared library **MUST** include the `dictu_ffi_include.h` header and have `dictu_ffi_init` defined otherwise it might lead to UB.
 ```cs
-const mod = FFI.load("/path/to/library.so");
+const mod = FFI.load("/path/to/shared-object");
 print(mod); // <FFIInstance>
 // mod will contain all defined functions and properties by the module.
 ```
