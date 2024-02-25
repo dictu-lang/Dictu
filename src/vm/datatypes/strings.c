@@ -724,6 +724,87 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, temp, strlen(temp)));
 }
 
+static Value snakeToCamelCaseString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "snakeToCamelCase() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+
+    if (string->length < 3) {
+        return OBJ_VAL(string);
+    }
+    if (strchr(string->chars, '_') == NULL) {
+        return OBJ_VAL(string);
+    }
+
+    char *temp = ALLOCATE(vm, char, string->length + 1);
+    
+    int i, j;
+    for (i = j = 0; i < string->length; i++, j++) {
+        if (string->chars[i] == '_') {
+            temp[j] = toupper(string->chars[i+1]);
+            i++;
+        } else {
+            temp[j] = string->chars[i];
+        }
+    }
+    temp[j+1] = '\0';
+
+    if (i != j) {
+        temp = SHRINK_ARRAY(vm, temp, char, string->length + 1, strlen(temp) + 1);
+    }
+
+    return OBJ_VAL(takeString(vm, temp, j));
+}
+
+static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "camelToSnakeCase() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    ObjString *string = AS_STRING(args[0]);
+
+    if (string->length < 2) {
+        return OBJ_VAL(string);
+    }
+
+    bool upperCaseFound = false;
+
+    int i, j;
+    for (i = 0; i < string->length; i++) {
+        if (isupper(string->chars[i])) {
+            upperCaseFound = true;
+            break;
+        }
+    }
+
+    if (!upperCaseFound) {
+        return OBJ_VAL(string);
+    }
+
+    char *temp = ALLOCATE(vm, char, (string->length * 2) + 1);
+    
+    for (i = j = 0; i < string->length; i++, j++) {
+        if (isupper(string->chars[i])) {
+            temp[j] = '_';
+            j++;
+            temp[j] = tolower(string->chars[i]);
+        } else {
+            temp[j] = string->chars[i];
+        }
+    }
+    temp[j+1] = '\0';
+
+    if (i != j) {
+        temp = SHRINK_ARRAY(vm, temp, char, (string->length * 2) + 1, j + 1);
+    }
+
+    return OBJ_VAL(takeString(vm, temp, j));
+}
+
 void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
@@ -749,4 +830,6 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "isLower", isLowerString);
     defineNative(vm, &vm->stringMethods, "collapseSpaces", collapseSpacesString);
     defineNative(vm, &vm->stringMethods, "wrap", wrapString);
+    defineNative(vm, &vm->stringMethods, "snakeToCamelCase", snakeToCamelCaseString);
+    defineNative(vm, &vm->stringMethods, "camelToSnakeCase", camelToSnakeCaseString);
 }
