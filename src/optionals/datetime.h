@@ -12,6 +12,16 @@
 
 #include "optionals.h"
 
+typedef struct {
+    long time;    /* timestamp */
+	bool is_local; 
+} Datetime;
+
+
+typedef struct {
+    unsigned long seconds;
+} Duration;
+
 Value createDatetimeModule(DictuVM *vm);
 
 #endif //dictu_datetime_h
