@@ -10,7 +10,7 @@ if(System.platform == "windows") {
 }
 
 for(var i = 0; i < 25; i+=1) {
-    print(mod.dictu_ffi_test(1, i*2));
-    print(mod.dictu_ffi_test_str());
+    print(mod.dictuFFITestAdd(1, i*2));
+    print(mod.dictuFFITestStr());
 }
 print(mod.test);
