@@ -199,7 +199,21 @@ static LangTokenType identifierType(Scanner *scanner) {
             if (scanner->current - scanner->start > 1) {
                 switch (scanner->start[1]) {
                     case 'a':
-                        return checkKeyword(scanner, 2, 3, "lse", TOKEN_FALSE);
+                        if (scanner->current - scanner->start > 2) {
+                            switch (scanner->start[2]) {
+                                case 'l':
+                                    if(scanner->current - scanner->start > 3) {
+                                        switch (scanner->start[3]) {
+                                            case 'l':
+                                                return checkKeyword(scanner, 4, 0, "", TOKEN_FALL);
+                                            case 's':
+                                                return checkKeyword(scanner, 4, 1, "e", TOKEN_FALSE);
+                                        }
+                                    }
+                                    break;  
+                            }
+                        }
+                        break;
                     case 'o':
                         return checkKeyword(scanner, 2, 1, "r", TOKEN_FOR);
                     case 'r':
