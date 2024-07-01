@@ -113,7 +113,7 @@ static void repl(DictuVM *vm) {
         exit(75);
     }
 
-    strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST));
+    strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST)-1);
 
     linenoiseHistoryLoad(dictuPath);
 
