@@ -95,7 +95,7 @@ char *getDictuPath() {
     } else {
         const char *home = getenv("HOME");
         strncpy(dictuPath, home, strlen(home));
-        strncat(dictuPath, DICTU_HOME, strlen(DICTU_HOME));
+        strncat(dictuPath, DICTU_HOME, strlen(DICTU_HOME)-1);
     }
 
     return dictuPath;
