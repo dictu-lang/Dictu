@@ -799,7 +799,7 @@ static Value camelToSnakeCaseString(DictuVM *vm, int argCount, Value *args) {
     temp[j+1] = '\0';
 
     if (i != j) {
-        temp = SHRINK_ARRAY(vm, temp, char, (string->length * 2), j + 1);
+        temp = SHRINK_ARRAY(vm, temp, char, (string->length * 2) + 2, j + 1);
     }
 
     return OBJ_VAL(takeString(vm, temp, j));
