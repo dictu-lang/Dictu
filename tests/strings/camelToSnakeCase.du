@@ -17,3 +17,4 @@ class TestStringCamelToSnakeCase < UnitTest {
 }
 
 TestStringCamelToSnakeCase().run();
+
