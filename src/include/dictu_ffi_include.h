@@ -11,7 +11,7 @@ extern "C" {
 
 // This is used ti determine if we can safely load the function pointers without
 // UB.
-#define FFI_MOD_API_VERSION 1
+#define FFI_MOD_API_VERSION 2
 
 #define UNUSED(__x__) (void)__x__
 
@@ -155,6 +155,25 @@ typedef struct {
     Entry *entries;
 } Table;
 
+typedef enum {
+    OBJ_MODULE,
+    OBJ_BOUND_METHOD,
+    OBJ_CLASS,
+    OBJ_ENUM,
+    OBJ_CLOSURE,
+    OBJ_FUNCTION,
+    OBJ_INSTANCE,
+    OBJ_NATIVE,
+    OBJ_STRING,
+    OBJ_LIST,
+    OBJ_DICT,
+    OBJ_SET,
+    OBJ_FILE,
+    OBJ_ABSTRACT,
+    OBJ_RESULT,
+    OBJ_UPVALUE
+} ObjType;
+
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
 #define AS_MODULE(value) ((ObjModule *)AS_OBJ(value))
@@ -194,24 +213,7 @@ typedef struct {
 #define IS_ABSTRACT(value) isObjType(value, OBJ_ABSTRACT)
 #define IS_RESULT(value) isObjType(value, OBJ_RESULT)
 
-typedef enum {
-    OBJ_MODULE,
-    OBJ_BOUND_METHOD,
-    OBJ_CLASS,
-    OBJ_ENUM,
-    OBJ_CLOSURE,
-    OBJ_FUNCTION,
-    OBJ_INSTANCE,
-    OBJ_NATIVE,
-    OBJ_STRING,
-    OBJ_LIST,
-    OBJ_DICT,
-    OBJ_SET,
-    OBJ_FILE,
-    OBJ_ABSTRACT,
-    OBJ_RESULT,
-    OBJ_UPVALUE
-} ObjType;
+
 
 typedef enum { CLASS_DEFAULT, CLASS_ABSTRACT, CLASS_TRAIT } ClassType;
 
@@ -232,6 +234,9 @@ struct sObj {
     bool isDark;
     struct sObj *next;
 };
+static inline bool isObjType(Value value, ObjType type) {
+    return IS_OBJ(value) && AS_OBJ(value)->type == type;
+}
 
 typedef struct sUpvalue {
     Obj obj;
@@ -454,6 +459,31 @@ typedef struct {
     ObjClosure *method;
 } ObjBoundMethod;
 
+#define ALLOCATE(vm, type, count) \
+    (type*)reallocate(vm, NULL, 0, sizeof(type) * (count))
+
+#define FREE(vm, type, pointer) \
+    reallocate(vm, pointer, sizeof(type), 0)
+
+#define GROW_CAPACITY(capacity) \
+    ((capacity) < 8 ? 8 : (capacity) * 2)
+
+#define SHRINK_CAPACITY(capacity) \
+    ((capacity) < 16 ? 8 : (capacity) / 2)
+
+#define GROW_ARRAY(vm, previous, type, oldCount, count) \
+    (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \
+        sizeof(type) * (count))
+
+#define SHRINK_ARRAY(vm, previous, type, oldCount, count) \
+    (type*)reallocate(vm, previous, sizeof(type) * (oldCount), \
+        sizeof(type) * (count))
+
+#define FREE_ARRAY(vm, type, pointer, oldCount) \
+    reallocate(vm, pointer, sizeof(type) * (oldCount), 0)
+
+typedef void *reallocate_t(DictuVM *vm, void *previous, size_t oldSize, size_t newSize);
+
 typedef ObjString *copyString_t(DictuVM *vm, const char *chars, int length);
 
 typedef ObjList *newList_t(DictuVM *vm);
@@ -520,6 +550,7 @@ typedef void defineNative_t(DictuVM *vm, Table *table, const char *name,
 
 typedef void defineNativeProperty_t(DictuVM *vm, Table *table, const char *name,
                                     Value value);
+reallocate_t * reallocate = NULL;
 
 copyString_t *copyString = NULL;
 
@@ -633,6 +664,7 @@ int dictu_internal_ffi_init(void **function_ptrs, DictuVM *vm,
     compareStringGreater = (compareStringGreater_t *)function_ptrs[count++];
     defineNative = (defineNative_t *)function_ptrs[count++];
     defineNativeProperty = (defineNativeProperty_t *)function_ptrs[count++];
+    reallocate = (reallocate_t *)function_ptrs[count++];
     int initResult = dictu_ffi_init(vm, methodTable);
     if (initResult > 0)
         return 3 + initResult;
