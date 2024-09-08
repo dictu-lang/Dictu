@@ -32,3 +32,4 @@ test1.du
 /vcpkg_installed
 /Release
 examples/ffi-example/build
+build_x64/
