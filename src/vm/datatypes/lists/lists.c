@@ -91,7 +91,6 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
         return EMPTY_VAL;
     }
-    printf("XXX - index: %d\n", index);
 
     if (list->values.capacity < list->values.count + 1) {
         int oldCapacity = list->values.capacity;
@@ -133,9 +132,11 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
         }
 
         int index = AS_NUMBER(args[1]);
-
+        if (index < 0) {
+            index = list->values.count + index;
+        }
         if (index < 0 || index > list->values.count) {
-            runtimeError(vm, "Index passed to pop() is out of bounds for the list given");
+            runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
             return EMPTY_VAL;
         }
 
