@@ -84,10 +84,14 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
     Value insertValue = args[1];
     int index = AS_NUMBER(args[2]);
 
+    if (index < 0) {
+        index = list->values.count + index+1;
+    }
     if (index < 0 || index > list->values.count) {
         runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
         return EMPTY_VAL;
     }
+    printf("XXX - index: %d\n", index);
 
     if (list->values.capacity < list->values.count + 1) {
         int oldCapacity = list->values.capacity;
