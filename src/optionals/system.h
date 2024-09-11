@@ -1,11 +1,11 @@
 #ifndef dictu_system_h
 #define dictu_system_h
 
-#include <time.h>
+#include <ctype.h>
 #include <limits.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <ctype.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include "windowsapi.h"
@@ -13,18 +13,19 @@
 #define REMOVE remove
 #define MKDIR(d, m) ((void)m, _mkdir(d))
 #else
-#include <unistd.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 #define HAS_ACCESS
 #define REMOVE unlink
 #define MKDIR(d, m) mkdir(d, m)
 #endif
 
-#include "optionals.h"
 #include "../vm/common.h"
-#include "../vm/vm.h"
 #include "../vm/memory.h"
+#include "../vm/vm.h"
+#include "optionals.h"
+#include "arch.h"
 
 Value createSystemModule(DictuVM *vm);
 
-#endif //dictu_system_h
+#endif // dictu_system_h
