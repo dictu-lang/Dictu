@@ -821,6 +821,7 @@ bool isFalsey(Value value) {
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
            (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_RESULT(value) && AS_RESULT(value)->status == ERR) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
