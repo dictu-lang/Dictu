@@ -31,6 +31,7 @@ int dictu_ffi_init(DictuVM *vm, Table *method_table) {
 Used c code end
 */
 
+import System;
 
 from UnitTest import UnitTest;
 import FFI;
