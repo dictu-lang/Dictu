@@ -191,6 +191,19 @@ ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) 
     abstract->func = func;
     abstract->type = type;
     abstract->grayFunc = NULL;
+    abstract->excludeSelf = false;
+    initTable(&abstract->values);
+
+    return abstract;
+}
+
+ObjAbstract *newAbstractExcludeSelf(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) {
+    ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
+    abstract->data = NULL;
+    abstract->func = func;
+    abstract->type = type;
+    abstract->grayFunc = NULL;
+    abstract->excludeSelf = true;
     initTable(&abstract->values);
 
     return abstract;
