@@ -136,7 +136,7 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
             index = list->values.count + index;
         }
         if (index < 0 || index > list->values.count) {
-            runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
+            runtimeError(vm, "Index passed to pop() is out of bounds for the list given");
             return EMPTY_VAL;
         }
 
