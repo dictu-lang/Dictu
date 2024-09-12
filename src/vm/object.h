@@ -146,6 +146,7 @@ typedef struct {
 struct sObjDict {
     Obj obj;
     int count;
+    int activeCount;
     int capacityMask;
     DictItem *entries;
 };
@@ -180,6 +181,7 @@ struct sObjAbstract {
     AbstractFreeFn func;
     AbstractGrayFn grayFunc;
     AbstractTypeFn type;
+    bool excludeSelf;
 };
 
 typedef enum {
@@ -280,6 +282,7 @@ ObjSet *newSet(DictuVM *vm);
 ObjFile *newFile(DictuVM *vm);
 
 ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type);
+ObjAbstract *newAbstractExcludeSelf(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type);
 
 ObjResult *newResult(DictuVM *vm, ResultStatus status, Value value);
 

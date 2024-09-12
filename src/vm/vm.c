@@ -1,8 +1,8 @@
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -50,6 +50,8 @@ static void resetStack(DictuVM *vm) {
         argCount += (list->values.count - 1);                                       \
         unpack = false;                                                             \
     }
+
+#define INSTANCE_HAS_NO_ATTR_ERR RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars)
 
 void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
@@ -363,6 +365,19 @@ static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
     return true;
 }
 
+static bool callNativeMethodExcludeSelf(DictuVM *vm, Value method, int argCount) {
+    NativeFn native = AS_NATIVE(method);
+
+    Value result = native(vm, argCount, vm->stackTop - (argCount-1) - 1);
+
+    if (IS_EMPTY(result))
+        return false;
+
+    vm->stackTop -= argCount + 1;
+    push(vm, result);
+    return true;
+}
+
 static bool invokeFromClass(DictuVM *vm, ObjClass *klass, ObjString *name,
                             int argCount, bool unpack) {
     HANDLE_UNPACK
@@ -643,6 +658,8 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
 
                 Value value;
                 if (tableGet(&abstract->values, name, &value)) {
+                    if(abstract->excludeSelf)
+                         return callNativeMethodExcludeSelf(vm, value, argCount);
                     return callNativeMethod(vm, value, argCount);
                 }
 
@@ -804,6 +821,7 @@ bool isFalsey(Value value) {
            (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
            (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
            (IS_DICT(value) && AS_DICT(value)->count == 0) ||
+           (IS_RESULT(value) && AS_RESULT(value)->status == ERR) ||
            (IS_SET(value) && AS_SET(value)->count == 0);
 }
 
@@ -1139,7 +1157,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                         RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
                     }
 
-                    RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars);
+                    INSTANCE_HAS_NO_ATTR_ERR;
                 }
 
                 case OBJ_MODULE: {
@@ -1153,6 +1171,18 @@ static DictuInterpretResult run(DictuVM *vm) {
                     }
 
                     RUNTIME_ERROR("'%s' module has no attribute: '%s'.", module->name->chars, name->chars);
+                }
+
+                case OBJ_ABSTRACT: {
+                    ObjAbstract *abstract = AS_ABSTRACT(receiver);
+                    ObjString *name = READ_STRING();
+                    Value value;
+                    if (tableGet(&abstract->values, name, &value)) {
+                        pop(vm); // Abstract.
+                        push(vm, value);
+                        DISPATCH();
+                    }
+                    RUNTIME_ERROR("'no attribute: '%s'.",name->chars);
                 }
 
                 case OBJ_CLASS: {
@@ -1259,7 +1289,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     klass = klass->superclass;
                 }
 
-                RUNTIME_ERROR("'%s' instance has no attribute1: '%s'.", instance->klass->name->chars, name->chars);
+                INSTANCE_HAS_NO_ATTR_ERR;
             } else if (IS_CLASS(peek(vm, 0))) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
@@ -1369,7 +1399,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                 klass = klass->superclass;
             }
 
-            RUNTIME_ERROR("'%s' instance has no attribute3: '%s'.", instance->klass->name->chars, name->chars);
+            INSTANCE_HAS_NO_ATTR_ERR;
         }
 
         CASE_CODE(SET_ATTRIBUTE): {
@@ -1643,7 +1673,11 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             char path[PATH_MAX];
             if (!resolvePath(frame->closure->function->module->path->chars, fileName->chars, path)) {
-                RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+                // if stdlib import is not found, try to load from the project's modules directory
+
+                if (!resolvePath("dictu_modules", fileName->chars, path)) {
+                    RUNTIME_ERROR("Could not open file \"%s\".", fileName->chars);
+                }
             }
 
             ObjString *pathObj = copyString(vm, path, strlen(path));
@@ -1871,9 +1905,10 @@ static DictuInterpretResult run(DictuVM *vm) {
                         index = string->length + index;
 
                     if (index >= 0 && index < string->length) {
+                        ObjString *newString = copyString(vm, &string->chars[index], 1);
                         pop(vm);
                         pop(vm);
-                        push(vm, OBJ_VAL(copyString(vm, &string->chars[index], 1)));
+                        push(vm, OBJ_VAL(newString));
                         DISPATCH();
                     }
 
@@ -2276,7 +2311,7 @@ static DictuInterpretResult run(DictuVM *vm) {
             ObjClass *klass = AS_CLASS(peek(vm, 0));
 
             // If super class is abstract, ensure we have defined all abstract methods
-            for (int i = 0; i < klass->abstractMethods.capacityMask + 1; i++) {
+            for (int i = 0; i < klass->abstractMethods.capacity; i++) {
                 if (klass->abstractMethods.entries[i].key == NULL) {
                     continue;
                 }

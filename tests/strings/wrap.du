@@ -1,0 +1,21 @@
+/**
+ * wrap.du
+ *
+ * Testing the str.wrap() method
+ *
+ * .wrap() returns a new string with new lines inserted at the given length.
+ */
+from UnitTest import UnitTest;
+
+class TestStringWrap < UnitTest {
+    const maxLen = 80;
+
+    testStringWrap() {
+        const testString = "This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not out business as to why, but we can provide the functionality for them to do so.";
+        const res = testString.wrap(this.maxLen);
+        const idx = res.find("\n");
+        this.assertTruthy(res.find("\n") <= this.maxLen);
+    }
+}
+
+TestStringWrap().run();

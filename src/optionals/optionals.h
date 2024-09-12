@@ -12,7 +12,6 @@
 #include "log.h"
 #include "http/http.h"
 #include "path.h"
-#include "c.h"
 #include "datetime.h"
 #include "socket.h"
 #include "net.h"
@@ -28,7 +27,9 @@
 #include "stack.h"
 #include "bigint.h"
 #include "object/object.h"
+#include "buffer.h"
 #include "unittest/unittest.h"
+#include "ffi/ffi.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);
 

@@ -1,0 +1,6 @@
+/**
+ * import.du
+ *
+ * General import file for the FFI module tests
+ */
+import "ffi.du";

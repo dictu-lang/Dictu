@@ -14,6 +14,7 @@ typedef struct response {
     char *res;
     size_t len;
     long statusCode;
+    bool firstIteration;
 } Response;
 
 Value createHTTPModule(DictuVM *vm);

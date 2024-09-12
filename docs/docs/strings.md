@@ -205,6 +205,15 @@ To find the index of a given substring, use the `.find()` method. This method ta
 "House".find("Lost Keys"); // -1 (Not found)
 ```
 
+### string.findLast(String) -> Number
+
+Returns the last index of the given string. If the substring doesn't exist, -1 is returned.
+
+```cs
+"woolly woolly mammoth".findLast("woolly"); // 7
+"mammoth".findLast("woolly"); // -1
+```
+
 ### string.leftStrip() -> String
 
 Strips whitespace from the left side of a string and returns the result.
@@ -267,4 +276,53 @@ Returns a new string with the original string repeated the given number of times
 ```cs
 "ba"+"na".repeat(2); // banana
 "la".repeat(2) + " land"; // lala land
+```
+
+### string.isUpper() -> Boolean
+
+Returns a boolean indicating that the given string is an upper case letter.
+
+```cs
+"D".isUpper(); // true
+"d".isUpper() // false
+"G00D!".isUpper() // true
+"Dog".isUpper() // false
+```
+
+### string.isLower() -> Boolean
+
+Returns a boolean indicating that the given string is an lower case letter. Empty strings are considered false.
+
+```cs
+"D".isLower(); // false
+"d".isLower() // true
+"g00d!".isLower() // true
+"Dog".isLower() // false
+```
+
+### string.wordCount() -> Number
+
+Returns the number of words in the given string. Empty strings are considered false.
+
+```cs
+"".wordCount(); // 0
+"This".wordCount(); // 1
+"This is a sentence".wordCount(); // 4
+"This is an even longer sentence".wordCount(); // 6
+```
+
+### string.collapseSpaces() -> String
+
+Returns a string with extraneous whitespace removed.
+
+```cs
+"This  is      a huge string of a       lot of spaces.".collapseSpaces(); // "This is a huge string of a lot of spaces."
+```
+
+### string.wrap(Number) -> String
+
+Returns a new string with new lines inserted at the given length.
+
+```cs
+"This is a really really long string that will need to be broken up for whatever reason the caller has determined. Not our business as to why, but we can provide the functionality for them to do so.".wrap(80);
 ```

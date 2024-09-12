@@ -1,7 +1,7 @@
 ---
 layout: default
 title: IO
-nav_order: 9
+nav_order: 11
 parent: Standard Library
 ---
 
@@ -23,6 +23,12 @@ To make use of the IO module an import is required.
 ```cs
 import IO;
 ```
+
+### Constants
+
+| Constant   | Description                         |
+| ---------- | ----------------------------------- |
+| IO.devNull | Provides access to the null device. |
 
 ### IO.print(...values) -> Nil
 

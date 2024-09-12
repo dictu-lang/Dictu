@@ -26,6 +26,14 @@ class TestSystemConstants < UnitTest {
         this.assertType(System.platform, 'string');
         this.assertTruthy(System.platform.len() > 0);
     }
+
+    /**
+     * arch stores the current system archictecture as a string
+     */
+    testSysArch() {
+        this.assertType(System.arch, 'string');
+        this.assertTruthy(System.arch.len() > 0);
+    }
 }
 
 TestSystemConstants().run();

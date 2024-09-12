@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Term
-nav_order: 23
+nav_order: 25
 parent: Standard Library
 ---
 

@@ -167,6 +167,7 @@ ObjList *newList(DictuVM *vm) {
 ObjDict *newDict(DictuVM *vm) {
     ObjDict *dict = ALLOCATE_OBJ(vm, ObjDict, OBJ_DICT);
     dict->count = 0;
+    dict->activeCount = 0;
     dict->capacityMask = -1;
     dict->entries = NULL;
     return dict;
@@ -190,6 +191,19 @@ ObjAbstract *newAbstract(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) 
     abstract->func = func;
     abstract->type = type;
     abstract->grayFunc = NULL;
+    abstract->excludeSelf = false;
+    initTable(&abstract->values);
+
+    return abstract;
+}
+
+ObjAbstract *newAbstractExcludeSelf(DictuVM *vm, AbstractFreeFn func, AbstractTypeFn type) {
+    ObjAbstract *abstract = ALLOCATE_OBJ(vm, ObjAbstract, OBJ_ABSTRACT);
+    abstract->data = NULL;
+    abstract->func = func;
+    abstract->type = type;
+    abstract->grayFunc = NULL;
+    abstract->excludeSelf = true;
     initTable(&abstract->values);
 
     return abstract;
@@ -550,21 +564,21 @@ ObjDict *classToDict(DictuVM *vm, Value value) {
     push(vm, OBJ_VAL(methodsList));
 
     while (klass != NULL) {
-        for (int i = 0; i < klass->variables.capacityMask + 1; i++) {
+        for (int i = 0; i < klass->variables.capacity; i++) {
             if (klass->variables.entries[i].key == NULL) {
                 continue;
             }
             dictSet(vm, variablesDict, OBJ_VAL(klass->variables.entries[i].key), klass->variables.entries[i].value);
         }
 
-        for (int i = 0; i < klass->constants.capacityMask + 1; i++) {
+        for (int i = 0; i < klass->constants.capacity; i++) {
             if (klass->constants.entries[i].key == NULL) {
                 continue;
             }
             dictSet(vm, constantsDict, OBJ_VAL(klass->constants.entries[i].key), klass->constants.entries[i].value);
         }
 
-        for (int i = 0; i < klass->publicMethods.capacityMask + 1; i++) {
+        for (int i = 0; i < klass->publicMethods.capacity; i++) {
             if (klass->publicMethods.entries[i].key == NULL) {
                 continue;
             }

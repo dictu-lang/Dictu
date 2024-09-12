@@ -50,8 +50,8 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *srcFile = AS_STRING(args[0])->chars;
-    char *dstFile = AS_STRING(args[1])->chars;
+    char *srcFile = AS_CSTRING(args[0]);
+    char *dstFile = AS_CSTRING(args[1]);
 
     FILE *sf = fopen(srcFile, "r");
     if (sf == NULL) {
@@ -89,8 +89,8 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *src = AS_STRING(args[0])->chars;
-    char *dst = AS_STRING(args[1])->chars;
+    char *src = AS_CSTRING(args[0]);
+    char *dst = AS_CSTRING(args[1]);
 
     int in = 0;
     int out = 0;
@@ -127,6 +127,11 @@ Value createIOModule(DictuVM *vm) {
     defineNativeProperty(vm, &module->values, "stdin",  NUMBER_VAL(STDIN_FILENO));
     defineNativeProperty(vm, &module->values, "stdout",  NUMBER_VAL(STDOUT_FILENO));
     defineNativeProperty(vm, &module->values, "stderr",  NUMBER_VAL(STDERR_FILENO));
+#ifndef _WIN32
+    defineNativeProperty(vm, &module->values, "devNull", OBJ_VAL(copyString(vm, "/dev/null", strlen("/dev/null"))));
+#else
+    defineNativeProperty(vm, &module->values, "devNull", OBJ_VAL(copyString(vm, "\\\\.\\NUL", strlen("\\\\.\\NUL"))));
+#endif
 
     /**
      * Define IO methods

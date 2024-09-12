@@ -1,7 +1,7 @@
 ---
 layout: default
 title: System
-nav_order: 22
+nav_order: 24
 parent: Standard Library
 ---
 
@@ -29,6 +29,7 @@ import System;
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
 | System.platform | This string identifies the underlying system platform.                                            |
+| System.arch     | This string identifies the underlying process architecture.                                         |
 | System.version  | Dictionary containing Dictu major, minor and patch versions.                                      |
 | System.S_IRWXU  | Read, write, and execute by owner.                                                                |
 | System.S_IRUSR  | Read by owner.                                                                                    |
@@ -238,7 +239,7 @@ Shell
 $ echo $?; // 10
 ```
 
-### System.chmod(String, String)
+### System.chmod(String, String) -> Result\<Nil>
 
 Set the permissions on a file or directory.
 
@@ -246,7 +247,21 @@ Set the permissions on a file or directory.
 System.chmod("/usr/local/share", "755");
 ```
 
-### System.chown(String, Number, Number)
+### System.chown(String, Number, Number) -> Result\<Nil>
+
+Set the ownership of a file or directory with the given path, uid, and gid.
+
+Note: This is not available on Windows systems.
+
+### System.rename(String, String) -> Result\<Nil>
+
+Rename the given file.
+
+```cs
+System.rename("old_file", "new_file");
+```
+
+### System.chown(String, Number, Number) -> Result\<Nil>
 
 Set the ownership of a file or directory with the given path, uid, and gid.
 

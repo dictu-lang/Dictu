@@ -70,7 +70,7 @@ ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {
     if (shallow) {
         tableAddAll(vm, &oldInstance->publicAttributes, &instance->publicAttributes);
     } else {
-        for (int i = 0; i <= oldInstance->publicAttributes.capacityMask; i++) {
+        for (int i = 0; i < oldInstance->publicAttributes.capacity; i++) {
             Entry *entry = &oldInstance->publicAttributes.entries[i];
             if (entry->key != NULL) {
                 Value val = entry->value;
@@ -90,7 +90,7 @@ ObjInstance *copyInstance(DictuVM* vm, ObjInstance *oldInstance, bool shallow) {
             }
         }
 
-        for (int i = 0; i <= oldInstance->privateAttributes.capacityMask; i++) {
+        for (int i = 0; i < oldInstance->privateAttributes.capacity; i++) {
             Entry *entry = &oldInstance->privateAttributes.entries[i];
             if (entry->key != NULL) {
                 Value val = entry->value;

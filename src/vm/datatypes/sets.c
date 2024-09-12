@@ -14,6 +14,25 @@ static Value toStringSet(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(string);
 }
 
+static Value valuesSet(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "values() takes no arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+    ObjSet *set = AS_SET(args[0]);
+    ObjList *list = newList(vm);
+    push(vm, OBJ_VAL(list));
+
+    for (int i = 0; i <= set->capacityMask; ++i) {
+        SetItem *item = &set->entries[i];
+        if (IS_EMPTY(item->value) || item->deleted)
+            continue;
+        writeValueArray(vm, &list->values, item->value);
+    }
+    pop(vm);
+    return OBJ_VAL(list);
+}
+
 static Value lenSet(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "len() takes no arguments (%d given)", argCount);
@@ -96,10 +115,10 @@ static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
 void declareSetMethods(DictuVM *vm) {
     defineNative(vm, &vm->setMethods, "toString", toStringSet);
     defineNative(vm, &vm->setMethods, "len", lenSet);
+    defineNative(vm, &vm->setMethods, "values", valuesSet);
     defineNative(vm, &vm->setMethods, "add", addSetItem);
     defineNative(vm, &vm->setMethods, "remove", removeSetItem);
     defineNative(vm, &vm->setMethods, "contains", containsSetItem);
     defineNative(vm, &vm->setMethods, "containsAll", containsAllSet);
     defineNative(vm, &vm->setMethods, "toBool", boolNative); // Defined in util
 }
-

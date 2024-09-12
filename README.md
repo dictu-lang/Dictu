@@ -3,11 +3,7 @@
 *What is Dictu?*
 
 Dictu is a high-level dynamically typed, multi-paradigm, interpreted programming language. Dictu has a very familiar
-C-style syntax along with taking inspiration from the family of languages surrounding it, such as Python and JavaScript. 
-
-*What does Dictu mean?*
-
-Dictu means `simplistic` in Latin.
+C-style syntax along with taking inspiration from the family of languages surrounding it, such as Python and JavaScript.
 
 ### Dictu documentation
 Documentation for Dictu can be found [here](https://dictu-lang.com/)

@@ -1,7 +1,7 @@
 #include "optionals.h"
+#include "ffi/ffi.h"
 
 BuiltinModules modules[] = {
-    {"C", &createCModule, false},
     {"Argparse", &createArgParseModule, false},
     {"Math", &createMathsModule, false},
     {"Env", &createEnvModule, true},
@@ -31,6 +31,8 @@ BuiltinModules modules[] = {
     {"HTTP", &createHTTPModule, true},
 #endif
     {"BigInt", &createBigIntModule, false},
+    {"Buffer", &createBufferModule, false},
+    {"FFI", &createFFIModule, false},
     {NULL, NULL, false}
 };
 

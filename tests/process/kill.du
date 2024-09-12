@@ -1,0 +1,47 @@
+/**
+ * kill.du
+ *
+ * Testing the Process.kill() function
+ *
+ * kill() receives a PID as a Number and optional signal, as a Number (on *NIX) to be passed to the process.
+ */
+from UnitTest import UnitTest;
+
+import IO;
+import Process;
+import System;
+
+class TestProcessKill < UnitTest {
+    testProcessKillError() {
+        const res = Process.kill(9999999999999999).unwrapError();
+        this.assertEquals(res, "No such process");
+    }
+
+    // TODO: Look into this test
+    testProcessKillNoSignal_skipped() {
+        Process.exec(["sleep", "100"]);
+
+        const out = Process.run(["pgrep", "sleep"], true).unwrap();
+        const pids = out.split("\n");
+
+        if (pids.len() > 1) {
+            for (var i = 0; i < pids.len(); i += 1) {
+                var pid = pids[i].replace("\n", "");
+                pid = pid.toNumber().unwrap();
+                const res = Process.kill(pid, 0);
+                this.assertSuccess(res);
+                this.assertNil(res.unwrap());
+            }
+        } else {
+            var pid = pids[0].replace("\n", "");
+            pid = pid.toNumber().unwrap();
+            const res = Process.kill(pid, 0);
+            this.assertSuccess(res);
+            this.assertNil(res.unwrap());
+        }
+    }
+}
+
+if (System.platform != "windows") {
+    TestProcessKill().run();
+}
