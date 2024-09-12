@@ -23,6 +23,12 @@ class TestListInsert < UnitTest {
 
         x.insert(0, 0);
         this.assertEquals(x, [0, 1, 2, 3, 4, 5, 6, 7]);
+
+        x.insert(8, -1);
+        this.assertEquals(x, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+
+        x.insert(28, -4);
+        this.assertEquals(x, [0, 1, 2, 3, 4, 5, 28, 6, 7, 8]);
     }
 }
 

@@ -23,6 +23,14 @@ class TestListPop < UnitTest {
         y = x.pop(0);
         this.assertEquals(y, 1);
         this.assertEquals(x, [2, 3, 4]);
+
+        y = x.pop(-2);
+        this.assertEquals(y, 3);
+        this.assertEquals(x, [2, 4]);
+
+        y = x.pop(-2);
+        this.assertEquals(y, 2);
+        this.assertEquals(x, [4]); 
     }
 }
 
