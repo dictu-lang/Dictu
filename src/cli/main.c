@@ -95,7 +95,7 @@ char *getDictuPath() {
     } else {
         const char *home = getenv("HOME");
         strncpy(dictuPath, home, strlen(home));
-        strncat(dictuPath, DICTU_HOME, strlen(DICTU_HOME));
+        strncat(dictuPath, DICTU_HOME, strlen(DICTU_HOME)-1);
     }
 
     return dictuPath;
@@ -113,7 +113,7 @@ static void repl(DictuVM *vm) {
         exit(75);
     }
 
-    strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST));
+    strncat(dictuPath, DICTU_HIST, strlen(DICTU_HIST)-1);
 
     linenoiseHistoryLoad(dictuPath);
 
