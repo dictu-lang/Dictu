@@ -24,6 +24,7 @@
 #include "../vm/common.h"
 #include "../vm/vm.h"
 #include "../vm/memory.h"
+#include "arch.h"
 
 Value createSystemModule(DictuVM *vm);
 

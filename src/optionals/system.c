@@ -624,6 +624,8 @@ Value createSystemModule(DictuVM *vm) {
     initPlatform(vm, &module->values);
     setVersion(vm, &module->values);
 
+    defineNativeProperty(vm, &module->values, "arch", OBJ_VAL(copyString(vm, SYSTEM_ARCH, strlen(SYSTEM_ARCH))));
+
     defineNativeProperty(vm, &module->values, "S_IRWXU", NUMBER_VAL(448));
     defineNativeProperty(vm, &module->values, "S_IRUSR", NUMBER_VAL(256));
     defineNativeProperty(vm, &module->values, "S_IWUSR", NUMBER_VAL(128));
