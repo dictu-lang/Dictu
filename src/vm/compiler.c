@@ -1520,6 +1520,7 @@ ParseRule rules[] = {
         {NULL,	   NULL,      PREC_NONE},               // TOKEN_SWITCH
         {NULL,	   NULL,      PREC_NONE},               // TOKEN_CASE
         {NULL,     NULL,      PREC_NONE},               // TOKEN_DEFUALT
+        {NULL,     NULL,      PREC_NONE},               // TOKEN_FALL
         {NULL,     NULL,      PREC_NONE},               // TOKEN_VAR
         {NULL,     NULL,      PREC_NONE},               // TOKEN_CONST
         {literal,  NULL,      PREC_NONE},               // TOKEN_TRUE
@@ -2473,6 +2474,7 @@ static void ifStatement(Compiler *compiler) {
 static void switchStatement(Compiler *compiler) {
     int caseEnds[256];
     int caseCount = 0;
+    int fallJump = -1;
 
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'switch'.");
     expression(compiler);
@@ -2488,13 +2490,31 @@ static void switchStatement(Compiler *compiler) {
                 multipleCases++;
                 expression(compiler);
             } while(match(compiler, TOKEN_COMMA));
+
             emitBytes(compiler, OP_MULTI_CASE, multipleCases);
         }
+
         int compareJump = emitJump(compiler, OP_COMPARE_JUMP);
         consume(compiler, TOKEN_COLON, "Expect ':' after expression.");
+
+        if(fallJump != -1) {
+            patchJump(compiler, fallJump);
+            fallJump = -1;
+        }
+
         statement(compiler);
+
+        if (match(compiler, TOKEN_FALL)) {
+            fallJump = emitJump(compiler, OP_JUMP);
+
+            if (!check(compiler, TOKEN_CASE) && !check(compiler, TOKEN_DEFAULT)) {
+                errorAtCurrent(compiler->parser, "Expect 'case' or 'default' after 'fall'.");                             
+            }
+        } 
+
         caseEnds[caseCount++] = emitJump(compiler,OP_JUMP);
         patchJump(compiler, compareJump);
+
         if (caseCount > 255) {
             errorAtCurrent(compiler->parser, "Switch statement can not have more than 256 case blocks");
         }
@@ -2502,8 +2522,14 @@ static void switchStatement(Compiler *compiler) {
     } while(match(compiler, TOKEN_CASE));
 
     emitByte(compiler, OP_POP); // expression.
+
     if (match(compiler,TOKEN_DEFAULT)){
         consume(compiler, TOKEN_COLON, "Expect ':' after default.");
+        
+        if(fallJump != -1) {
+            patchJump(compiler, fallJump);
+        }
+
         statement(compiler);
     }
 
@@ -2835,6 +2861,7 @@ static void synchronize(Parser *parser) {
             case TOKEN_FOR:
             case TOKEN_IF:
             case TOKEN_SWITCH:
+            case TOKEN_FALL:
             case TOKEN_WHILE:
             case TOKEN_BREAK:
             case TOKEN_RETURN:

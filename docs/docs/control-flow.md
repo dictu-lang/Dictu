@@ -82,6 +82,77 @@ switch ("string") {
 }
 ```
 
+### Fall 
+
+```cs
+switch (1) {
+    case 1: {
+        // This block of code is executed!
+    }
+
+    fall
+    case 10: {
+        //  This block of code is executed!
+    }
+}
+```
+
+```cs
+switch (1) {
+    case 1: {
+        // This block of code is executed!
+    }
+
+    fall
+    default: {
+        //  This block of code is executed!
+    }
+}
+```
+
+```cs
+switch (1) {
+    case 1: {
+        // This block of code is executed!
+    }
+
+    fall case 10: {
+        //  This block of code is executed!
+    }
+}
+```
+
+```cs
+switch (1) {
+    case 1: {
+        // This block of code is executed!
+    }
+
+    fall
+    case 10: {
+        //  This block of code is executed!
+    }
+    fall // error fall always followed by case or default statement
+
+}
+```
+
+```cs
+switch (1) {
+    case 1: {
+        // This block of code is executed!
+    }
+
+    fall default: {
+        //  This block of code is executed!
+    }
+    
+    fall // error fall always followed by case or default statement
+}
+```
+
+
+
 ### Multi-Value Case
 
 Sometimes we need to execute a block of code based on a set of values. This is easily done by just supplying a comma separated list
