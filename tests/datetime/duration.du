@@ -1,0 +1,57 @@
+/**
+ * strftime.du
+ *
+ * Testing the Duration object
+ *
+ */
+from UnitTest import UnitTest;
+
+import Datetime;
+
+class TestDatetimeDuration < UnitTest {
+    testDurationAddition(data) {
+        var duration = Datetime.duration(data['duration']);
+
+        var testDatetimeObj = Datetime.new(1577836800);
+        this.assertEquals(testDatetimeObj.add(duration).strftime(), data['expected']);
+        this.assertEquals(testDatetimeObj.strftime(), "Wed Jan 01 00:00:00 2020");
+    }
+
+
+    testDurationSubtraction(data) {
+        var duration = Datetime.duration(data['duration']);
+
+        var testDatetimeObj = Datetime.new(1577836800);
+        this.assertEquals(testDatetimeObj.sub(duration).strftime(), data['expected']);
+        this.assertEquals(testDatetimeObj.strftime(), "Wed Jan 01 00:00:00 2020");
+    }
+
+    testDelta() {
+        var datetimeOne = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+        var datetimeTwo = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-02 00:00:00");
+        datetimeOne.delta(datetimeTwo);
+    }
+
+    testDurationAdditionProvider() {
+        return [
+            {"duration": { 'days': 1}, "expected": "Thu Jan 02 00:00:00 2020"},
+            {"duration": {'days': 1, 'seconds': 3600, 'minutes': 1, 'hours': 1}, "expected": "Thu Jan 02 02:01:00 2020"},
+            {"duration": {'weeks': 4 }, "expected": "Wed Jan 29 00:00:00 2020"},
+            {"duration": { 'days': 100, 'seconds': 3600}, "expected": "Fri Apr 10 01:00:00 2020"},
+            {"duration": {'days': 1096, 'weeks': 52}, "expected": "Sun Dec 31 00:00:00 2023"}
+        ];
+    }
+
+
+    testDurationSubtractionProvider() {
+        return [
+            {"duration": { 'days': 1}, "expected": "Tue Dec 31 00:00:00 2019"},
+            {"duration": {'days': 1, 'seconds': 3600, 'minutes': 1, 'hours': 1}, "expected": "Mon Dec 30 21:59:00 2019"},
+            {"duration": {'weeks': 4 }, "expected": "Wed Dec 04 00:00:00 2019"},
+            {"duration": { 'days': 100, 'seconds': 3600}, "expected": "Sun Sep 22 23:00:00 2019"},
+            {"duration": {'days': 1096, 'weeks': 52}, "expected": "Sat Jan 02 00:00:00 2016"}
+        ];
+    }
+}
+
+TestDatetimeDuration().run();

@@ -1,0 +1,102 @@
+
+/**
+ * new.du
+ *
+ * Testing the Datetime object
+ *
+ */
+
+
+from UnitTest import UnitTest;
+
+import Datetime;
+import System;
+
+class TestDatetime < UnitTest {
+
+    const DATE_TIME_FORMAT = "%a %b %d %H:%M:%S %Y";
+
+    testNewDatetimeDefault() {
+        const datetime = Datetime.new();
+        this.assertNotNil(datetime);
+    }
+    testNewDatetimeUTC() {
+        const datetime = Datetime.newUTC();
+        this.assertNotNil(datetime);
+    }
+    testNewDatetimeTimestampInteger() {
+        const datetime = Datetime.new(1577836800);
+        this.assertEquals(datetime.strftime(), "Wed Jan 01 00:00:00 2020");
+    }
+    testNewDatetimeFormatedString() {
+        if (System.platform != "windows") {
+            const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+            this.assertEquals(datetime.strftime(), "Wed Jan 01 00:00:00 2020");
+        }
+    }
+    testDatetimeStrftime(data) {
+        if (System.platform != "windows") {
+            const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+            this.assertEquals(datetime.strftime(data["pattern"]), data["expected"]);
+        }
+    }
+
+    testDatetimeGetTime() {
+        if (System.platform != "windows") {
+            const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+            this.assertEquals(datetime.getTime(), 1577836800);
+        }
+    }
+    testSecondsInMinuteConstant() {
+        if (System.platform != "windows") {
+            const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020").getTime();
+            const minAgo = startSec - Datetime.SECONDS_IN_MINUTE;
+            const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:11:32 2020").getTime();
+            this.assertTruthy(minAgo == endSec);
+        }
+    }
+    testSecondsInHourConstant() {
+        if (System.platform != "windows") {
+            const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020").getTime();
+            const hourAgo = startSec - Datetime.SECONDS_IN_HOUR;
+            const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 02:12:32 2020").getTime();
+            this.assertTruthy(hourAgo == endSec);
+        }
+    }
+    testSecondsInDayConstant() {
+        if (System.platform != "windows") {
+            const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020").getTime();
+            const dayAgo = startSec - Datetime.SECONDS_IN_DAY;
+            const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 28 03:12:32 2020").getTime();
+            this.assertTruthy(dayAgo == endSec);
+        }
+    }
+    testSecondsInWeekConstant() {
+        if (System.platform != "windows") {
+            const startSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 29 03:12:32 2020").getTime();
+            const weekAgo = startSec - Datetime.SECONDS_IN_WEEK;
+            const endSec = Datetime.strptime(this.DATE_TIME_FORMAT, "Fri May 22 03:12:32 2020").getTime();
+            this.assertTruthy(weekAgo == endSec);
+        }
+    }
+
+    testDatetimeStrftimeProvider() {
+        return [
+            {"pattern": "%y", "expected": "20"},
+            {"pattern": "%Y", "expected": "2020"},
+            {"pattern": "%b", "expected": "Jan"},
+            {"pattern": "%B", "expected": "January"},
+            {"pattern": "%m", "expected": "01"},
+            {"pattern": "%d", "expected": "01"},
+            {"pattern": "%a", "expected": "Wed"},
+            {"pattern": "%A", "expected": "Wednesday"},
+            {"pattern": "%H", "expected": "00"},
+            {"pattern": "%M", "expected": "00"},
+            {"pattern": "%S", "expected": "00"},
+            {"pattern": "%Y-%m-%d %H:%M:%S", "expected": "2020-01-01 00:00:00"},
+            {"pattern": "", "expected": ""}, // catch up the case of an empty string
+        ];
+    }
+}
+
+TestDatetime().run();

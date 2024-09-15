@@ -33,6 +33,26 @@ import Datetime;
 | Datetime.SECONDS_IN_DAY    | The number of seconds in a day.    |
 | Datetime.SECONDS_IN_WEEK   | The number of seconds in a week.   |
 
+
+### Datetime.new() -> Datetime
+
+Returns a datetime object with current datetime.
+
+```cs
+var datetime = Datetime.new(); 
+datetime.strftime(); // Fri May 29 03:12:32 2020
+```
+
+### Datetime.new(Number) -> Datetime
+
+Returns a datetime object for given number of seconds from epoch.
+
+```cs
+const datetime = Datetime.new(1577836800);
+datetime.strftime(); // Wed Jan  1 00:00:00 2020
+```
+
+
 ### Datetime.now() -> String
 
 Returns a human readable locale datetime string.
@@ -47,6 +67,18 @@ Returns a human readable UTC datetime string.
 
 ```cs
 Datetime.now(); // Fri May 29 02:12:32 2020
+```
+
+
+### Datetime.strptime(String, String) -> Datetime
+
+Returns a datetime object for given time string format.
+
+**Note:** This is not available on windows systems.
+
+```cs
+var datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); 
+datetime.strftime(); // Wed Jan  1 00:00:00 2020
 ```
 
 ### Datetime formats
@@ -82,28 +114,78 @@ Datetime.now(); // Fri May 29 02:12:32 2020
 | %%        | A literal %                                                                        |                          |
 
 
-### Datetime.strftime(String, Number: time -> Optional) -> String
+### datetimeObj.getTime() -> Number
 
-Returns a user-defined datetime formatted string, see [Datetime formats](#datetime-formats). `strftime` also takes an optional argument
-which is a UNIX timestamp, so the date is formatted from the given timestamp rather than
-the current point in time.
-
-```cs
-Datetime.strftime("Today is %A"); // Today is Friday
-
-var time = System.time();
-Datetime.strftime("Some point in time %H:%M:%S", time);
-```
-
-### Datetime.strptime(String, String) -> Number
-
-Returns a number which is the number of seconds from epoch. `strptime` expects two parameters
-the first parameter being the date format, see [Datetime formats](#datetime-formats) and the second
-the date string in the format of the first parameter.
+Returns a number which is the number of seconds from epoch, for a given datetime
 
 **Note:** This is not available on windows systems.
 
 ```cs
-Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00"); // 1577836800
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.getTime(); // 1577836800
 ```
 
+### datetimeObj.strftime(String -> Optional) -> String
+
+Returns a user-defined datetime formatted string for a datetime object, see [Datetime formats](#datetime-formats).
+
+```cs
+const datetime = Datetime.new();
+datetime.strftime("Today is %A"); // Today is Friday
+```
+
+Returns in default format "%a %b %d %H:%M:%S %Y", when user defined format is not provided 
+
+
+```cs
+const datetime = Datetime.new();
+datetime.strftime(); // Sat Oct 21 21:44:25 2023
+```
+
+
+## Duration
+
+A Duration object represents a time delta, the difference between two datetimes. This Duration object can be used to create new datetime objects, by performing operations such as addition and subtraction.
+
+### Datetime.duration(Dict) -> Duration
+
+Duration object is constructed by passing dictionary duration properties. weeks, days, hours, minutes and seconds are allowed properties.
+
+```cs
+import Datetime;
+const duration = Datetime.duration({'weeks':0, 'days': 1, 'seconds': 0, 'minutes': 0, 'hours': 0});
+```
+
+### datetimeObj.add(Duration) -> Datetime
+
+Returns a new Datetime object after adding given duration.
+
+```cs
+const duration = Datetime.duration({'weeks':0, 'days': 1, 'seconds': 0, 'minutes': 0, 'hours': 0});
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.add(duration).strftime(); // Thu Jan 02 00:00:00 2020
+```
+
+
+### datetimeObj.sub(Duration) -> Datetime
+
+Returns a new Datetime object after subtracting given duration.
+
+```cs
+const duration = Datetime.duration({'weeks':53});
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+datetime.sub(duration).strftime(); // Wed Jan 02 00:00:00 2019
+```
+
+### datetimeObj.delta(datetimeObj) -> Duration
+
+Returns a Duration object represents a delta with a given date.
+
+```cs
+var datetimeOne = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-01 00:00:00");
+var datetimeTwo = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-01-02 00:00:00");
+var duration = datetimeOne.delta(datetimeTwo); 
+
+const datetime = Datetime.strptime("%Y-%m-%d %H:%M:%S", "2020-05-01 00:00:00");
+datetime.add(duration).strftime(); // Sat May 02 00:00:00 2020
+```
