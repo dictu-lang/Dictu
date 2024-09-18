@@ -153,7 +153,10 @@ static ObjString *allocateString(DictuVM *vm, char *chars, int length,
     string->length = length;
     string->chars = chars;
     string->hash = hash;
-    string->character_len = utf8len(chars);
+    if(utf8valid(chars) == 0)
+        string->character_len = utf8len(chars);
+    else
+        string->character_len = length;
     push(vm, OBJ_VAL(string));
     tableSet(vm, &vm->strings, string, NIL_VAL);
     pop(vm);
