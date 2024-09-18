@@ -21,7 +21,12 @@ class TestStringFind < UnitTest {
     }
 
     testStringFindThird() {
-        this.assertEquals("Dictu is great! Dictu is great! Dictu is great!".find("Dictu", 3), 37);
+        this.assertEquals("Dictu is great! Dictu is great! Dictu is great!".find("Dictu", 3), 32);
+    }
+    testStringFindUnicode() {
+        this.assertEquals("💻😃😃😃a".find("💻"), 0);
+        this.assertEquals("💻😃😃😃a".find("😃",2), 2);
+        this.assertEquals("💻😃😃😃a".find("💻",2), -1);
     }
 
     testStringFindDoesntExist() {

@@ -16,6 +16,13 @@ class TestStringIsLower < UnitTest {
         this.assertFalsey("D".isLower());
         this.assertFalsey("Maple".isLower());
     }
+    testStringIsLowerUnicode() {
+        this.assertTruthy("dä".isLower());
+        this.assertTruthy("dögog".isLower());
+        this.assertTruthy("g0ä0d!".isLower());
+        this.assertFalsey("Ä".isLower());
+        this.assertFalsey("Ma😁ple".isLower());
+    }
 }
 
 TestStringIsLower().run();
