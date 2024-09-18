@@ -196,7 +196,7 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
             count++;
             token = utf8str(tmp, delimiter);
 
-            Value str = OBJ_VAL(copyString(vm, tmp, token == NULL ? utf8size_lazy(tmp) : (token-tmp)));
+            Value str = OBJ_VAL(copyString(vm, tmp, token == NULL ? utf8size_lazy(tmp) : ((size_t)(token-tmp))));
 
             // Push to stack to avoid GC
             push(vm, str);
