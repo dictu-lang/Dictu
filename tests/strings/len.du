@@ -11,8 +11,11 @@ class TestStringLen < UnitTest {
     testStringLen() {
         this.assertType("qwert".len(), "number");
         this.assertEquals("qwert".len(), 5);
-        this.assertEquals("ασδφγ".len(), 10);
+        this.assertEquals("ασδφγ".len(), 5);
         this.assertEquals(('test' + 'ing').len(), 7);
+    }
+    testStringLenUnicode() {
+        this.assertEquals("🤪".len(), 1);
     }
 }
 

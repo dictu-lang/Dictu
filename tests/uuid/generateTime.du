@@ -16,7 +16,7 @@ class TestUUIDGenerateTime < UnitTest {
         this.assertTruthy(ret.success());
         const uuid = ret.unwrap();
         this.assertType(type(uuid), "string");
-        this.assertTruthy(uuid.len() == 37);
+        this.assertTruthy(uuid.byteLen() == 37);
     }
 }
 

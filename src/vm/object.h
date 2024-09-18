@@ -131,6 +131,7 @@ struct sObjString {
     int length;
     char *chars;
     uint32_t hash;
+    int character_len;
 };
 
 struct sObjList {

@@ -28,6 +28,12 @@ class TestStringSplit < UnitTest {
         this.assertEquals("Dictu is great!".split(" ", 3), ["Dictu", "is", "great!"]);
         this.assertEquals("Dictu is great!".split(" ", 4), ["Dictu", "is", "great!"]);
     }
+
+    testStringSplitUnicode() {
+
+        this.assertEquals("Dictu💻is💻very💻😃Cool😃".split("💻"), ["Dictu", "is", "very", "😃Cool😃"]);
+        this.assertEquals("Dictu is very😃Cool😃!".split("😃Cool😃"), ["Dictu is very", "!"]);
+    }
     
     testStringSplitOptionalSinglular() {
         this.assertEquals("Dictu is great!".split("", -2), ["D", "i", "c", "t", "u", " ", "i", "s", " ", "g", "r", "e", "a", "t", "!"]);

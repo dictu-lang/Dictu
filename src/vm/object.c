@@ -7,6 +7,7 @@
 #include "table.h"
 #include "value.h"
 #include "vm.h"
+#include "utf8.h"
 
 #define ALLOCATE_OBJ(vm, type, objectType) \
     (type*)allocateObject(vm, sizeof(type), objectType)
@@ -152,6 +153,7 @@ static ObjString *allocateString(DictuVM *vm, char *chars, int length,
     string->length = length;
     string->chars = chars;
     string->hash = hash;
+    string->character_len = utf8len(chars);
     push(vm, OBJ_VAL(string));
     tableSet(vm, &vm->strings, string, NIL_VAL);
     pop(vm);
