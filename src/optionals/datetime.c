@@ -34,7 +34,18 @@ typedef struct {
     bool isLocal; 
 } Datetime;
 
+enum Durations {
+    NANOSECOND,
+    MICROSECOND,
+    MILLISECOND,
+    SECOND,
+    MINUTE,
+    HOUR,
+    DAY
+};
+
 typedef struct {
+    enum Durations type;
     long long nanoseconds;
 } Duration;
 
@@ -164,7 +175,6 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     Datetime *datetime = createDatetime(vm);
     datetime->time = time;
     datetime->isLocal = isLocal;
-    printf("%lu\n", datetime->time);
 
     /**
      * Setup Datetime object methods
@@ -426,12 +436,12 @@ Value createDatetimeModule(DictuVM *vm) {
     /**
      * Define Datetime properties
      */
-    defineNativeProperty(vm, &module->values, "NANOSECOND", OBJ_VAL(newDurationObj(vm, nanosecond)));
-    defineNativeProperty(vm, &module->values, "MILLISECOND", OBJ_VAL(newDurationObj(vm, microsecond)));
-    defineNativeProperty(vm, &module->values, "MICROSECOND", OBJ_VAL(newDurationObj(vm, millisecond)));
-    defineNativeProperty(vm, &module->values, "SECOND", OBJ_VAL(newDurationObj(vm, second)));
-    defineNativeProperty(vm, &module->values, "MINUTE", OBJ_VAL(newDurationObj(vm, minute)));
-    defineNativeProperty(vm, &module->values, "HOUR", OBJ_VAL(newDurationObj(vm, hour)));
+    defineNativeProperty(vm, &module->values, "NANOSECOND", NUMBER_VAL(nanosecond));
+    defineNativeProperty(vm, &module->values, "MICROSECOND", NUMBER_VAL(microsecond));
+    defineNativeProperty(vm, &module->values, "MILLISECOND", NUMBER_VAL(millisecond));
+    defineNativeProperty(vm, &module->values, "SECOND", NUMBER_VAL(second));
+    defineNativeProperty(vm, &module->values, "MINUTE", NUMBER_VAL(minute));
+    defineNativeProperty(vm, &module->values, "HOUR", NUMBER_VAL(hour));
 
     defineNativeProperty(vm, &module->values, "SECONDS_IN_MINUTE", NUMBER_VAL(60));
     defineNativeProperty(vm, &module->values, "SECONDS_IN_HOUR", NUMBER_VAL(3600));
