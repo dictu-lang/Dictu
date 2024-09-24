@@ -74,9 +74,11 @@ char *datetimeTypeToString(ObjAbstract *abstract) {
     return datetimeString;
 }
 
+#define DEFAULT_DATETIME_FORMAT "%a %b %d %H:%M:%S %Y"
+
 static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
-    if (argCount > 1) {
-        runtimeError(vm, "format() takes 0 or 1 arguments (%d given)", argCount);
+    if (argCount != 1) {
+        runtimeError(vm, "format() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -101,7 +103,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
         len = (format->length > defaultLength ? format->length * 4 : defaultLength);
     } else {
         len = defaultLength;
-        fmt = "%a %b %d %H:%M:%S %Y";
+        fmt = DEFAULT_DATETIME_FORMAT;
     }
 
     char *point = ALLOCATE(vm, char, len);
@@ -119,19 +121,9 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
         gmtime_r(&datetime->time, &tictoc);
     }
     tictoc.tm_isdst = -1;
-    
-     /**
-      * strtime returns 0 when it fails to write - this would be due to the buffer
-      * not being large enough. In that instance we double the buffer length until
-      * there is a big enough buffer.
-      */
 
-     /**
-      * however is not guaranteed that 0 indicates a failure (`man strftime' says so).
-      * So we might want to catch up the eternal loop, by using a maximum iterator.
-      */
-    int maxIterations = 8;  // maximum 65536 bytes with the default 128 len,
-                            // more if the given string is > 128
+    const int maxIterations = 8;
+
     int iterator = 0;
     while (strftime(point, sizeof(char) * len, fmt, &tictoc) == 0) {
         if (++iterator > maxIterations) {
@@ -156,14 +148,65 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
     return OBJ_VAL(takeString(vm, point, length));
 }
 
-#ifdef HAS_STRPTIME
-static Value datetimeUnix(DictuVM *vm, int argCount, Value *args){
-    if (argCount != 0) {
-        runtimeError(vm, "unix() take 0 argument (%d given)", argCount);
+static Value datetimeToString(DictuVM *vm, int argCount, Value *args){
+    if (argCount > 0) {
+        runtimeError(vm, "toString() takes01 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    int len = 128;
+    //char *fmt = DEFAULT_DATETIME_FORMAT;
+
+    char *point = ALLOCATE(vm, char, len);
+    if (point == NULL) {
+        runtimeError(vm, "Memory error on format()");
         return EMPTY_VAL;
     }
 
     Datetime *datetime = AS_DATETIME(args[0]);
+
+    struct tm tictoc;
+    if(datetime->isLocal){
+        localtime_r(&datetime->time, &tictoc);
+    } else{
+        gmtime_r(&datetime->time, &tictoc);
+    }
+    tictoc.tm_isdst = -1;
+    const int maxIterations = 8;
+
+    int iterator = 0;
+    while (strftime(point, sizeof(char) * len, DEFAULT_DATETIME_FORMAT, &tictoc) == 0) {
+        if (++iterator > maxIterations) {
+            FREE_ARRAY(vm, char, point, len);
+            return OBJ_VAL(copyString(vm, "", 0));
+        }
+
+        len *= 2;
+
+        point = GROW_ARRAY(vm, point, char, len / 2, len);
+        if (point == NULL) {
+            runtimeError(vm, "Memory error on format()");
+            return EMPTY_VAL;
+        }
+    }
+
+    int length = strlen(point);
+    if (length != len) {
+        point = SHRINK_ARRAY(vm, point, char, len, length + 1);
+    }
+
+    return OBJ_VAL(takeString(vm, point, length));
+}
+
+#ifdef HAS_STRPTIME
+static Value datetimeUnix(DictuVM *vm, int argCount, Value *args){
+    if (argCount != 0) {
+        runtimeError(vm, "unix() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *datetime = AS_DATETIME(args[0]);
+
     return NUMBER_VAL(datetime->time);
 }
 #endif
@@ -179,11 +222,12 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     /**
      * Setup Datetime object methods
      */
-    defineNative(vm, &abstract->values, "format", datetimeFormat);
     #ifdef HAS_STRPTIME
     defineNative(vm, &abstract->values, "unix", datetimeUnix);
     #endif
 
+    defineNative(vm, &abstract->values, "toString", datetimeToString);
+    defineNative(vm, &abstract->values, "format", datetimeFormat);
     defineNative(vm, &abstract->values, "add", datetimeAddDuration);
     defineNative(vm, &abstract->values, "sub", datetimeSubDuration);
     defineNative(vm, &abstract->values, "delta", datetimeDelta);
@@ -199,6 +243,7 @@ static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args){
         runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
+
     Datetime *datetime = AS_DATETIME(args[0]);
 
     struct tm *timeinfo = localtime(&datetime->time);
@@ -421,6 +466,103 @@ static Value newDurationNative(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(newDurationObj(vm, (long long)0));
 }
 
+static Value parseDurationNative(DictuVM *vm, int argCount, Value *args) {
+    UNUSED(args);
+
+    if (argCount != 1) {
+        runtimeError(vm, "parseDuration() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "parseDuration() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *dur = AS_CSTRING(args[0]);
+    printf("XXX - %s\n", dur);
+
+    if (strlen(dur) < 2) {
+        runtimeError(vm, "parseDuration() argument must be a duration string");
+        return EMPTY_VAL; 
+    }
+
+    if (!isdigit(dur[0])) {
+        runtimeError(vm, "parseDuration() argument must start with a numeric value");
+        return EMPTY_VAL; 
+    }
+
+    if (!isalpha(dur[strlen(dur)-1])) {
+        runtimeError(vm, "parseDuration() argument must start with a string value");
+        return EMPTY_VAL; 
+    }
+
+    char durInt[2];
+    durInt[0] = dur[strlen(dur)-1];
+    durInt[1] = '\0';
+
+    static const char durationIntervals[9][2] = {"ns", "us", "ms", "s", "m", "h", "d", "w", "y"};
+    int found = 0;
+
+    for (int i = 0; i < 9; i++) {
+        if (strcmp(durInt, durationIntervals[i]) == 0) {
+            found++;
+        }
+    }
+
+    if (found != 1) {
+        runtimeError(vm, "Unknown duration interval");
+        return EMPTY_VAL;
+    }
+    
+    int digitCount = 0;
+    for (unsigned long i = 0; i < strlen(dur); i++) {
+        if (isdigit(dur[i])) {
+            digitCount++;
+        }
+    }
+
+    char *durChars = ALLOCATE(vm, char, digitCount+1);
+    for (int i = 0; i < digitCount; i++) {
+        durChars[i] = dur[i];
+    }
+
+    char *end;
+    long long val = strtoll(durChars, &end, 10);
+
+    FREE(vm, char, durChars);
+
+    if (val == 0) {
+        runtimeError(vm, "Failed to parse given duration string");
+        return EMPTY_VAL;
+    }
+    printf("XXX - val: %lld\n", val);
+    long long finalDurVal = 0;
+    if (strcmp(durInt, "ns") == 0) {
+        finalDurVal = val;
+    } else if (strcmp(durInt, "us") == 0) {
+        finalDurVal = val * 1000;
+    } else if (strcmp(durInt, "ms") == 0) {
+        finalDurVal = val * 1000000;
+    } else if (strcmp(durInt, "s") == 0) {
+        finalDurVal = val * 1e+9;
+        printf("XXX - here\n");
+    } else if (strcmp(durInt, "m") == 0) {
+        finalDurVal = val * 6e+10;
+    } else if (strcmp(durInt, "h") == 0) {
+        finalDurVal = val * 3.6e+12;
+    } else if (strcmp(durInt, "d") == 0) {
+        finalDurVal = val * 8.64e+13;
+    } else if (strcmp(durInt, "w") == 0) {
+        finalDurVal = val * 6.048e+14;
+    } else if (strcmp(durInt, "y") == 0) {
+        finalDurVal = val * 3.154e+16;
+    }
+    
+    printf("XXX - finalDurVal: %lld\n", finalDurVal);
+    return OBJ_VAL(newDurationObj(vm, finalDurVal));
+}
+
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
@@ -432,6 +574,7 @@ Value createDatetimeModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "new", newDatetimeNative);
     defineNative(vm, &module->values, "newDuration", newDurationNative);
+    defineNative(vm, &module->values, "parseDuration", parseDurationNative);
 
     /**
      * Define Datetime properties
