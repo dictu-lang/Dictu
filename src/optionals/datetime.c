@@ -54,8 +54,10 @@ typedef struct {
 
 static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args);
 static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args);
-static Value datetimeDelta(DictuVM *vm, int argCount, Value *args);
+static Value datetimeDiff(DictuVM *vm, int argCount, Value *args);
 static Value datetimeUTC(DictuVM *vm, int argCount, Value *args);
+static Value datetimeBefore(DictuVM *vm, int argCount, Value *args);
+static Value datetimeAfter(DictuVM *vm, int argCount, Value *args);
 static ObjAbstract* newDurationObj(DictuVM *vm, long long nanoseconds);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
@@ -151,7 +153,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 
 static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 0) {
-        runtimeError(vm, "toString() takes01 arguments (%d given)", argCount);
+        runtimeError(vm, "toString() takes 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -228,11 +230,13 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     #endif
 
     defineNative(vm, &abstract->values, "utc", datetimeUTC);
-    defineNative(vm, &abstract->values, "toString", datetimeToString);
-    defineNative(vm, &abstract->values, "format", datetimeFormat);
     defineNative(vm, &abstract->values, "add", datetimeAddDuration);
     defineNative(vm, &abstract->values, "sub", datetimeSubDuration);
-    defineNative(vm, &abstract->values, "delta", datetimeDelta);
+    defineNative(vm, &abstract->values, "before", datetimeBefore);
+    defineNative(vm, &abstract->values, "after", datetimeAfter);
+    defineNative(vm, &abstract->values, "diff", datetimeDiff);
+    defineNative(vm, &abstract->values, "toString", datetimeToString);
+    defineNative(vm, &abstract->values, "format", datetimeFormat);
 
     abstract->data = datetime;
     pop(vm);
@@ -256,6 +260,30 @@ static Value datetimeUTC(DictuVM *vm, int argCount, Value *args) {
     gmtime_r(&datetime->time, &tictoc);
 
     return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, false));
+}
+
+static Value datetimeBefore(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "before() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    Datetime *d2 = AS_DATETIME(args[1]);
+
+    return BOOL_VAL(d2->time < d1->time);
+}
+
+static Value datetimeAfter(DictuVM *vm, int argCount, Value *args) {
+    if (argCount !=1) {
+        runtimeError(vm, "after() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    Datetime *d2 = AS_DATETIME(args[1]);
+
+    return BOOL_VAL(d2->time > d1->time);
 }
 
 static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args) {
@@ -287,7 +315,7 @@ static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->isLocal));
 }
 
-static Value datetimeDelta(DictuVM *vm, int argCount, Value *args) {
+static Value datetimeDiff(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "delta() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -298,51 +326,6 @@ static Value datetimeDelta(DictuVM *vm, int argCount, Value *args) {
 
     return OBJ_VAL(newDurationObj(vm, labs(dt1->time - dt2->time)));
 }
-
-// static Value nowNative(DictuVM *vm, int argCount, Value *args) {
-//     UNUSED(args);
-
-//     if (argCount != 0) {
-//         runtimeError(vm, "now() takes no arguments (%d given)", argCount);
-//         return EMPTY_VAL;
-//     }
-
-//     time_t t = time(NULL);
-//     struct tm tictoc;
-//     localtime_r(&t, &tictoc);
-
-//     return OBJ_VAL(newDatetimeObj(vm, (long)t, true));
-// }
-
-// static Value nowUTCNative(DictuVM *vm, int argCount, Value *args) {
-//     UNUSED(args);
-
-//     if (argCount != 0) {
-//         runtimeError(vm, "nowUTC() takes no arguments (%d given)", argCount);
-//         return EMPTY_VAL;
-//     }
-
-//     time_t t = time(NULL);
-//     struct tm tictoc;
-//     gmtime_r(&t, &tictoc);
-
-//     return OBJ_VAL(newDatetimeObj(vm, (long)t, false));
-// }
-
-// static Value newUTCDatetimeNative(DictuVM *vm, int argCount, Value *args) {
-//     UNUSED(args);
-
-//     if (argCount != 0) {
-//         runtimeError(vm, "nowUTC() takes no arguments (%d given)", argCount);
-//         return EMPTY_VAL;
-//     }
-
-//     time_t t = time(NULL);
-//     struct tm tictoc;
-//     gmtime_r(&t, &tictoc);
-
-//     return OBJ_VAL(newDatetimeObj(vm, (long)t, false));
-// }
 
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
