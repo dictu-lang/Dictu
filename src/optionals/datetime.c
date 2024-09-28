@@ -55,6 +55,7 @@ typedef struct {
 static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args);
 static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args);
 static Value datetimeDelta(DictuVM *vm, int argCount, Value *args);
+static Value datetimeUTC(DictuVM *vm, int argCount, Value *args);
 static ObjAbstract* newDurationObj(DictuVM *vm, long long nanoseconds);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
@@ -76,7 +77,7 @@ char *datetimeTypeToString(ObjAbstract *abstract) {
 
 #define DEFAULT_DATETIME_FORMAT "%a %b %d %H:%M:%S %Y"
 
-static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
+static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "format() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -148,7 +149,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args){
     return OBJ_VAL(takeString(vm, point, length));
 }
 
-static Value datetimeToString(DictuVM *vm, int argCount, Value *args){
+static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 0) {
         runtimeError(vm, "toString() takes01 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -199,7 +200,7 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args){
 }
 
 #ifdef HAS_STRPTIME
-static Value datetimeUnix(DictuVM *vm, int argCount, Value *args){
+static Value datetimeUnix(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "unix() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -226,6 +227,7 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "unix", datetimeUnix);
     #endif
 
+    defineNative(vm, &abstract->values, "utc", datetimeUTC);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
     defineNative(vm, &abstract->values, "add", datetimeAddDuration);
@@ -238,7 +240,25 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     return abstract;
 }
 
-static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args){
+static Value datetimeUTC(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "utc() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *datetime = AS_DATETIME(args[0]);
+
+    if (datetime->isLocal) {
+        return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, true));
+    }
+
+    struct tm tictoc;
+    gmtime_r(&datetime->time, &tictoc);
+
+    return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, false));
+}
+
+static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -253,7 +273,7 @@ static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args){
     return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->isLocal));
 }
 
-static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args){
+static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "sub() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
@@ -380,7 +400,7 @@ static const long long second = 1000 * millisecond;
 static const long long minute = 60 * second;
 static const long long hour = 60 * minute;
 
-static Value durationToNanoseconds(DictuVM *vm, int argCount, Value *args){
+static Value durationToNanoseconds(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "nanoseconds() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -391,7 +411,7 @@ static Value durationToNanoseconds(DictuVM *vm, int argCount, Value *args){
     return NUMBER_VAL(dur->nanoseconds);
 }
 
-static Value durationToMilliseconds(DictuVM *vm, int argCount, Value *args){
+static Value durationToMilliseconds(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "milliseconds() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
@@ -402,7 +422,7 @@ static Value durationToMilliseconds(DictuVM *vm, int argCount, Value *args){
     return NUMBER_VAL(dur->nanoseconds / 1e6);
 }
 
-static Value durationToMicroseconds(DictuVM *vm, int argCount, Value *args){
+static Value durationToMicroseconds(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "microseconds() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
