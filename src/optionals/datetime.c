@@ -15,46 +15,14 @@
 #define RFC3339Format "%Y-%m-%dT%T%Z"
 #define RFC2822Format "%a, %d %b %Y %T %z"
 
-// #define MIN_DURATION -1 << 63
-// #define MAX_DURATION 1<<63 - 1
-
-// #define DAY 1
-// #define DAYS_IN_WEEK 7
-// #define DAYS_IN_MONTH 30
-
-// #define SECOND 1
-// #define SECONDS_IN_MINUTE 60
-// #define SECONDS_IN_HOUR SECONDS_IN_MINUTE * 60
-// #define SECONDS_IN_DAY SECONDS_IN_HOUR * 24
-// #define SECONDS_IN_WEEK SECONDS_IN_DAY * 7
-// #define SECONDS_IN_MONTH 30*24*60*60
-
 typedef struct {
     long time;
     bool isLocal; 
 } Datetime;
 
-enum Durations {
-    NANOSECOND,
-    MICROSECOND,
-    MILLISECOND,
-    SECOND,
-    MINUTE,
-    HOUR,
-    DAY
-};
-
-typedef struct {
-    enum Durations type;
-    long long nanoseconds;
-} Duration;
-
 #define AS_DATETIME(v) ((Datetime*)AS_ABSTRACT(v)->data)
-#define AS_DURATION(v) ((Duration*)AS_ABSTRACT(v)->data)
 
-static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args);
-static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args);
-static Value datetimeDiff(DictuVM *vm, int argCount, Value *args);
+// static Value datetimeDiff(DictuVM *vm, int argCount, Value *args);
 static Value datetimeUTC(DictuVM *vm, int argCount, Value *args);
 static Value datetimeBefore(DictuVM *vm, int argCount, Value *args);
 static Value datetimeAfter(DictuVM *vm, int argCount, Value *args);
@@ -67,7 +35,6 @@ static Value datetimeYearsSince1900(DictuVM *vm, int argCount, Value *args);
 static Value datetimeSecondsAfterMinute(DictuVM *vm, int argCount, Value *args);
 static Value datetimeMinutesAfterHour(DictuVM *vm, int argCount, Value *args);
 static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args);
-static ObjAbstract* newDurationObj(DictuVM *vm, long long nanoseconds);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Datetime, abstract->data);
@@ -239,8 +206,6 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     #endif
 
     defineNative(vm, &abstract->values, "utc", datetimeUTC);
-    defineNative(vm, &abstract->values, "add", datetimeAddDuration);
-    defineNative(vm, &abstract->values, "sub", datetimeSubDuration);
     defineNative(vm, &abstract->values, "before", datetimeBefore);
     defineNative(vm, &abstract->values, "after", datetimeAfter);
     defineNative(vm, &abstract->values, "clock", datetimeClock);
@@ -252,7 +217,7 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "secondsAfterMinute", datetimeSecondsAfterMinute);
     defineNative(vm, &abstract->values, "minutesAfterHour", datetimeMinutesAfterHour);
     defineNative(vm, &abstract->values, "dayOfMonth", datetimeDayOfMonth);
-    defineNative(vm, &abstract->values, "diff", datetimeDiff);
+    // defineNative(vm, &abstract->values, "diff", datetimeDiff);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
 
@@ -432,47 +397,6 @@ static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(t->tm_mday);
 }
 
-static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "add() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Datetime *datetime = AS_DATETIME(args[0]);
-
-    struct tm *timeinfo = localtime(&datetime->time);
-    timeinfo->tm_sec += (long)AS_NUMBER(args[1]);
-    long newTime = mktime(timeinfo);
-
-    return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->isLocal));
-}
-
-static Value datetimeSubDuration(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "sub() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-    Datetime *datetime = AS_DATETIME(args[0]);
-
-    struct tm *timeinfo = localtime(&datetime->time);
-    timeinfo->tm_sec -= (long)AS_NUMBER(args[1]);
-    long newTime = mktime(timeinfo);
-
-    return OBJ_VAL(newDatetimeObj(vm, newTime, datetime->isLocal));
-}
-
-static Value datetimeDiff(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "delta() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Datetime *dt1 = AS_DATETIME(args[0]);
-    Datetime *dt2 = AS_DATETIME(args[1]);
-
-    return OBJ_VAL(newDurationObj(vm, labs(dt1->time - dt2->time)));
-}
-
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -497,29 +421,6 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     time_t num = (time_t)((long) AS_NUMBER(args[0]));
 
     return OBJ_VAL(newDatetimeObj(vm, (long)num, false));
-
-    
-
-    runtimeError(vm, "new() takes 0 or 1 arguments (%d given)", argCount);
-
-    return EMPTY_VAL;
-}
-
-void freeDuration(DictuVM *vm, ObjAbstract *abstract) {
-    FREE(vm, Duration, abstract->data);
-}
-
-Duration* createDuration(DictuVM *vm) {
-    Duration *duration = ALLOCATE(vm, Duration, 1);
-    return duration;
-}
-
-char *durationTypeToString(ObjAbstract *abstract) {
-    UNUSED(abstract);
-
-    char *durationString = malloc(sizeof(char) * 11);
-    snprintf(durationString, 11, "<Duration>");
-    return durationString;
 }
 
 static const long long nanosecond = 1;
@@ -528,189 +429,6 @@ static const long long millisecond = 1000 * microsecond;
 static const long long second = 1000 * millisecond;
 static const long long minute = 60 * second;
 static const long long hour = 60 * minute;
-
-static Value durationToNanoseconds(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "nanoseconds() takes 0 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Duration *dur = AS_DURATION(args[0]);
-
-    return NUMBER_VAL(dur->nanoseconds);
-}
-
-static Value durationToMilliseconds(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "milliseconds() takes 0 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Duration *dur = AS_DURATION(args[0]);
-
-    return NUMBER_VAL(dur->nanoseconds / 1e6);
-}
-
-static Value durationToMicroseconds(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError(vm, "microseconds() takes 0 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Duration *dur = AS_DURATION(args[0]);
-
-    return NUMBER_VAL(dur->nanoseconds / 1000);
-}
-
-static Value durationToSeconds(DictuVM *vm, int argCount, Value *args){
-    if (argCount != 0) {
-        runtimeError(vm, "seconds() takes 0 arguments (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    Duration *dur = AS_DURATION(args[0]);
-
-    return NUMBER_VAL(dur->nanoseconds / 1e9);
-}
-
-ObjAbstract* newDurationObj(DictuVM *vm, long long nanoseconds) {
-    ObjAbstract *abstract = newAbstract(vm, freeDuration, durationTypeToString);
-    push(vm, OBJ_VAL(abstract));
-
-    Duration *duration = createDuration(vm);
-    duration->nanoseconds = nanoseconds;
-
-    /**
-     * Setup Datetime object methods
-     */
-    defineNative(vm, &abstract->values, "nanoseconds", durationToNanoseconds);
-    defineNative(vm, &abstract->values, "milliseconds", durationToMilliseconds);
-    defineNative(vm, &abstract->values, "microseconds", durationToMicroseconds);
-    defineNative(vm, &abstract->values, "seconds", durationToSeconds);
-
-    abstract->data = duration;
-    pop(vm);
-
-    return abstract;
-}
-
-static Value newDurationNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(args);
-
-    if (argCount > 1) {
-        runtimeError(vm, "duration() takes 0 or 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (argCount == 1) {
-        if (!IS_NUMBER(args[0])) {
-            runtimeError(vm, "duration() argument must be a number");
-            return EMPTY_VAL;
-        }
-
-        long long val = (long long)AS_NUMBER(args[0]);
-        return OBJ_VAL(newDurationObj(vm, val));
-    }
-    
-    return OBJ_VAL(newDurationObj(vm, (long long)0));
-}
-
-static Value parseDurationNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(args);
-
-    if (argCount != 1) {
-        runtimeError(vm, "parseDuration() takes 1 argument (%d given)", argCount);
-        return EMPTY_VAL;
-    }
-
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "parseDuration() argument must be a string");
-        return EMPTY_VAL;
-    }
-
-    char *dur = AS_CSTRING(args[0]);
-    printf("XXX - %s\n", dur);
-
-    if (strlen(dur) < 2) {
-        runtimeError(vm, "parseDuration() argument must be a duration string");
-        return EMPTY_VAL; 
-    }
-
-    if (!isdigit(dur[0])) {
-        runtimeError(vm, "parseDuration() argument must start with a numeric value");
-        return EMPTY_VAL; 
-    }
-
-    if (!isalpha(dur[strlen(dur)-1])) {
-        runtimeError(vm, "parseDuration() argument must start with a string value");
-        return EMPTY_VAL; 
-    }
-
-    char durInt[2];
-    durInt[0] = dur[strlen(dur)-1];
-    durInt[1] = '\0';
-
-    static const char durationIntervals[9][2] = {"ns", "us", "ms", "s", "m", "h", "d", "w", "y"};
-    int found = 0;
-
-    for (int i = 0; i < 9; i++) {
-        if (strcmp(durInt, durationIntervals[i]) == 0) {
-            found++;
-        }
-    }
-
-    if (found != 1) {
-        runtimeError(vm, "Unknown duration interval");
-        return EMPTY_VAL;
-    }
-    
-    int digitCount = 0;
-    for (unsigned long i = 0; i < strlen(dur); i++) {
-        if (isdigit(dur[i])) {
-            digitCount++;
-        }
-    }
-
-    char *durChars = ALLOCATE(vm, char, digitCount+1);
-    for (int i = 0; i < digitCount; i++) {
-        durChars[i] = dur[i];
-    }
-
-    char *end;
-    long long val = strtoll(durChars, &end, 10);
-
-    FREE(vm, char, durChars);
-
-    if (val == 0) {
-        runtimeError(vm, "Failed to parse given duration string");
-        return EMPTY_VAL;
-    }
-    printf("XXX - val: %lld\n", val);
-    long long finalDurVal = 0;
-    if (strcmp(durInt, "ns") == 0) {
-        finalDurVal = val;
-    } else if (strcmp(durInt, "us") == 0) {
-        finalDurVal = val * 1000;
-    } else if (strcmp(durInt, "ms") == 0) {
-        finalDurVal = val * 1000000;
-    } else if (strcmp(durInt, "s") == 0) {
-        finalDurVal = val * 1e+9;
-        printf("XXX - here\n");
-    } else if (strcmp(durInt, "m") == 0) {
-        finalDurVal = val * 6e+10;
-    } else if (strcmp(durInt, "h") == 0) {
-        finalDurVal = val * 3.6e+12;
-    } else if (strcmp(durInt, "d") == 0) {
-        finalDurVal = val * 8.64e+13;
-    } else if (strcmp(durInt, "w") == 0) {
-        finalDurVal = val * 6.048e+14;
-    } else if (strcmp(durInt, "y") == 0) {
-        finalDurVal = val * 3.154e+16;
-    }
-    
-    printf("XXX - finalDurVal: %lld\n", finalDurVal);
-    return OBJ_VAL(newDurationObj(vm, finalDurVal));
-}
 
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
@@ -722,8 +440,6 @@ Value createDatetimeModule(DictuVM *vm) {
      * Define Datetime methods
      */
     defineNative(vm, &module->values, "new", newDatetimeNative);
-    defineNative(vm, &module->values, "newDuration", newDurationNative);
-    defineNative(vm, &module->values, "parseDuration", parseDurationNative);
 
     /**
      * Define Datetime properties
