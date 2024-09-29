@@ -414,13 +414,29 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "new() argument must be a number");
+        runtimeError(vm, "argument must be a number");
         return EMPTY_VAL;
     }
 
     time_t num = (time_t)((long) AS_NUMBER(args[0]));
 
     return OBJ_VAL(newDatetimeObj(vm, (long)num, false));
+}
+
+static Value isLeapYearNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isLeapYear() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError(vm, "argument must be a number");
+        return EMPTY_VAL;
+    }
+
+    long year = (long)AS_NUMBER(args[0]);
+
+    return BOOL_VAL(((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
 }
 
 static const long long nanosecond = 1;
@@ -440,6 +456,7 @@ Value createDatetimeModule(DictuVM *vm) {
      * Define Datetime methods
      */
     defineNative(vm, &module->values, "new", newDatetimeNative);
+    defineNative(vm, &module->values, "isLeapYear", isLeapYearNative);
 
     /**
      * Define Datetime properties
