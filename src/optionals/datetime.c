@@ -22,7 +22,6 @@ typedef struct {
 
 #define AS_DATETIME(v) ((Datetime*)AS_ABSTRACT(v)->data)
 
-// static Value datetimeDiff(DictuVM *vm, int argCount, Value *args);
 static Value datetimeUTC(DictuVM *vm, int argCount, Value *args);
 static Value datetimeBefore(DictuVM *vm, int argCount, Value *args);
 static Value datetimeAfter(DictuVM *vm, int argCount, Value *args);
@@ -217,7 +216,6 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "secondsAfterMinute", datetimeSecondsAfterMinute);
     defineNative(vm, &abstract->values, "minutesAfterHour", datetimeMinutesAfterHour);
     defineNative(vm, &abstract->values, "dayOfMonth", datetimeDayOfMonth);
-    // defineNative(vm, &abstract->values, "diff", datetimeDiff);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
 
@@ -436,7 +434,7 @@ static Value isLeapYearNative(DictuVM *vm, int argCount, Value *args) {
 
     long year = (long)AS_NUMBER(args[0]);
 
-    return BOOL_VAL(((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0));
+    return BOOL_VAL((year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0));
 }
 
 static const long long nanosecond = 1;
