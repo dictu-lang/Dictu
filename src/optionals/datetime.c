@@ -58,6 +58,15 @@ static Value datetimeDiff(DictuVM *vm, int argCount, Value *args);
 static Value datetimeUTC(DictuVM *vm, int argCount, Value *args);
 static Value datetimeBefore(DictuVM *vm, int argCount, Value *args);
 static Value datetimeAfter(DictuVM *vm, int argCount, Value *args);
+static Value datetimeClock(DictuVM *vm, int argCount, Value *args);
+static Value datetimeDaysSinceJan(DictuVM *vm, int argCount, Value *args);
+static Value datetimeMonthsSinceJan(DictuVM *vm, int argCount, Value *args);
+static Value datetimeIsDST(DictuVM *vm, int argCount, Value *args);
+static Value datetimeDaysSinceSunday(DictuVM *vm, int argCount, Value *args);
+static Value datetimeYearsSince1900(DictuVM *vm, int argCount, Value *args);
+static Value datetimeSecondsAfterMinute(DictuVM *vm, int argCount, Value *args);
+static Value datetimeMinutesAfterHour(DictuVM *vm, int argCount, Value *args);
+static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args);
 static ObjAbstract* newDurationObj(DictuVM *vm, long long nanoseconds);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
@@ -234,6 +243,15 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "sub", datetimeSubDuration);
     defineNative(vm, &abstract->values, "before", datetimeBefore);
     defineNative(vm, &abstract->values, "after", datetimeAfter);
+    defineNative(vm, &abstract->values, "clock", datetimeClock);
+    defineNative(vm, &abstract->values, "daysSinceJanFirst", datetimeDaysSinceJan);
+    defineNative(vm, &abstract->values, "monthsSinceJan", datetimeMonthsSinceJan);
+    defineNative(vm, &abstract->values, "isDST", datetimeIsDST);
+    defineNative(vm, &abstract->values, "daysSinceSunday", datetimeDaysSinceSunday);
+    defineNative(vm, &abstract->values, "yearsSince1900", datetimeYearsSince1900);
+    defineNative(vm, &abstract->values, "secondsAfterMinute", datetimeSecondsAfterMinute);
+    defineNative(vm, &abstract->values, "minutesAfterHour", datetimeMinutesAfterHour);
+    defineNative(vm, &abstract->values, "dayOfMonth", datetimeDayOfMonth);
     defineNative(vm, &abstract->values, "diff", datetimeDiff);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
@@ -275,7 +293,7 @@ static Value datetimeBefore(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value datetimeAfter(DictuVM *vm, int argCount, Value *args) {
-    if (argCount !=1) {
+    if (argCount != 1) {
         runtimeError(vm, "after() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
@@ -284,6 +302,134 @@ static Value datetimeAfter(DictuVM *vm, int argCount, Value *args) {
     Datetime *d2 = AS_DATETIME(args[1]);
 
     return BOOL_VAL(d2->time > d1->time);
+}
+
+static Value datetimeClock(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "clock() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+
+    ObjDict *dict = newDict(vm);
+    push(vm, OBJ_VAL(dict));
+
+    struct tm *t = localtime((time_t*)&d1->time);
+    Value hour = OBJ_VAL(copyString(vm, "hour", 4));
+    push(vm, hour);
+    dictSet(vm, dict, hour, NUMBER_VAL(t->tm_hour));
+    pop(vm);
+
+    Value min = OBJ_VAL(copyString(vm, "min", 3));
+    push(vm, min);
+    dictSet(vm, dict, min, NUMBER_VAL(t->tm_min));
+    pop(vm);
+
+    Value sec = OBJ_VAL(copyString(vm, "sec", 3));
+    push(vm, sec);
+    dictSet(vm, dict, sec, NUMBER_VAL(t->tm_sec));
+    pop(vm);
+    
+    pop(vm);
+
+    return OBJ_VAL(dict);
+}
+
+static Value datetimeDaysSinceJan(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "daysSinceJanOne() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_yday);
+}
+
+static Value datetimeMonthsSinceJan(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "monthsSinceJan() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_mon);
+}
+
+static Value datetimeIsDST(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "isDST() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return BOOL_VAL(t->tm_isdst == true);
+}
+
+static Value datetimeDaysSinceSunday(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "daysSinceSunday() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_wday);
+}
+
+static Value datetimeYearsSince1900(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "yearsSince1900() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_year);
+}
+
+static Value datetimeSecondsAfterMinute(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "secondsAfterMinute() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_sec);
+}
+
+static Value datetimeMinutesAfterHour(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "minutesAfterHour() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_min);
+}
+
+static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "dayOfMonth() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return NUMBER_VAL(t->tm_mday);
 }
 
 static Value datetimeAddDuration(DictuVM *vm, int argCount, Value *args) {
