@@ -34,6 +34,7 @@ static Value datetimeYearsSince1900(DictuVM *vm, int argCount, Value *args);
 static Value datetimeSecondsAfterMinute(DictuVM *vm, int argCount, Value *args);
 static Value datetimeMinutesAfterHour(DictuVM *vm, int argCount, Value *args);
 static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args);
+static Value datetimeEqual(DictuVM *vm, int argCount, Value *args);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Datetime, abstract->data);
@@ -127,7 +128,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
-    if (argCount > 0) {
+    if (argCount != 1) {
         runtimeError(vm, "toString() takes 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
@@ -216,6 +217,7 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "secondsAfterMinute", datetimeSecondsAfterMinute);
     defineNative(vm, &abstract->values, "minutesAfterHour", datetimeMinutesAfterHour);
     defineNative(vm, &abstract->values, "dayOfMonth", datetimeDayOfMonth);
+    defineNative(vm, &abstract->values, "equal", datetimeEqual);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
 
@@ -395,6 +397,18 @@ static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args) {
     return NUMBER_VAL(t->tm_mday);
 }
 
+static Value datetimeEqual(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "equal() takes 1 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    Datetime *d2 = AS_DATETIME(args[1]);
+
+    return BOOL_VAL((d1->isLocal == d2->isLocal) && (d1->time == d2->time));
+}
+
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -437,12 +451,12 @@ static Value isLeapYearNative(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL((year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0));
 }
 
-static const long long nanosecond = 1;
-static const long long microsecond = 1000 * nanosecond;
-static const long long millisecond = 1000 * microsecond;
-static const long long second = 1000 * millisecond;
-static const long long minute = 60 * second;
-static const long long hour = 60 * minute;
+#define NANOSECOND  (long long)1
+#define MICROSECOND (long long)(1000 * NANOSECOND)
+#define MILLISECOND (long long)(1000 * MICROSECOND)
+#define SECOND      (long long)(1000 * MILLISECOND)
+#define MINUTE      (long long)(60 * SECOND)
+#define HOUR        (long long)(60 * MINUTE)
 
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
@@ -459,12 +473,12 @@ Value createDatetimeModule(DictuVM *vm) {
     /**
      * Define Datetime properties
      */
-    defineNativeProperty(vm, &module->values, "NANOSECOND", NUMBER_VAL(nanosecond));
-    defineNativeProperty(vm, &module->values, "MICROSECOND", NUMBER_VAL(microsecond));
-    defineNativeProperty(vm, &module->values, "MILLISECOND", NUMBER_VAL(millisecond));
-    defineNativeProperty(vm, &module->values, "SECOND", NUMBER_VAL(second));
-    defineNativeProperty(vm, &module->values, "MINUTE", NUMBER_VAL(minute));
-    defineNativeProperty(vm, &module->values, "HOUR", NUMBER_VAL(hour));
+    defineNativeProperty(vm, &module->values, "NANOSECOND", NUMBER_VAL(NANOSECOND));
+    defineNativeProperty(vm, &module->values, "MICROSECOND", NUMBER_VAL(MICROSECOND));
+    defineNativeProperty(vm, &module->values, "MILLISECOND", NUMBER_VAL(MILLISECOND));
+    defineNativeProperty(vm, &module->values, "SECOND", NUMBER_VAL(SECOND));
+    defineNativeProperty(vm, &module->values, "MINUTE", NUMBER_VAL(MINUTE));
+    defineNativeProperty(vm, &module->values, "HOUR", NUMBER_VAL(HOUR));
 
     defineNativeProperty(vm, &module->values, "SECONDS_IN_MINUTE", NUMBER_VAL(60));
     defineNativeProperty(vm, &module->values, "SECONDS_IN_HOUR", NUMBER_VAL(3600));
