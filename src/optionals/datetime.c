@@ -2,6 +2,7 @@
 
 #include "datetime.h"
 
+
 #ifdef _WIN32
 #define localtime_r(TIMER, BUF) localtime_s(BUF, TIMER)
 // Assumes length of BUF is 26
@@ -14,6 +15,13 @@
 #define ISO8601Format "%m/%d/%Y %H:%M:%S %Z"
 #define RFC3339Format "%Y-%m-%dT%T%Z"
 #define RFC2822Format "%a, %d %b %Y %T %z"
+
+#define NANOSECOND  (long long)1
+#define MICROSECOND (long long)(1000 * NANOSECOND)
+#define MILLISECOND (long long)(1000 * MICROSECOND)
+#define SECOND      (long long)(1000 * MILLISECOND)
+#define MINUTE      (long long)(60 * SECOND)
+#define HOUR        (long long)(60 * MINUTE)
 
 typedef struct {
     long time;
@@ -35,6 +43,7 @@ static Value datetimeSecondsAfterMinute(DictuVM *vm, int argCount, Value *args);
 static Value datetimeMinutesAfterHour(DictuVM *vm, int argCount, Value *args);
 static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args);
 static Value datetimeEqual(DictuVM *vm, int argCount, Value *args);
+static Value datetimeTimezone(DictuVM *vm, int argCount, Value *args);
 
 void freeDatetime(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Datetime, abstract->data);
@@ -64,7 +73,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
     char *fmt;
     int len;
 
-    int defaultLength = 128;
+    const int defaultLength = 128;
 
     if (argCount == 1) {
         if (!IS_STRING(args[1])) {
@@ -73,7 +82,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
         }
 
         ObjString *format = AS_STRING(args[1]);
-        /** this is to avoid an eternal loop while calling format() below */
+        // this is to avoid an eternal loop while calling format() below
         if (format->length == 0) {
             return OBJ_VAL(copyString(vm, "", 0));
         }
@@ -94,7 +103,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
     Datetime *datetime = AS_DATETIME(args[0]);
 
     struct tm tictoc;
-    if(datetime->isLocal){
+    if (datetime->isLocal) {
         localtime_r(&datetime->time, &tictoc);
     } else{
         gmtime_r(&datetime->time, &tictoc);
@@ -134,8 +143,6 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     }
 
     int len = 128;
-    //char *fmt = DEFAULT_DATETIME_FORMAT;
-
     char *point = ALLOCATE(vm, char, len);
     if (point == NULL) {
         runtimeError(vm, "Memory error on format()");
@@ -145,7 +152,7 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     Datetime *datetime = AS_DATETIME(args[0]);
 
     struct tm tictoc;
-    if(datetime->isLocal){
+    if (datetime->isLocal) {
         localtime_r(&datetime->time, &tictoc);
     } else{
         gmtime_r(&datetime->time, &tictoc);
@@ -218,6 +225,7 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     defineNative(vm, &abstract->values, "minutesAfterHour", datetimeMinutesAfterHour);
     defineNative(vm, &abstract->values, "dayOfMonth", datetimeDayOfMonth);
     defineNative(vm, &abstract->values, "equal", datetimeEqual);
+    defineNative(vm, &abstract->values, "timezone", datetimeTimezone);
     defineNative(vm, &abstract->values, "toString", datetimeToString);
     defineNative(vm, &abstract->values, "format", datetimeFormat);
 
@@ -409,6 +417,18 @@ static Value datetimeEqual(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL((d1->isLocal == d2->isLocal) && (d1->time == d2->time));
 }
 
+static Value datetimeTimezone(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError(vm, "timezone() takes 0 arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    Datetime *d1 = AS_DATETIME(args[0]);
+    struct tm *t = localtime((time_t*)&d1->time);
+
+    return OBJ_VAL(copyString(vm, t->tm_zone, strlen(t->tm_zone)));
+}
+
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
@@ -450,13 +470,6 @@ static Value isLeapYearNative(DictuVM *vm, int argCount, Value *args) {
 
     return BOOL_VAL((year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0));
 }
-
-#define NANOSECOND  (long long)1
-#define MICROSECOND (long long)(1000 * NANOSECOND)
-#define MILLISECOND (long long)(1000 * MICROSECOND)
-#define SECOND      (long long)(1000 * MILLISECOND)
-#define MINUTE      (long long)(60 * SECOND)
-#define HOUR        (long long)(60 * MINUTE)
 
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
