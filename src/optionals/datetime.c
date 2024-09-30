@@ -137,8 +137,8 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
-    if (argCount != 1) {
-        runtimeError(vm, "toString() takes 1 arguments (%d given)", argCount);
+    if (argCount != 0) {
+        runtimeError(vm, "toString() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -407,7 +407,7 @@ static Value datetimeDayOfMonth(DictuVM *vm, int argCount, Value *args) {
 
 static Value datetimeEqual(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "equal() takes 1 arguments (%d given)", argCount);
+        runtimeError(vm, "equal() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
