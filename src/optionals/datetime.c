@@ -450,7 +450,7 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    time_t num = (time_t)((long) AS_NUMBER(args[0]));
+    time_t num = (time_t)((long)AS_NUMBER(args[0]));
 
     return OBJ_VAL(newDatetimeObj(vm, (long)num, false));
 }
