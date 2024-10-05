@@ -4,10 +4,13 @@
 #endif
 
 #include "process.h"
+#include "process-source.h"
 
 #ifdef _WIN32
 #define pid_t int
 #endif
+
+static int currentSignal = 0;
 
 #ifdef _WIN32
 static char* buildArgs(DictuVM *vm, ObjList* list, int *size) {
@@ -331,28 +334,67 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
 }
 #endif
 
-Value createProcessModule(DictuVM* vm) {
-    ObjString* name = copyString(vm, "Process", 7);
-    push(vm, OBJ_VAL(name));
-    ObjModule* module = newModule(vm, name);
-    push(vm, OBJ_VAL(module));
+void signalHandler(int sig) {
+    currentSignal = sig;
+}
+
+// static Value signalProcess(DictuVM* vm, int argCount, Value* args) {
+//     if (argCount != 2) {
+//         runtimeError(vm, "signal() takes 2 arguments (%d given)", argCount);
+//         return EMPTY_VAL;
+//     }
+
+//     if (!IS_NUMBER(args[0])) {
+//         runtimeError(vm, "First argument passed to signal() must be a number");
+//         return EMPTY_VAL;
+//     }
+//     //int sigNum = (int)AS_NUMBER(args[0]);
+
+//     // if (!IS_FUNCTION(args[1])) {
+//     //     runtimeError(vm, "Second argument passed to signal() must be a function");
+//     //     return EMPTY_VAL;
+//     // }
+//     ObjFunction *handler = AS_FUNCTION(args[1]);
+//     if (handler == NULL) {
+//         return INTERPRET_COMPILE_ERROR;
+//     }
+    
+//     signal(SIGINT, signal_handler); 
+
+//     return newResultSuccess(vm, NIL_VAL);
+// }
+
+Value createProcessModule(DictuVM *vm) {
+    ObjClosure *closure = compileModuleToClosure(vm, "Process", DICTU_PROCESS_SOURCE);
+    if (closure == NULL) {
+        return EMPTY_VAL;
+    }
+
+    push(vm, OBJ_VAL(closure));
 
     /**
      * Define process methods
      */
-    defineNative(vm, &module->values, "exec", execProcess);
-    defineNative(vm, &module->values, "run", runProcess);
-    defineNative(vm, &module->values, "kill", killProcess);
+    defineNative(vm, &closure->function->module->values, "exec", execProcess);
+    defineNative(vm, &closure->function->module->values, "run", runProcess);
+    defineNative(vm, &closure->function->module->values, "kill", killProcess);
 
     /**
      * Define process properties
      */
-    defineNativeProperty(vm, &module->values, "SIGINT", NUMBER_VAL(2));
-    defineNativeProperty(vm, &module->values, "SIGILL", NUMBER_VAL(4));
-    defineNativeProperty(vm, &module->values, "SIGFPE", NUMBER_VAL(8));
-    defineNativeProperty(vm, &module->values, "SIGKILL", NUMBER_VAL(9));
-    defineNativeProperty(vm, &module->values, "SIGSEGV", NUMBER_VAL(11));
-    defineNativeProperty(vm, &module->values, "SIGTERM", NUMBER_VAL(15));
+    ObjDict *sigHandlers = newDict(vm);
+    push(vm, OBJ_VAL(sigHandlers));
+    pop(vm);
+    signal(SIGINT, signalHandler);
+
+    defineNativeProperty(vm, &closure->function->module->values, "currentSignal", NUMBER_VAL(currentSignal));
+    defineNativeProperty(vm, &closure->function->module->values, "signalHandlers", OBJ_VAL(sigHandlers));
+    defineNativeProperty(vm, &closure->function->module->values, "SIGINT", NUMBER_VAL(2));
+    // defineNativeProperty(vm, &module->values, "SIGILL", NUMBER_VAL(4));
+    // defineNativeProperty(vm, &module->values, "SIGFPE", NUMBER_VAL(8));
+    // defineNativeProperty(vm, &module->values, "SIGKILL", NUMBER_VAL(9));
+    // defineNativeProperty(vm, &module->values, "SIGSEGV", NUMBER_VAL(11));
+    // defineNativeProperty(vm, &module->values, "SIGTERM", NUMBER_VAL(15));
 
 #if defined(__Linux__)
     defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
@@ -383,40 +425,39 @@ Value createProcessModule(DictuVM* vm) {
     defineNativeProperty(vm, &module->values, "SIGSYS", NUMBER_VAL(31));
     defineNativeProperty(vm, &module->values, "SIGUNUSED", NUMBER_VAL(31));
 #elif defined(__FreeBSD__) || defined(__APPLE__)
-    defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
-    defineNativeProperty(vm, &module->values, "SIGQUIT", NUMBER_VAL(3));
-    defineNativeProperty(vm, &module->values, "SIGTRAP", NUMBER_VAL(5));
-    defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(6));
-    defineNativeProperty(vm, &module->values, "SIGEMT", NUMBER_VAL(7));
-    defineNativeProperty(vm, &module->values, "SIGBUS", NUMBER_VAL(10));
-    defineNativeProperty(vm, &module->values, "SIGSYS", NUMBER_VAL(12));
-    defineNativeProperty(vm, &module->values, "SIGPIPE", NUMBER_VAL(13));
-    defineNativeProperty(vm, &module->values, "SIGALRM", NUMBER_VAL(14));
-    defineNativeProperty(vm, &module->values, "SIGURG", NUMBER_VAL(16));
-    defineNativeProperty(vm, &module->values, "SIGSTOP", NUMBER_VAL(17));
-    defineNativeProperty(vm, &module->values, "SIGTSTP", NUMBER_VAL(18));
-    defineNativeProperty(vm, &module->values, "SIGCONT", NUMBER_VAL(19));
-    defineNativeProperty(vm, &module->values, "SIGCHLD", NUMBER_VAL(20));
-    defineNativeProperty(vm, &module->values, "SIGTTIN", NUMBER_VAL(21));
-    defineNativeProperty(vm, &module->values, "SIGTTOU", NUMBER_VAL(22));
-    defineNativeProperty(vm, &module->values, "SIGIO", NUMBER_VAL(23));
-    defineNativeProperty(vm, &module->values, "SIGXCPU", NUMBER_VAL(24));
-    defineNativeProperty(vm, &module->values, "SIGXFSZ", NUMBER_VAL(25));
-    defineNativeProperty(vm, &module->values, "SIGVTALRM", NUMBER_VAL(26));
-    defineNativeProperty(vm, &module->values, "SIGPROF", NUMBER_VAL(27));
-    defineNativeProperty(vm, &module->values, "SIGWINCH", NUMBER_VAL(28));
-    defineNativeProperty(vm, &module->values, "SIGINFO", NUMBER_VAL(29));
-    defineNativeProperty(vm, &module->values, "SIGUSR1", NUMBER_VAL(30));
-    defineNativeProperty(vm, &module->values, "SIGUSR2", NUMBER_VAL(31));
-    defineNativeProperty(vm, &module->values, "SIGTHR", NUMBER_VAL(32));
-    defineNativeProperty(vm, &module->values, "SIGLIBRT", NUMBER_VAL(33));
+    // defineNativeProperty(vm, &module->values, "SIGHUP", NUMBER_VAL(1));
+    // defineNativeProperty(vm, &module->values, "SIGQUIT", NUMBER_VAL(3));
+    // defineNativeProperty(vm, &module->values, "SIGTRAP", NUMBER_VAL(5));
+    // defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(6));
+    // defineNativeProperty(vm, &module->values, "SIGEMT", NUMBER_VAL(7));
+    // defineNativeProperty(vm, &module->values, "SIGBUS", NUMBER_VAL(10));
+    // defineNativeProperty(vm, &module->values, "SIGSYS", NUMBER_VAL(12));
+    // defineNativeProperty(vm, &module->values, "SIGPIPE", NUMBER_VAL(13));
+    // defineNativeProperty(vm, &module->values, "SIGALRM", NUMBER_VAL(14));
+    // defineNativeProperty(vm, &module->values, "SIGURG", NUMBER_VAL(16));
+    // defineNativeProperty(vm, &module->values, "SIGSTOP", NUMBER_VAL(17));
+    // defineNativeProperty(vm, &module->values, "SIGTSTP", NUMBER_VAL(18));
+    // defineNativeProperty(vm, &module->values, "SIGCONT", NUMBER_VAL(19));
+    // defineNativeProperty(vm, &module->values, "SIGCHLD", NUMBER_VAL(20));
+    // defineNativeProperty(vm, &module->values, "SIGTTIN", NUMBER_VAL(21));
+    // defineNativeProperty(vm, &module->values, "SIGTTOU", NUMBER_VAL(22));
+    // defineNativeProperty(vm, &module->values, "SIGIO", NUMBER_VAL(23));
+    // defineNativeProperty(vm, &module->values, "SIGXCPU", NUMBER_VAL(24));
+    // defineNativeProperty(vm, &module->values, "SIGXFSZ", NUMBER_VAL(25));
+    // defineNativeProperty(vm, &module->values, "SIGVTALRM", NUMBER_VAL(26));
+    // defineNativeProperty(vm, &module->values, "SIGPROF", NUMBER_VAL(27));
+    // defineNativeProperty(vm, &module->values, "SIGWINCH", NUMBER_VAL(28));
+    // defineNativeProperty(vm, &module->values, "SIGINFO", NUMBER_VAL(29));
+    // defineNativeProperty(vm, &module->values, "SIGUSR1", NUMBER_VAL(30));
+    // defineNativeProperty(vm, &module->values, "SIGUSR2", NUMBER_VAL(31));
+    // defineNativeProperty(vm, &module->values, "SIGTHR", NUMBER_VAL(32));
+    // defineNativeProperty(vm, &module->values, "SIGLIBRT", NUMBER_VAL(33));
 #elif defined(_WIN32)
     defineNativeProperty(vm, &module->values, "SIGEXIT", NUMBER_VAL(0));
     defineNativeProperty(vm, &module->values, "SIGABRT", NUMBER_VAL(22));
 #endif
 
     pop(vm);
-    pop(vm);
 
-    return OBJ_VAL(module);
+    return OBJ_VAL(closure);
 }

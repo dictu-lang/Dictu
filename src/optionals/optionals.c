@@ -18,7 +18,7 @@ BuiltinModules modules[] = {
     {"Queue", &createQueueModule, false},
     {"Stack", &createStackModule, false},
     {"Sqlite", &createSqliteModule, false},
-    {"Process", &createProcessModule, false},
+    {"Process", &createProcessModule, true},
     {"System", &createSystemModule, false},
     {"Term", &createTermModule, false},
 #ifndef DISABLE_UUID

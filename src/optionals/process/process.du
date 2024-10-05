@@ -1,0 +1,13 @@
+import Process;
+
+def signalHandle(sig, handler) {
+    Process.signalHandlers[sig] = handler;
+}
+
+def watchForSignals() {
+    while (Process.currentSignal != 0) {
+        if (Process.signalHandlers[Process.currentSignal] != nil) {
+            Process.signalHandlers[Process.currentSignal]();
+        }
+    }
+}
