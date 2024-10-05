@@ -8,8 +8,6 @@
 // Assumes length of BUF is 26
 #define asctime_r(TIME_PTR, BUF) (asctime_s(BUF, 26, TIME_PTR), BUF)
 #define gmtime_r(TIMER, BUF) gmtime_s(BUF, TIMER)
-#else
-#define HAS_STRPTIME
 #endif
 
 #define ISO8601Format "%m/%d/%Y %H:%M:%S %Z"
@@ -184,7 +182,6 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, point, length));
 }
 
-#ifdef HAS_STRPTIME
 static Value datetimeUnix(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "unix() takes 0 arguments (%d given)", argCount);
@@ -195,7 +192,6 @@ static Value datetimeUnix(DictuVM *vm, int argCount, Value *args) {
 
     return NUMBER_VAL(datetime->time);
 }
-#endif
 
 ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     ObjAbstract *abstract = newAbstract(vm, freeDatetime, datetimeTypeToString);
@@ -208,10 +204,7 @@ ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
     /**
      * Setup Datetime object methods
      */
-    #ifdef HAS_STRPTIME
     defineNative(vm, &abstract->values, "unix", datetimeUnix);
-    #endif
-
     defineNative(vm, &abstract->values, "utc", datetimeUTC);
     defineNative(vm, &abstract->values, "before", datetimeBefore);
     defineNative(vm, &abstract->values, "after", datetimeAfter);
@@ -430,8 +423,6 @@ static Value datetimeTimezone(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(args);
-
     if (argCount > 1 || argCount < 0) {
         runtimeError(vm, "new() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
