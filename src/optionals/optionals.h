@@ -19,7 +19,7 @@
 #include "base64.h"
 #include "hashlib.h"
 #include "sqlite.h"
-#include "process.h"
+#include "process/process.h"
 #include "inspect.h"
 #include "term.h"
 #include "uuid.h"

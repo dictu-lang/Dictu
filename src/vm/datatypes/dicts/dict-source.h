@@ -4,10 +4,6 @@
 " *\n" \
 " * We should always strive to write methods in C where possible.\n" \
 " */\n" \
-"\n" \
-"import Object;\n" \
-"\n" \
-"\n" \
 "def forEach(dict, func) {\n" \
 "    const dictKeys = dict.keys();\n" \
 "\n" \

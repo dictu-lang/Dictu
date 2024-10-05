@@ -33,7 +33,8 @@ const files = [
     'src/optionals/unittest/unittest',
     'src/optionals/env/env',
     'src/optionals/http/http',
-    'src/optionals/object/object'
+    'src/optionals/object/object',
+    'src/optionals/process/process'
 ];
 
 for (var i = 0; i < files.len(); i += 1) {

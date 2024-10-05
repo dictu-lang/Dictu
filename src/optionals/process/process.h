@@ -5,7 +5,8 @@
 #include <sys/wait.h>
 #endif // !_WIN32
 
-#include "optionals.h"
+#include "../optionals.h"
+#include "../../vm/vm.h"
 
 Value createProcessModule(DictuVM *vm);
 
