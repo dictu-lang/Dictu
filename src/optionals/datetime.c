@@ -100,18 +100,18 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 
     Datetime *datetime = AS_DATETIME(args[0]);
 
-    struct tm tictoc;
+    struct tm tm;
     if (datetime->isLocal) {
-        localtime_r(&datetime->time, &tictoc);
+        localtime_r(&datetime->time, &tm);
     } else{
-        gmtime_r(&datetime->time, &tictoc);
+        gmtime_r(&datetime->time, &tm);
     }
-    tictoc.tm_isdst = -1;
+    tm.tm_isdst = -1;
 
     const int maxIterations = 8;
 
     int iterator = 0;
-    while (strftime(point, sizeof(char) * len, fmt, &tictoc) == 0) {
+    while (strftime(point, sizeof(char) * len, fmt, &tm) == 0) {
         if (++iterator > maxIterations) {
             FREE_ARRAY(vm, char, point, len);
             return OBJ_VAL(copyString(vm, "", 0));
@@ -149,17 +149,17 @@ static Value datetimeToString(DictuVM *vm, int argCount, Value *args) {
 
     Datetime *datetime = AS_DATETIME(args[0]);
 
-    struct tm tictoc;
+    struct tm tm;
     if (datetime->isLocal) {
-        localtime_r(&datetime->time, &tictoc);
+        localtime_r(&datetime->time, &tm);
     } else{
-        gmtime_r(&datetime->time, &tictoc);
+        gmtime_r(&datetime->time, &tm);
     }
-    tictoc.tm_isdst = -1;
+    tm.tm_isdst = -1;
     const int maxIterations = 8;
 
     int iterator = 0;
-    while (strftime(point, sizeof(char) * len, DEFAULT_DATETIME_FORMAT, &tictoc) == 0) {
+    while (strftime(point, sizeof(char) * len, DEFAULT_DATETIME_FORMAT, &tm) == 0) {
         if (++iterator > maxIterations) {
             FREE_ARRAY(vm, char, point, len);
             return OBJ_VAL(copyString(vm, "", 0));
@@ -194,6 +194,7 @@ static Value datetimeUnix(DictuVM *vm, int argCount, Value *args) {
 }
 
 ObjAbstract *newDatetimeObj(DictuVM *vm, long time, int isLocal) {
+    UNUSED(isLocal);
     ObjAbstract *abstract = newAbstract(vm, freeDatetime, datetimeTypeToString);
     push(vm, OBJ_VAL(abstract));
 
@@ -236,12 +237,8 @@ static Value datetimeUTC(DictuVM *vm, int argCount, Value *args) {
 
     Datetime *datetime = AS_DATETIME(args[0]);
 
-    if (datetime->isLocal) {
-        return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, true));
-    }
-
-    struct tm tictoc;
-    gmtime_r(&datetime->time, &tictoc);
+    struct tm tm;
+    gmtime_r(&datetime->time, &tm);
 
     return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, false));
 }
@@ -430,8 +427,8 @@ static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 0) {
         time_t t = time(NULL);
-        struct tm tictoc;
-        localtime_r(&t, &tictoc);
+        struct tm tm;
+        localtime_r(&t, &tm);
 
         return OBJ_VAL(newDatetimeObj(vm, (long)t, true));
     }
@@ -462,6 +459,41 @@ static Value isLeapYearNative(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL((year & 3) == 0 && ((year % 25) != 0 || (year & 15) == 0));
 }
 
+#ifndef _WIN32
+static Value parseNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError(vm, "parse() takes 2 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "first argument must be a number");
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        runtimeError(vm, "second argument must be a number");
+        return EMPTY_VAL;
+    }
+
+    char *datetimeStr = AS_CSTRING(args[0]);
+    char *format = AS_CSTRING(args[1]);
+
+    struct tm ts;
+
+    char *res = strptime(datetimeStr, format, &ts);
+    if (res == NULL) {
+        runtimeError(vm, "failed to parse datetime string");
+        return EMPTY_VAL;
+    }
+
+    Datetime *datetime = createDatetime(vm);
+    
+
+    return OBJ_VAL(newDatetimeObj(vm, (long)datetime->time, false));
+}
+#endif
+
 Value createDatetimeModule(DictuVM *vm) {
     ObjString *name = copyString(vm, "Datetime", 8);
     push(vm, OBJ_VAL(name));
@@ -473,6 +505,9 @@ Value createDatetimeModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "new", newDatetimeNative);
     defineNative(vm, &module->values, "isLeapYear", isLeapYearNative);
+#ifndef _WIN32
+    defineNative(vm, &module->values, "parse", parseNative);
+#endif
 
     /**
      * Define Datetime properties
