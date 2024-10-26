@@ -10,6 +10,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "utf8.h"
 #include "util.h"
 #include "error_lib/error.h"
 #include "datatypes/number.h"
@@ -1898,14 +1899,26 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(subscriptValue);
+                    int len = string->character_len == -1 ? string->length : string->character_len;
                     int index = AS_NUMBER(indexValue);
 
                     // Allow negative indexes
                     if (index < 0)
-                        index = string->length + index;
+                        index = len + index;
 
-                    if (index >= 0 && index < string->length) {
-                        ObjString *newString = copyString(vm, &string->chars[index], 1);
+                    if (index >= 0 && index < len) {
+                        ObjString* newString;
+                        if(string->character_len != -1) {
+                            utf8_int32_t ch;
+                            char* ptr = string->chars;
+                            for(size_t i = 0; i <= (size_t)index; i++)
+                                ptr = utf8codepoint(ptr, &ch);
+                            size_t cpSize = utf8codepointsize(ch);
+                            newString = copyString(vm, ptr - cpSize, cpSize);
+                            
+                        } else {
+                            newString = copyString(vm, &string->chars[index], 1);
+                        }
                         pop(vm);
                         pop(vm);
                         push(vm, OBJ_VAL(newString));
@@ -2103,16 +2116,17 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(objectValue);
+                    int len = string->character_len == -1 ? string->length : string->character_len;
 
                     if (IS_EMPTY(sliceEndIndex)) {
-                        indexEnd = string->length;
+                        indexEnd = len;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
 
-                        if (indexEnd > string->length) {
-                            indexEnd = string->length;
+                        if (indexEnd > len) {
+                            indexEnd = len;
                         }  else if (indexEnd < 0) {
-                            indexEnd = string->length + indexEnd;
+                            indexEnd = len + indexEnd;
                         }
                     }
 
@@ -2120,7 +2134,20 @@ static DictuInterpretResult run(DictuVM *vm) {
                     if (indexStart > indexEnd) {
                         returnVal = OBJ_VAL(copyString(vm, "", 0));
                     } else {
-                        returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
+                        if(string->character_len != -1) {
+                            utf8_int32_t ch;
+                            char* ptr = string->chars;
+                        // first we need to advance by the skip;
+                            for(size_t i = 0; i < (size_t)indexStart; i++)
+                                ptr = utf8codepoint(ptr, &ch);
+                            char* ptrEnd = ptr;
+                            for(size_t i = 0; i < (size_t)(indexEnd - indexStart); i++)
+                                ptrEnd = utf8codepoint(ptrEnd, &ch);
+                            returnVal = OBJ_VAL(copyString(vm, ptr, ptrEnd - ptr));
+                        } else {
+                            returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
+                        }
+
                     }
                     break;
                 }

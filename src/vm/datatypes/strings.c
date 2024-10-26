@@ -15,6 +15,10 @@ static Value lenString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+        runtimeError(vm, "String contains invalid UTF-8, consider using byteLen()");
+        return EMPTY_VAL;
+    }
     return NUMBER_VAL(string->character_len);
 }
 
@@ -65,6 +69,12 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "format() takes at least 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
+    ObjString *string = AS_STRING(args[0]);
+
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
 
     int length = 0;
     char **replaceStrings = ALLOCATE(vm, char*, argCount);
@@ -83,7 +93,6 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         length += utf8size_lazy(replaceStrings[j - 1]);
     }
 
-    ObjString *string = AS_STRING(args[0]);
 
     int stringLen = string->length + 1;
     char *tmp = string->chars;
@@ -145,6 +154,11 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+     }
+
     char *delimiter = AS_CSTRING(args[1]);
     int maxSplit = string->length + 1;
 
@@ -226,11 +240,18 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value containsString(DictuVM *vm, int argCount, Value *args) {
+
     if (argCount != 1) {
         runtimeError(vm, "contains() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
-
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
+    }
     if (!IS_STRING(args[1])) {
         runtimeError(vm, "Argument passed to contains() must be a string");
         return EMPTY_VAL;
@@ -251,7 +272,13 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "find() takes either 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
-
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
+    }
     int index = 1;
 
     if (argCount == 2) {
@@ -293,6 +320,13 @@ static Value findLastString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError(vm, "findLast() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
+    }
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
     }
 
     const char *str = AS_CSTRING(args[0]);
@@ -341,6 +375,13 @@ static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
         runtimeError(vm, "Arguments passed to replace() must be a strings");
         return EMPTY_VAL;
+    }
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
     }
 
     // Pop values off the stack
@@ -399,6 +440,10 @@ static Value lowerString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
     utf8lwr(temp);
@@ -414,6 +459,11 @@ static Value upperString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
+
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
     temp[string->length] = 0x00;
@@ -434,6 +484,11 @@ static Value startsWithString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
+
     ObjString *start = AS_STRING(args[1]);
     if(string->length < start->length)
         return BOOL_VAL(false);
@@ -453,6 +508,11 @@ static Value endsWithString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
+
     ObjString *suffix = AS_STRING(args[1]);
 
     if (string->length < suffix->length) {
@@ -537,6 +597,13 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "Argument passed to count() must be a string");
         return EMPTY_VAL;
     }
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
+    }
 
     char *haystack = AS_CSTRING(args[0]);
     char *needle = AS_CSTRING(args[1]);
@@ -558,6 +625,10 @@ static Value wordCountString(DictuVM *vm, int argCount, Value *args) {
 
     ObjString *string = AS_STRING(args[0]);
     
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
     int count = 0;
     int len = string->character_len;
     bool in = false;
@@ -586,6 +657,11 @@ static Value titleString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+     runtimeError(vm, "String contains invalid UTF-8", argCount);
+     return EMPTY_VAL;
+    }
+
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
     char* ptr = temp;
@@ -643,6 +719,14 @@ static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "isUpper() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
+    }
+
 
     char *string = AS_CSTRING(args[0]);
     int len = utf8len(string);
@@ -666,6 +750,13 @@ static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError(vm, "isLower() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
+    }
+    {
+        ObjString *string = AS_STRING(args[0]);
+        if(string->character_len == -1) {
+           runtimeError(vm, "String contains invalid UTF-8", argCount);
+           return EMPTY_VAL;
+       }
     }
 
     char *string = AS_CSTRING(args[0]);
@@ -694,6 +785,10 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+       runtimeError(vm, "String contains invalid UTF-8", argCount);
+       return EMPTY_VAL;
+   }
     char *dest = ALLOCATE(vm, char, string->length + 1);
     char* ptr = string->chars;
     int targetLen = 0;
@@ -727,6 +822,10 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     }
 
     ObjString *string = AS_STRING(args[0]);
+    if(string->character_len == -1) {
+       runtimeError(vm, "String contains invalid UTF-8", argCount);
+       return EMPTY_VAL;
+   }
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
     int len = AS_NUMBER(args[1]);

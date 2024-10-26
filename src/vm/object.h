@@ -271,8 +271,10 @@ ObjInstance *newInstance(DictuVM *vm, ObjClass *klass);
 ObjNative *newNative(DictuVM *vm, NativeFn function);
 
 ObjString *takeString(DictuVM *vm, char *chars, int length);
+ObjString *takeStringWithLen(DictuVM *vm, char *chars, int length, int character_len);
 
 ObjString *copyString(DictuVM *vm, const char *chars, int length);
+ObjString *copyStringWithLen(DictuVM *vm, const char *chars, int length, int character_len);
 
 ObjList *newList(DictuVM *vm);
 
