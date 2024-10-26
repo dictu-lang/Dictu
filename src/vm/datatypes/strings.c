@@ -449,7 +449,7 @@ static Value lowerString(DictuVM *vm, int argCount, Value *args) {
     utf8lwr(temp);
     temp[string->length] = '\0';
 
-    return OBJ_VAL(takeString(vm, temp, string->length));
+    return OBJ_VAL(takeStringWithLen(vm, temp, string->length, string->character_len));
 }
 
 static Value upperString(DictuVM *vm, int argCount, Value *args) {
@@ -469,7 +469,7 @@ static Value upperString(DictuVM *vm, int argCount, Value *args) {
     temp[string->length] = 0x00;
     utf8upr(temp);
 
-    return OBJ_VAL(takeString(vm, temp, string->length));
+    return OBJ_VAL(takeStringWithLen(vm, temp, string->length, string->character_len));
 }
 
 static Value startsWithString(DictuVM *vm, int argCount, Value *args) {
@@ -686,7 +686,7 @@ static Value titleString(DictuVM *vm, int argCount, Value *args) {
 
     temp[string->length] = '\0';
 
-    return OBJ_VAL(takeString(vm, temp, string->length));
+    return OBJ_VAL(takeStringWithLen(vm, temp, string->length, string->character_len));
 }
 
 static Value repeatString(DictuVM *vm, int argCount, Value *args) {
