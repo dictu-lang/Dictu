@@ -163,7 +163,7 @@ static ObjString *allocateStringWithLen(DictuVM *vm, char *chars, int length,
 
 static ObjString *allocateString(DictuVM *vm, char *chars, int length,
                                  uint32_t hash) {
-    int character_len = utf8valid(chars) == 0 ? utf8len(chars) : -1;
+    int character_len = utf8valid(chars) == 0 ? (int)utf8len(chars) : -1;
     return allocateStringWithLen(vm, chars, length, hash, character_len);
 }
 
