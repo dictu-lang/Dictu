@@ -852,12 +852,20 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     return OBJ_VAL(takeString(vm, temp, utf8size_lazy(temp)));
 }
 
+static Value isValidUtf8(DictuVM* vm, int argCount, Value* args) {
+    UNUSED(vm);
+    UNUSED(argCount);
+    ObjString* string = AS_STRING(args[0]);
+    return BOOL_VAL(string->character_len != -1);
+}
+
 void declareStringMethods(DictuVM *vm) {
     // Note(Liz3): We need functions from the c stdlib for iswalpha, iswlower, iswupper(the utf8.c 
     // library functions do not work)
     setlocale(LC_ALL, "en_US.UTF-8");
     defineNative(vm, &vm->stringMethods, "len", lenString);
     defineNative(vm, &vm->stringMethods, "byteLen", byteLenString);
+    defineNative(vm, &vm->stringMethods, "isValidUtf8", isValidUtf8);
     defineNative(vm, &vm->stringMethods, "toNumber", toNumberString);
     defineNative(vm, &vm->stringMethods, "format", formatString);
     defineNative(vm, &vm->stringMethods, "split", splitString);
