@@ -1908,14 +1908,14 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                     if (index >= 0 && index < len) {
                         ObjString* newString;
-                        if(string->character_len != -1) {
+                        if(string->character_len != -1 && string->character_len != string->length) {
                             utf8_int32_t ch;
                             char* ptr = string->chars;
                             for(size_t i = 0; i <= (size_t)index; i++)
                                 ptr = utf8codepoint(ptr, &ch);
                             size_t cpSize = utf8codepointsize(ch);
                             newString = copyString(vm, ptr - cpSize, cpSize);
-                            
+
                         } else {
                             newString = copyString(vm, &string->chars[index], 1);
                         }
@@ -2134,7 +2134,7 @@ static DictuInterpretResult run(DictuVM *vm) {
                     if (indexStart > indexEnd) {
                         returnVal = OBJ_VAL(copyString(vm, "", 0));
                     } else {
-                        if(string->character_len != -1) {
+                        if(string->character_len != -1 && string->character_len != string->length) {
                             utf8_int32_t ch;
                             char* ptr = string->chars;
                         // first we need to advance by the skip;
