@@ -783,7 +783,7 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
         utf8_int32_t cp;
         char* n = utf8codepoint(ptr, &cp);
         
-        if (!isspace(cp) || (i > 0 && !isspace(last))) {
+        if (!iswspace(cp) || (i > 0 && !iswspace(last))) {
             utf8catcodepoint(dest+targetLen, cp, string->length - targetLen);
             targetLen += utf8codepointsize(cp);
         }
@@ -812,10 +812,11 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
        return EMPTY_VAL;
    }
     char *temp = ALLOCATE(vm, char, string->length + 1);
+    temp[string->length] = 0x00;
     memcpy(temp, string->chars, string->length);
     int len = AS_NUMBER(args[1]);
 
-    int last = 0;
+    int last = -1;
     int count = 0;
     char*ptr = temp;
     for (int cur = 0; cur < string->character_len; cur++, count++) {
@@ -827,7 +828,7 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
             last = ptr - temp;
         } 
 
-        if (count >= len) {
+        if (count >= len && last != -1) {
             temp[last] = '\n';
             count = 0;
         }

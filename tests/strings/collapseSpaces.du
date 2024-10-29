@@ -17,7 +17,6 @@ class TestStringCollapseSpaces < UnitTest {
     }
 
     testStringCollapseSpacesUnicode() {
-        const x = "😀🌍🐦aä";
         const testString = "This  is   🌍   a huge string🐦  🐦 of a       lot of spaces.";
         const expected  = "This is 🌍 a huge string🐦 🐦 of a lot of spaces.";
         const res = testString.collapseSpaces();
