@@ -15,6 +15,16 @@ class TestStringCollapseSpaces < UnitTest {
         this.assertEquals(res, expected);
         this.assertNotEquals(testString, expected);
     }
+
+    testStringCollapseSpacesUnicode() {
+        const x = "😀🌍🐦aä";
+        const testString = "This  is   🌍   a huge string🐦  🐦 of a       lot of spaces.";
+        const expected  = "This is 🌍 a huge string🐦 🐦 of a lot of spaces.";
+        const res = testString.collapseSpaces();
+        this.assertEquals(res, expected);
+        this.assertNotEquals(testString, expected);
+    }
+
 }
 
 TestStringCollapseSpaces().run();

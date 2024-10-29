@@ -16,6 +16,12 @@ class TestStringCount < UnitTest {
         this.assertEquals("Dictu is great! Dictu is great!".count("1234"), 0);
         this.assertEquals("Dictu is great! Dictu is great!".count("!"), 2);
     }
+    testStringCountUnicode() {
+        this.assertEquals("Dictu is 😎! Dictu is 😎!".count("Dictu is 😎!"), 2);
+        this.assertEquals("Dictu is great❗".count("❗"), 1);
+        this.assertEquals("Dictu is great❕ Dictu is great❕".count("❗"), 0);
+
+    }
 }
 
 TestStringCount().run();

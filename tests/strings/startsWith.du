@@ -21,6 +21,7 @@ class TestStringStartsWith < UnitTest {
     }
     testStringStartsWithUnicode() {
         this.assertTruthy("💻test".startsWith("💻t"));
+        this.assertTruthy("💻test".startsWith("💻test"));
         this.assertFalsey("💻test".startsWith("💻te💻"));
     }
 }

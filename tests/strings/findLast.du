@@ -12,6 +12,11 @@ class TestStringLastIndexOf < UnitTest {
         this.assertEquals("woolly woolly mammoth".findLast("woolly"), 7);
         this.assertEquals("mammoth".findLast("woolly"), -1);
     }
+    testStringLowerUnicode() {
+        this.assertEquals("🌐😁⚓🌍 🌐😁⚓🌍 mammoth".findLast("🌐😁⚓🌍"), 5);
+        this.assertEquals("🌐😁⚓🌍".findLast("😅😅"), -1);
+
+    }
 }
 
 TestStringLastIndexOf().run();

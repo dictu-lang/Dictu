@@ -16,6 +16,10 @@ class TestStringUpper < UnitTest {
         this.assertEquals("12Dictu45".upper(), "12DICTU45");
         this.assertEquals("!@£$%^&*".upper(), "!@£$%^&*");
     }
+    testStringUpperUnicode() {
+        this.assertEquals("üäö".upper(), "ÜÄÖ");
+        this.assertEquals("ü🌐test".upper(), "Ü🌐TEST");
+    }
 }
 
 TestStringUpper().run();
