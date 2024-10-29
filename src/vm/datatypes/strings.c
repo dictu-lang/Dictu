@@ -328,42 +328,27 @@ static Value findLastString(DictuVM *vm, int argCount, Value *args) {
            return EMPTY_VAL;
        }
     }
+    utf8_int32_t cp;
+    ObjString *str = AS_STRING(args[0]);
+    ObjString *ss = AS_STRING(args[1]);
+    if(ss->length > str->length || ss->character_len > str->character_len)
+        return NUMBER_VAL(-1);
 
-    const char *str = AS_CSTRING(args[0]);
-    const char *ss = AS_CSTRING(args[1]);
-    const char *p = str;
-    int found = !*ss;
+    char* ptr = str->chars;
+    int index = str->character_len - ss->character_len;
+    for(int i = 0; i< index; i++)
+          ptr = utf8codepoint(ptr, &cp);
 
-    if (!found) {
-        while (*p) {
-            ++p;
-        }
-
-        const char *q = ss;
-        while (*q) {
-            ++q;
-        }
-
-        while (!found && !(p-str < q-ss)) {
-            const char *s = p;
-            const char *t = q;
-
-            while (t != ss && *(s-1) == *(t-1)) {
-                --s;
-                --t;
-            }
-
-            found = t == ss;
-
-            if (found) {
-                p = s;
-            } else {
-                --p;
-            }
-        }
+    while(true) {
+        if(utf8str(ptr, ss->chars) == ptr)
+            return NUMBER_VAL(index);
+        index--;
+        if(index < 0)
+            break;
+        ptr = utf8rcodepoint(ptr, &cp);
     }
 
-    return NUMBER_VAL(found ? p-str : -1);
+    return NUMBER_VAL( -1);
 }
 
 static Value replaceString(DictuVM *vm, int argCount, Value *args) {
