@@ -1,0 +1,29 @@
+/**
+ * isDir.du
+ *
+ * Testing Path.isDir()
+ *
+ * Returns true if the given string is a path to a directory, else false. (Linux only)
+ */
+from UnitTest import UnitTest;
+
+import Path;
+import System;
+import Process;
+
+class TestPathIsSL < UnitTest {
+    setUp() {
+        Process.run(["ln", "-s", "README.md", "README.md.sl"]);
+    }
+    tearDown() {
+        System.remove("README.md.sl");
+    }
+    testIsSL() {
+        this.assertTruthy(Path.isSymbolicLink("README.md.sl"));
+        this.assertFalsey(Path.isSymbolicLink("README.md"));
+    }
+
+}
+
+if (System.platform != "windows")
+    TestPathIsSL().run();
