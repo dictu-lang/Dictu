@@ -160,12 +160,12 @@ static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value isSymlinkNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "isDir() takes 1 argument (%d given)", argCount);
+        runtimeError(vm, "isSymbolicLink() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isDir() argument must be a string");
+        runtimeError(vm, "isSymbolicLink() argument must be a string");
         return EMPTY_VAL;
     }
 
