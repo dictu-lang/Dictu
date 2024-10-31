@@ -3,7 +3,7 @@
 #ifndef _WIN32
 static uuid_t uuid;
 
-#define UUID_STRING_LEN 37
+#define UUID_STRING_LEN 36
 
 static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
