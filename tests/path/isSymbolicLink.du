@@ -1,9 +1,9 @@
 /**
- * isDir.du
+ * isSymbolic.du
  *
- * Testing Path.isDir()
+ * Testing Path.isSymbolicLink()
  *
- * Returns true if the given string is a path to a directory, else false. (Linux only)
+ * Returns true if the given string is a symbolic Link, else false. (Linux only)
  */
 from UnitTest import UnitTest;
 
