@@ -93,6 +93,16 @@ Checks whether a given path points to a directory or not.
 Path.isDir("/usr/bin/"); //true
 ```
 
+### Path.isSymbolicLink(String) -> Boolean
+
+Checks whether a given path is a symbolic link. 
+
+**Note:** This is not available on windows systems.
+
+```cs
+Path.isSymbolicLink("/usr/bin/"); //false
+```
+
 ### Path.listDir(String) -> List
 
 Returns a list of strings containing the contents of the input path.

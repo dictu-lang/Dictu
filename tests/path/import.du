@@ -11,5 +11,6 @@ import "isAbsolute.du";
 import "realpath.du";
 import "exists.du";
 import "isDir.du";
+import "isSymbolicLink.du";
 import "join.du";
 import "listDir.du";

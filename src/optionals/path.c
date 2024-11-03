@@ -146,7 +146,10 @@ static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
 
     char *path = AS_CSTRING(args[0]);
     struct stat path_stat;
-    stat(path, &path_stat);
+    int ret = stat(path, &path_stat);
+
+    if (ret < 0)
+        return FALSE_VAL;
 
     if (S_ISDIR(path_stat.st_mode))
         return TRUE_VAL;
@@ -154,6 +157,32 @@ static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
     return FALSE_VAL;
 
 }
+#ifndef _WIN32
+static Value isSymlinkNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "isSymbolicLink() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "isSymbolicLink() argument must be a string");
+        return EMPTY_VAL;
+    }
+
+    char *path = AS_CSTRING(args[0]);
+    struct stat path_stat;
+    int ret = lstat(path, &path_stat);
+
+    if(ret < 0)
+        return FALSE_VAL;
+
+    if (S_ISLNK(path_stat.st_mode))
+        return TRUE_VAL;
+
+    return FALSE_VAL;
+
+}
+#endif
 
 static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
@@ -330,6 +359,9 @@ Value createPathModule(DictuVM *vm) {
     defineNative(vm, &module->values, "dirname", dirnameNative);
     defineNative(vm, &module->values, "exists", existsNative);
     defineNative(vm, &module->values, "isDir", isdirNative);
+#ifndef _WIN32
+    defineNative(vm, &module->values, "isSymbolicLink", isSymlinkNative);
+#endif
     defineNative(vm, &module->values, "listDir", listDirNative);
     defineNative(vm, &module->values, "join", joinNative);
 
