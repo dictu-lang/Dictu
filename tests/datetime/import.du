@@ -4,6 +4,5 @@
 * General import file for all the datetime tests
 */
 
-import "constants.du";
-import "strftime.du";
-import "strptime.du";
+import "new.du";
+import "format.du";

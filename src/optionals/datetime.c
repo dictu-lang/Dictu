@@ -94,7 +94,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 
     char *point = ALLOCATE(vm, char, len);
     if (point == NULL) {
-        runtimeError(vm, "Memory error on format()!");
+        runtimeError(vm, "memory error on format()");
         return EMPTY_VAL;
     }
 
@@ -121,7 +121,7 @@ static Value datetimeFormat(DictuVM *vm, int argCount, Value *args) {
 
         point = GROW_ARRAY(vm, point, char, len / 2, len);
         if (point == NULL) {
-            runtimeError(vm, "Memory error on format()!");
+            runtimeError(vm, "memory error on format()");
             return EMPTY_VAL;
         }
     }
@@ -416,7 +416,7 @@ static Value datetimeTimezone(DictuVM *vm, int argCount, Value *args) {
     Datetime *d1 = AS_DATETIME(args[0]);
     struct tm *t = localtime((time_t*)&d1->time);
 
-    return OBJ_VAL(copyString(vm, t->tm_zone, strlen(t->tm_zone)));
+    return OBJ_VAL(copyString(vm, t->tm_zone, strlen(t->tm_zone))); 
 }
 
 static Value newDatetimeNative(DictuVM *vm, int argCount, Value *args) {

@@ -1,0 +1,28 @@
+/**
+ * format.du
+ *
+ * Testing the format method on the Datetime class:
+ *
+ */
+from UnitTest import UnitTest;
+
+import Datetime;
+import System;
+
+class TestDateTimeFormat < UnitTest {
+    setUp() {
+        this.now = Datetime.new(1);
+    }
+
+    testDatetimeBuiltInFormats() {
+        this.assertEquals(this.now.format(Datetime.RFC3339), "1970-01-01T00:00:01GMT");
+        print(this.now.format(Datetime.RFC2822).len());
+        print("Thu, 01 Jan 1970 00:00:01".len());
+        this.assertEquals(this.now.format(Datetime.RFC2822), "Thu, 01 Jan 1970 00:00:01 ");
+        this.assertEquals(this.now.format(Datetime.ISO8601), "01/01/1970 00:00:01 GMT");
+    }
+}
+
+if (System.platform != "windows") {
+    TestDateTimeFormat().run();
+}
