@@ -11,8 +11,9 @@
 #endif
 
 #define ISO8601Format "%m/%d/%Y %H:%M:%S %Z"
-#define RFC3339Format "%Y-%m-%dT%T%Z"
-#define RFC2822Format "%a, %d %b %Y %T %z"
+#define RFC3339Format "%Y-%m-%dT%H:%M:%SZ"
+#define RFC2822Format "%a, %d %b %Y %H:%M:%S %z"
+
 
 #define NANOSECOND  (long long)1
 #define MICROSECOND (long long)(1000 * NANOSECOND)
