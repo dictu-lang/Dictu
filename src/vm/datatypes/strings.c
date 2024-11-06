@@ -431,8 +431,8 @@ static Value lowerString(DictuVM *vm, int argCount, Value *args) {
     }
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
-    utf8lwr(temp);
     temp[string->length] = '\0';
+    utf8lwr(temp);
 
     return OBJ_VAL(takeStringWithLen(vm, temp, string->length, string->character_len));
 }
