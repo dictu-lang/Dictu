@@ -212,7 +212,7 @@ System.clock();
 
 ### System.time() -> Number
 
-Returns UNIX timestamp as a number.
+Returns UNIX timestamp in seconds as a number.
 
 ```cs
 System.time();
