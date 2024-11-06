@@ -87,8 +87,6 @@ Path.exists("some/path/to/a/file.du"); // true
 
 Checks whether a given path points to a directory or not. 
 
-**Note:** This is not available on windows systems.
-
 ```cs
 Path.isDir("/usr/bin/"); //true
 ```

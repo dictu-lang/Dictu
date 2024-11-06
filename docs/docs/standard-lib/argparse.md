@@ -36,7 +36,7 @@ const parser = Parser("prog_name", "Program to do all the things");
 const parser = Parser("prog_name", "Program to do all the things", "User defined usage string");
 ```
 
-### Parse.addString(String, String, Bool, string -> Optional)
+### Parser.addString(String, String, Bool, string -> Optional)
 
 To add a new string argument, call the method below with at least the 3 required arguments; name, description, and boolean indicating the flag is required. A fourth argument can be passed to give the parser a custom name for the given flag.
 
