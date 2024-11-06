@@ -1,8 +1,6 @@
 #include <string.h>
-#include <uchar.h>
 
 #include "common.h"
-#include "utf8.h"
 #include "scanner.h"
 
 void initScanner(Scanner *scanner, const char *source) {
@@ -12,17 +10,17 @@ void initScanner(Scanner *scanner, const char *source) {
     scanner->rawString = false;
 }
 
-static bool isAlpha(char32_t c) {
+static bool isAlpha(char c) {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
            c == '_';
 }
 
-static bool isDigit(char32_t c) {
+static bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
-static bool isHexDigit(char32_t c) {
+static bool isHexDigit(char c) {
     return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c == '_'));
 }
 
@@ -31,31 +29,23 @@ static bool isAtEnd(Scanner *scanner) {
 }
 
 static char advance(Scanner *scanner) {
-    utf8_int32_t current;
-    scanner->current = utf8codepoint(scanner->current, &current);
-    return current;
+    scanner->current++;
+    return scanner->current[-1];
 }
 
 static char peek(Scanner *scanner) {
-    utf8_int32_t current;
-    utf8codepoint(scanner->current, &current);
-    return current;
+    return *scanner->current;
 }
 
 static char peekNext(Scanner *scanner) {
     if (isAtEnd(scanner)) return '\0';
-    utf8_int32_t current;
-    const char* ptr = utf8codepoint(scanner->current, &current);
-    utf8codepoint(ptr, &current);
-    return current;
+    return scanner->current[1];
 }
 
-static bool match(Scanner *scanner, char32_t expected) {
+static bool match(Scanner *scanner, char expected) {
     if (isAtEnd(scanner)) return false;
-    utf8_int32_t current;
-    const char* ptr = utf8codepoint(scanner->current, &current);
-    if ((char32_t)current != expected) return false;
-    scanner->current = ptr;
+    if (*scanner->current != expected) return false;
+    scanner->current++;
     return true;
 }
 
@@ -80,7 +70,7 @@ static LangToken errorToken(Scanner *scanner, const char *message) {
 
 static void skipWhitespace(Scanner *scanner) {
     for (;;) {
-        char32_t c = peek(scanner);
+        char c = peek(scanner);
         switch (c) {
             case ' ':
             case '\r':
@@ -144,22 +134,11 @@ static LangTokenType checkKeyword(Scanner *scanner, int start, int length,
     return TOKEN_IDENTIFIER;
 }
 
-char32_t getCharacter(const char* ptr, int offset) {
-        utf8_int32_t current;
-
-    for(int i = 0; i < offset+1;i++) {
-         ptr = utf8codepoint(ptr, &current);
-
-    }
-    return current;
-}
-
 static LangTokenType identifierType(Scanner *scanner) {
-
-    switch (getCharacter(scanner->start, 0)) {
+    switch (scanner->start[0]) {
         case 'a':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'b': {
                         return checkKeyword(scanner, 2, 6, "stract", TOKEN_ABSTRACT);
                     }
@@ -178,7 +157,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             return checkKeyword(scanner, 1, 4, "reak", TOKEN_BREAK);
         case 'c':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'a':
 			return checkKeyword(scanner, 2, 2, "se", TOKEN_CASE);
                     case 'l':
@@ -187,7 +166,7 @@ static LangTokenType identifierType(Scanner *scanner) {
                         // Skip second char
                         // Skip third char
                         if (scanner->current - scanner->start > 3) {
-                            switch (getCharacter(scanner->start, 3)) {
+                            switch (scanner->start[3]) {
                                 case 't':
                                     return checkKeyword(scanner, 4, 4, "inue", TOKEN_CONTINUE);
                                 case 's':
@@ -200,7 +179,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 'd':
             if (scanner->current - scanner->start > 3) {
-                switch (getCharacter(scanner->start, 3)) {
+                switch (scanner->start[3]) {
                     case 'a':
                         return checkKeyword(scanner, 4, 3, "ult", TOKEN_DEFAULT);
                 }
@@ -208,7 +187,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             return checkKeyword(scanner, 1, 2, "ef", TOKEN_DEF);
         case 'e':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'l':
                         return checkKeyword(scanner, 2, 2, "se", TOKEN_ELSE);
                     case 'n':
@@ -218,7 +197,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 'f':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'a':
                         return checkKeyword(scanner, 2, 3, "lse", TOKEN_FALSE);
                     case 'o':
@@ -230,7 +209,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 'i':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'f':
                         return checkKeyword(scanner, 2, 0, "", TOKEN_IF);
                     case 'm':
@@ -240,7 +219,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 'n':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'o':
                         return checkKeyword(scanner, 2, 1, "t", TOKEN_NOT);
                     case 'i':
@@ -254,7 +233,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             return checkKeyword(scanner, 1, 6, "rivate", TOKEN_PRIVATE);
         case 'r':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'e':
                         return checkKeyword(scanner, 2, 4, "turn", TOKEN_RETURN);
                 }
@@ -267,7 +246,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 's':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 't':
                         return checkKeyword(scanner, 2, 4, "atic", TOKEN_STATIC);
                     case 'u':
@@ -279,12 +258,12 @@ static LangTokenType identifierType(Scanner *scanner) {
             break;
         case 't':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'h':
                         return checkKeyword(scanner, 2, 2, "is", TOKEN_THIS);
                     case 'r':
                         if (scanner->current - scanner->start > 2) {
-                            switch (getCharacter(scanner->start, 2)) {
+                            switch (scanner->start[2]) {
                                 case 'u':
                                     return checkKeyword(scanner, 3, 1, "e", TOKEN_TRUE);
                                 case 'a':
@@ -300,7 +279,7 @@ static LangTokenType identifierType(Scanner *scanner) {
             return checkKeyword(scanner, 1, 2, "ar", TOKEN_VAR);
         case 'w':
             if (scanner->current - scanner->start > 1) {
-                switch (getCharacter(scanner->start, 1)) {
+                switch (scanner->start[1]) {
                     case 'h':
                         return checkKeyword(scanner, 2, 3, "ile", TOKEN_WHILE);
                     case 'i':
@@ -387,7 +366,7 @@ LangToken scanToken(Scanner *scanner) {
 
     if (isAtEnd(scanner)) return makeToken(scanner, TOKEN_EOF);
 
-    char32_t c = advance(scanner);
+    char c = advance(scanner);
 
     if (isAlpha(c)) return identifier(scanner);
     if (isDigit(c)) return hexNumber(scanner);
