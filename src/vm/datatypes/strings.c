@@ -94,7 +94,6 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
     }
 
 
-    int stringLen = string->length + 1;
     char *tmp = string->chars;
     char *tmpFree = tmp;
 
@@ -113,7 +112,6 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
             free(replaceStrings[i]);
         }
 
-        FREE_ARRAY(vm, char, tmp , stringLen);
         FREE_ARRAY(vm, char*, replaceStrings, argCount);
         return EMPTY_VAL;
     }
@@ -451,7 +449,7 @@ static Value upperString(DictuVM *vm, int argCount, Value *args) {
 
     char *temp = ALLOCATE(vm, char, string->length + 1);
     memcpy(temp, string->chars, string->length);
-    temp[string->length] = 0x00;
+    temp[string->length] = '\0';
     utf8upr(temp);
 
     return OBJ_VAL(takeStringWithLen(vm, temp, string->length, string->character_len));
