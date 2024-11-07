@@ -346,7 +346,7 @@ static Value findLastString(DictuVM *vm, int argCount, Value *args) {
         ptr = utf8rcodepoint(ptr, &cp);
     }
 
-    return NUMBER_VAL( -1);
+    return NUMBER_VAL(-1);
 }
 
 static Value replaceString(DictuVM *vm, int argCount, Value *args) {
