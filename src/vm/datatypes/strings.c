@@ -815,7 +815,6 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     for (int cur = 0; cur < string->character_len; cur++, count++) {
         utf8_int32_t cp;
         char* n = utf8codepoint(ptr, &cp);
-        // temp[cur] = string->chars[cur];
 
         if (isspace(cp)) {
             last = ptr - temp;
