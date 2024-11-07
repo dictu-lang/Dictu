@@ -702,17 +702,14 @@ static Value isUpperString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "isUpper() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
-    {
-        ObjString *string = AS_STRING(args[0]);
-        if(string->character_len == -1) {
+
+    ObjString* strObj = AS_STRING(args[0]);
+    if(strObj->character_len == -1) {
            runtimeError(vm, "String contains invalid UTF-8", argCount);
            return EMPTY_VAL;
-       }
     }
-
-
-    char *string = AS_CSTRING(args[0]);
-    int len = utf8len(string);
+    char *string = strObj->chars;
+    int len = strObj->character_len;
 
     if (len == 0) {
         return BOOL_VAL(false);
@@ -734,16 +731,14 @@ static Value isLowerString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "isLower() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
-    {
-        ObjString *string = AS_STRING(args[0]);
-        if(string->character_len == -1) {
-           runtimeError(vm, "String contains invalid UTF-8", argCount);
-           return EMPTY_VAL;
-       }
+    ObjString *strObj = AS_STRING(args[0]);
+    if(strObj->character_len == -1) {
+       runtimeError(vm, "String contains invalid UTF-8", argCount);
+       return EMPTY_VAL;
     }
 
-    char *string = AS_CSTRING(args[0]);
-    int len = utf8len(string);
+    char *string = strObj->chars;
+    int len = strObj->character_len;
 
     if (len == 0) {
         return BOOL_VAL(false);
@@ -793,7 +788,7 @@ static Value collapseSpacesString(DictuVM *vm, int argCount, Value *args) {
     if (targetLen != string->length) {
         dest = SHRINK_ARRAY(vm, dest, char, string->length + 1, targetLen + 1);
     }
-    dest[targetLen] = 0x00;
+    dest[targetLen] = '\0';
 
     return OBJ_VAL(takeString(vm, dest, targetLen));
 }
@@ -810,7 +805,7 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
        return EMPTY_VAL;
    }
     char *temp = ALLOCATE(vm, char, string->length + 1);
-    temp[string->length] = 0x00;
+    temp[string->length] = '\0';
     memcpy(temp, string->chars, string->length);
     int len = AS_NUMBER(args[1]);
 
