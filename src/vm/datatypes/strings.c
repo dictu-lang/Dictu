@@ -803,7 +803,7 @@ static Value wrapString(DictuVM *vm, int argCount, Value *args) {
     if(string->character_len == -1) {
        runtimeError(vm, "String contains invalid UTF-8", argCount);
        return EMPTY_VAL;
-   }
+    }
     char *temp = ALLOCATE(vm, char, string->length + 1);
     temp[string->length] = '\0';
     memcpy(temp, string->chars, string->length);
