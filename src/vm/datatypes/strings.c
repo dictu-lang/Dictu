@@ -24,7 +24,7 @@ static Value lenString(DictuVM *vm, int argCount, Value *args) {
 
 static Value byteLenString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
+        runtimeError(vm, "byteLen() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
