@@ -192,8 +192,6 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
           
             char* next_ptr = utf8codepoint(ptr, &cp);
 
-            // *(tmp) = string->chars[tokenIndex];
-            // *(tmp + 1) = '\0';
             size_t size = next_ptr - ptr;
             Value str = OBJ_VAL(copyString(vm, ptr, size));
             // Push to stack to avoid GC
