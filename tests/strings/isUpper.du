@@ -15,6 +15,12 @@ class TestStringIsUpper < UnitTest {
         this.assertTruthy("G00D!".isUpper());
         this.assertFalsey("Maple".isUpper());
     }
+    testStringIsUpperUnicode() {
+        this.assertTruthy("😆D".isUpper());
+        this.assertTruthy("DO😆G".isUpper());
+        this.assertTruthy("G😆00D!".isUpper());
+        this.assertFalsey("Ma😆ple".isUpper());
+    }
 }
 
 TestStringIsUpper().run();
