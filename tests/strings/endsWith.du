@@ -19,6 +19,13 @@ class TestStringEndsWith < UnitTest {
         this.assertFalsey("test".endsWith("!@£$%"));
         this.assertFalsey("test".endsWith("123456789"));
     }
+    testStringEndsWithUnicode() {
+        this.assertTruthy("🌐😁⚓🌍".endsWith("🌍"));
+        this.assertTruthy("🌐😁⚓🌍".endsWith("⚓🌍"));
+        this.assertTruthy("🌐😁⚓🌍".endsWith("🌐😁⚓🌍"));
+        this.assertFalsey("🌐😁⚓🌍".endsWith("😅"));
+        this.assertFalsey("🌐😁⚓🌍".endsWith("🌐😁⚓🌍😅"));
+    }
 }
 
 TestStringEndsWith().run();

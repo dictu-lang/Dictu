@@ -12,6 +12,9 @@ class TestStringToBool < UnitTest {
         this.assertTruthy("10".toBool());
         this.assertFalsey("".toBool());
     }
+    testStringToBoolUnicode() {
+        this.assertTruthy("💬".toBool());
+    }
 }
 
 TestStringToBool().run();

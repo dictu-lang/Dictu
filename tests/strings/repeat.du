@@ -12,6 +12,11 @@ class TestStringRepeat < UnitTest {
         this.assertEquals("ba" + "na".repeat(2), "banana");
         this.assertEquals("ha".repeat(6), "hahahahahaha");
     }
+    testStringRepeatUnicode() {
+        this.assertEquals("⌛" + "⏳".repeat(2), "⌛⏳⏳");
+        this.assertEquals("📃".repeat(5), "📃📃📃📃📃");
+    }
+
 }
 
 TestStringRepeat().run();

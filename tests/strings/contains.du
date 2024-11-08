@@ -17,6 +17,12 @@ class TestStringContains < UnitTest {
         this.assertTruthy("1Dictu is great!1".contains("1"));
         this.assertTruthy(("1Dictu " + "is great!").contains("1"));
     }
+    testStringContainsUnicode() {
+        this.assertTruthy(("❗Dictu " + "is great!").contains("❗"));
+        this.assertFalsey("Dictu is great!".contains("❗"));
+        this.assertTruthy("Dictu is ♨️ right?️".contains("♨️")); // ♨️ is two characters!
+
+    }
 }
 
 TestStringContains().run();

@@ -14,6 +14,10 @@ class TestStringWordCount < UnitTest {
         this.assertEquals("This is a sentence".wordCount(), 4);
         this.assertEquals("This is an even longer sentence".wordCount(), 6);
     }
+    testStringWordCountUnicode() {
+      this.assertEquals("Dictu is cool😎".wordCount(), 3);
+      this.assertEquals("WOrld🌐 üäö".wordCount(), 2);
+    }
 }
 
 TestStringWordCount().run();

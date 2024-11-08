@@ -22,6 +22,19 @@ class TestStringSubscript < UnitTest {
             this.assertEquals(string[i], stringList[i]);
         }
     }
+    testStringSubscriptUnicode() {
+        const string = "😀🌍🐦aä";
+        const stringList = ["😀", "🌍", "🐦", "a", "ä"];
+
+        this.assertEquals(string[0], "😀");
+        this.assertEquals(string[1], "🌍");
+        this.assertEquals(string[2], "🐦");
+        this.assertEquals(string[-1], "ä");
+
+        for (var i = 0; i < string.len(); i += 1) {
+            this.assertEquals(string[i], stringList[i]);
+        }
+    }
 }
 
 TestStringSubscript().run();
