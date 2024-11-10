@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Argparse module an import is required.
 
-```cs
+```js
 from Argparse import Parser;
 ```
 

@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Datetime module an import is required.
 
-```cs
+```js
 import Datetime;
 ```
 
