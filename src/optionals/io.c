@@ -38,6 +38,34 @@ static Value printlnIO(DictuVM *vm, int argCount, Value *args) {
     return NIL_VAL;
 }
 
+
+static Value printErrIO(DictuVM *vm, int argCount, Value *args) {
+    if (argCount == 0) {
+        runtimeError(vm, "printErr() takes 1 or more arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        printValueError(args[i]);
+    }
+
+    return NIL_VAL;
+}
+
+static Value printErrlnIO(DictuVM *vm, int argCount, Value *args) {
+    if (argCount == 0) {
+        runtimeError(vm, "printErrLn() takes 1 or more arguments (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    for (int i = 0; i < argCount; ++i) {
+        printValueError(args[i]);
+         fprintf(stderr, "\n");
+    }
+
+    return NIL_VAL;
+}
+
 #ifdef _WIN32
 static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
@@ -138,6 +166,8 @@ Value createIOModule(DictuVM *vm) {
      */
     defineNative(vm, &module->values, "print", printIO);
     defineNative(vm, &module->values, "println", printlnIO);
+    defineNative(vm, &module->values, "eprint", printErrIO);
+    defineNative(vm, &module->values, "eprintln", printErrlnIO);
     defineNative(vm, &module->values, "copyFile", copyFileIO);
 
     pop(vm);

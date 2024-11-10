@@ -48,6 +48,25 @@ IO.println("Dictu!");
 // Dictu!
 ```
 
+### IO.eprint(...values) -> Nil
+
+Prints a given list of values to stderr.
+
+```cs
+IO.eprint(0);
+// 0
+```
+
+### IO.eprintln(...values) -> Nil
+
+Prints a given list of values to stderr with an appended newline character.
+
+```cs
+IO.eprintln("Dictu!");
+// Dictu!
+```
+
+
 ### IO.copyFile(String: src, String: dst) -> Result\<Nil>
 
 Copies the contents from the source file to the destination file.
