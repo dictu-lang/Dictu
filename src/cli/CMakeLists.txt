@@ -7,6 +7,14 @@ endif()
 
 add_compile_definitions(USE_UTF8)
 add_executable(dictu ${DICTU_CLI_SRC})
+ execute_process(
+    COMMAND git log -1 --format=%H
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+add_compile_definitions(GIT_HASH="${GIT_HASH}")
+
 target_include_directories(dictu PUBLIC ${INCLUDE_DIR})
 target_link_libraries(dictu dictu_api_static)
 if(LINUX AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
