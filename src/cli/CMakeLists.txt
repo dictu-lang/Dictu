@@ -14,6 +14,9 @@ add_executable(dictu ${DICTU_CLI_SRC})
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 add_compile_definitions(GIT_HASH="${GIT_HASH}")
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_compile_definitions(DEBUG DEBUG_STRESS_GC DEBUG_FINAL_MEM)
+endif()
 
 target_include_directories(dictu PUBLIC ${INCLUDE_DIR})
 target_link_libraries(dictu dictu_api_static)
