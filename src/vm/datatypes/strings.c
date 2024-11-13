@@ -884,6 +884,13 @@ static Value isValidUtf8(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL(string->character_len != -1);
 }
 
+static Value testThing(DictuVM *vm, int argCount, Value *args) {
+    int argC = argCount-1;
+    Value func = args[1];
+    Value* func_args = args +2;
+    return executeDirect(vm, func, argC, func_args);
+}
+
 void declareStringMethods(DictuVM *vm) {
     // Note(Liz3): We need functions from the c stdlib for iswalpha, iswlower,
     // iswupper(the utf8.c library functions do not work)
@@ -916,4 +923,5 @@ void declareStringMethods(DictuVM *vm) {
     defineNative(vm, &vm->stringMethods, "collapseSpaces",
                  collapseSpacesString);
     defineNative(vm, &vm->stringMethods, "wrap", wrapString);
+    defineNative(vm, &vm->stringMethods, "testThing", testThing);
 }

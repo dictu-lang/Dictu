@@ -27,6 +27,7 @@
 #include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
+#include "value.h"
 
 static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
@@ -866,7 +867,9 @@ static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *kla
     }
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+
+
+static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -877,6 +880,7 @@ static DictuInterpretResult run(DictuVM *vm) {
     #define READ_CONSTANT() \
                 (frame->closure->function->chunk.constants.values[READ_BYTE()])
 
+ 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
     #define UNSUPPORTED_OPERAND_TYPE_ERROR(op)                                                      \
@@ -2253,6 +2257,7 @@ static DictuInterpretResult run(DictuVM *vm) {
         }
 
         CASE_CODE(RETURN): {
+
             Value result = pop(vm);
 
             // Close any upvalues still in scope.
@@ -2270,6 +2275,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
+            if (breakFrame != -1 && vm->frameCount == breakFrame) {
+                return INTERPRET_OK;
+            }
+
             DISPATCH();
         }
 
@@ -2435,6 +2444,9 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     return INTERPRET_RUNTIME_ERROR;
 }
+static DictuInterpretResult run(DictuVM *vm) {
+    return runWithBreakFrame(vm, -1);
+}
 
 DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source) {
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
@@ -2456,4 +2468,22 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     DictuInterpretResult result = run(vm);
 
     return result;
+}
+Value executeDirect(DictuVM* vm, Value function, int argCount, Value* args) {
+    if(!IS_FUNCTION(function) && !IS_CLOSURE(function))
+        return NIL_VAL;
+    int currentFrameCount = vm->frameCount;
+    Value* currentStack = vm->stackTop;
+    CallFrame *frame = &vm->frames[vm->frameCount++];
+    uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
+    frame->ip = code;
+    push(vm, function);
+    for(int i = argCount -1; i >= 0; i--) {
+        push(vm, args[i]);
+    }
+    runWithBreakFrame(vm, currentFrameCount+1);
+    Value v = pop(vm);
+    vm->stackTop = currentStack;
+    vm->frameCount--;
+    return v;
 }
