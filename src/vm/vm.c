@@ -2491,7 +2491,7 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
     frame->ip = code;
     push(vm, function);
-    for(int i = argCount -1; i >= 0; i--) {
+    for(int i = 0; i < argCount; i++) {
         push(vm, args[i]);
     }
     DictuInterpretResult result = runWithBreakFrame(vm, currentFrameCount+1);
