@@ -38,17 +38,50 @@ import FFI;
 import Path;
 
 class TestFFIModule < UnitTest {
+    var mod = nil;
+    doSetup() {
+        if(this.mod != nil)
+            return;
+        const parts = ["examples", "ffi-example", "build"];
+        if(System.platform == "windows"){
+            parts.push("Debug");
+            parts.push("ffi-test.dll");
+        } else {
+            parts.push("libffi-test{}".format(FFI.suffix));
+        }
+
+        const path = Path.join(parts);
+        this.mod = FFI.load(path);
+    }
     testFFIModule() {
-        const path = Path.join(Path.dirname(__file__), "libs", "test-lib{}{}".format(
-            System.platform == "darwin" ? System.arch == "x86_64" ? "_64" : "_arm" : "",
-            FFI.suffix
-        ));
-        const mod = FFI.load(path);
+        this.doSetup();
+        const mod = this.mod;
         this.assertEquals(mod.test, "Dictu!");
         for(var i = 0; i < 40; i+=2) {
             this.assertEquals(mod.dictuFFITestAdd(i, i), i+i);
         }
         this.assertEquals(mod.dictuFFITestStr(), "Hello From Dictu FFI module!");
+    }
+    testFFIModuleCallback() {
+        this.doSetup();
+        const mod = this.mod;
+        var count = 0;
+        const list = [];
+        def callback(value){
+            count += value;
+            list.push(value);
+            return value * value;
+        }
+        def greet(name) {
+            return "Hello, {}!".format(name);
+        }
+        for(var i = 0; i < 5; i+=1){
+            this.assertEquals(mod.dictuFFITestCallback(callback, i * i), i * i * i * i);
+        }
+        // 1, 4, 9, 16
+        this.assertEquals(list, [0,1,4,9,16]);
+        this.assertEquals(count,  1 + 4 + 9 + 16);
+        this.assertEquals(mod.dictuFFITestCallback(greet, "World"), "Hello, World!");
     }
 }
 
