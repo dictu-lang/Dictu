@@ -59,21 +59,25 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
 
-        ObjFunction *function = frame->closure->function;
-
-        // -1 because the IP is sitting on the next instruction to be
-        // executed.
-        size_t instruction = frame->ip - function->chunk.code - 1;
-
-        if (function->name == NULL) {
-            log_error("File '%s', {bold}line %d{reset}", function->module->name->chars, function->chunk.lines[instruction]);
-            i = -1;
+        if(frame->closure == NULL) {
+            // synthetic frame created by callFunction
+            log_error("Function <native> {reset}");
         } else {
-            log_error("Function '%s' in '%s', {bold}line %d{reset}", function->name->chars, function->module->name->chars, function->chunk.lines[instruction]);
+             ObjFunction *function = frame->closure->function;
+
+            // -1 because the IP is sitting on the next instruction to be
+            // executed.
+            size_t instruction = frame->ip - function->chunk.code - 1;
+
+            if (function->name == NULL) {
+                log_error("File '%s', {bold}line %d{reset}", function->module->name->chars, function->chunk.lines[instruction]);
+                i = -1;
+            } else {
+                log_error("Function '%s' in '%s', {bold}line %d{reset}", function->name->chars, function->module->name->chars, function->chunk.lines[instruction]);
+            }
+
         }
-
         log_pad("");
-
         va_list args;
         va_start(args, format);
         vfprintf(stderr, format, args);
@@ -2490,6 +2494,7 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     CallFrame *frame = &vm->frames[vm->frameCount++];
     uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
     frame->ip = code;
+    frame->closure = NULL;
     push(vm, function);
     for(int i = 0; i < argCount; i++) {
         push(vm, args[i]);
