@@ -2470,10 +2470,19 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     return result;
 }
 Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
-    if(!IS_FUNCTION(function) && !IS_CLOSURE(function))
-        return NIL_VAL;
+
+    if(!IS_FUNCTION(function) && !IS_CLOSURE(function)){
+        runtimeError(vm, "Value passed to callFunction is not callable");
+        return EMPTY_VAL;
+    }
     int currentFrameCount = vm->frameCount;
     Value* currentStack = vm->stackTop;
+    if (vm->frameCount == vm->frameCapacity) {
+        int oldCapacity = vm->frameCapacity;
+        vm->frameCapacity = GROW_CAPACITY(vm->frameCapacity);
+        vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,
+                                   oldCapacity, vm->frameCapacity);
+    }
     CallFrame *frame = &vm->frames[vm->frameCount++];
     uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
     frame->ip = code;
@@ -2481,7 +2490,10 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     for(int i = argCount -1; i >= 0; i--) {
         push(vm, args[i]);
     }
-    runWithBreakFrame(vm, currentFrameCount+1);
+    DictuInterpretResult result = runWithBreakFrame(vm, currentFrameCount+1);
+    if(result != INTERPRET_OK) {
+        exit(70);
+    }
     Value v = pop(vm);
     vm->stackTop = currentStack;
     vm->frameCount--;
