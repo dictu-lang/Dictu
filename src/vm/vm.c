@@ -2469,7 +2469,7 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
 
     return result;
 }
-Value executeDirect(DictuVM* vm, Value function, int argCount, Value* args) {
+Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     if(!IS_FUNCTION(function) && !IS_CLOSURE(function))
         return NIL_VAL;
     int currentFrameCount = vm->frameCount;

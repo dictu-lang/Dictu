@@ -888,7 +888,7 @@ static Value testThing(DictuVM *vm, int argCount, Value *args) {
     int argC = argCount-1;
     Value func = args[1];
     Value* func_args = args +2;
-    return executeDirect(vm, func, argC, func_args);
+    return callFunction(vm, func, argC, func_args);
 }
 
 void declareStringMethods(DictuVM *vm) {
