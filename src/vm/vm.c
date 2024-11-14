@@ -2472,6 +2472,10 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
 Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
 
     if(!IS_FUNCTION(function) && !IS_CLOSURE(function)){
+        if(IS_NATIVE(function)) {
+            NativeFn native = AS_NATIVE(function);
+            return native(vm, argCount, args);
+        }
         runtimeError(vm, "Value passed to callFunction is not callable");
         return EMPTY_VAL;
     }
