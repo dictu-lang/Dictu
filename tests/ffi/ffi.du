@@ -39,7 +39,7 @@ import Path;
 
 class TestFFIModule < UnitTest {
     var mod = nil;
-    doSetup() {
+    setUp() {
         if(this.mod != nil)
             return;
         const parts = ["examples", "ffi-example", "build"];
@@ -54,7 +54,6 @@ class TestFFIModule < UnitTest {
         this.mod = FFI.load(path);
     }
     testFFIModule() {
-        this.doSetup();
         const mod = this.mod;
         this.assertEquals(mod.test, "Dictu!");
         for(var i = 0; i < 40; i+=2) {
@@ -63,7 +62,6 @@ class TestFFIModule < UnitTest {
         this.assertEquals(mod.dictuFFITestStr(), "Hello From Dictu FFI module!");
     }
     testFFIModuleCallback() {
-        this.doSetup();
         const mod = this.mod;
         var count = 0;
         const list = [];
