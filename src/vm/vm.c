@@ -77,6 +77,7 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
         }
 
         log_pad("");
+
         va_list args;
         va_start(args, format);
         vfprintf(stderr, format, args);
