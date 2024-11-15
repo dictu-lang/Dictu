@@ -69,4 +69,6 @@ bool isFalsey(Value value);
 
 ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source);
 
+Value callFunction(DictuVM* vm, Value function, int argCount, Value* args);
+
 #endif

@@ -11,7 +11,7 @@ extern "C" {
 
 // This is used ti determine if we can safely load the function pointers without
 // UB.
-#define FFI_MOD_API_VERSION 2
+#define FFI_MOD_API_VERSION 3
 
 #define UNUSED(__x__) (void)__x__
 
@@ -343,7 +343,7 @@ struct _vm {
 };
 
 #define DICTU_MAJOR_VERSION "0"
-#define DICTU_MINOR_VERSION "29"
+#define DICTU_MINOR_VERSION "30"
 #define DICTU_PATCH_VERSION "0"
 
 #define DICTU_STRING_VERSION                                                   \
@@ -364,6 +364,7 @@ struct sObjString {
     int length;
     char *chars;
     uint32_t hash;
+    int character_len;
 };
 
 struct sObjList {
@@ -550,6 +551,9 @@ typedef void defineNative_t(DictuVM *vm, Table *table, const char *name,
 
 typedef void defineNativeProperty_t(DictuVM *vm, Table *table, const char *name,
                                     Value value);
+
+typedef Value callFunction_t(DictuVM* vm, Value function, int argCount, Value* args);
+
 reallocate_t * reallocate = NULL;
 
 copyString_t *copyString = NULL;
@@ -616,6 +620,8 @@ defineNative_t *defineNative = NULL;
 
 defineNativeProperty_t *defineNativeProperty = NULL;
 
+callFunction_t *callFunction = NULL;
+
 // This needs to be implemented by the user and register all functions
 int dictu_ffi_init(DictuVM *vm, Table *method_table);
 
@@ -665,6 +671,7 @@ int dictu_internal_ffi_init(void **function_ptrs, DictuVM *vm,
     defineNative = (defineNative_t *)function_ptrs[count++];
     defineNativeProperty = (defineNativeProperty_t *)function_ptrs[count++];
     reallocate = (reallocate_t *)function_ptrs[count++];
+    callFunction = (callFunction_t *)function_ptrs[count++];
     int initResult = dictu_ffi_init(vm, methodTable);
     if (initResult > 0)
         return 3 + initResult;

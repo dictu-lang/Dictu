@@ -53,7 +53,8 @@ void *ffi_function_pointers[] = {&copyString,
                                  &compareStringGreater,
                                  &defineNative,
                                  &defineNativeProperty,
-                                 &reallocate};
+                                 &reallocate,
+                                 &callFunction};
 
 void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
     FFIInstance *instance = (FFIInstance *)abstract->data;

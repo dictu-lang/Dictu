@@ -27,6 +27,7 @@
 #include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
+#include "value.h"
 
 static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
@@ -58,6 +59,10 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
 
+        if(frame->closure == NULL) {
+            // synthetic frame created by callFunction
+            continue;
+        } 
         ObjFunction *function = frame->closure->function;
 
         // -1 because the IP is sitting on the next instruction to be
@@ -866,7 +871,9 @@ static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *kla
     }
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+
+
+static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -2270,6 +2277,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
+            if (breakFrame != -1 && vm->frameCount == breakFrame) {
+                return INTERPRET_OK;
+            }
+
             DISPATCH();
         }
 
@@ -2435,6 +2446,9 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     return INTERPRET_RUNTIME_ERROR;
 }
+static DictuInterpretResult run(DictuVM *vm) {
+    return runWithBreakFrame(vm, -1);
+}
 
 DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source) {
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
@@ -2456,4 +2470,38 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     DictuInterpretResult result = run(vm);
 
     return result;
+}
+Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
+    if(!IS_FUNCTION(function) && !IS_CLOSURE(function)){
+        if(IS_NATIVE(function)) {
+            NativeFn native = AS_NATIVE(function);
+            return native(vm, argCount, args);
+        }
+        runtimeError(vm, "Value passed to callFunction is not callable");
+        return EMPTY_VAL;
+    }
+    int currentFrameCount = vm->frameCount;
+    Value* currentStack = vm->stackTop;
+    if (vm->frameCount == vm->frameCapacity) {
+        int oldCapacity = vm->frameCapacity;
+        vm->frameCapacity = GROW_CAPACITY(vm->frameCapacity);
+        vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,
+                                   oldCapacity, vm->frameCapacity);
+    }
+    CallFrame *frame = &vm->frames[vm->frameCount++];
+    uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
+    frame->ip = code;
+    frame->closure = NULL;
+    push(vm, function);
+    for(int i = 0; i < argCount; i++) {
+        push(vm, args[i]);
+    }
+    DictuInterpretResult result = runWithBreakFrame(vm, currentFrameCount+1);
+    if(result != INTERPRET_OK) {
+        exit(70);
+    }
+    Value v = pop(vm);
+    vm->stackTop = currentStack;
+    vm->frameCount--;
+    return v;
 }
