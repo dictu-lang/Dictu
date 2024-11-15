@@ -1,5 +1,5 @@
 set(DICTU_CLI_SRC main.c linenoise/linenoise.c linenoise/linenoise.h linenoise/stringbuf.c linenoise/stringbuf.h linenoise/utf8.c linenoise/utf8.h)
-if(NOT NO_EXEC_RELOCATE)
+if(EXEC_RELOCATE)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 if(NOT WIN32)
