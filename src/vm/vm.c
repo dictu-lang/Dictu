@@ -62,21 +62,20 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
         if(frame->closure == NULL) {
             // synthetic frame created by callFunction
             continue;
+        } 
+        ObjFunction *function = frame->closure->function;
+
+        // -1 because the IP is sitting on the next instruction to be
+        // executed.
+        size_t instruction = frame->ip - function->chunk.code - 1;
+
+        if (function->name == NULL) {
+            log_error("File '%s', {bold}line %d{reset}", function->module->name->chars, function->chunk.lines[instruction]);
+            i = -1;
         } else {
-             ObjFunction *function = frame->closure->function;
-
-            // -1 because the IP is sitting on the next instruction to be
-            // executed.
-            size_t instruction = frame->ip - function->chunk.code - 1;
-
-            if (function->name == NULL) {
-                log_error("File '%s', {bold}line %d{reset}", function->module->name->chars, function->chunk.lines[instruction]);
-                i = -1;
-            } else {
-                log_error("Function '%s' in '%s', {bold}line %d{reset}", function->name->chars, function->module->name->chars, function->chunk.lines[instruction]);
-            }
-
+            log_error("Function '%s' in '%s', {bold}line %d{reset}", function->name->chars, function->module->name->chars, function->chunk.lines[instruction]);
         }
+
         log_pad("");
         va_list args;
         va_start(args, format);
@@ -884,7 +883,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
     #define READ_CONSTANT() \
                 (frame->closure->function->chunk.constants.values[READ_BYTE()])
 
- 
     #define READ_STRING() AS_STRING(READ_CONSTANT())
 
     #define UNSUPPORTED_OPERAND_TYPE_ERROR(op)                                                      \
@@ -2261,7 +2259,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(RETURN): {
-
             Value result = pop(vm);
 
             // Close any upvalues still in scope.
@@ -2474,7 +2471,6 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     return result;
 }
 Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
-
     if(!IS_FUNCTION(function) && !IS_CLOSURE(function)){
         if(IS_NATIVE(function)) {
             NativeFn native = AS_NATIVE(function);

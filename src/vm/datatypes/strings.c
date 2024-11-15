@@ -884,7 +884,6 @@ static Value isValidUtf8(DictuVM *vm, int argCount, Value *args) {
     return BOOL_VAL(string->character_len != -1);
 }
 
-
 void declareStringMethods(DictuVM *vm) {
     // Note(Liz3): We need functions from the c stdlib for iswalpha, iswlower,
     // iswupper(the utf8.c library functions do not work)
