@@ -888,6 +888,10 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
                 error(fnCompiler->parser, "Cannot have more than 255 parameters.");
             }
             index++;
+
+            if (match(compiler, TOKEN_COLON)) {
+                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+            }
         } while (match(fnCompiler, TOKEN_COMMA));
 
         if (fnCompiler->function->arityOptional > 0) {
@@ -1577,6 +1581,11 @@ static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     // Setup function and parse parameters
     beginFunction(compiler, &fnCompiler, type, level);
 
+    // Type hint
+    if (match(compiler, TOKEN_COLON)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+    }
+
     // The body.
     consume(&fnCompiler, TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block(&fnCompiler);
@@ -2097,6 +2106,10 @@ static void enumDeclaration(Compiler *compiler) {
 
     emitBytes(compiler, OP_ENUM, nameConstant);
 
+    if (match(compiler, TOKEN_COLON)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+    }
+
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
 
     int index = 0;
@@ -2138,6 +2151,10 @@ static void varDeclaration(Compiler *compiler, bool constant) {
             consume(compiler, TOKEN_IDENTIFIER, "Expect variable name.");
             variables[varCount] = compiler->parser->previous;
             varCount++;
+
+            if (match(compiler, TOKEN_COLON)) {
+                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+            }
         } while (match(compiler, TOKEN_COMMA));
 
         consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
@@ -2161,6 +2178,10 @@ static void varDeclaration(Compiler *compiler, bool constant) {
     } else {
         do {
             uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
+
+            if (match(compiler, TOKEN_COLON)) {
+                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+            }
 
             if (match(compiler, TOKEN_EQUAL) || constant) {
                 // Compile the initializer.
