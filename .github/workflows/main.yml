@@ -30,6 +30,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
+          cd examples/ffi-example
+          cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
+          cmake --build ./build
+          cd ../..
           cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
           cmake --build ./build
           ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
@@ -54,6 +58,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
+          cd examples/ffi-example
+          cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
+          cmake --build ./build
+          cd ../..
           cmake -DCMAKE_BUILD_TYPE=Debug -DDISABLE_HTTP=1 -B ./build
           cmake --build ./build
           ./dictu tests/runTests.du ci | tee /dev/stderr | grep -q 'Total bytes lost: 0'
@@ -76,6 +84,10 @@ jobs:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
+          cd examples\ffi-example
+          cmake -DCMAKE_BUILD_TYPE=Debug -B .\build
+          cmake --build ./build --config Debug
+          cd ..\..
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_SYSTEM_VERSION="10.0.18362.0" -DCICD=1 -DDISABLE_HTTP=1 -B build
           cmake --build build
           Debug\dictu.exe tests/runTests.du ci

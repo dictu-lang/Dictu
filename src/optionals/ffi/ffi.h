@@ -19,7 +19,7 @@
 
 // This is used to determine if we can safely load the function pointers without UB,
 // if this is greater then the version from the mod we error in the internal mod load function.
-#define DICTU_FFI_API_VERSION 2
+#define DICTU_FFI_API_VERSION 3
 
 
 Value createFFIModule(DictuVM *vm);
