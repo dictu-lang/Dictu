@@ -61,7 +61,7 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
 
         if(frame->closure == NULL) {
             // synthetic frame created by callFunction
-            log_error("Function <native> {reset}");
+            continue;
         } else {
              ObjFunction *function = frame->closure->function;
 
