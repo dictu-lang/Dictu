@@ -9,7 +9,7 @@
 
 #ifdef DEBUG
 
-#define DICTU_DEBUG_VERSION_STR " (Debug)"
+#define DICTU_DEBUG_VERSION_STR "(Debug)"
 
 #else
 
