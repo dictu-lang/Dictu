@@ -162,10 +162,11 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
-    compiler->withBlock = false;
+    compiler->withBlock = -1;
     compiler->classAnnotations = NULL;
     compiler->methodAnnotations = NULL;
     compiler->fieldAnnotations = NULL;
+    memset(compiler->locals, 0, sizeof(Local) * UINT8_COUNT);
 
     if (parent != NULL) {
         compiler->class = parent->class;
@@ -311,6 +312,22 @@ static int resolveLocal(Compiler *compiler, LangToken *name, bool inFunction) {
     }
 
     return -1;
+}
+static int resolveFileHandles(Compiler *compiler, bool inFunction, int* out) {
+    // Look it up in the local scopes. Look in reverse order so that the
+    // most nested variable is found first and shadows outer ones.
+    int count = 0;
+    for (int i = compiler->localCount - 1; i >= 0; i--) {
+        Local *local = &compiler->locals[i];
+        if (local->isFile) {
+            if (!inFunction && local->depth == -1) {
+                error(compiler->parser, "Cannot read local variable in its own initializer.");
+            }
+            out[count++] = i;
+        }
+    }
+
+    return count;
 }
 
 // Adds an upvalue to [compiler]'s function with the given properties.
@@ -2519,38 +2536,41 @@ static void switchStatement(Compiler *compiler) {
 }
 
 static void withStatement(Compiler *compiler) {
-    compiler->withBlock = true;
     consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'with'.");
     expression(compiler);
     consume(compiler, TOKEN_COMMA, "Expect comma");
     expression(compiler);
     consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after 'with'.");
-    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before with body.");
-
-    beginScope(compiler);
 
     int fileIndex = compiler->localCount;
     Local *local = &compiler->locals[compiler->localCount++];
+ 
+    if(match(compiler, TOKEN_AS)) {
+        consume(compiler, TOKEN_IDENTIFIER, "Expect indentifier.");
+        local->name = compiler->parser->previous;
+    } else {
+        local->name = syntheticToken("file");
+    }
+    consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before with body.");
+
+    beginScope(compiler);
     local->depth = compiler->scopeDepth;
     local->isUpvalue = false;
-    local->name = syntheticToken("file");
+    local->isFile = true;
     local->constant = true;
 
     emitByte(compiler, OP_OPEN_FILE);
     block(compiler);
     emitBytes(compiler, OP_CLOSE_FILE, fileIndex);
     endScope(compiler);
-    compiler->withBlock = false;
 }
 
-static void checkForFileHandle(Compiler *compiler) {
-    if (compiler->withBlock) {
-        LangToken token = syntheticToken("file");
-        int local = resolveLocal(compiler, &token, true);
+static void closeFileHandles(Compiler *compiler) {
+    int ids[UINT8_COUNT];
+    int count = resolveFileHandles(compiler, true, ids);
 
-        if (local != -1) {
-            emitBytes(compiler, OP_CLOSE_FILE, local);
-        }
+    for (int i = 0; i < count; i++) {
+        emitBytes(compiler, OP_CLOSE_FILE, ids[i]);
     }
 }
 
@@ -2560,7 +2580,7 @@ static void returnStatement(Compiler *compiler) {
     }
 
     if (match(compiler, TOKEN_SEMICOLON)) {
-        checkForFileHandle(compiler);
+        closeFileHandles(compiler);
         emitReturn(compiler);
     } else {
         if (compiler->type == TYPE_INITIALIZER) {
@@ -2570,7 +2590,7 @@ static void returnStatement(Compiler *compiler) {
         expression(compiler);
         consume(compiler, TOKEN_SEMICOLON, "Expect ';' after return value.");
 
-        checkForFileHandle(compiler);
+        closeFileHandles(compiler);
         emitByte(compiler, OP_RETURN);
     }
 }

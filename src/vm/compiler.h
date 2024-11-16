@@ -40,6 +40,8 @@ typedef struct {
 
     // True if it's a constant value.
     bool constant;
+
+    bool isFile;
 } Local;
 
 typedef struct {
@@ -100,7 +102,7 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
-    bool withBlock;
+    int withBlock;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
     ObjDict *fieldAnnotations;

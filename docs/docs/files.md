@@ -41,6 +41,14 @@ with("test.txt", "r") {
 // file is out of scope, and will the file will be closed for you
 ```
 
+### Custom name
+It is possible to append `as <name>` before the opening `{` in order to customise the Name of the variable within the block.
+```cs
+with("test.txt", "r") as myfile {
+    // file var is passed in here as myfile, NOT file.
+}
+```
+
 ### Writing to files
 
 There are two methods available when writing to a file: `write()` and `writeLine()`. `write()` simply writes strings to a file, `writeLine()` is exactly the same, except it appends a newline to the passed in string. Both functions return the amount of characters wrote to the file.
