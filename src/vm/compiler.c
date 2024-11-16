@@ -817,6 +817,13 @@ static void block(Compiler *compiler) {
     consume(compiler, TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
+inline static void checkTypeHint(Compiler *compiler) {
+    if (match(compiler, TOKEN_COLON)) {
+        match(compiler, TOKEN_QUESTION);
+        consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
+    }
+}
+
 static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType type, AccessLevel level) {
     initCompiler(compiler->parser, fnCompiler, compiler, type, level);
     beginScope(fnCompiler);
@@ -889,9 +896,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             }
             index++;
 
-            if (match(compiler, TOKEN_COLON)) {
-                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
-            }
+            checkTypeHint(compiler);
         } while (match(fnCompiler, TOKEN_COMMA));
 
         if (fnCompiler->function->arityOptional > 0) {
@@ -1582,9 +1587,7 @@ static void function(Compiler *compiler, FunctionType type, AccessLevel level) {
     beginFunction(compiler, &fnCompiler, type, level);
 
     // Type hint
-    if (match(compiler, TOKEN_COLON)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
-    }
+    checkTypeHint(compiler);
 
     // The body.
     consume(&fnCompiler, TOKEN_LEFT_BRACE, "Expect '{' before function body.");
@@ -2106,9 +2109,7 @@ static void enumDeclaration(Compiler *compiler) {
 
     emitBytes(compiler, OP_ENUM, nameConstant);
 
-    if (match(compiler, TOKEN_COLON)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
-    }
+    checkTypeHint(compiler);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
 
@@ -2152,9 +2153,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
             variables[varCount] = compiler->parser->previous;
             varCount++;
 
-            if (match(compiler, TOKEN_COLON)) {
-                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
-            }
+            checkTypeHint(compiler);
         } while (match(compiler, TOKEN_COMMA));
 
         consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after list destructure.");
@@ -2179,9 +2178,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
         do {
             uint8_t global = parseVariable(compiler, "Expect variable name.", constant);
 
-            if (match(compiler, TOKEN_COLON)) {
-                consume(compiler, TOKEN_IDENTIFIER, "Expect type hint identifier");
-            }
+            checkTypeHint(compiler);
 
             if (match(compiler, TOKEN_EQUAL) || constant) {
                 // Compile the initializer.
