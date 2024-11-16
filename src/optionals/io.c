@@ -60,7 +60,7 @@ static Value printErrlnIO(DictuVM *vm, int argCount, Value *args) {
 
     for (int i = 0; i < argCount; ++i) {
         printValueError(args[i]);
-         fprintf(stderr, "\n");
+        fprintf(stderr, "\n");
     }
 
     return NIL_VAL;
