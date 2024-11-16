@@ -1,4 +1,5 @@
 #include "system.h"
+#include "../vm/utf8.h"
 
 #ifdef _WIN32
 #define rmdir(DIRNAME) _rmdir(DIRNAME)
@@ -268,7 +269,7 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *dir = AS_CSTRING(args[0]);
+    ObjString *dir = AS_STRING(args[0]);
 
     int mode = 0777;
 
@@ -280,34 +281,30 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
 
         mode = AS_NUMBER(args[1]);
     }
-
-    char tmp[256];
-    char *p = NULL;
-    size_t len;
-
-    snprintf(tmp, sizeof(tmp), "%s", dir);
-
-    len = strlen(tmp);
-    if (tmp[len - 1] == '/' || tmp[len - 1] == '\\') {
-        tmp[len - 1] = 0;
-    }
-
     int retval;
-
-    for (p = tmp + 1; *p; p++) {
-        if (*p == '/' || *p == '\\') {
-            *p = 0;
-
-            retval = MKDIR(tmp, mode);
-            if (retval < 0) {
-                ERROR_RESULT;
+    bool lastSeperator = false;
+    int byteOffset = 0;
+    char* ptr = dir->chars;
+    for(int i = 0; i < dir->character_len; i++) {
+        utf8_int32_t cp;
+        char *n = utf8codepoint(ptr, &cp);
+        if(cp == '/' || cp == '\\') {
+            if(byteOffset > 0){
+                dir->chars[byteOffset] = '\0';
+                retval = MKDIR(dir->chars, mode);
+                dir->chars[byteOffset] = cp;
             }
-
-            *p = '/';
+            lastSeperator = true;
+        } else {
+            lastSeperator = false;
         }
+        ptr = n;
+        byteOffset += utf8codepointsize(cp);
     }
-
-    retval = MKDIR(tmp, mode);
+    if(!lastSeperator){
+        retval = MKDIR(dir->chars, mode);
+    }
+    
     if (retval < 0) {
         ERROR_RESULT;
     }
