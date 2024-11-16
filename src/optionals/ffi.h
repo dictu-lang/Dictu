@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include "../optionals.h"
-#include "../../vm/vm.h"
+#include "optionals.h"
+#include "../vm/vm.h"
 
 #ifdef _WIN32
 #define LIB_EXTENSION ".dll"

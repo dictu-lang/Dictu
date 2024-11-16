@@ -1,5 +1,4 @@
 #include "optionals.h"
-#include "ffi/ffi.h"
 
 BuiltinModules modules[] = {
     {"Argparse", &createArgParseModule, false},
