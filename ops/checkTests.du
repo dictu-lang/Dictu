@@ -23,9 +23,6 @@ const ignored = {
         'range.du',
         'select.du',
     ],
-    'ffi': [
-        'libs',
-    ],
     '*': [
         'import.du',
     ]

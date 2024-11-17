@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Path module an import is required.
 
-```cs
+```js
 import Path;
 ```
 
@@ -86,8 +86,6 @@ Path.exists("some/path/to/a/file.du"); // true
 ### Path.isDir(String) -> Boolean
 
 Checks whether a given path points to a directory or not. 
-
-**Note:** This is not available on windows systems.
 
 ```cs
 Path.isDir("/usr/bin/"); //true

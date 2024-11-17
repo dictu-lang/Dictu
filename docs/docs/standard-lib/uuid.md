@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the UUID module an import is required.
 
-```cs
+```js
 import UUID;
 ```
 

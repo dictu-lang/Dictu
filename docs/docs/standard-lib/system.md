@@ -28,8 +28,8 @@ import System;
 | Constant        | Description                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | System.argv     | The list of command line arguments. The first element of the argv list is always the script name. |
-| System.platform | This string identifies the underlying system platform.                                            |
-| System.arch     | This string identifies the underlying process architecture.                                         |
+| System.platform | This string identifies the underlying system platform(common: `windows`, `linux`, `darwin`).      |
+| System.arch     | This string identifies the underlying process architecture.                                       |
 | System.version  | Dictionary containing Dictu major, minor and patch versions.                                      |
 | System.S_IRWXU  | Read, write, and execute by owner.                                                                |
 | System.S_IRUSR  | Read by owner.                                                                                    |
@@ -212,7 +212,7 @@ System.clock();
 
 ### System.time() -> Number
 
-Returns UNIX timestamp as a number.
+Returns UNIX timestamp in seconds as a number.
 
 ```cs
 System.time();

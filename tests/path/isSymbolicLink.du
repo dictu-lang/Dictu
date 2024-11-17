@@ -3,7 +3,7 @@
  *
  * Testing Path.isSymbolicLink()
  *
- * Returns true if the given string is a symbolic Link, else false. (Linux only)
+ * Returns true if the given string is a symbolic Link, else false. (Linux/Mac only)
  */
 from UnitTest import UnitTest;
 

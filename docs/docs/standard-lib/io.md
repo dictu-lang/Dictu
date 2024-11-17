@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the IO module an import is required.
 
-```cs
+```js
 import IO;
 ```
 
@@ -47,6 +47,25 @@ Prints a given list of values to stdout with an appended newline character.
 IO.println("Dictu!");
 // Dictu!
 ```
+
+### IO.eprint(...values) -> Nil
+
+Prints a given list of values to stderr.
+
+```cs
+IO.eprint(0);
+// 0
+```
+
+### IO.eprintln(...values) -> Nil
+
+Prints a given list of values to stderr with an appended newline character.
+
+```cs
+IO.eprintln("Dictu!");
+// Dictu!
+```
+
 
 ### IO.copyFile(String: src, String: dst) -> Result\<Nil>
 

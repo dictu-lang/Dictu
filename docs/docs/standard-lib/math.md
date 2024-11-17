@@ -21,7 +21,7 @@ parent: Standard Library
 To make use of the Math module an import is required. For the purpose of the documentation, an iterable 
 is either a list, or passing multiple arguments to the function directly.
 
-```cs
+```js
 import Math;
 ```
 
