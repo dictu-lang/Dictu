@@ -18,6 +18,7 @@ class TestFileReading < UnitTest {
         "Dictu is great!\n" +
         "Dictu is great!\n" +
         "Dictu is great!";
+    const EXPECTED2 = "This is another file";
 
     testFileRead() {
         var contents;
@@ -29,6 +30,45 @@ class TestFileReading < UnitTest {
         this.assertType(contents, "string");
         this.assertEquals(contents, TestFileReading.EXPECTED);
     }
+    testFileReadCustomName() {
+        var contents;
+
+        with("tests/files/read.txt", "r") as f {
+            contents = f.read();
+        }
+
+        this.assertType(contents, "string");
+        this.assertEquals(contents, TestFileReading.EXPECTED);
+    }
+    testFileReadNested() {
+        var contents;
+
+        with("tests/files/read.txt", "r") {
+            contents = file.read();
+            with("tests/files/read2.txt", "r") as otherFile {
+                contents += otherFile.read();
+            }
+        }
+
+        this.assertType(contents, "string");
+        this.assertEquals(contents, TestFileReading.EXPECTED + TestFileReading.EXPECTED2);
+    }
+    testFileReadNestedShadow() {
+        var contents;
+
+        with("tests/files/read.txt", "r") {
+            with("tests/files/read2.txt", "r") {
+                contents = file.read();
+            }
+            this.assertType(contents, "string");
+            this.assertEquals(contents, TestFileReading.EXPECTED2);
+            contents += file.read();
+        }
+
+        this.assertType(contents, "string");
+        this.assertEquals(contents, TestFileReading.EXPECTED2 + TestFileReading.EXPECTED);
+    }
+
 }
 
 TestFileReading().run();
