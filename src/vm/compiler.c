@@ -2545,7 +2545,7 @@ static void withStatement(Compiler *compiler) {
     Local *local = &compiler->locals[compiler->localCount++];
  
     if(match(compiler, TOKEN_AS)) {
-        consume(compiler, TOKEN_IDENTIFIER, "Expect indentifier.");
+        consume(compiler, TOKEN_IDENTIFIER, "Expect identifier.");
         local->name = compiler->parser->previous;
     } else {
         local->name = syntheticToken("file");
