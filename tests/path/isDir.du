@@ -3,7 +3,8 @@
  *
  * Testing Path.isDir()
  *
- * Returns true if the given string is a path to a directory, else false.`
+ * Returns true if the given string is a path to a directory, else false.
+
  */
 from UnitTest import UnitTest;
 
