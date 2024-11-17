@@ -42,7 +42,7 @@ with("test.txt", "r") {
 ```
 
 ### Custom name
-It is possible to append `as <name>` before the opening `{` in order to customise the Name of the variable within the block.
+It is possible to append `as <name>` before the opening `{` in order to customise the name of the constant within the block.
 ```cs
 with("test.txt", "r") as myfile {
     // file constant is passed in here as myfile, NOT file.
