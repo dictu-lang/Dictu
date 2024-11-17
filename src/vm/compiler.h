@@ -102,7 +102,6 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
-    int withBlock;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
     ObjDict *fieldAnnotations;

@@ -162,7 +162,6 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->function = NULL;
     compiler->class = NULL;
     compiler->loop = NULL;
-    compiler->withBlock = -1;
     compiler->classAnnotations = NULL;
     compiler->methodAnnotations = NULL;
     compiler->fieldAnnotations = NULL;
