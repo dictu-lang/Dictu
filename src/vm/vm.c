@@ -2430,6 +2430,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value file = frame->slots[slot];
             ObjFile *fileObject = AS_FILE(file);
             fclose(fileObject->file);
+
             DISPATCH();
         }
     }
