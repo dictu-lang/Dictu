@@ -53,6 +53,22 @@ class TestFileReading < UnitTest {
         this.assertType(contents, "string");
         this.assertEquals(contents, TestFileReading.EXPECTED + TestFileReading.EXPECTED2);
     }
+    testFileReadNestedShadow() {
+        var contents;
+
+        with("tests/files/read.txt", "r") {
+            with("tests/files/read2.txt", "r") {
+                contents = file.read();
+            }
+            this.assertType(contents, "string");
+            this.assertEquals(contents, TestFileReading.EXPECTED2);
+            contents += file.read();
+        }
+
+        this.assertType(contents, "string");
+        this.assertEquals(contents, TestFileReading.EXPECTED2 + TestFileReading.EXPECTED);
+    }
+
 }
 
 TestFileReading().run();
