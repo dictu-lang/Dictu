@@ -7,6 +7,7 @@
 
 #include "../copy.h"
 #include "../../util.h"
+#include "../../utf8.h"
 
 void declareListMethods(DictuVM *vm);
 
