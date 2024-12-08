@@ -16,6 +16,10 @@ const ignored = {
         'read.txt',
         'read2.txt',
     ],
+    'lists': [
+        'sorted.txt',
+        'unsorted.txt',
+    ],
     'strings': [
         'test',
     ],
