@@ -82,7 +82,7 @@ class TestListSort < UnitTest {
             var index = 0;
             // When you reach the end of the file, nil is returned
             while((line = file.readLine()) != nil) {
-                this.assertEquals(listContents[index], line);
+                this.assertEquals(listContents[index], line, true);
                 index += 1;
             }
         }
@@ -102,7 +102,7 @@ class TestListSort < UnitTest {
             var index = 0;
             // When you reach the end of the file, nil is returned
             while((line = file.readLine()) != nil) {
-                this.assertEquals(listContents[index].toNumber().unwrap(), line.toNumber().unwrap());
+                this.assertEquals(listContents[index].toNumber().unwrap(), line.toNumber().unwrap(), true);
                 index += 1;
             }
         }

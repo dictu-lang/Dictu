@@ -51,7 +51,7 @@ If you want to return only part of a list, you slice it! To slice a list, use sq
 ```
 
 ### Adding to lists
-#### list.push(value)
+#### list.push(Value)
 
 To add append a new value to a list, use the `.push()` method.
 
@@ -61,7 +61,7 @@ myList.push(10); // [10]
 myList.push(11); // [10, 11]
 ```
 
-#### list.insert(value, Number)
+#### list.insert(Value, Number)
 
 To insert a value into a list at a given index without replacing the value use .insert().
 
@@ -125,7 +125,7 @@ Converts a list to a boolean. A list is a "truthy" value when it has a length gr
 [[]].toBool(); // true
 ```
 
-### list.contains(value) -> Boolean
+### list.contains(Value) -> Boolean
 
 To check if a value contains within a list we use `.contains()`
 
@@ -149,7 +149,7 @@ print(myList.join("-")); // "1-2-3"
 print([].join("delimiter")); // ""
 ```
 
-### list.remove(value)
+### list.remove(Value)
 
 To remove a value from a list use `.remove()`. If the value does not exist within
 the list a runtime error occurs. Use together with [list.contains()](#listcontainsvalue).
@@ -165,7 +165,7 @@ myList.remove(1);
 print(myList); // [2]
 ```
 
-### list.pop(Number: index -> Optional) -> value
+### list.pop(Number: index -> Optional) -> Value
 
 To remove a value from a list, with an optional index, use `.pop()`
 
@@ -294,7 +294,7 @@ Note: `.filter()` returns a new list.
 print([1, 2, 3, 4, 5].filter(def (x) => x > 2)); // [3, 4, 5]
 ```
 
-### list.reduce(Func, value: initial -> Optional) -> List
+### list.reduce(Func, Value: initial -> Optional) -> List
 
 To reduce a list down to a single value we use `.reduce()`. Reduce expects at least one parameter which is a callback
 that will be executed on each item of the list. The value of the callback function is returned and saved for the next
