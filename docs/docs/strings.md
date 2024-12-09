@@ -238,7 +238,7 @@ Strips whitespace from both sides of a string and returns the result.
 "     Dictu     ".strip(); // "Dictu"
 ```
 
-### string.format(...value: args...) -> String
+### string.format(...Value: args) -> String
 
 This method will replace any instances of `{}` with the provided parameters. It also casts all arguments to strings.
 

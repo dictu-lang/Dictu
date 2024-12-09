@@ -79,11 +79,11 @@
 "        }\n" \
 "    }\n" \
 "\n" \
-"    printResult(success, errorMsg) {\n" \
+"    printResult(success, errorMsg, silent) {\n" \
 "        if (success) {\n" \
 "            this.results['passed'] += 1;\n" \
 "\n" \
-"            if (not (this.onlyFailures or this.forceOnlyFailures)) {\n" \
+"            if (not (this.onlyFailures or this.forceOnlyFailures) and not silent) {\n" \
 "                print('{}Success.'.format(UnitTest.ASSERTION_PADDING));\n" \
 "            }\n" \
 "        } else {\n" \
@@ -97,51 +97,51 @@
 "        }\n" \
 "    }\n" \
 "\n" \
-"    assertEquals(value, expected) {\n" \
-"        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));\n" \
+"    assertEquals(value, expected, silent = false) {\n" \
+"        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertNotEquals(value, expected) {\n" \
-"        this.printResult(value != expected, 'Failure: {} is equal to {}.'.format(value, expected));\n" \
+"    assertNotEquals(value, expected, silent = false) {\n" \
+"        this.printResult(value != expected, 'Failure: {} is equal to {}.'.format(value, expected), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertNil(value) {\n" \
-"        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value));\n" \
+"    assertNil(value, silent = false) {\n" \
+"        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertNotNil(value) {\n" \
-"        this.printResult(value != nil, 'Failure: Should not be nil.');\n" \
+"    assertNotNil(value, silent = false) {\n" \
+"        this.printResult(value != nil, 'Failure: Should not be nil.', silent);\n" \
 "    }\n" \
 "\n" \
-"    assertType(value, expected) {\n" \
+"    assertType(value, expected, silent = false) {\n" \
 "        const valType = type(value);\n" \
-"        this.printResult(valType == expected, 'Failure: {}({}) is not of type {}.'.format(value, valType, expected));\n" \
+"        this.printResult(valType == expected, 'Failure: {}({}) is not of type {}.'.format(value, valType, expected), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertTruthy(value) {\n" \
-"        this.printResult(value, 'Failure: {} is not Truthy.'.format(value));\n" \
+"    assertTruthy(value, silent = false) {\n" \
+"        this.printResult(value, 'Failure: {} is not Truthy.'.format(value), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertFalsey(value) {\n" \
-"        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value));\n" \
+"    assertFalsey(value, silent = false) {\n" \
+"        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertSuccess(value) {\n" \
+"    assertSuccess(value, silent = false) {\n" \
 "        if (type(value) != 'result') {\n" \
-"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));\n" \
+"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value), silent);\n" \
 "            return;\n" \
 "        }\n" \
 "\n" \
-"        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value));\n" \
+"        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value), silent);\n" \
 "    }\n" \
 "\n" \
-"    assertError(value) {\n" \
+"    assertError(value, silent = false) {\n" \
 "        if (type(value) != 'result') {\n" \
-"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));\n" \
+"            this.printResult(false, 'Failure: {} is not a Result type.'.format(value), silent);\n" \
 "            return;\n" \
 "        }\n" \
 "\n" \
-"        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));\n" \
+"        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value), silent);\n" \
 "    }\n" \
 "}\n" \
 

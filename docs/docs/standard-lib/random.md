@@ -44,7 +44,7 @@ Random.range(1, 5); // 4
 Random.range(0, 2); // 1
 ```
 
-### Random.select(List) -> value
+### Random.select(List) -> Value
 
 Returns a value randomly selected from the list.
 

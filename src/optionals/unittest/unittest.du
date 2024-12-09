@@ -79,11 +79,11 @@ abstract class UnitTest {
         }
     }
 
-    printResult(success, errorMsg) {
+    printResult(success, errorMsg, silent) {
         if (success) {
             this.results['passed'] += 1;
 
-            if (not (this.onlyFailures or this.forceOnlyFailures)) {
+            if (not (this.onlyFailures or this.forceOnlyFailures) and not silent) {
                 print('{}Success.'.format(UnitTest.ASSERTION_PADDING));
             }
         } else {
@@ -97,50 +97,50 @@ abstract class UnitTest {
         }
     }
 
-    assertEquals(value, expected) {
-        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected));
+    assertEquals(value, expected, silent = false) {
+        this.printResult(value == expected, 'Failure: {} is not equal to {}.'.format(value, expected), silent);
     }
 
-    assertNotEquals(value, expected) {
-        this.printResult(value != expected, 'Failure: {} is equal to {}.'.format(value, expected));
+    assertNotEquals(value, expected, silent = false) {
+        this.printResult(value != expected, 'Failure: {} is equal to {}.'.format(value, expected), silent);
     }
 
-    assertNil(value) {
-        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value));
+    assertNil(value, silent = false) {
+        this.printResult(value == nil, 'Failure: {} is not nil.'.format(value), silent);
     }
 
-    assertNotNil(value) {
-        this.printResult(value != nil, 'Failure: Should not be nil.');
+    assertNotNil(value, silent = false) {
+        this.printResult(value != nil, 'Failure: Should not be nil.', silent);
     }
 
-    assertType(value, expected) {
+    assertType(value, expected, silent = false) {
         const valType = type(value);
-        this.printResult(valType == expected, 'Failure: {}({}) is not of type {}.'.format(value, valType, expected));
+        this.printResult(valType == expected, 'Failure: {}({}) is not of type {}.'.format(value, valType, expected), silent);
     }
 
-    assertTruthy(value) {
-        this.printResult(value, 'Failure: {} is not Truthy.'.format(value));
+    assertTruthy(value, silent = false) {
+        this.printResult(value, 'Failure: {} is not Truthy.'.format(value), silent);
     }
 
-    assertFalsey(value) {
-        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value));
+    assertFalsey(value, silent = false) {
+        this.printResult(not value, 'Failure: {} is not Falsey.'.format(value), silent);
     }
 
-    assertSuccess(value) {
+    assertSuccess(value, silent = false) {
         if (type(value) != 'result') {
-            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value), silent);
             return;
         }
 
-        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value));
+        this.printResult(value.success(), 'Failure: {} is not a Result type in a success state.'.format(value), silent);
     }
 
-    assertError(value) {
+    assertError(value, silent = false) {
         if (type(value) != 'result') {
-            this.printResult(false, 'Failure: {} is not a Result type.'.format(value));
+            this.printResult(false, 'Failure: {} is not a Result type.'.format(value), silent);
             return;
         }
 
-        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value));
+        this.printResult(not value.success(), 'Failure: {} is not a Result type in an error state.'.format(value), silent);
     }
 }

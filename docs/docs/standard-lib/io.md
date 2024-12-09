@@ -30,7 +30,7 @@ import IO;
 | ---------- | ----------------------------------- |
 | IO.devNull | Provides access to the null device. |
 
-### IO.print(...values) -> Nil
+### IO.print(...Value) -> Nil
 
 Prints a given list of values to stdout.
 
@@ -39,7 +39,7 @@ IO.print(0);
 // 0
 ```
 
-### IO.println(...values) -> Nil
+### IO.println(...Value) -> Nil
 
 Prints a given list of values to stdout with an appended newline character.
 
@@ -48,7 +48,7 @@ IO.println("Dictu!");
 // Dictu!
 ```
 
-### IO.eprint(...values) -> Nil
+### IO.eprint(...Value) -> Nil
 
 Prints a given list of values to stderr.
 
@@ -57,7 +57,7 @@ IO.eprint(0);
 // 0
 ```
 
-### IO.eprintln(...values) -> Nil
+### IO.eprintln(...Value) -> Nil
 
 Prints a given list of values to stderr with an appended newline character.
 

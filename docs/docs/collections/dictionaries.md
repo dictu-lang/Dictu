@@ -48,7 +48,7 @@ var myDict = {"key": 1, "key1": true};
 myDict["key2"] = nil; // {"key": 1, "key1": true, "key2": nil}
 ```
 
-### dict.get(String, value: default -> Optional) -> Dict
+### dict.get(String, Value: default -> Optional) -> Dict
 
 Returns the dictionary value at the given key, or returns the default value if the key does
 not exist in the dictionary. If the key does not exist and no default is provided `nil` is returned.
