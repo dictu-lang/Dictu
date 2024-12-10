@@ -32,6 +32,7 @@ BuiltinModules modules[] = {
     {"BigInt", &createBigIntModule, false},
     {"Buffer", &createBufferModule, false},
     {"FFI", &createFFIModule, false},
+    {"Importlib", &createImportlibModule, false},
     {NULL, NULL, false}
 };
 
