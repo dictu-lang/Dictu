@@ -1,0 +1,25 @@
+/**
+ * include.du
+ *
+ * Testing the Importlib.include() method
+ */
+from UnitTest import UnitTest;
+
+import Importlib;
+
+class TestImportLibInclude < UnitTest {
+    testImportLibInclude() {
+        const Level1 = Importlib.include('./data/level1.du');
+
+        this.assertType(Level1, 'module');
+        this.assertEquals(Level1.list, [5, 6, 7]);
+
+        this.assertType(Level1.Level2, 'module');
+        this.assertEquals(Level1.Level2.list, [3, 4, 5]);
+
+        this.assertType(Level1.Level2.Level3, 'module');
+        this.assertEquals(Level1.Level2.Level3.list, [1, 2, 3]);
+    }
+}
+
+TestImportLibInclude().run();

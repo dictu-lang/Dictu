@@ -1,0 +1,5 @@
+import Importlib;
+
+const list = [3, 4, 5];
+
+const Level3 = Importlib.include('./level3.du');

@@ -1,0 +1,7 @@
+/**
+ * import.du
+ *
+ * General import file for all the Importlib tests
+ */
+
+import "include.du";

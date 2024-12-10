@@ -1,42 +1,47 @@
 #include "importlib.h"
 
-Value importNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(argCount);
-    char path[PATH_MAX];
+Value includeNative(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "include() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError(vm, "include() argument must be a string");
+        return EMPTY_VAL;
+    }
 
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    char path[PATH_MAX];
 
     if (!resolvePath(frame->closure->function->module->path->chars, AS_CSTRING(args[0]), path)) {
-        // ERROR HERE
+        runtimeError(vm, "Could not open file \"%s\".", AS_CSTRING(args[0]));
+        return EMPTY_VAL;
     }
 
     ObjString *pathObj = copyString(vm, path, strlen(path));
     push(vm, OBJ_VAL(pathObj));
-
-    char *source = readFile(vm, path);
-
-//    ObjString *name = copyString(vm, moduleName, strlen(moduleName));
-//    push(vm, OBJ_VAL(name));
     ObjModule *module = newModule(vm, pathObj);
     pop(vm);
-//    pop(vm);
 
     push(vm, OBJ_VAL(module));
     module->path = getDirectory(vm, path);
-    pop(vm);
+
+    char *source = readFile(vm, path);
 
     ObjFunction *function = compile(vm, module, source);
-    if (function == NULL) return INTERPRET_COMPILE_ERROR;
     push(vm, OBJ_VAL(function));
+    FREE_ARRAY(vm, char, source, strlen(source) + 1);
+
+    if (function == NULL) {
+        return EMPTY_VAL;
+    }
+
     ObjClosure *closure = newClosure(vm, function);
     pop(vm);
 
-    FREE_ARRAY(vm, char, source, strlen(source) + 1);
-
     callFunction(vm, OBJ_VAL(closure), 0, NULL);
-//    push(vm, OBJ_VAL(closure));
-//    callValue(vm, OBJ_VAL(closure), 0, false);
-//    DictuInterpretResult result = run(vm);
+    pop(vm);
 
     return OBJ_VAL(module);
 }
@@ -47,7 +52,7 @@ Value createImportlibModule(DictuVM *vm) {
     ObjModule *module = newModule(vm, name);
     push(vm, OBJ_VAL(module));
 
-    defineNative(vm, &module->values, "include", importNative);
+    defineNative(vm, &module->values, "include", includeNative);
 
     pop(vm);
     pop(vm);
