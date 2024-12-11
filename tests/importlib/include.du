@@ -9,7 +9,7 @@ import Importlib;
 
 class TestImportLibInclude < UnitTest {
     testImportLibInclude() {
-        const Level1 = Importlib.include('./data/level1.du');
+        const Level1 = Importlib.include('data/level1.du');
 
         this.assertType(Level1, 'module');
         this.assertEquals(Level1.list, [5, 6, 7]);

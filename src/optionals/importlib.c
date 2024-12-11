@@ -25,9 +25,14 @@ Value includeNative(DictuVM *vm, int argCount, Value *args) {
     pop(vm);
 
     push(vm, OBJ_VAL(module));
-    module->path = getDirectory(vm, path);
+    module->path = dirname(vm, path, strlen(path));
 
     char *source = readFile(vm, path);
+
+    if (source == NULL) {
+        runtimeError(vm, "Could not open file \"%s\".", AS_CSTRING(args[0]));
+        return EMPTY_VAL;
+    }
 
     ObjFunction *function = compile(vm, module, source);
     push(vm, OBJ_VAL(function));

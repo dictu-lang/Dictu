@@ -2,4 +2,4 @@ import Importlib;
 
 const list = [5, 6, 7];
 
-const Level2 = Importlib.include('./level2.du');
+const Level2 = Importlib.include('level2.du');
