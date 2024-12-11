@@ -40,7 +40,7 @@ class SomeClass {
 
 ```js
 // main.du
-const SomeModule = Importlib.include('./someFile.du'); // <Module someFile.du>
+const SomeModule = Importlib.include('someFile.du'); // <Module someFile.du>
 
 SomeModule.SomeClass().hello();
 ```
