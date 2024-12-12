@@ -20,6 +20,23 @@ class TestImportLibInclude < UnitTest {
         this.assertType(Level1.Level2.Level3, 'module');
         this.assertEquals(Level1.Level2.Level3.list, [1, 2, 3]);
     }
+
+    testImportLibIncludeReload() {
+        // reset test file
+        with('tests/importlib/data/test.du', 'w') {
+            file.write('var test = 10;');
+        }
+
+        const TestModule = Importlib.include('data/test.du');
+        this.assertEquals(TestModule.test, 10);
+
+        with('tests/importlib/data/test.du', 'w') {
+            file.write('var test = 100;');
+        }
+
+        const TestModuleReimport = Importlib.include('data/test.du', true);
+        this.assertEquals(TestModuleReimport.test, 100);
+    }
 }
 
 TestImportLibInclude().run();

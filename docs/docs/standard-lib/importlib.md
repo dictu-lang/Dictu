@@ -23,11 +23,12 @@ To make use of the Importlib module an import is required.
 import Importlib;
 ```
 
-### Importlib.include(String) -> Module
+### Importlib.include(String, Bool: reload -> Optional) -> Module
 
-This allows you to dynamically import a module. 
+This allows you to dynamically import a module. It also allows you to reload a module that was previously imported.
 
 Note: The path is relative to the file include() is called in.
+Note: Reloading an already imported module will mutate all references to the previously imported module.
 
 ```js
 // someFile.du
