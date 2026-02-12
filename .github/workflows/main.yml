@@ -30,6 +30,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
           cd examples/ffi-example
           cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
           cmake --build ./build
