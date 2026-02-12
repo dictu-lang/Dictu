@@ -22,6 +22,18 @@ class TestBigIntAdd < UnitTest {
         this.assertSuccess(sum);
         this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
     }
+
+    testBigIntAddLarge() {
+        const bi1 = BigInt.new(3000000000);
+        const bi2 = BigInt.new(2000000000);
+        const expected = BigInt.new(5000000000);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(expected);
+        const sum = bi1.unwrap().add(bi2.unwrap());
+        this.assertSuccess(sum);
+        this.assertEquals(sum.unwrap().compare(expected.unwrap()), 0);
+    }
 }
 
 TestBigIntAdd().run();

@@ -22,6 +22,18 @@ class TestBigIntMultiply < UnitTest {
         this.assertSuccess(sum);
         this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
     }
+
+    testBigIntMultiplyLarge() {
+        const bi1 = BigInt.new(2500000000);
+        const bi2 = BigInt.new(2);
+        const expected = BigInt.new(5000000000);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(expected);
+        const product = bi1.unwrap().multiply(bi2.unwrap());
+        this.assertSuccess(product);
+        this.assertEquals(product.unwrap().compare(expected.unwrap()), 0);
+    }
 }
 
 TestBigIntMultiply().run();

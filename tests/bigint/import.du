@@ -6,6 +6,7 @@
 
 import "new.du";
 import "compare.du";
+import "equals.du";
 import "negate.du";
 import "bitwiseAnd.du";
 import "bitwiseOr.du";
