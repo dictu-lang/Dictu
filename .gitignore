@@ -34,3 +34,6 @@ test1.du
 /Release
 examples/ffi-example/build
 build_x64/
+sessionmanager-bundle.zip
+
+sessionmanager-bundle/

@@ -142,7 +142,7 @@ Closes a socket.
 socket.close();
 ```
 
-### socket.setsocketopt(Number: level, Number: option) -> Result
+### socket.setsockopt(Number: level, Number: option) -> Result
 
 Set a socket option on a given socket.
 Returns a Result type and on success will unwrap to nil.

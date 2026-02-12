@@ -39,7 +39,7 @@ def test() {
 test(); // 1
 ```
 
-### Inspect.getLine(Number: count -> optional) -> Number
+### Inspect.getLine(Number: count -> Optional) -> Number
 
 This gives you the line number within the file that the function was called from.
 

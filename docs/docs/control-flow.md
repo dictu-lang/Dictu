@@ -19,7 +19,7 @@ nav_order: 7
 ```cs
 if (false or true) {
     var variable = "Hello";
-    print(variable);  // Print is a native function so parenthesis are required
+    print(variable); // Print is a native function so parentheses are required
 }
 
 // Single line if statement body does not require braces

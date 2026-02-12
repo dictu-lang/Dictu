@@ -109,7 +109,7 @@ print("{} {} {} {} {}".format(
 
 ## Methods
 
-Methods are functions defined within a class. When defining a method in Dictu, the `def` keyword is not used and instead its just the method name and parameter list.
+Methods are functions defined within a class. When defining a method in Dictu, the `def` keyword is not used and instead it's just the method name and parameter list.
 
 ```cs
 class SomeClass {
@@ -299,7 +299,7 @@ print(myObject.getAttributes()); // {"fields": ["_name"], "methods": ["init"], "
 
 Similar concept to `getAttribute` however this allows us to set an attribute on an instance.
 
-Note: Will set a attribute with public visibility.
+Note: Will set an attribute with public visibility.
 
 ```cs
 class Test {
@@ -315,7 +315,7 @@ print(myObject.x); // 100
 
 ### Optional Chaining
 
-Optional chaining allows you to read a attribute or method of an instance without explicitly having to check for `nil` before
+Optional chaining allows you to read an attribute or method of an instance without explicitly having to check for `nil` before
 attempting to access.
 
 **Note:** If the left hand value is not nil the attribute / method **must** still exist when attempting to access otherwise a runtime error will occur.
@@ -342,7 +342,7 @@ print(Test()?.unknownMethod()); // Undefined attribute 'unknownMethod'.
 
 ### _class
 
-`_class` is a special attribute that is added to instances so that a reference to the class is kept on objects. This will be
+`_class` is a special attribute that is added to instances so that a reference to the class is kept on instances. This will be
 useful for things like pulling class, method, and field annotations from an object where it's class may be unknown until runtime.
 
 ```cs
@@ -444,7 +444,7 @@ Hello
 
 ## Inheritance
 
-The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation. 
+The syntax for class inheritance is as follows: `class DerivedClass < BaseClass`. `super` is a variable that is a reference to the class that is being inherited. Class, method, and field annotations are inherited from the super class. If there is a conflict with annotations, favor is given to the child annotation. 
 
 Note: private methods and instance variables are not inherited.
 
@@ -472,7 +472,7 @@ print(obj.someVariable); // Hello!
 
 ## Abstract classes
 
-An abstract class is a base class that can not be instantiated, like a trait, however is much like a contract in that it defines methods that need to be implemented
+An abstract class is a base class that cannot be instantiated, like a trait, however is much like a contract in that it defines methods that need to be implemented
 within a class. An abstract class can have methods which implement the body, and would work like a normal class being inherited, however, if it includes methods which
 have been marked as abstract, it enforces the inheriting class to implement these methods.
 

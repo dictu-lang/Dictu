@@ -18,7 +18,7 @@ nav_order: 8
 ## Regular Functions
 
 ```cs
-//Define the function 
+// Define the function
 def someFunction() {
     print("Hello!");
 }
@@ -131,7 +131,7 @@ func(100); // 100
 
 ## Variadic Functions
 
-Variadic functions are simply functions which accepts a variable number of arguments.
+Variadic functions are simply functions which accept a variable number of arguments.
 In Dictu, variadic functions typically have a spread formal parameter which can accept multiple arguments when the function is called.
 Also, the spread parameter must come last in the function parameter list.
 
@@ -142,8 +142,8 @@ def someFunction(...args) {
     print(args);
 }
 
-functionVariable('hello'); // ['hello']
-functionVariable(1, 2, 3, 4); // [1, 2, 3, 4]
+someFunction('hello'); // ['hello']
+someFunction(1, 2, 3, 4); // [1, 2, 3, 4]
 
 def someOtherFunction(parameter, ...others) {
     print(parameter, others);
@@ -164,7 +164,7 @@ var func = def(...args) => print(args);
 func(); // []
 func(100, 200, 'x'); // [100, 200, 'x']
 
-var func = def(a, ...b) => print(a, args);
+var func = def(a, ...b) => print(a, b);
 func('x'); 
 // x
 // []
