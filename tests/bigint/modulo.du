@@ -22,6 +22,19 @@ class TestBigIntModulo < UnitTest {
         this.assertSuccess(sum);
         this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
     }
+
+    testBigIntModuloLarge() {
+        // 5000000001 % 5000000000 = 1
+        const bi1 = BigInt.new(5000000001);
+        const bi2 = BigInt.new(5000000000);
+        const expected = BigInt.new(1);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(expected);
+        const remainder = bi1.unwrap().modulo(bi2.unwrap());
+        this.assertSuccess(remainder);
+        this.assertEquals(remainder.unwrap().compare(expected.unwrap()), 0);
+    }
 }
 
 TestBigIntModulo().run();

@@ -80,6 +80,7 @@ bigint* bigint_from_str_base(bigint *dst, const char *src, int src_base);
 bigint* bigint_from_str(bigint *dst, const char *src);
 bigint* bigint_from_int(bigint *dst, int src);
 bigint* bigint_from_word(bigint *dst, bigint_word a);
+bigint* bigint_from_double(bigint *dst, double src);
 
 bigint* bigint_add_signed(bigint *dst, const bigint *a, int a_neg, const bigint *b, int b_neg);
 bigint* bigint_add(bigint *dst, const bigint *a, const bigint *b);

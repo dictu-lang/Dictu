@@ -3,8 +3,8 @@
  *
  * Testing the BigInt compare function.
  *
- * .compare() returns a Number value of either 0 indicating the
- * 2 BigInts compared are the same and 1 if the 2 values are different.
+ * .compare() returns a Number value: -1 if less than, 0 if equal,
+ * 1 if greater than.
  */
 
 from UnitTest import UnitTest;
@@ -27,6 +27,23 @@ class TestBigIntCompare < UnitTest {
         this.assertSuccess(bi2);
         this.assertNotEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
         this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), -1);
+    }
+
+    testBigIntCompareLargeEqual() {
+        const bi1 = BigInt.new(5000000000);
+        const bi2 = BigInt.new("5000000000");
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
+    testBigIntCompareLargeNotEqual() {
+        const bi1 = BigInt.new(5000000000);
+        const bi2 = BigInt.new(5000000001);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), -1);
+        this.assertEquals(bi2.unwrap().compare(bi1.unwrap()), 1);
     }
 }
 

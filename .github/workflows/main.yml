@@ -24,12 +24,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-20.04]
+        os: [ubuntu-latest, ubuntu-22.04]
 
     steps:
       - uses: actions/checkout@v3
       - name: Make dictu and run tests (No HTTP)
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev uuid-dev
           cd examples/ffi-example
           cmake -DCMAKE_BUILD_TYPE=Debug -B ./build
           cmake --build ./build
@@ -52,7 +54,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-latest, macOS-15, macOS-13]
+        os: [macOS-latest, macOS-14]
 
     steps:
       - uses: actions/checkout@v3
@@ -78,7 +80,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022, windows-2019]
+        os: [windows-2022, windows-2019, windows-11-arm]
 
     steps:
       - uses: actions/checkout@v3

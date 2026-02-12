@@ -22,6 +22,18 @@ class TestBigIntDivide < UnitTest {
         this.assertSuccess(sum);
         this.assertEquals(sum.unwrap().compare(bi3.unwrap()), 0);
     }
+
+    testBigIntDivideLarge() {
+        const bi1 = BigInt.new(10000000000);
+        const bi2 = BigInt.new(2);
+        const expected = BigInt.new(5000000000);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertSuccess(expected);
+        const quotient = bi1.unwrap().divide(bi2.unwrap());
+        this.assertSuccess(quotient);
+        this.assertEquals(quotient.unwrap().compare(expected.unwrap()), 0);
+    }
 }
 
 TestBigIntDivide().run();

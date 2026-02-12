@@ -59,6 +59,28 @@ print(value);
 // 0
 ```
 
+### bigInt1.equals(bigInt2) -> Boolean
+
+Returns true if the two BigInt values are equal, false otherwise. The argument can be a BigInt or a Number.
+
+```cs
+const bi1 = BigInt.new(10).unwrap();
+const bi2 = BigInt.new(10).unwrap();
+const value = bi1.equals(bi2);
+
+print(value);
+// true
+```
+
+```cs
+const bi1 = BigInt.new(10).unwrap();
+const bi2 = BigInt.new(20).unwrap();
+const value = bi1.equals(bi2);
+
+print(value);
+// false
+```
+
 ### bigIntVal.negate() -> Result\<BigInt>
 
 Returns a Result value that unwraps to the negated BigInt value.
