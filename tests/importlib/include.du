@@ -6,6 +6,7 @@
 from UnitTest import UnitTest;
 
 import Importlib;
+import System;
 
 class TestImportLibInclude < UnitTest {
     testImportLibInclude() {
@@ -36,6 +37,9 @@ class TestImportLibInclude < UnitTest {
 
         const TestModuleReimport = Importlib.include('data/test.du', true);
         this.assertEquals(TestModuleReimport.test, 100);
+
+        // clean up test artifact
+        System.remove('tests/importlib/data/test.du');
     }
 }
 

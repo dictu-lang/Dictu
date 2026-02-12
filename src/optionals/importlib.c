@@ -46,23 +46,26 @@ Value includeNative(DictuVM *vm, int argCount, Value *args) {
     char *source = readFile(vm, path);
 
     if (source == NULL) {
+        pop(vm); // module
         runtimeError(vm, "Could not open file \"%s\".", AS_CSTRING(args[0]));
         return EMPTY_VAL;
     }
 
     ObjFunction *function = compile(vm, module, source);
-    push(vm, OBJ_VAL(function));
     FREE_ARRAY(vm, char, source, strlen(source) + 1);
 
     if (function == NULL) {
+        pop(vm); // module
+        runtimeError(vm, "Could not compile file \"%s\".", AS_CSTRING(args[0]));
         return EMPTY_VAL;
     }
 
+    push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(vm, function);
-    pop(vm);
+    pop(vm); // function
 
     callFunction(vm, OBJ_VAL(closure), 0, NULL);
-    pop(vm);
+    pop(vm); // module
 
     return OBJ_VAL(module);
 }
