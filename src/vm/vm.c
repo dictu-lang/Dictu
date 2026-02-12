@@ -196,19 +196,45 @@ void dictuFreeVM(DictuVM *vm) {
     free(vm);
 }
 
-void push(DictuVM *vm, Value value) {
+/**
+ * Inlined versions used within the VM dispatch loop for performance.
+ * The extern versions below are kept for use by other translation units
+ * (optionals, natives, datatypes, etc.).
+ */
+static inline void vmPush(DictuVM *vm, Value value) {
     *vm->stackTop = value;
     vm->stackTop++;
 }
 
-Value pop(DictuVM *vm) {
+static inline Value vmPop(DictuVM *vm) {
     vm->stackTop--;
     return *vm->stackTop;
 }
 
-Value peek(DictuVM *vm, int distance) {
+static inline Value vmPeek(DictuVM *vm, int distance) {
     return vm->stackTop[-1 - distance];
 }
+
+void push(DictuVM *vm, Value value) {
+    vmPush(vm, value);
+}
+
+Value pop(DictuVM *vm) {
+    return vmPop(vm);
+}
+
+Value peek(DictuVM *vm, int distance) {
+    return vmPeek(vm, distance);
+}
+
+/**
+ * Within this file, redirect push/pop/peek to the inlined versions
+ * via macros. This ensures all call sites in the VM dispatch loop
+ * use the fast inlined path without requiring manual renaming.
+ */
+#define push(vm, value)    vmPush(vm, value)
+#define pop(vm)            vmPop(vm)
+#define peek(vm, distance) vmPeek(vm, distance)
 
 ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
     ObjString *pathObj = copyString(vm, name, strlen(name));
@@ -821,14 +847,28 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
 }
 
 bool isFalsey(Value value) {
-    return IS_NIL(value) ||
-           (IS_BOOL(value) && !AS_BOOL(value)) ||
-           (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
-           (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
-           (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
-           (IS_RESULT(value) && AS_RESULT(value)->status == ERR) ||
-           (IS_SET(value) && AS_SET(value)->count == 0);
+    // Fast path: nil and false are the most common falsey values.
+    // These are cheap bit-pattern checks with no pointer dereference.
+    if (IS_NIL(value)) return true;
+    if (IS_BOOL(value)) return !AS_BOOL(value);
+
+    // Number zero check — also a cheap non-object check.
+    if (IS_NUMBER(value)) return AS_NUMBER(value) == 0;
+
+    // All remaining falsey values are heap objects.
+    // If it's not an object at all, it's truthy (e.g. EMPTY_VAL).
+    if (!IS_OBJ(value)) return false;
+
+    // Object type checks — each requires a pointer dereference.
+    // Ordered by estimated frequency in typical programs.
+    switch (AS_OBJ(value)->type) {
+        case OBJ_STRING: return AS_CSTRING(value)[0] == '\0';
+        case OBJ_LIST:   return AS_LIST(value)->values.count == 0;
+        case OBJ_DICT:   return AS_DICT(value)->count == 0;
+        case OBJ_SET:    return AS_SET(value)->count == 0;
+        case OBJ_RESULT: return AS_RESULT(value)->status == ERR;
+        default:         return false;
+    }
 }
 
 static void concatenate(DictuVM *vm) {

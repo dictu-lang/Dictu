@@ -493,9 +493,18 @@ static bool setComparison(Value a, Value b) {
 }
 
 bool valuesEqual(Value a, Value b) {
+    // Fast path: with NaN boxing, identical bit patterns mean equal values.
+    // This covers: same number, same interned string (pointer equality),
+    // same object reference, nil == nil, true == true, false == false.
+    // Note: IEEE 754 NaN != NaN, but Dictu uses QNAN only for type tags,
+    // not as an actual numeric NaN value, so this is safe.
+    if (a == b) return true;
+
     if (IS_OBJ(a) && IS_OBJ(b)) {
         if (AS_OBJ(a)->type != AS_OBJ(b)->type) return false;
 
+        // Deep equality for container types: two distinct list/dict/set
+        // objects may still be structurally equal.
         switch (AS_OBJ(a)->type) {
             case OBJ_LIST: {
                 return listComparison(a, b);
