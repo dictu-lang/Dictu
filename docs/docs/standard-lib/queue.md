@@ -5,7 +5,7 @@ nav_order: 20
 parent: Standard Library
 ---
 
-# UUID
+# Queue
 {: .no_toc }
 
 ## Table of contents
@@ -112,7 +112,7 @@ print(res);
 
 ### Queue.isFull() -> Bool
 
-Returns a Bool value indicating whether the queue is empty or not.
+Returns a Bool value indicating whether the queue is full or not.
 
 ```cs
 const queue = Queue.new();

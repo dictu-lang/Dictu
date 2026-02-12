@@ -22,9 +22,9 @@ nav_order: 6
 | or           | Returns the first truthy operand unless all are false and the last operand is returned | true or false |
 | not          | Returns the inverse boolean value for a given operand | not true |
 | +            | Adds the values on either side of the operator together        | 10 + 10                    |
-| -            | Subtracts the values on either side of the operator together   | 10 - 10                    |
-| *            | Multiplies the values on either side of the operator together  | 10 * 2                     |
-| /            | Divides the values on either side of the operator together.    | 10 / 3                     |
+| -            | Subtracts the right operand from the left operand   | 10 - 10                    |
+| *            | Multiplies the values on either side of the operator  | 10 * 2                     |
+| /            | Divides the left operand by the right operand.    | 10 / 3                     |
 | <            | Returns true if the left operand is less than the right operand (for strings this is based on the ASCII value)    | 9 < 10 |
 | >            | Returns true if the left operand is more than the right operand (for strings this is based on the ASCII value)    | 11 > 10 |
 | <=           | Same as < however includes an equality check                   | 9 <= 9                     |
@@ -34,13 +34,13 @@ nav_order: 6
 | &            | Bitwise AND of the values                                      | 10 & 2                     |
 | ^            | Bitwise XOR of the values                                      | 10 ^ 2                     |
 | \|            | Bitwise OR of the values                                       | 10 \| 2                     |
-| +=           | Same as +, however its shorthand to assign too                 | x += 10 Same as x = x + 10 |
-| -=           | Same as -, however its shorthand to assign too                 | x -= 10 Same as x = x - 10 |
-| *=           | Same as *, however its shorthand to assign too                 | x *= 10 Same as x = x * 10 |
-| /=           | Same as /, however its shorthand to assign too                 | x /= 10 Same as x = x / 10 |
-| &=           | Same as &, however its shorthand to assign too                 | x &= 10 Same as x = x & 10 |
-| ^=           | Same as ^, however its shorthand to assign too                 | x ^= 10 Same as x = x ^ 10 |
-| \|=           | Same as \|, however its shorthand to assign too                 | x \|= 10 Same as x = x |
+| +=           | Same as +, however it's shorthand to assign to                 | x += 10 Same as x = x + 10 |
+| -=           | Same as -, however it's shorthand to assign to                 | x -= 10 Same as x = x - 10 |
+| *=           | Same as *, however it's shorthand to assign to                 | x *= 10 Same as x = x * 10 |
+| /=           | Same as /, however it's shorthand to assign to                 | x /= 10 Same as x = x / 10 |
+| &=           | Same as &, however it's shorthand to assign to                 | x &= 10 Same as x = x & 10 |
+| ^=           | Same as ^, however it's shorthand to assign to                 | x ^= 10 Same as x = x ^ 10 |
+| \|=           | Same as \|, however it's shorthand to assign to                 | x \|= 10 Same as x = x |
 | ?            | Ternary operator - See below                                   | true ? 'value' : 'other' |
 | ?.           | Optional chaining - See [classes](/docs/classes/#optional-chaining) | object?.someMethod()     |
 

@@ -547,6 +547,73 @@ bigint* bigint_from_word(bigint *dst, bigint_word a){
     return bigint_set_neg(dst, 0);
 }
 
+bigint* bigint_from_double(bigint *dst, double src){
+    /* assumes IEEE 754 floating point standard */
+    uint64_t bits;
+    int neg, exponent, shift;
+    uint64_t mantissa;
+    bigint tmp;
+
+    memcpy(&bits, &src, sizeof(bits));
+
+    neg = (bits >> 63) & 1;
+    exponent = (int)((bits >> 52) & 0x7FF) - 1023;
+    mantissa = bits & 0x000FFFFFFFFFFFFFull;
+
+    /* special cases: NaN and infinity */
+    if (((bits >> 52) & 0x7FF) == 0x7FF) return NULL;
+
+    /* zero (positive or negative) */
+    if (exponent == -1023 && mantissa == 0) {
+        if (!bigint_reserve(dst, 1)) return NULL;
+        dst->words[0] = 0;
+        dst->size = 0;
+        return bigint_set_neg(dst, 0);
+    }
+
+    /* add the implicit leading 1 bit for normal numbers */
+    if (exponent > -1023) {
+        mantissa |= (1ull << 52);
+    } else {
+        /* denormalized: exponent is actually -1022, no implicit bit */
+        exponent = -1022;
+    }
+
+    /*
+     * mantissa now represents a 53-bit integer (for normal numbers).
+     * The actual value is: mantissa * 2^(exponent - 52)
+     * We need to compute: mantissa << (exponent - 52) if exponent >= 52
+     * or: mantissa >> (52 - exponent) if exponent < 52 (truncates fractional part)
+     */
+    shift = exponent - 52;
+
+    if (shift >= 0) {
+        /* Build mantissa as bigint, then shift left */
+        bigint_init(&tmp);
+        /* Store 64-bit mantissa into bigint words */
+        if (!bigint_reserve(&tmp, 2)) return NULL;
+        tmp.words[0] = (bigint_word)(mantissa & 0xFFFFFFFF);
+        tmp.words[1] = (bigint_word)(mantissa >> 32);
+        tmp.size = bigint_raw_truncate(tmp.words, 2);
+        tmp.neg = 0;
+
+        if (bigint_shift_left(dst, &tmp, (unsigned)shift) == NULL) {
+            bigint_free(&tmp);
+            return NULL;
+        }
+        bigint_free(&tmp);
+    } else {
+        /* shift < 0: right-shift discards the fractional part */
+        mantissa >>= (unsigned)(-shift);
+        if (!bigint_reserve(dst, 2)) return NULL;
+        dst->words[0] = (bigint_word)(mantissa & 0xFFFFFFFF);
+        dst->words[1] = (bigint_word)(mantissa >> 32);
+        dst->size = bigint_raw_truncate(dst->words, 2);
+    }
+
+    return bigint_set_neg(dst, neg);
+}
+
 int bigint_raw_add_signed(
     bigint_word *dst, int *dst_neg,
     const bigint_word *a, int na, int a_neg,

@@ -80,7 +80,7 @@ helper methods to make test writing easier.
 
 ### setUp
 
-`setUp` is a method which is ran before a test method is executed. This is useful
+`setUp` is a method which is run before a test method is executed. This is useful
 if you need some data (for example) to be present before running a test.
 
 Note: If in use with providers `setUp` will run for every item passed into the array.
@@ -259,7 +259,7 @@ Results:
 #### Global
 
 The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
-ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+all passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined
 as a class variable on the UnitTest parent class.
 
 ```
@@ -360,7 +360,7 @@ file.du
 
 #### Global
 The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
-ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+all passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined
 as a class variable on the UnitTest parent class.
 
 ```cs

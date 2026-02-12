@@ -25,7 +25,7 @@ var myDict = {"key": 1, "key1": true};
 
 ### Indexing
 
-Accessing dictionary items is the same syntax as lists, except instead of an index, it expects an immutable type (nil, boolean, number, string) for it's key.
+Accessing dictionary items is the same syntax as lists, except instead of an index, it expects an immutable type (nil, boolean, number, string) for its key.
 If you try to access a key that does not exist, a runtime error will be raised. If you expect a key may not exist `.get()` can be used to return a default value.
 
 ```cs

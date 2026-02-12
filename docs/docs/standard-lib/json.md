@@ -48,7 +48,7 @@ JSON.stringify([1, 2, 3]); // '[1, 2, 3]'
 JSON.stringify(nil); // 'null'
 ```
 
-Stringify also takes an optional `indent` parameter, which is a number of the amount of spaces to indent by, while
+Stringify also takes an optional `indent` parameter, which is the number of spaces to indent by, while
 also making the response multiline.
 ```cs
 JSON.stringify([1, 2, 3], 4);

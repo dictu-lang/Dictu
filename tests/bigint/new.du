@@ -29,6 +29,45 @@ class TestBigIntNew < UnitTest {
         this.assertSuccess(bi2);
     }
 
+    testBigIntNewLargeDouble() {
+        const bi1 = BigInt.new(5000000000);
+        this.assertNotNil(bi1);
+        this.assertSuccess(bi1);
+
+        const bi2 = BigInt.new("5000000000");
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
+    testBigIntNewVeryLargeDouble() {
+        const bi1 = BigInt.new(9007199254740992);
+        this.assertNotNil(bi1);
+        this.assertSuccess(bi1);
+
+        const bi2 = BigInt.new("9007199254740992");
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
+    testBigIntNewLargeNegativeDouble() {
+        const bi1 = BigInt.new(-5000000000);
+        this.assertNotNil(bi1);
+        this.assertSuccess(bi1);
+
+        const bi2 = BigInt.new("-5000000000");
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
+    testBigIntNewDoubleTruncatesFraction() {
+        const bi1 = BigInt.new(5000000000.75);
+        this.assertSuccess(bi1);
+
+        const bi2 = BigInt.new("5000000000");
+        this.assertSuccess(bi2);
+        this.assertEquals(bi1.unwrap().compare(bi2.unwrap()), 0);
+    }
+
     testBigIntNewError() {
         const bi1 = BigInt.new("asdf");
         this.assertError(bi1);

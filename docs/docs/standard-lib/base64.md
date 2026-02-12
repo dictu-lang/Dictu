@@ -5,7 +5,7 @@ nav_order: 2
 parent: Standard Library
 ---
 
-# Random
+# Base64
 {: .no_toc }
 
 ## Table of contents

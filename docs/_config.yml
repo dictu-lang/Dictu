@@ -5,7 +5,7 @@ description: >-
 color_scheme: "dictu" # Custom theme
 logo: "/assets/images/dictu-logo/dictu-wordmark.svg"
 
-version: "0.30.0"
+version: "0.31.0"
 github_username:  dictu-lang
 search_enabled: true
 

@@ -1,0 +1,72 @@
+/**
+ * equals.du
+ *
+ * Testing the BigInt equals function.
+ *
+ * .equals() returns a boolean: true if the two BigInts are
+ * equal, false if they are different.
+ */
+
+from UnitTest import UnitTest;
+
+import BigInt;
+
+class TestBigIntEquals < UnitTest {
+    testBigIntEqualsTrue() {
+        const bi1 = BigInt.new(42);
+        const bi2 = BigInt.new(42);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertTruthy(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsFalse() {
+        const bi1 = BigInt.new(42);
+        const bi2 = BigInt.new(99);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertFalsey(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsZero() {
+        const bi1 = BigInt.new();
+        const bi2 = BigInt.new(0);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertTruthy(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsLarge() {
+        const bi1 = BigInt.new(5000000000);
+        const bi2 = BigInt.new("5000000000");
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertTruthy(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsLargeNotEqual() {
+        const bi1 = BigInt.new(5000000000);
+        const bi2 = BigInt.new(5000000001);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertFalsey(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsNegative() {
+        const bi1 = BigInt.new(-5000000000);
+        const bi2 = BigInt.new("-5000000000");
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertTruthy(bi1.unwrap().equals(bi2.unwrap()));
+    }
+
+    testBigIntEqualsSignDiffers() {
+        const bi1 = BigInt.new(100);
+        const bi2 = BigInt.new(-100);
+        this.assertSuccess(bi1);
+        this.assertSuccess(bi2);
+        this.assertFalsey(bi1.unwrap().equals(bi2.unwrap()));
+    }
+}
+
+TestBigIntEquals().run();

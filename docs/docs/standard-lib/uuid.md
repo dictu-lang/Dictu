@@ -26,7 +26,7 @@ import UUID;
 
 ### UUID.generate() -> Result\<String>
 
-Returns a Result value with a string representation of the UUID on success or an Error on failure. This function attempts to use `/dev/urandom` if available but if it's not, it uses alterntive means of generating randomness.
+Returns a Result value with a string representation of the UUID on success or an Error on failure. This function attempts to use `/dev/urandom` if available but if it's not, it uses alternative means of generating randomness.
 
 Note: This is not available on Windows systems.
 

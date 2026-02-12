@@ -51,7 +51,7 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 
 ### HTTP.put(String, dictionary: postArgs -> Optional, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
 
-Sends a HTTP POST request to a given URL. Timeout is given in seconds.
+Sends a HTTP PUT request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
 
 ```cs

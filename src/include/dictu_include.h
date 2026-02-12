@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #define DICTU_MAJOR_VERSION "0"
-#define DICTU_MINOR_VERSION "30"
+#define DICTU_MINOR_VERSION "31"
 #define DICTU_PATCH_VERSION "0"
 
 #ifdef DEBUG

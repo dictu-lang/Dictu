@@ -17,6 +17,7 @@ typedef struct {
 } BigIntData;
 
 DECL_OP(compare);
+static Value equals(DictuVM *vm, int argCount, Value *args);
 DECL_OP(arithNeg);
 DECL_OP(arithAbs);
 DECL_OP(bitwiseAnd);
@@ -130,6 +131,17 @@ static BigIntData *bigIntFromLong(DictuVM *vm, Value numValue) {
     return freeBigIntOnFailure(vm, bi, ret);
 }
 
+static BigIntData *bigIntFromDouble(DictuVM *vm, double num) {
+    BigIntData *bi = allocBigInt(vm);
+    bigint *ret = NULL;
+
+    if (bi != NULL) {
+        ret = bigint_from_double(&bi->value, num);
+    }
+
+    return freeBigIntOnFailure(vm, bi, ret);
+}
+
 static Value newBigIntValue(DictuVM *vm, BigIntData *bi) {
     if (bi == NULL) {
         return newResultError(vm, "error: failed to instantiate bigint");
@@ -143,6 +155,7 @@ static Value newBigIntValue(DictuVM *vm, BigIntData *bi) {
      * Setup BigInt object methods
      */
     defineNative(vm, &abstract->values, "compare",     &compare);
+    defineNative(vm, &abstract->values, "equals",      &equals);
     defineNative(vm, &abstract->values, "negate",      &arithNeg);
     defineNative(vm, &abstract->values, "abs",         &arithAbs);
     defineNative(vm, &abstract->values, "bitwiseAnd",  &bitwiseAnd);
@@ -185,7 +198,7 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
         return newBigIntValue(vm, bigIntFromLong(vm, 0));
     }
     if (IS_NUMBER(args[0])) {
-        return newBigIntValue(vm, bigIntFromLong(vm, args[0]));
+        return newBigIntValue(vm, bigIntFromDouble(vm, AS_NUMBER(args[0])));
     }
     if (IS_STRING(args[0])) {
         return newBigIntValue(vm, bigIntFromIntString(vm, args[0]));
@@ -200,13 +213,13 @@ static Value newBigInt(DictuVM *vm, int argCount, Value *args) {
     return newResultError(vm, "error: invalid argument");
 }
 
-static bool handleLongOrUnwrap(Value arg, bigint* tmp, Value* val, bool* argIsLong) {
-    if (IS_NUMBER(arg) && isLong(arg)) {
-        *argIsLong = true;
+static bool handleDoubleOrUnwrap(Value arg, bigint* tmp, Value* val, bool* argIsDouble) {
+    if (IS_NUMBER(arg)) {
+        *argIsDouble = true;
         bigint_init(tmp);
-        return bigint_from_int(tmp, (long) AS_NUMBER(arg)) != NULL;
+        return bigint_from_double(tmp, AS_NUMBER(arg)) != NULL;
     } else {
-        *argIsLong = false;
+        *argIsDouble = false;
         *val = unwrapBigInt(arg);
         return isBigIntValue(*val);
     }
@@ -223,20 +236,21 @@ static Value handleLongOrUnwrapError(DictuVM *vm, bool argIsLong) {
 static Value applyOp1Arg(DictuVM *vm, int argCount, Value *args, int (*op)(const bigint*, const bigint*)) {
     if (argCount != 1) {
         runtimeError(vm, "wrong number of arguments");
+        return EMPTY_VAL;
     }
 
-    bool argIsLong;
+    bool argIsDouble;
     bigint tmp;
     Value val;
-    bool ok = handleLongOrUnwrap(args[1], &tmp, &val, &argIsLong);
+    bool ok = handleDoubleOrUnwrap(args[1], &tmp, &val, &argIsDouble);
 
     if (!ok) {
-        return handleLongOrUnwrapError(vm, argIsLong);
+        return handleLongOrUnwrapError(vm, argIsDouble);
     }
 
-    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, argIsLong ? &tmp : &AS_BIGINT(AS_ABSTRACT(val))->value);
+    int res = op(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, argIsDouble ? &tmp : &AS_BIGINT(AS_ABSTRACT(val))->value);
 
-    if (argIsLong) {
+    if (argIsDouble) {
         bigint_free(&tmp);
     }
 
@@ -276,7 +290,7 @@ static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, bigint
     bool argIsLong;
     bigint tmp;
     Value val;
-    bool ok = handleLongOrUnwrap(args[1], &tmp, &val, &argIsLong);
+    bool ok = handleDoubleOrUnwrap(args[1], &tmp, &val, &argIsLong);
 
     if (!ok) {
         return handleLongOrUnwrapError(vm, argIsLong);
@@ -294,6 +308,32 @@ static Value applyOp1ArgAndReturn(DictuVM *vm, int argCount, Value *args, bigint
     }
 
     return dealWithReturn(vm, bi, ret);
+}
+
+static Value equals(DictuVM *vm, int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError(vm, "equals() takes 1 argument (%d given)", argCount);
+        return EMPTY_VAL;
+    }
+
+    bool argIsDouble;
+    bigint tmp;
+    Value val;
+    bool ok = handleDoubleOrUnwrap(args[1], &tmp, &val, &argIsDouble);
+
+    if (!ok) {
+        runtimeError(vm, "equals() argument must be a BigInt or number");
+        return EMPTY_VAL;
+    }
+
+    const bigint *other = argIsDouble ? &tmp : &AS_BIGINT(AS_ABSTRACT(val))->value;
+    int res = bigint_cmp(&AS_BIGINT(AS_ABSTRACT(args[0]))->value, other);
+
+    if (argIsDouble) {
+        bigint_free(&tmp);
+    }
+
+    return BOOL_VAL(res == 0);
 }
 
 APPLY_OP(compare,    Op1Arg,          &bigint_cmp)

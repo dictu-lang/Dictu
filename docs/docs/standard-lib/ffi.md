@@ -22,20 +22,20 @@ import FFI;
 ```
 
 ### Creating a module
-Creating a FFI module requires building a dynamically shared library(.dll/.dylib/.so).
+Creating an FFI module requires building a dynamically shared library(.dll/.dylib/.so).
 
-To build a module theres only a single header needed [dictu_ffi_include.h](https://github.com/dictu-lang/Dictu/blob/develop/src/include/dictu_ffi_include.h).
-The header contains definitions, function declerations and function pointers(set at runtime automatically) for anything needed to interact with the DictuVM.
-Further it contains the following function decleration:
+To build a module there's only a single header needed [dictu_ffi_include.h](https://github.com/dictu-lang/Dictu/blob/develop/src/include/dictu_ffi_include.h).
+The header contains definitions, function declarations and function pointers(set at runtime automatically) for anything needed to interact with the DictuVM.
+Further it contains the following function declaration:
 ```c
 int dictu_ffi_init(DictuVM *vm, Table *method_table);
 ```
-You will need to write a function definition(implementation) for it.
+You will need to write a function definition (implementation) for it.
 The functions return value determines success or failure, `0` is success and anything > `0` is failure,
-Dictu's vm will throw a runtime error with the given code if the function returns a non 0 value.
+Dictu's VM will throw a runtime error with the given code if the function returns a non 0 value.
 
-Upon loading the module(shared library) in dictu, the vm will load and invoke this function.
-**NOTE: do not use vm functions before the init function is called since functions wont be available yet!**
+Upon loading the module (shared library) in Dictu, the VM will load and invoke this function.
+**NOTE: do not use vm functions before the init function is called since functions won't be available yet!**
 
 Within the function you can then define properties and functions which will then be available from dictu.
 The functions must follow this signature, the types are defined in the `dictu_ffi_include.h` header:
@@ -89,7 +89,7 @@ const mod = FFI.load("/path/to/library{}".format(FFI.suffix));
 const str = mod.foo; // Dictu!
 ```
 
-Here a entire example from the [ffi-example]():
+Here is a complete example from the [ffi-example]():
 ```c
 #include <dictu_ffi_include.h>
 
@@ -131,7 +131,7 @@ print(mod.dictuFFITestAdd(22)); // nil
 ```
 
 ### FFI.load(String) -> FFIInstance
-Load a module, the Shared library **MUST** include the `dictu_ffi_include.h` header and have `dictu_ffi_init` defined otherwise it might lead to UB.
+Load a module. The shared library **MUST** include the `dictu_ffi_include.h` header and have `dictu_ffi_init` defined otherwise it might lead to UB.
 ```cs
 const mod = FFI.load("/path/to/shared-object");
 print(mod); // <FFIInstance>

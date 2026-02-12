@@ -17,7 +17,7 @@ nav_order: 13
 ## Modules
 
 Modularity is important in any project, and a project in Dictu is obviously no exception to this rule. Dictu solves this problem
-by breaking files up into "modules". Every file is it's own module, and each module has it's own namespace, this means
+by breaking files up into "modules". Every file is its own module, and each module has its own namespace, this means
 a variable defined in `file.du` will not overwrite a variable in `file1.du` if imported.
 
 ### Importing
@@ -79,7 +79,7 @@ print(SomeModule.x); // 10
 print(SomeModule.test()); // "test"
 ```
 
-Once an module has been imported, it is stored within the VM, and is not executed again even if it is imported elsewhere.
+Once a module has been imported, it is stored within the VM, and is not executed again even if it is imported elsewhere.
 What happens is the module is "loaded" again, which means if it was to change in the time from import, it will not be changed
 within your program even if re-importing the module.
 
