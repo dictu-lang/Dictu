@@ -34,6 +34,33 @@ class TestStringSlicing < UnitTest {
         this.assertEquals(x[2:4], "ct");
         this.assertEquals(x[2:3], "c");
     }
+    testStringSliceUnicode() {
+        const x = "😀🌍🐦aä";
+        this.assertEquals(x[0:x.len()], x);
+        this.assertEquals(x[0:], x);
+        this.assertEquals(x[1:], "🌍🐦aä");
+        this.assertEquals(x[2:], "🐦aä");
+        this.assertEquals(x[3:], "aä");
+        this.assertEquals(x[4:], "ä");
+        this.assertEquals(x[5:], "");
+
+        this.assertEquals(x[:5], "😀🌍🐦aä");
+        this.assertEquals(x[:4], "😀🌍🐦a");
+        this.assertEquals(x[:3], "😀🌍🐦");
+        this.assertEquals(x[:2], "😀🌍");
+        this.assertEquals(x[:1], "😀");
+        this.assertEquals(x[:0], "");
+
+        this.assertEquals(x[1:4], "🌍🐦a");
+        this.assertEquals(x[1:3], "🌍🐦");
+        this.assertEquals(x[1:2], "🌍");
+        this.assertEquals(x[1:1], "");
+
+        this.assertEquals(x[2:5], "🐦aä");
+        this.assertEquals(x[2:4], "🐦a");
+        this.assertEquals(x[2:3], "🐦");
+        this.assertEquals(x[:x.len()], x);
+    }
 }
 
 TestStringSlicing().run();

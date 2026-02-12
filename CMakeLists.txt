@@ -15,6 +15,7 @@ if (ENABLE_VCPKG)
 endif(ENABLE_VCPKG)
 
 option(BUILD_CLI "Build the CLI" ON)
+option(EXEC_RELOCATE "Relocate the executable to the root dir" ON)
 
 add_subdirectory(src)
 

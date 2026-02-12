@@ -17,7 +17,7 @@ parent: Collections
 ---
 ## Lists
 
-Lists in Dictu allow you to store mutliple values of any type. Lists automatically resize for you as data is added and removed. Lists are similar to arrays in languages like Python, JavaScript, and Ruby.
+Lists in Dictu allow you to store multiple values of any type. Lists automatically resize for you as data is added and removed. Lists are similar to arrays in languages like Python, JavaScript, and Ruby.
 
 ```cs
 var list = [1, 2.3, "Mango", false, nil];
@@ -51,9 +51,9 @@ If you want to return only part of a list, you slice it! To slice a list, use sq
 ```
 
 ### Adding to lists
-#### list.push(value)
+#### list.push(Value)
 
-To add append a new value to a list, use the `.push()` method.
+To append a new value to a list, use the `.push()` method.
 
 ```cs
 var myList = [];
@@ -61,7 +61,7 @@ myList.push(10); // [10]
 myList.push(11); // [10, 11]
 ```
 
-#### list.insert(value, Number)
+#### list.insert(Value, Number)
 
 To insert a value into a list at a given index without replacing the value use .insert().
 
@@ -125,9 +125,9 @@ Converts a list to a boolean. A list is a "truthy" value when it has a length gr
 [[]].toBool(); // true
 ```
 
-### list.contains(value) -> Boolean
+### list.contains(Value) -> Boolean
 
-To check if a value contains within a list we use `.contains()`
+To check if a value is contained within a list we use `.contains()`
 
 ```cs
 var myList = [1, 2, 3];
@@ -149,7 +149,7 @@ print(myList.join("-")); // "1-2-3"
 print([].join("delimiter")); // ""
 ```
 
-### list.remove(value)
+### list.remove(Value)
 
 To remove a value from a list use `.remove()`. If the value does not exist within
 the list a runtime error occurs. Use together with [list.contains()](#listcontainsvalue).
@@ -165,7 +165,7 @@ myList.remove(1);
 print(myList); // [2]
 ```
 
-### list.pop(Number: index -> Optional) -> value
+### list.pop(Number: index -> Optional) -> Value
 
 To remove a value from a list, with an optional index, use `.pop()`
 
@@ -273,7 +273,7 @@ myList.forEach(def (value) => {
 
 ### list.map(Func) -> List
 
-Similar to `.foreach`, `.map` will run a function for each element within the list, however
+Similar to `.forEach`, `.map` will run a function for each element within the list, however
 the difference is that `.map` returns a new list of values generated from the callback function.
 Map expects a single parameter which is a callback. The callback itself also expects one
 parameter which is the current item in the list.
@@ -294,7 +294,7 @@ Note: `.filter()` returns a new list.
 print([1, 2, 3, 4, 5].filter(def (x) => x > 2)); // [3, 4, 5]
 ```
 
-### list.reduce(Func, value: initial -> Optional) -> List
+### list.reduce(Func, Value: initial -> Optional) -> List
 
 To reduce a list down to a single value we use `.reduce()`. Reduce expects at least one parameter which is a callback
 that will be executed on each item of the list. The value of the callback function is returned and saved for the next
@@ -351,7 +351,7 @@ Splice provides a means of changing the contents of a list by removing or replac
 
 ### list.unique() -> List
 
-Unique returns a new list with contianing the contents of the original list deduplicated.
+Unique returns a new list containing the contents of the original list deduplicated.
 
 ```cs
 const l = [1, 1, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9];

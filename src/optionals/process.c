@@ -201,13 +201,6 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
 
     close(fd[1]);
 
-    int status = 0;
-    waitpid(pid, &status, 0);
-
-    if (WIFEXITED(status) && (status = WEXITSTATUS(status)) != 0) {
-        ERROR_RESULT;
-    }
-
     int size = 1024;
     char* output = ALLOCATE(vm, char, size);
     char buffer[1024];
@@ -215,13 +208,22 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
     int numRead;
 
     while ((numRead = read(fd[0], buffer, 1024)) != 0) {
-        if (total >= size) {
+        if (total + numRead >= size) {
             output = GROW_ARRAY(vm, output, char, size, size * 3);
             size *= 3;
         }
 
         memcpy(output + total, buffer, numRead);
         total += numRead;
+    }
+
+    close(fd[0]);
+
+    int status = 0;
+    waitpid(pid, &status, 0);
+
+    if (WIFEXITED(status) && (status = WEXITSTATUS(status)) != 0) {
+        ERROR_RESULT;
     }
 
     output = SHRINK_ARRAY(vm, output, char, size, total + 1);

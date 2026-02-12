@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the IO module an import is required.
 
-```cs
+```js
 import IO;
 ```
 
@@ -30,7 +30,7 @@ import IO;
 | ---------- | ----------------------------------- |
 | IO.devNull | Provides access to the null device. |
 
-### IO.print(...values) -> Nil
+### IO.print(...Value) -> Nil
 
 Prints a given list of values to stdout.
 
@@ -39,7 +39,7 @@ IO.print(0);
 // 0
 ```
 
-### IO.println(...values) -> Nil
+### IO.println(...Value) -> Nil
 
 Prints a given list of values to stdout with an appended newline character.
 
@@ -47,6 +47,25 @@ Prints a given list of values to stdout with an appended newline character.
 IO.println("Dictu!");
 // Dictu!
 ```
+
+### IO.eprint(...Value) -> Nil
+
+Prints a given list of values to stderr.
+
+```cs
+IO.eprint(0);
+// 0
+```
+
+### IO.eprintln(...Value) -> Nil
+
+Prints a given list of values to stderr with an appended newline character.
+
+```cs
+IO.eprintln("Dictu!");
+// Dictu!
+```
+
 
 ### IO.copyFile(String: src, String: dst) -> Result\<Nil>
 

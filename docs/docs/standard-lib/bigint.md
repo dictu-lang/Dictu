@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the BigInt module an import is required.
 
-```cs
+```js
 import BigInt;
 ```
 
@@ -160,7 +160,7 @@ print(value);
 
 ### bigIntVal.divide() -> Result\<BigInt>
 
-Returns a Result value containing the quotiant.
+Returns a Result value containing the quotient.
 
 ```cs
 const bi = BigInt.new(10).unwrap();

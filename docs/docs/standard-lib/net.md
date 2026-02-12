@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Net module an import is required.
 
-```cs
+```js
 import Net;
 ```
 

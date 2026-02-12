@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Datetime module an import is required.
 
-```cs
+```js
 import Datetime;
 ```
 
@@ -46,7 +46,7 @@ Datetime.now(); // Fri May 29 03:12:32 2020
 Returns a human readable UTC datetime string.
 
 ```cs
-Datetime.now(); // Fri May 29 02:12:32 2020
+Datetime.nowUTC(); // Fri May 29 02:12:32 2020
 ```
 
 ### Datetime formats

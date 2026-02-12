@@ -18,7 +18,7 @@ nav_order: 12
 
 ### Opening files
 
-Opening files is very easy in Dictu. Syntax is `with(<file name>, <open mode>) {}`. Inside the `with` block, `file` is declared
+Opening files is very easy in Dictu. The syntax is `with(<file name>, <open mode>) {}`. Inside the `with` block, `file` is declared
 as a constant for you, and is the file object which has just been opened. Dictu will handle closing the file for you and happens
 when you leave the with scope automatically. Note, the path when opening files is relative to the process **not** the current script running.
 
@@ -38,12 +38,20 @@ with("test.txt", "r") {
     // file var is passed in here
 }
 
-// file is out of scope, and will the file will be closed for you
+// file is out of scope, and the file will be closed for you
+```
+
+### Custom name
+It is possible to append `as <name>` before the opening `{` in order to customise the name of the constant within the block.
+```cs
+with("test.txt", "r") as myfile {
+    // file constant is passed in here as myfile, NOT file.
+}
 ```
 
 ### Writing to files
 
-There are two methods available when writing to a file: `write()` and `writeLine()`. `write()` simply writes strings to a file, `writeLine()` is exactly the same, except it appends a newline to the passed in string. Both functions return the amount of characters wrote to the file.
+There are two methods available when writing to a file: `write()` and `writeLine()`. `write()` simply writes strings to a file, `writeLine()` is exactly the same, except it appends a newline to the passed in string. Both methods return the number of characters written to the file.
 
 ```cs
 with("test.txt", "w") {
@@ -59,7 +67,7 @@ with("test.txt", "w") {
 
 There are two methods available when reading files: `read()` and `readLine()`. `read()` reads the entire file, and returns its content as a string. `readLine()` will read the file up to a new line character.
 
-`readline()` can also take an optional argument for the buffer size.
+`readLine()` can also take an optional argument for the buffer size.
 
 ```cs
 // Read entire file
@@ -89,7 +97,7 @@ with("test.txt", "r") {
 
 Another method which may come in useful when reading files is `seek()`. `seek()` allows you to move the file cursor so you can re-read a file, for example, without closing the file and reopening.
 
-### file.Seek(Number, Number: from  -> Optional)
+### file.seek(Number, Number: from -> Optional)
 Both arguments passed to seek need to be of numeric value, however the `from` argument is optional.
 The first argument (offset) is the amount of characters you wish to move from the cursor position (negative offset for seeking backwards).
 The second argument (from) is for controlling where the cursor will be within the file, options are 0, 1 or 2.

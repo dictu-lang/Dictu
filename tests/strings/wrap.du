@@ -16,6 +16,11 @@ class TestStringWrap < UnitTest {
         const idx = res.find("\n");
         this.assertTruthy(res.find("\n") <= this.maxLen);
     }
+    testStringWrapUnicode() {
+        const _len = 5;
+        const wrapped = "🌐test 🐦🐦🐦 test344🐦".wrap(_len);
+        this.assertEquals(wrapped, "🌐test\n🐦🐦🐦\ntest344🐦");
+    }
 }
 
 TestStringWrap().run();

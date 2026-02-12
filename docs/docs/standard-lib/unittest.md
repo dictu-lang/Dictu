@@ -80,7 +80,7 @@ helper methods to make test writing easier.
 
 ### setUp
 
-`setUp` is a method which is ran before a test method is executed. This is useful
+`setUp` is a method which is run before a test method is executed. This is useful
 if you need some data (for example) to be present before running a test.
 
 Note: If in use with providers `setUp` will run for every item passed into the array.
@@ -259,7 +259,7 @@ Results:
 #### Global
 
 The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
-ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+all passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined
 as a class variable on the UnitTest parent class.
 
 ```
@@ -360,7 +360,7 @@ file.du
 
 #### Global
 The above shows us how we can silence passing tests for a single group (class) of Unit Tests but, if we wish to silence
-ass passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined 
+all passing tests that would be a lot of verbosity added to every class. Instead we can use the global flag that is defined
 as a class variable on the UnitTest parent class.
 
 ```cs
@@ -403,23 +403,27 @@ file.du
 ```
 
 ## Assertions
-### assertEquals(value, value)
+
+Assertions allow you to pass an optional silent argument to them that will allow you to silence them when successful 
+on an assertion by assertion basis rather than the whole test suite like `onlyFailures` would do.
+
+### assertEquals(Value, Value, silent: Boolean -> Optional)
 
 This helper method ensures that both values passed in equal each other.
 
-### assertNotEquals(value, value)
+### assertNotEquals(Value, Value, silent: Boolean -> Optional)
 
 This helper method ensures that both values passed in do not equal each other.
 
-### assertNil(value)
+### assertNil(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in is equal to nil.
 
-### assertNotNil(value)
+### assertNotNil(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in is not equal to nil.
 
-### assertType(value, value)
+### assertType(Value, Value, silent: Boolean -> Optional)
 
 This helper method checks the type of the first value is equal to the type as a string.
 
@@ -428,24 +432,24 @@ this.assertType("Dictu", "string");
 this.assertType(10, "number");
 ```
 
-### assertTruthy(value)
+### assertTruthy(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in would evaluate to true.
 
 Note: This is not the same as equaling `true`.
 
-### assertFalsey(value)
+### assertFalsey(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in would evaluate to false.
 
 Note: This is not the same as equaling `false`.
 
-### assertSuccess(value)
+### assertSuccess(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in is a `Result` type in
 a `Success` state. 
 
-### assertError(value)
+### assertError(Value, silent: Boolean -> Optional)
 
 This helper method ensures that the value passed in is a `Result` type in
 an `Error` state. 

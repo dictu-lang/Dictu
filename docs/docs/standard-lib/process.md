@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Process module an import is required.
 
-```cs
+```js
 import Process;
 ```
 

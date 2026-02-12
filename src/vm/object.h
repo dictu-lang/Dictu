@@ -131,6 +131,7 @@ struct sObjString {
     int length;
     char *chars;
     uint32_t hash;
+    int character_len;
 };
 
 struct sObjList {
@@ -270,8 +271,10 @@ ObjInstance *newInstance(DictuVM *vm, ObjClass *klass);
 ObjNative *newNative(DictuVM *vm, NativeFn function);
 
 ObjString *takeString(DictuVM *vm, char *chars, int length);
+ObjString *takeStringWithLen(DictuVM *vm, char *chars, int length, int character_len);
 
 ObjString *copyString(DictuVM *vm, const char *chars, int length);
+ObjString *copyStringWithLen(DictuVM *vm, const char *chars, int length, int character_len);
 
 ObjList *newList(DictuVM *vm);
 

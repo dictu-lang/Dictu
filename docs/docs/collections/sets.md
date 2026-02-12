@@ -64,7 +64,7 @@ mySet.add("Dictu!");
 mySet.len(); // 1
 ```
 
-### set.add(value)
+### set.add(Value)
 
 Adding to sets is just a case of passing a value to .add()
 
@@ -82,7 +82,7 @@ var mySet = set("foo", "bar", 123);
 const values = mySet.values(); // ["foo", "bar", 123]
 ```
 
-### set.contains(value) -> Boolean
+### set.contains(Value) -> Boolean
 
 To check if a set contains a value use `.contains()`
 
@@ -93,18 +93,18 @@ print(mySet.contains("Dictu!")); // true
 print(mySet.contains("Other!")); // false
 ```
 
-### set.containsAll(value) -> Boolean
+### set.containsAll(Value) -> Boolean
 
 To check if a set contains all elements in a given list use `.containsAll()`
 
 ```cs
-var mySet = set("one",1,2,3);;
+var mySet = set("one",1,2,3);
 print(mySet.containsAll(["one",1])); // true
 print(mySet.containsAll([1,2,3])); // true
 print(mySet.containsAll(["one",1,2,3,"x"])); // false
 ```
 
-### set.remove(value)
+### set.remove(Value)
 
 To remove a value from a set use `.remove()`.
 

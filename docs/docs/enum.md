@@ -19,7 +19,7 @@ nav_order: 11
 
 Enums are a collection of constants which can be accessed via a name rather than
 an index to document intent. Unlike other languages, enums in Dictu do not generate a value
-based on the previous entry, instead if no value is assigned it will be given it's position
+based on the previous entry, instead if no value is assigned it will be given its position
 within the enum, 0-based, as a value.
 
 ```cs

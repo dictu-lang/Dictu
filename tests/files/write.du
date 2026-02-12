@@ -38,6 +38,22 @@ class TestFileWrite < UnitTest {
             this.assertEquals(file.read(), "Dictu is great!Dictu is great!Dictu is great!");
         }
     }
+    testFileWriteCustomName() {
+        with("tests/files/read.txt", "w") as f {
+            // Save contents to reset the file
+            var count = f.write("Dictu is great!");
+            this.assertEquals(count, 15);
+            count = f.write("Dictu is great!");
+            this.assertEquals(count, 15);
+            count = f.write("Dictu is great!");
+            this.assertEquals(count, 15);
+        }
+
+        with("tests/files/read.txt", "r") as rf {
+            // Save contents to reset the file
+            this.assertEquals(rf.read(), "Dictu is great!Dictu is great!Dictu is great!");
+        }
+    }
 }
 
 TestFileWrite().run();

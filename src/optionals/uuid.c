@@ -3,7 +3,9 @@
 #ifndef _WIN32
 static uuid_t uuid;
 
-#define UUID_STRING_LEN 37
+#define UUID_STRING_LEN 36 // Note(Liz3): the strlen() of a UUID is 36, but the uuid_unparse_lower call expects
+                           // a buffer with space for the null byte, but since copyString wants the strlen we
+                           // keep the define to 36 and allocate +1.
 
 static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
@@ -21,7 +23,7 @@ static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[UUID_STRING_LEN] = {};
+    char out[UUID_STRING_LEN+1] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
@@ -43,7 +45,7 @@ static Value uuidGenRandomNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[UUID_STRING_LEN] = {};
+    char out[UUID_STRING_LEN+1] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));
@@ -65,7 +67,7 @@ static Value uuidGenTimeNative(DictuVM *vm, int argCount, Value *args) {
         return newResultError(vm, "error: failed to generate uuid");
     }
 
-    char out[UUID_STRING_LEN] = {};
+    char out[UUID_STRING_LEN+1] = {};
     uuid_unparse_lower(uuid, out);
 
     return newResultSuccess(vm, OBJ_VAL(copyString(vm, out, UUID_STRING_LEN)));

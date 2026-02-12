@@ -19,6 +19,11 @@ class TestStringStartsWith < UnitTest {
         this.assertFalsey("test".startsWith("!@£$%"));
         this.assertFalsey("test".startsWith("123456789"));
     }
+    testStringStartsWithUnicode() {
+        this.assertTruthy("💻test".startsWith("💻t"));
+        this.assertTruthy("💻test".startsWith("💻test"));
+        this.assertFalsey("💻test".startsWith("💻te💻"));
+    }
 }
 
 TestStringStartsWith().run();

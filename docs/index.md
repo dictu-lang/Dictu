@@ -51,7 +51,7 @@ Let's make sure that everything went as planned by entering the Dictu REPL.
 $ ./dictu
 ```
 
-**Note:** On windows systems the exe may be within a Debug or Release directory. 
+**Note:** On Windows systems the executable may be within a `Debug` or `Release` directory.
 
 You should be able to run Dictu code here! REPL stands for “read evaluate print loop” and it allows you to receive instantaneous feedback about your code.
 
@@ -62,8 +62,26 @@ Dictu Version: {{ site.version }}
 
 Use `Control + C` to exit the REPL when you're finished.
 
+### Build Options
+
+Dictu supports several CMake build options:
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `DISABLE_HTTP` | Build without HTTP support (removes cURL dependency) | `OFF` |
+| `ENABLE_VCPKG` | Use VCPKG for dependency management | `OFF` |
+| `BUILD_CLI` | Build the CLI executable | `ON` |
+
+```bash
+# Build without HTTP support
+$ cmake -DCMAKE_BUILD_TYPE=Release -DDISABLE_HTTP=1 -B ./build
+
+# Build with VCPKG
+$ cmake --preset release-vcpkg
+```
+
 ## Contributing
 We want to make the Dictu community as friendly and welcoming as possible, so [pull requests](https://github.com/dictu-lang/Dictu/pulls) are encouraged. Any contribution, from the smallest typo in the documentation to a new feature in the language itself, is greatly appreciated!
 
-## License
-Dictu is under the [MIT license](https://github.com/dictu-lang/Dictu/blob/master/LICENSE).
+## Licence
+Dictu is under the [MIT licence](https://github.com/dictu-lang/Dictu/blob/master/LICENSE).

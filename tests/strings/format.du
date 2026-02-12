@@ -21,6 +21,10 @@ class TestStringFormat < UnitTest {
         this.assertEquals("{}".format({"test": 10, "aaa": 10}), '{"aaa": 10, "test": 10}');
         this.assertEquals("{} {} {}".format(test, Test, Trait), '<fn test> <Cls Test> <Trait Trait>');
     }
+    testStringFormatUnicode() {
+        this.assertEquals("World: {} is {}".format("🌍", "😎"), "World: 🌍 is 😎");
+        this.assertEquals("hello {}".format(["🌐😁⚓🌍"]), "hello [\"🌐😁⚓🌍\"]");
+    }
 }
 
 TestStringFormat().run();

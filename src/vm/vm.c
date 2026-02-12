@@ -10,6 +10,7 @@
 #include "object.h"
 #include "memory.h"
 #include "vm.h"
+#include "utf8.h"
 #include "util.h"
 #include "error_lib/error.h"
 #include "datatypes/number.h"
@@ -26,6 +27,7 @@
 #include "datatypes/enums.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
+#include "value.h"
 
 static void resetStack(DictuVM *vm) {
     vm->stackTop = vm->stack;
@@ -57,6 +59,10 @@ void runtimeError(DictuVM *vm, const char *format, ...) {
     for (int i = vm->frameCount - 1; i >= 0; i--) {
         CallFrame *frame = &vm->frames[i];
 
+        if(frame->closure == NULL) {
+            // synthetic frame created by callFunction
+            continue;
+        } 
         ObjFunction *function = frame->closure->function;
 
         // -1 because the IP is sitting on the next instruction to be
@@ -865,7 +871,9 @@ static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *kla
     }
 }
 
-static DictuInterpretResult run(DictuVM *vm) {
+
+
+static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
     CallFrame *frame = &vm->frames[vm->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
@@ -1898,14 +1906,26 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(subscriptValue);
+                    int len = string->character_len == -1 ? string->length : string->character_len;
                     int index = AS_NUMBER(indexValue);
 
                     // Allow negative indexes
                     if (index < 0)
-                        index = string->length + index;
+                        index = len + index;
 
-                    if (index >= 0 && index < string->length) {
-                        ObjString *newString = copyString(vm, &string->chars[index], 1);
+                    if (index >= 0 && index < len) {
+                        ObjString* newString;
+                        if(string->character_len != -1 && string->character_len != string->length) {
+                            utf8_int32_t ch;
+                            char* ptr = string->chars;
+                            for(size_t i = 0; i <= (size_t)index; i++)
+                                ptr = utf8codepoint(ptr, &ch);
+                            size_t cpSize = utf8codepointsize(ch);
+                            newString = copyString(vm, ptr - cpSize, cpSize);
+
+                        } else {
+                            newString = copyString(vm, &string->chars[index], 1);
+                        }
                         pop(vm);
                         pop(vm);
                         push(vm, OBJ_VAL(newString));
@@ -2103,16 +2123,17 @@ static DictuInterpretResult run(DictuVM *vm) {
 
                 case OBJ_STRING: {
                     ObjString *string = AS_STRING(objectValue);
+                    int len = string->character_len == -1 ? string->length : string->character_len;
 
                     if (IS_EMPTY(sliceEndIndex)) {
-                        indexEnd = string->length;
+                        indexEnd = len;
                     } else {
                         indexEnd = AS_NUMBER(sliceEndIndex);
 
-                        if (indexEnd > string->length) {
-                            indexEnd = string->length;
+                        if (indexEnd > len) {
+                            indexEnd = len;
                         }  else if (indexEnd < 0) {
-                            indexEnd = string->length + indexEnd;
+                            indexEnd = len + indexEnd;
                         }
                     }
 
@@ -2120,7 +2141,20 @@ static DictuInterpretResult run(DictuVM *vm) {
                     if (indexStart > indexEnd) {
                         returnVal = OBJ_VAL(copyString(vm, "", 0));
                     } else {
-                        returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
+                        if(string->character_len != -1 && string->character_len != string->length) {
+                            utf8_int32_t ch;
+                            char* ptr = string->chars;
+                        // first we need to advance by the skip;
+                            for(size_t i = 0; i < (size_t)indexStart; i++)
+                                ptr = utf8codepoint(ptr, &ch);
+                            char* ptrEnd = ptr;
+                            for(size_t i = 0; i < (size_t)(indexEnd - indexStart); i++)
+                                ptrEnd = utf8codepoint(ptrEnd, &ch);
+                            returnVal = OBJ_VAL(copyString(vm, ptr, ptrEnd - ptr));
+                        } else {
+                            returnVal = OBJ_VAL(copyString(vm, string->chars + indexStart, indexEnd - indexStart));
+                        }
+
                     }
                     break;
                 }
@@ -2243,6 +2277,10 @@ static DictuInterpretResult run(DictuVM *vm) {
 
             frame = &vm->frames[vm->frameCount - 1];
             ip = frame->ip;
+            if (breakFrame != -1 && vm->frameCount == breakFrame) {
+                return INTERPRET_OK;
+            }
+
             DISPATCH();
         }
 
@@ -2408,6 +2446,9 @@ static DictuInterpretResult run(DictuVM *vm) {
 
     return INTERPRET_RUNTIME_ERROR;
 }
+static DictuInterpretResult run(DictuVM *vm) {
+    return runWithBreakFrame(vm, -1);
+}
 
 DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source) {
     ObjString *name = copyString(vm, moduleName, strlen(moduleName));
@@ -2429,4 +2470,38 @@ DictuInterpretResult dictuInterpret(DictuVM *vm, char *moduleName, char *source)
     DictuInterpretResult result = run(vm);
 
     return result;
+}
+Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
+    if(!IS_FUNCTION(function) && !IS_CLOSURE(function)){
+        if(IS_NATIVE(function)) {
+            NativeFn native = AS_NATIVE(function);
+            return native(vm, argCount, args);
+        }
+        runtimeError(vm, "Value passed to callFunction is not callable");
+        return EMPTY_VAL;
+    }
+    int currentFrameCount = vm->frameCount;
+    Value* currentStack = vm->stackTop;
+    if (vm->frameCount == vm->frameCapacity) {
+        int oldCapacity = vm->frameCapacity;
+        vm->frameCapacity = GROW_CAPACITY(vm->frameCapacity);
+        vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,
+                                   oldCapacity, vm->frameCapacity);
+    }
+    CallFrame *frame = &vm->frames[vm->frameCount++];
+    uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
+    frame->ip = code;
+    frame->closure = NULL;
+    push(vm, function);
+    for(int i = 0; i < argCount; i++) {
+        push(vm, args[i]);
+    }
+    DictuInterpretResult result = runWithBreakFrame(vm, currentFrameCount+1);
+    if(result != INTERPRET_OK) {
+        exit(70);
+    }
+    Value v = pop(vm);
+    vm->stackTop = currentStack;
+    vm->frameCount--;
+    return v;
 }

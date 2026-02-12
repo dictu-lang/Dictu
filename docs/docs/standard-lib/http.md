@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the HTTP module an import is required. Along with the methods described below, this module also defines constants representing all standard response codes and their associated messages, the standard set of HTTP methods, and common request headers and values.
 
-```cs
+```js
 import HTTP;
 ```
 
@@ -51,7 +51,7 @@ HTTP.post("https://httpbin.org/post", {"test": 10}, ["Content-Type: application/
 
 ### HTTP.put(String, dictionary: postArgs -> Optional, list: headers -> Optional, Number: timeout -> Optional) -> Result\<Response>
 
-Sends a HTTP POST request to a given URL. Timeout is given in seconds.
+Sends a HTTP PUT request to a given URL. Timeout is given in seconds.
 Returns a Result and unwraps to a Response upon success.
 
 ```cs

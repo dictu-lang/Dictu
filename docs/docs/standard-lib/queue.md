@@ -5,7 +5,7 @@ nav_order: 19
 parent: Standard Library
 ---
 
-# UUID
+# Queue
 {: .no_toc }
 
 ## Table of contents
@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Queue module an import is required.
 
-```cs
+```js
 import Queue;
 ```
 
@@ -112,7 +112,7 @@ print(res);
 
 ### Queue.isFull() -> Bool
 
-Returns a Bool value indicating whether the queue is empty or not.
+Returns a Bool value indicating whether the queue is full or not.
 
 ```cs
 const queue = Queue.new();

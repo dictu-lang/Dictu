@@ -67,6 +67,46 @@ class TestListSort < UnitTest {
         z.sort();
         this.assertEquals(z, ["abc", "abc", "cde", "cde"]);
     }
+
+    testStringLargeSort() {
+        var contents;
+        with("tests/lists/unsorted.txt", "r") {
+            contents = file.read();
+        }
+
+        const listContents = contents.split("\n");
+        listContents.sort();
+
+        with("tests/lists/sorted.txt", "r") {
+            var line;
+            var index = 0;
+            // When you reach the end of the file, nil is returned
+            while((line = file.readLine()) != nil) {
+                this.assertEquals(listContents[index], line, true);
+                index += 1;
+            }
+        }
+    }
+
+    testNumberLargeSort() {
+        var contents;
+        with("tests/lists/unsorted.txt", "r") {
+            contents = file.read();
+        }
+
+        const listContents = contents.split("\n");
+        listContents.sort();
+
+        with("tests/lists/sorted.txt", "r") {
+            var line;
+            var index = 0;
+            // When you reach the end of the file, nil is returned
+            while((line = file.readLine()) != nil) {
+                this.assertEquals(listContents[index].toNumber().unwrap(), line.toNumber().unwrap(), true);
+                index += 1;
+            }
+        }
+    }
 }
 
 TestListSort().run();

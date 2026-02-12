@@ -17,6 +17,13 @@ class TestStringTitle < UnitTest {
         this.assertEquals("!@£$%^&*".title(), "!@£$%^&*");
         this.assertEquals("once upon a time".title(), "Once Upon A Time");
     }
+    testStringTitleUnicode() {
+        this.assertEquals("über".title(), "Über");
+        this.assertEquals("üBer".title(), "Über");
+        this.assertEquals("👻👻".title(), "👻👻");
+        this.assertEquals("👻👻 test".title(), "👻👻 Test");
+        this.assertEquals("👻👻 test üBer".title(), "👻👻 Test Über");
+    }
 }
 
 TestStringTitle().run();

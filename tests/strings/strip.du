@@ -27,7 +27,7 @@ class TestStringStrip < UnitTest {
         this.assertEquals("  Dictu is great!".rightStrip().len(), 17);
         this.assertEquals("  Dictu is great!  ".rightStrip().len(), 17);
     }
-    
+
     testStringStrip() {
         this.assertEquals("Dictu is great!  ".strip(), "Dictu is great!");
         this.assertEquals("  Dictu is great!".strip(), "Dictu is great!");
@@ -36,6 +36,17 @@ class TestStringStrip < UnitTest {
         this.assertEquals("  Dictu is great!".strip().len(), 15);
         this.assertEquals("  Dictu is great!  ".strip().len(), 15);
     }
+
+    testStringStripUnicode() {
+        this.assertEquals("🐦Dictu is great🐦  ".strip(), "🐦Dictu is great🐦");
+        this.assertEquals("  🐦Dictu is great!🐦".strip(), "🐦Dictu is great!🐦");
+        this.assertEquals("  🐦Dictu is great!🐦  ".strip(), "🐦Dictu is great!🐦");
+        this.assertEquals("Dictu is great🐦  ".strip().len(), 15);
+        this.assertEquals("  Dictu is great🐦".strip().len(), 15);
+        this.assertEquals("  🐦Dictu is great🐦  ".strip().len(), 16);
+    }
+
+
 }
 
 TestStringStrip().run();

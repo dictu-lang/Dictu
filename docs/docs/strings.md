@@ -21,7 +21,7 @@ Strings in Dictu are an immutable data type. This means that once a string has b
 
 ### Concatenation
 
-Use a plus sign to join string together. This is called concatenation.
+Use a plus sign to join strings together. This is called concatenation.
 
 ```cs
 "This item costs " + "27" + " euros"; // "This item costs 27 euros"
@@ -38,7 +38,7 @@ string[0]; // D
 string[-1]; // u
 string[100]; // String index out of bounds.
 
-for (var i = 0; i < x.len(); i += 1) {
+for (var i = 0; i < string.len(); i += 1) {
     print(string[i]);
 }
 // D
@@ -66,7 +66,7 @@ If you want to get only part of a string, you slice it! To slice a string, use s
 
 ### Escape codes
 
-“Escape codes” are used to create things like new lines and tabs. Because backslashes are used in escape codes, you need to type two backshashes (`\\`) to use a single backslash.
+“Escape codes” are used to create things like new lines and tabs. Because backslashes are used in escape codes, you need to type two backslashes (`\\`) to use a single backslash.
 
 | \n | \n is the escape code for a new line |
 | \r | \r is the escape code for a carriage return |
@@ -81,12 +81,12 @@ You should only need the escape codes for single and double quotes if you are us
 
 #### Raw strings
 
-Sometimes, you wil need to ignore escape codes. Simply prefix your string with an `r` and any escape codes will be ignored.
+Sometimes, you will need to ignore escape codes. Simply prefix your string with an `r` and any escape codes will be ignored.
 
 ```cs
 // Normal Strings
 "Dictu\trocks!"; // 'Dictu  rocks!'
-// Raw Strins
+// Raw Strings
 r"Dictu\trocks!"; // 'Dictu\trocks!'
 r"Dictu\trocks!".len(); // 12
 ```
@@ -238,7 +238,7 @@ Strips whitespace from both sides of a string and returns the result.
 "     Dictu     ".strip(); // "Dictu"
 ```
 
-### string.format(...value: args...) -> String
+### string.format(...Value: args) -> String
 
 This method will replace any instances of `{}` with the provided parameters. It also casts all arguments to strings.
 
@@ -302,7 +302,7 @@ Returns a boolean indicating that the given string is an lower case letter. Empt
 
 ### string.wordCount() -> Number
 
-Returns the number of words in the given string. Empty strings are considered false.
+Returns the number of words in the given string. Empty strings return 0.
 
 ```cs
 "".wordCount(); // 0

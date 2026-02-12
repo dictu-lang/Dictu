@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Log module an import is required.
 
-```cs
+```js
 import Log;
 ```
 
@@ -38,7 +38,7 @@ import Log;
 Log.print("something extremely interesting"); // 2021/11/27 11:49:14 something extremely interesting
 ```
 
-### Log.println(string)
+### Log.println(String)
 
 ```cs
 Log.println("hello, world! println"); // 2021/11/27 11:49:14 hello, world! print

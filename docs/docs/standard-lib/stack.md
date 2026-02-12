@@ -5,7 +5,7 @@ nav_order: 23
 parent: Standard Library
 ---
 
-# UUID
+# Stack
 {: .no_toc }
 
 ## Table of contents
@@ -20,7 +20,7 @@ parent: Standard Library
 
 To make use of the Stack module an import is required.
 
-```cs
+```js
 import Stack;
 ```
 
@@ -114,7 +114,7 @@ print(res);
 
 ### Stack.isFull() -> Bool
 
-Returns a Bool value indicating whether the stack is empty or not.
+Returns a Bool value indicating whether the stack is full or not.
 
 ```cs
 const stack = Stack.new();

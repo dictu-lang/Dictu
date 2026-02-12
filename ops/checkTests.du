@@ -14,6 +14,11 @@ const ignored = {
     ],
     'files': [
         'read.txt',
+        'read2.txt',
+    ],
+    'lists': [
+        'sorted.txt',
+        'unsorted.txt',
     ],
     'strings': [
         'test',
@@ -22,9 +27,6 @@ const ignored = {
         // Need investigating
         'range.du',
         'select.du',
-    ],
-    'ffi': [
-        'libs',
     ],
     '*': [
         'import.du',
