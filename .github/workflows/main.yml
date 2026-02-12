@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-20.04]
+        os: [ubuntu-latest, ubuntu-22.04]
 
     steps:
       - uses: actions/checkout@v3
@@ -54,7 +54,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-latest, macOS-15, macOS-13]
+        os: [macOS-latest, macOS-14, macos-15-arm64]
 
     steps:
       - uses: actions/checkout@v3
@@ -80,7 +80,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022, windows-2019]
+        os: [windows-2022, windows-2019, windows-11-arm]
 
     steps:
       - uses: actions/checkout@v3
