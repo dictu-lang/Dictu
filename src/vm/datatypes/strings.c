@@ -67,7 +67,7 @@ static Value toNumberString(DictuVM *vm, int argCount, Value *args) {
 
 static Value formatString(DictuVM *vm, int argCount, Value *args) {
     if (argCount == 0) {
-        runtimeError(vm, "format() takes at least 1 argument (%d given)",
+        runtimeError(vm, "format() takes 1 or more arguments (%d given)",
                      argCount);
         return EMPTY_VAL;
     }
@@ -280,7 +280,7 @@ static Value containsString(DictuVM *vm, int argCount, Value *args) {
 
 static Value findString(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "find() takes either 1 or 2 arguments (%d given)",
+        runtimeError(vm, "find() takes 1 or 2 arguments (%d given)",
                      argCount);
         return EMPTY_VAL;
     }
@@ -720,7 +720,7 @@ static Value titleString(DictuVM *vm, int argCount, Value *args) {
 
 static Value repeatString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "repeat() takes one argument (%d given)", argCount);
+        runtimeError(vm, "repeat() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 

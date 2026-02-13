@@ -344,7 +344,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
                 if (tableGet(&klass->publicMethods, vm->initString, &initializer)) {
                     return call(vm, AS_CLOSURE(initializer), argCount);
                 } else if (argCount != 0) {
-                    runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
+                    runtimeError(vm, "Expected no arguments but got %d.", argCount);
                     return false;
                 }
 

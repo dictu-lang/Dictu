@@ -263,7 +263,7 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value joinNative(DictuVM *vm, int argCount, Value *args) {
-    char* argCountError = "join() requires 1 or more arguments (%d given).";
+    char* argCountError = "join() takes 1 or more arguments (%d given)";
     char* nonStringError = "join() argument at index %d is not a string";
 
     if (argCount == 1 && IS_LIST(args[0])) {

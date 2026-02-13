@@ -71,7 +71,7 @@ static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getFrameCount() takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "getFrameCount() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

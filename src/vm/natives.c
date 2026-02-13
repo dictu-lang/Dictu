@@ -33,7 +33,7 @@ static Value setNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value inputNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "input() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

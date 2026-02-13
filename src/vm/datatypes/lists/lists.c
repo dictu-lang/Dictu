@@ -112,7 +112,7 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
 
 static Value popListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "pop() takes either 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "pop() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -220,7 +220,7 @@ static Value containsListItem(DictuVM *vm, int argCount, Value *args) {
 
 static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "join() takes 1 optional argument (%d given)", argCount);
+        runtimeError(vm, "join() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

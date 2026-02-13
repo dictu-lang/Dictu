@@ -2,7 +2,7 @@
 
 static Value values(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "values() takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "values() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

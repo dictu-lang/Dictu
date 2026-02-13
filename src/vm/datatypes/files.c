@@ -95,7 +95,7 @@ static Value readFullFile(DictuVM *vm, int argCount, Value *args) {
 
 static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "readLine() takes at most 1 argument (%d given)", argCount);
+        runtimeError(vm, "readLine() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

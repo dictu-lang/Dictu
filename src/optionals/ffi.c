@@ -85,7 +85,7 @@ void grayFFI(DictuVM *vm, ObjAbstract *abstract) {
 
 static Value load(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "load() takes one argument (%d given)", argCount);
+        runtimeError(vm, "load() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
     ObjString *path = AS_STRING(args[0]);

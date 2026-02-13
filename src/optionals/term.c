@@ -26,7 +26,7 @@ static Value getSizeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getSize() doesn't take any arguments (%d given)", argCount);
+        runtimeError(vm, "getSize() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

@@ -19,7 +19,7 @@ int setenv(const char *name, const char *value, int overwrite) {
 
 static Value get(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2 ) {
-        runtimeError(vm, "get() takes either 1 or 2 arguments (%d given).", argCount);
+        runtimeError(vm, "get() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -83,7 +83,7 @@ static Value clearAll(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "clearAll() does not take arguments (%d given).", argCount);
+        runtimeError(vm, "clearAll() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

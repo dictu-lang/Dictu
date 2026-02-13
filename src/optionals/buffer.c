@@ -91,7 +91,7 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferLen(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "len() takes no arguments");
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);
@@ -101,7 +101,7 @@ static Value bufferLen(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferValues(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "values() takes no arguments");
+        runtimeError(vm, "values() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);
@@ -117,7 +117,7 @@ static Value bufferValues(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "string() takes no arguments");
+        runtimeError(vm, "string() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);

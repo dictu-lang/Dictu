@@ -3,7 +3,7 @@
 static Value randomRandom(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
     if (argCount > 0) {
-        runtimeError(vm, "random() takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "random() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -32,7 +32,7 @@ static Value randomRange(DictuVM *vm, int argCount, Value *args) {
 
 static Value randomSelect(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "select() takes one argument (%d provided)", argCount);
+        runtimeError(vm, "select() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 

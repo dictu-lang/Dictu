@@ -1142,7 +1142,7 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
 
 static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "post() takes at least 1 argument (%d given).", argCount);
+        runtimeError(vm, "post() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -1212,7 +1212,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
 
 static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "put() takes at least 1 argument (%d given).", argCount);
+        runtimeError(vm, "put() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

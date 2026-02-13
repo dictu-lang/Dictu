@@ -116,7 +116,7 @@ static bool exists(ObjList *list, ObjString *search) {
 
 static Value getAttributes(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 0) {
-        runtimeError(vm, "getAttributes() takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "getAttributes() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

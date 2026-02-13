@@ -218,7 +218,7 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
 
 static Value connectSocket(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "connect() takes two arguments (%d given)", argCount);
+        runtimeError(vm, "connect() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

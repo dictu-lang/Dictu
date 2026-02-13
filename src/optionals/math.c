@@ -232,7 +232,7 @@ static long long gcd(long long a, long long b) {
 }
 
 static Value gcdNative(DictuVM *vm, int argCount, Value *args) {
-    char* argCountError = "gcd() requires 2 or more arguments (%d given).";
+    char* argCountError = "gcd() takes 2 or more arguments (%d given)";
     char* nonNumberError = "gcd() argument at index %d is not a number";
     char* notWholeError = "gcd() argument (%f) at index %d is not a whole number";
 
@@ -282,7 +282,7 @@ long long lcm(long long a, long long b) {
 }
 
 static Value lcmNative(DictuVM *vm, int argCount, Value *args) {
-    char* argCountError = "lcm() requires 2 or more arguments (%d given).";
+    char* argCountError = "lcm() takes 2 or more arguments (%d given)";
     char* nonNumberError = "lcm() argument at index %d is not a number";
     char* notWholeError = "lcm() argument (%f) at index %d is not a whole number";
 
