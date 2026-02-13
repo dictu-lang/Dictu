@@ -1074,6 +1074,16 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(GET_LOCAL_0): {
+            push(vm, frame->slots[0]);
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_LOCAL_1): {
+            push(vm, frame->slots[1]);
+            DISPATCH();
+        }
+
         CASE_CODE(SET_LOCAL): {
             uint8_t slot = READ_BYTE();
             frame->slots[slot] = peek(vm, 0);
@@ -1545,6 +1555,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value b = pop(vm);
             Value a = pop(vm);
             push(vm, BOOL_VAL(valuesEqual(a, b)));
+            DISPATCH();
+        }
+
+        CASE_CODE(NOT_EQUAL): {
+            Value b = pop(vm);
+            Value a = pop(vm);
+            push(vm, BOOL_VAL(!valuesEqual(a, b)));
             DISPATCH();
         }
 

@@ -118,7 +118,7 @@ static int emitJump(Compiler *compiler, uint8_t instruction) {
 static void emitReturn(Compiler *compiler) {
     // An initializer automatically returns "this".
     if (compiler->type == TYPE_INITIALIZER) {
-        emitBytes(compiler, OP_GET_LOCAL, 0);
+        emitByte(compiler, OP_GET_LOCAL_0);
     } else {
         emitByte(compiler, OP_NIL);
     }
@@ -598,7 +598,7 @@ static void binary(Compiler *compiler, LangToken previousToken, bool canAssign) 
 
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:
-            emitBytes(compiler, OP_EQUAL, OP_NOT);
+            emitByte(compiler, OP_NOT_EQUAL);
             break;
         case TOKEN_EQUAL_EQUAL:
             emitByte(compiler, OP_EQUAL);
@@ -1323,7 +1323,14 @@ static void namedVariable(Compiler *compiler, LangToken name, bool canAssign) {
         emitByte(compiler, OP_BITWISE_OR);
         emitBytes(compiler, setOp, (uint8_t) arg);
     } else {
-        emitBytes(compiler, getOp, (uint8_t) arg);
+        // Specialized single-byte opcodes for the most common local slots.
+        if (getOp == OP_GET_LOCAL && arg == 0) {
+            emitByte(compiler, OP_GET_LOCAL_0);
+        } else if (getOp == OP_GET_LOCAL && arg == 1) {
+            emitByte(compiler, OP_GET_LOCAL_1);
+        } else {
+            emitBytes(compiler, getOp, (uint8_t) arg);
+        }
     }
 }
 
@@ -2223,7 +2230,10 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
         case OP_SUBSCRIPT_PUSH:
         case OP_SLICE:
         case OP_POP:
+        case OP_GET_LOCAL_0:
+        case OP_GET_LOCAL_1:
         case OP_EQUAL:
+        case OP_NOT_EQUAL:
         case OP_GREATER:
         case OP_LESS:
         case OP_ADD:

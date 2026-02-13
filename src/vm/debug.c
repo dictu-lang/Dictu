@@ -147,6 +147,10 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_POP_REPL", offset);
         case OP_GET_LOCAL:
             return byteInstruction("OP_GET_LOCAL", chunk, offset);
+        case OP_GET_LOCAL_0:
+            return simpleInstruction("OP_GET_LOCAL_0", offset);
+        case OP_GET_LOCAL_1:
+            return simpleInstruction("OP_GET_LOCAL_1", offset);
         case OP_SET_LOCAL:
             return byteInstruction("OP_SET_LOCAL", chunk, offset);
         case OP_GET_GLOBAL:
@@ -185,6 +189,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return constantInstruction("OP_GET_SUPER", chunk, offset);
         case OP_EQUAL:
             return simpleInstruction("OP_EQUAL", offset);
+        case OP_NOT_EQUAL:
+            return simpleInstruction("OP_NOT_EQUAL", offset);
         case OP_GREATER:
             return simpleInstruction("OP_GREATER", offset);
         case OP_LESS:
