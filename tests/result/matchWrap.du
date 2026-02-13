@@ -45,7 +45,7 @@ class TestResultMatchWrap < UnitTest {
         );
 
         this.assertFalsey(error.success());
-        this.assertEquals(error.unwrapError(), "Can not convert 'test' to number");
+        this.assertEquals(error.unwrapError(), "Cannot convert 'test' to number");
     }
 }
 

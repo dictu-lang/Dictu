@@ -306,7 +306,7 @@ static LangToken exponent(Scanner *scanner) {
         // Consume the "+ or -"
         advance(scanner);
     }
-    if (!isDigit(peek(scanner)) && peek(scanner) != '_') return errorToken(scanner, "Invalid exopnent literal");
+    if (!isDigit(peek(scanner)) && peek(scanner) != '_') return errorToken(scanner, "Invalid exponent literal");
     while (isDigit(peek(scanner)) || peek(scanner) == '_') advance(scanner);
     return makeToken(scanner,TOKEN_NUMBER);
 }

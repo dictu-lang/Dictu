@@ -101,6 +101,11 @@ typedef struct {
 } ObjModule;
 
 typedef struct {
+    struct sObjClass *klass;  // Cached class pointer (cache key)
+    Value value;              // Cached method/closure (cache result)
+} InlineCacheEntry;
+
+typedef struct {
     Obj obj;
     int isVariadic;
     int arity;
@@ -117,6 +122,8 @@ typedef struct {
     int privatePropertyCount;
     int *privatePropertyNames;
     int *privatePropertyIndexes;
+    int inlineCacheCount;
+    InlineCacheEntry *inlineCaches;
 } ObjFunction;
 
 typedef Value (*NativeFn)(DictuVM *vm, int argCount, Value *args);

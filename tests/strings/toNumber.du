@@ -25,11 +25,11 @@ class TestStringToNumber < UnitTest {
     }
 
     testStringToNumberFailedParseReason() {
-        this.assertEquals("10  ".toNumber().unwrapError(), "Can not convert '10  ' to number");
-        this.assertEquals("number".toNumber().unwrapError(), "Can not convert 'number' to number");
-        this.assertEquals("10number".toNumber().unwrapError(), "Can not convert '10number' to number");
-        this.assertEquals("10number10".toNumber().unwrapError(), "Can not convert '10number10' to number");
-        this.assertEquals("10..".toNumber().unwrapError(), "Can not convert '10..' to number");
+        this.assertEquals("10  ".toNumber().unwrapError(), "Cannot convert '10  ' to number");
+        this.assertEquals("number".toNumber().unwrapError(), "Cannot convert 'number' to number");
+        this.assertEquals("10number".toNumber().unwrapError(), "Cannot convert '10number' to number");
+        this.assertEquals("10number10".toNumber().unwrapError(), "Cannot convert '10number10' to number");
+        this.assertEquals("10..".toNumber().unwrapError(), "Cannot convert '10..' to number");
     }
 }
 

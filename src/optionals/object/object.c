@@ -61,7 +61,7 @@ static Value objectHash(DictuVM *vm, int argCount, Value *args) {
 
 static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "prettyPrint() takes 1 or arguments (%d given)", argCount);
+        runtimeError(vm, "prettyPrint() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

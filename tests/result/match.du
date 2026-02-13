@@ -40,7 +40,7 @@ class TestResultMatch < UnitTest {
             def (error) => error
         );
 
-        this.assertEquals(error, "Can not convert 'test' to number");
+        this.assertEquals(error, "Cannot convert 'test' to number");
     }
 }
 

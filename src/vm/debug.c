@@ -29,6 +29,16 @@ static int callInstruction(const char *name, Chunk *chunk, int offset) {
     return offset + 3;
 }
 
+static int cachedConstantInstruction(const char *name, Chunk *chunk,
+                                     int offset) {
+    uint8_t constant = chunk->code[offset + 1];
+    uint8_t cacheSlot = chunk->code[offset + 2];
+    printf("%-16s %4d (cache %d) '", name, constant, cacheSlot);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 3;
+}
+
 static int invokeInstruction(const char* name, Chunk* chunk,
                              int offset) {
     uint8_t argCount = chunk->code[offset + 1];
@@ -38,6 +48,18 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     printValue(chunk->constants.values[constant]);
     printf("'\n");
     return offset + 4;
+}
+
+static int cachedInvokeInstruction(const char* name, Chunk* chunk,
+                                   int offset) {
+    uint8_t argCount = chunk->code[offset + 1];
+    uint8_t constant = chunk->code[offset + 2];
+    uint8_t unpack = chunk->code[offset + 3];
+    uint8_t cacheSlot = chunk->code[offset + 4];
+    printf("%-16s (%d args) %4d unpack - %d (cache %d) '", name, argCount, constant, unpack, cacheSlot);
+    printValue(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 5;
 }
 
 static int importFromInstruction(const char *name, Chunk *chunk,
@@ -153,6 +175,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             return simpleInstruction("OP_GET_LOCAL_1", offset);
         case OP_SET_LOCAL:
             return byteInstruction("OP_SET_LOCAL", chunk, offset);
+        case OP_INCREMENT_LOCAL:
+            return byteInstruction("OP_INCREMENT_LOCAL", chunk, offset);
         case OP_GET_GLOBAL:
             return constantInstruction("OP_GET_GLOBAL", chunk, offset);
         case OP_GET_MODULE:
@@ -168,11 +192,11 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_SET_UPVALUE:
             return byteInstruction("OP_SET_UPVALUE", chunk, offset);
         case OP_GET_ATTRIBUTE:
-            return constantInstruction("OP_GET_ATTRIBUTE", chunk, offset);
+            return cachedConstantInstruction("OP_GET_ATTRIBUTE", chunk, offset);
         case OP_GET_PRIVATE_ATTRIBUTE:
             return constantInstruction("OP_GET_PRIVATE_ATTRIBUTE", chunk, offset);
         case OP_GET_ATTRIBUTE_NO_POP:
-            return constantInstruction("OP_GET_ATTRIBUTE_NO_POP", chunk, offset);
+            return cachedConstantInstruction("OP_GET_ATTRIBUTE_NO_POP", chunk, offset);
         case OP_GET_PRIVATE_ATTRIBUTE_NO_POP:
             return constantInstruction("OP_GET_PRIVATE_ATTRIBUTE_NO_POP", chunk, offset);
         case OP_SET_ATTRIBUTE:
@@ -225,6 +249,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
 	        return jumpInstruction("OP_COMPARE_JUMP", 1, chunk, offset);
         case OP_JUMP_IF_FALSE:
             return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+        case OP_LESS_JUMP:
+            return jumpInstruction("OP_LESS_JUMP", 1, chunk, offset);
         case OP_JUMP_IF_NIL:
             return jumpInstruction("OP_JUMP_IF_NIL", 1, chunk, offset);
         case OP_LOOP:
@@ -260,7 +286,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
         case OP_INVOKE_INTERNAL:
             return invokeInstruction("OP_INVOKE_INTERNAL", chunk, offset);
         case OP_INVOKE:
-            return invokeInstruction("OP_INVOKE", chunk, offset);
+            return cachedInvokeInstruction("OP_INVOKE", chunk, offset);
         case OP_SUPER:
             return invokeInstruction("OP_SUPER_", chunk, offset);
         case OP_CLOSURE: {

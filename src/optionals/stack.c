@@ -182,7 +182,7 @@ static Value newStackWithSize(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "newWithSize() argument must be a numbers");
+        runtimeError(vm, "newWithSize() argument must be a number");
         return EMPTY_VAL;
     }
 

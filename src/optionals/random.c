@@ -15,7 +15,7 @@ static Value randomRandom(DictuVM *vm, int argCount, Value *args) {
 
 static Value randomRange(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "range() takes 2 arguments (%0d given)", argCount);
+        runtimeError(vm, "range() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

@@ -73,6 +73,7 @@ typedef struct Loop {
     int body;
     int end;
     int scopeDepth;
+    bool fusedCondition;
 } Loop;
 
 typedef struct {
@@ -102,6 +103,7 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
+    int nextCacheSlot;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
     ObjDict *fieldAnnotations;

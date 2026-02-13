@@ -1,0 +1,68 @@
+// Heavy OOP benchmark: many method calls per iteration to amplify cache effects.
+//
+// Exercises inline cache on OP_INVOKE and OP_GET_ATTRIBUTE with deep
+// method call chains (add, scale, dot, lengthSquared, normalize) across
+// 500K iterations. Each iteration performs 5+ method invocations and
+// multiple field accesses, simulating a realistic OOP workload.
+//
+// Run with: ./dictu tests/benchmarks/heavy_oop_bench.du
+
+import System;
+
+class Vec3 {
+    var x = 0;
+    var y = 0;
+    var z = 0;
+
+    init(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    add(other) {
+        return Vec3(this.x + other.x, this.y + other.y, this.z + other.z);
+    }
+
+    scale(s) {
+        return Vec3(this.x * s, this.y * s, this.z * s);
+    }
+
+    dot(other) {
+        return this.x * other.x + this.y * other.y + this.z * other.z;
+    }
+
+    lengthSquared() {
+        return this.dot(this);
+    }
+
+    normalize() {
+        var len = this.lengthSquared();
+        if (len != 0) {
+            return this.scale(1.0 / len);
+        }
+        return this;
+    }
+}
+
+const N = 500000;
+
+var a = Vec3(1, 2, 3);
+var b = Vec3(4, 5, 6);
+var result = Vec3(0, 0, 0);
+
+var start = System.clock();
+
+for (var i = 0; i < N; i += 1) {
+    var c = a.add(b);
+    var d = c.scale(2);
+    var e = d.normalize();
+    var dp = e.dot(a);
+    if (dp != 0) {
+        result = result.add(e);
+    }
+}
+
+var elapsed = System.clock() - start;
+print("Heavy OOP ({}x, 5+ method calls/iter): {}s".format(N, elapsed));
+print("Result: ({}, {}, {})".format(result.x, result.y, result.z));

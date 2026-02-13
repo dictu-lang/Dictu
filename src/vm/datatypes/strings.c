@@ -49,15 +49,15 @@ static Value toNumberString(DictuVM *vm, int argCount, Value *args) {
     if (errno != 0 || *end != '\0') {
         int length = AS_STRING(args[0])->length;
 
-        char *errorMsg = ALLOCATE(vm, char, 29 + length);
-        memcpy(errorMsg, "Can not convert '", 17);
-        memcpy(errorMsg + 17, numberString, length);
-        memcpy(errorMsg + 17 + length, "' to number", 11);
-        errorMsg[28 + length] = '\0';
+        char *errorMsg = ALLOCATE(vm, char, 28 + length);
+        memcpy(errorMsg, "Cannot convert '", 16);
+        memcpy(errorMsg + 16, numberString, length);
+        memcpy(errorMsg + 16 + length, "' to number", 11);
+        errorMsg[27 + length] = '\0';
 
         Value result = newResultError(vm, errorMsg);
 
-        FREE_ARRAY(vm, char, errorMsg, 29 + length);
+        FREE_ARRAY(vm, char, errorMsg, 28 + length);
 
         return result;
     }
@@ -380,7 +380,7 @@ static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
-        runtimeError(vm, "Arguments passed to replace() must be a strings");
+        runtimeError(vm, "Arguments passed to replace() must be strings");
         return EMPTY_VAL;
     }
     // Pop values off the stack

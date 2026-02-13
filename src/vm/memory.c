@@ -132,6 +132,12 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             ObjFunction *function = (ObjFunction *) object;
             grayObject(vm, (Obj *) function->name);
             grayArray(vm, &function->chunk.constants);
+            for (int i = 0; i < function->inlineCacheCount; i++) {
+                if (function->inlineCaches[i].klass != NULL) {
+                    grayObject(vm, (Obj *)function->inlineCaches[i].klass);
+                    grayValue(vm, function->inlineCaches[i].value);
+                }
+            }
             break;
         }
 
@@ -241,6 +247,9 @@ void freeObject(DictuVM *vm, Obj *object) {
                     FREE_ARRAY(vm, int, function->propertyNames, function->propertyCount);
                     FREE_ARRAY(vm, int, function->propertyIndexes, function->propertyCount);
                 }
+            }
+            if (function->inlineCacheCount > 0) {
+                FREE_ARRAY(vm, InlineCacheEntry, function->inlineCaches, function->inlineCacheCount);
             }
             freeChunk(vm, &function->chunk);
             FREE(vm, ObjFunction, object);

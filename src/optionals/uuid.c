@@ -11,7 +11,7 @@ static Value uuidGenerateNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "generate() doesn't take any arguments (%d given)).", argCount);
+        runtimeError(vm, "generate() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -33,7 +33,7 @@ static Value uuidGenRandomNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "generateRandom() doesn't take any arguments (%d given)).", argCount);
+        runtimeError(vm, "generateRandom() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -55,7 +55,7 @@ static Value uuidGenTimeNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "generateTime() doesn't take any arguments (%d given)).", argCount);
+        runtimeError(vm, "generateTime() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

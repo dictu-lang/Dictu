@@ -1090,6 +1090,14 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(INCREMENT_LOCAL): {
+            uint8_t slot = READ_BYTE();
+            Value incremented = NUMBER_VAL(AS_NUMBER(frame->slots[slot]) + 1);
+            frame->slots[slot] = incremented;
+            push(vm, incremented);
+            DISPATCH();
+        }
+
         CASE_CODE(GET_GLOBAL): {
             ObjString *name = READ_STRING();
             Value value;
@@ -1172,6 +1180,8 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
         CASE_CODE(GET_ATTRIBUTE): {
             Value receiver = peek(vm, 0);
+            ObjString *name = READ_STRING();
+            uint8_t cacheSlot = READ_BYTE();
 
             if (!IS_OBJ(receiver)) {
                 RUNTIME_ERROR_TYPE("'%s' type has no attributes", 0);
@@ -1180,7 +1190,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(receiver)) {
                 case OBJ_INSTANCE: {
                     ObjInstance *instance = AS_INSTANCE(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&instance->publicAttributes, name, &value)) {
                         pop(vm); // Instance.
@@ -1188,7 +1197,26 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    if (bindMethod(vm, instance->klass, name)) {
+                    // Inline cache fast path for method lookup.
+                    ObjClass *instanceKlass = instance->klass;
+                    InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+                    if (cache->klass == instanceKlass) {
+                        // Cache hit: create bound method directly.
+                        ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(cache->value));
+                        pop(vm); // Instance.
+                        push(vm, OBJ_VAL(bound));
+                        DISPATCH();
+                    }
+
+                    // Cache miss: try publicMethods, populate cache on success.
+                    Value method;
+                    if (tableGet(&instanceKlass->publicMethods, name, &method)) {
+                        cache->klass = instanceKlass;
+                        cache->value = method;
+                        ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(method));
+                        pop(vm); // Instance.
+                        push(vm, OBJ_VAL(bound));
                         DISPATCH();
                     }
 
@@ -1196,15 +1224,16 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                     ObjClass *klass = instance->klass;
 
                     while (klass != NULL) {
-                        if (tableGet(&klass->constants, name, &value)) {
+                        Value value2;
+                        if (tableGet(&klass->constants, name, &value2)) {
                             pop(vm); // Instance.
-                            push(vm, value);
+                            push(vm, value2);
                             DISPATCH();
                         }
 
-                        if (tableGet(&klass->variables, name, &value)) {
+                        if (tableGet(&klass->variables, name, &value2)) {
                             pop(vm); // Instance.
-                            push(vm, value);
+                            push(vm, value2);
                             DISPATCH();
                         }
 
@@ -1220,7 +1249,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_MODULE: {
                     ObjModule *module = AS_MODULE(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&module->values, name, &value)) {
                         pop(vm); // Module.
@@ -1233,21 +1261,19 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_ABSTRACT: {
                     ObjAbstract *abstract = AS_ABSTRACT(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&abstract->values, name, &value)) {
                         pop(vm); // Abstract.
                         push(vm, value);
                         DISPATCH();
                     }
-                    RUNTIME_ERROR("'no attribute: '%s'.",name->chars);
+                    RUNTIME_ERROR("Undefined attribute '%s'.", name->chars);
                 }
 
                 case OBJ_CLASS: {
                     ObjClass *klass = AS_CLASS(receiver);
                     // Used to keep a reference to the class for the runtime error below
                     ObjClass *klassStore = klass;
-                    ObjString *name = READ_STRING();
 
                     Value value;
                     while (klass != NULL) {
@@ -1271,7 +1297,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
                         DISPATCH();
                     }
-                    
+
                     if (strcmp(name->chars, "methodAnnotations") == 0) {
                         pop(vm); // Klass
                         push(vm, klassStore->methodAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->methodAnnotations));
@@ -1289,7 +1315,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_ENUM: {
                     ObjEnum *enumObj = AS_ENUM(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
 
                     if (tableGet(&enumObj->values, name, &value)) {
@@ -1308,9 +1333,10 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(GET_PRIVATE_ATTRIBUTE): {
+            ObjString *name = READ_STRING();
+
             if (IS_INSTANCE(peek(vm, 0))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-                ObjString *name = READ_STRING();
                 Value value;
                 if (tableGet(&instance->privateAttributes, name, &value)) {
                     pop(vm); // Instance.
@@ -1352,7 +1378,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
                 ObjClass *klassStore = klass;
-                ObjString *name = READ_STRING();
 
                 Value value;
                 while (klass != NULL) {
@@ -1378,19 +1403,38 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(GET_ATTRIBUTE_NO_POP): {
+            ObjString *name = READ_STRING();
+            uint8_t cacheSlot = READ_BYTE();
+
             if (!IS_INSTANCE(peek(vm, 0))) {
-                RUNTIME_ERROR("Only instances have attrributes.");
+                RUNTIME_ERROR("Only instances have attributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
             Value value;
             if (tableGet(&instance->publicAttributes, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
 
-            if (bindMethod(vm, instance->klass, name)) {
+            // Inline cache fast path for method lookup.
+            ObjClass *instanceKlass = instance->klass;
+            InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+            if (cache->klass == instanceKlass) {
+                // Cache hit: create bound method, keep instance on stack.
+                ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(cache->value));
+                push(vm, OBJ_VAL(bound));
+                DISPATCH();
+            }
+
+            // Cache miss: try publicMethods, populate cache on success.
+            Value method;
+            if (tableGet(&instanceKlass->publicMethods, name, &method)) {
+                cache->klass = instanceKlass;
+                cache->value = method;
+                ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(method));
+                push(vm, OBJ_VAL(bound));
                 DISPATCH();
             }
 
@@ -1415,16 +1459,17 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
             }
 
-            RUNTIME_ERROR("'%s' instance has no attribute2: '%s'.", instance->klass->name->chars, name->chars);
+            RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars);
         }
 
         CASE_CODE(GET_PRIVATE_ATTRIBUTE_NO_POP): {
+            ObjString *name = READ_STRING();
+
             if (!IS_INSTANCE(peek(vm, 0))) {
                 RUNTIME_ERROR("Only instances have attributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
             Value value;
             if (tableGet(&instance->privateAttributes, name, &value)) {
                 push(vm, value);
@@ -1484,7 +1529,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 DISPATCH();
             }
 
-            RUNTIME_ERROR_TYPE("Can not set attribute on type '%s'", 1);
+            RUNTIME_ERROR_TYPE("Cannot set attribute on type '%s'", 1);
         }
 
         CASE_CODE(SET_PRIVATE_ATTRIBUTE): {
@@ -1566,39 +1611,47 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(GREATER): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(peek(vm, 0));
+                vm->stackTop[-1] = BOOL_VAL(a > b);
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
                 // Use variables here as function argument evaluation order is unspecified
                 Value first = pop(vm);
                 Value second = pop(vm);
 
                 push(vm, BOOL_VAL(compareStringGreater(first, second)));
             } else {
-                BINARY_OP(BOOL_VAL, >, double);
+                UNSUPPORTED_OPERAND_TYPE_ERROR(>);
             }
 
             DISPATCH();
         }
 
         CASE_CODE(LESS): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(peek(vm, 0));
+                vm->stackTop[-1] = BOOL_VAL(a < b);
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
                 Value first = pop(vm);
                 Value second = pop(vm);
 
                 push(vm, BOOL_VAL(compareStringLess(first, second)));
             } else {
-                BINARY_OP(BOOL_VAL, <, double);
+                UNSUPPORTED_OPERAND_TYPE_ERROR(<);
             }
 
             DISPATCH();
         }
 
         CASE_CODE(ADD): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                concatenate(vm);
-            } else if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
                 double b = AS_NUMBER(pop(vm));
                 double a = AS_NUMBER(pop(vm));
                 push(vm, NUMBER_VAL(a + b));
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                concatenate(vm);
             } else if (IS_LIST(peek(vm, 0)) && IS_LIST(peek(vm, 1))) {
                 ObjList *listOne = AS_LIST(peek(vm, 1));
                 ObjList *listTwo = AS_LIST(peek(vm, 0));
@@ -1722,6 +1775,16 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(LESS_JUMP): {
+            uint16_t offset = READ_SHORT();
+            Value b = pop(vm);
+            Value a = pop(vm);
+            if (!IS_NUMBER(a) || !IS_NUMBER(b) || AS_NUMBER(a) >= AS_NUMBER(b)) {
+                ip += offset;
+            }
+            DISPATCH();
+        }
+
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
@@ -1829,7 +1892,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 module = AS_MODULE(moduleVal);
             } else {
-                RUNTIME_ERROR("ERROR!!");
+                RUNTIME_ERROR("Unknown module '%s'.", fileName->chars);
             }
 
             for (int i = 0; i < varCount; i++) {
@@ -2246,7 +2309,42 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             bool unpack = READ_BYTE();
+            uint8_t cacheSlot = READ_BYTE();
 
+            // Inline cache fast path for instance method calls.
+            Value receiver = peek(vm, argCount);
+            if (IS_INSTANCE(receiver) && !unpack) {
+                ObjInstance *instance = AS_INSTANCE(receiver);
+                ObjClass *klass = instance->klass;
+                InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+                if (cache->klass == klass) {
+                    // Cache hit: skip tableGet, call directly.
+                    frame->ip = ip;
+                    if (!call(vm, AS_CLOSURE(cache->value), argCount)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    frame = &vm->frames[vm->frameCount - 1];
+                    ip = frame->ip;
+                    DISPATCH();
+                }
+
+                // Cache miss: try publicMethods, populate cache on success.
+                Value value;
+                if (tableGet(&klass->publicMethods, method, &value)) {
+                    cache->klass = klass;
+                    cache->value = value;
+                    frame->ip = ip;
+                    if (!call(vm, AS_CLOSURE(value), argCount)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    frame = &vm->frames[vm->frameCount - 1];
+                    ip = frame->ip;
+                    DISPATCH();
+                }
+            }
+
+            // Slow path: full invoke() for non-instance, unpack, or non-method cases.
             frame->ip = ip;
             if (!invoke(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
@@ -2356,7 +2454,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             }
 
             if (IS_TRAIT(superclass)) {
-                RUNTIME_ERROR("Superclass can not be a trait.");
+                RUNTIME_ERROR("Superclass cannot be a trait.");
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);

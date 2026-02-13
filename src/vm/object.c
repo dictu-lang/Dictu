@@ -117,6 +117,8 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
     function->privatePropertyIndexes = NULL;
     function->propertyNames = NULL;
     function->name = NULL;
+    function->inlineCacheCount = 0;
+    function->inlineCaches = NULL;
     function->type = type;
     function->accessLevel = level;
     function->module = module;

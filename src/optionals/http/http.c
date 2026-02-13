@@ -1019,7 +1019,7 @@ static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[1])) {
-        runtimeError(vm, "headers value must be a ist");
+        runtimeError(vm, "headers value must be a list");
         return EMPTY_VAL;
     }
 

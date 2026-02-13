@@ -13,7 +13,7 @@ static Value getgidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getgid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getgid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -24,7 +24,7 @@ static Value getegidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getegid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getegid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -35,7 +35,7 @@ static Value getuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getuid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getuid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -46,7 +46,7 @@ static Value geteuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "geteuid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "geteuid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -57,7 +57,7 @@ static Value getppidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getppid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getppid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -68,7 +68,7 @@ static Value getpidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getpid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getpid() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -106,7 +106,7 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "uname() doesn't take any arguments (%d given)).", argCount);
+        runtimeError(vm, "uname() doesn't take any arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -502,7 +502,7 @@ static Value renameNative(DictuVM *vm, int argCount, Value *args) {
     char *new = AS_CSTRING(args[1]);
 
     if (rename(old, new) != 0) {
-        return newResultError(vm, "failed to reaneme file");
+        return newResultError(vm, "Failed to rename file");
     }
 
     return newResultSuccess(vm, NIL_VAL);

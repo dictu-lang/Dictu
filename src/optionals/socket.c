@@ -42,7 +42,7 @@ static Value createSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
-        runtimeError(vm, "create() arguments must be a numbers");
+        runtimeError(vm, "create() arguments must be numbers");
         return EMPTY_VAL;
     }
 
@@ -223,12 +223,12 @@ static Value connectSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "host passed to bind() must be a string");
+        runtimeError(vm, "host passed to connect() must be a string");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "port passed to bind() must be a number");
+        runtimeError(vm, "port passed to connect() must be a number");
         return EMPTY_VAL;
     }
 

@@ -2,7 +2,7 @@
 
 static Value getLine(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "getLine() takes takes 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "getLine() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -36,7 +36,7 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
 
 static Value getFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "getFile() takes takes 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "getFile() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -71,7 +71,7 @@ static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getFrameCount() takes takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "getFrameCount() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

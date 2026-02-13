@@ -120,7 +120,7 @@ static Value logObjSetPrefix(DictuVM *vm, int argCount, Value *args) {
 
 static Value logObjUnsetPrefix(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "unsetPrefix() takes 0 argument (%d given)", argCount);
+        runtimeError(vm, "unsetPrefix() takes 0 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

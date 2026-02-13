@@ -127,7 +127,7 @@ static Value bufferString(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint8(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, "writeInt8() takes 2 argument");
+        runtimeError(vm, "writeInt8() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -157,8 +157,8 @@ static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt16BE() takes 2 argument"
-                             : "writeUInt16LE() takes 2 argument");
+                             ? "writeUInt16BE() takes 2 arguments"
+                             : "writeUInt16LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -193,8 +193,8 @@ static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt32BE() takes 2 argument"
-                             : "writeUInt32LE() takes 2 argument");
+                             ? "writeUInt32BE() takes 2 arguments"
+                             : "writeUInt32LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -228,8 +228,8 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt64BE() takes 2 argument"
-                             : "writeUInt64LE() takes 2 argument");
+                             ? "writeUInt64BE() takes 2 arguments"
+                             : "writeUInt64LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -262,8 +262,8 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt64BE() takes 2 argument"
-                                           : "writeInt64LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt64BE() takes 2 arguments"
+                                           : "writeInt64LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -295,8 +295,8 @@ static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt32BE() takes 2 argument"
-                                           : "writeInt32LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt32BE() takes 2 arguments"
+                                           : "writeInt32LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -329,8 +329,8 @@ static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt16BE() takes 2 argument"
-                                           : "writeInt16LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt16BE() takes 2 arguments"
+                                           : "writeInt16LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -363,8 +363,8 @@ static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeFloatBE() takes 2 argument"
-                                           : "writeFloatLE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeFloatBE() takes 2 arguments"
+                                           : "writeFloatLE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -398,8 +398,8 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeDoubleBE() takes 2 argument"
-                             : "writeDoubleLE() takes 2 argument");
+                             ? "writeDoubleBE() takes 2 arguments"
+                             : "writeDoubleLE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
@@ -771,7 +771,7 @@ static Value bufferGet(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "set() takes 2 argument (%d given).", argCount);
+        runtimeError(vm, "set() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -802,7 +802,7 @@ static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "writeString() takes 2 argument (%d given).",
+        runtimeError(vm, "writeString() takes 2 arguments (%d given)",
                      argCount);
         return EMPTY_VAL;
     }
@@ -997,7 +997,7 @@ static Value newBuffer(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "new() argument must be a numbers");
+        runtimeError(vm, "new() argument must be a number");
         return EMPTY_VAL;
     }
 

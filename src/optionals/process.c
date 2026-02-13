@@ -103,7 +103,7 @@ static Value executeReturnOutput(DictuVM* vm, ObjList* argList) {
         NULL, &StartupInfo, &ProcessInfo))
     {
         FREE_ARRAY(vm, char, args, len);
-        return newResultError(vm, "Unable to start process2");
+        return newResultError(vm, "Unable to start process");
     }
 
     WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
