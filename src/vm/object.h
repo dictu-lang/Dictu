@@ -117,6 +117,7 @@ typedef struct {
     int privatePropertyCount;
     int *privatePropertyNames;
     int *privatePropertyIndexes;
+    int maxStackDepth;
 } ObjFunction;
 
 typedef Value (*NativeFn)(DictuVM *vm, int argCount, Value *args);

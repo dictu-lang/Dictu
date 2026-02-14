@@ -120,6 +120,7 @@ ObjFunction *newFunction(DictuVM *vm, ObjModule *module, FunctionType type, Acce
     function->type = type;
     function->accessLevel = level;
     function->module = module;
+    function->maxStackDepth = 0;
     initChunk(vm, &function->chunk);
 
     return function;

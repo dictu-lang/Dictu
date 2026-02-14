@@ -287,9 +287,10 @@ typedef struct {
     int privatePropertyCount;
     int *privatePropertyNames;
     int *privatePropertyIndexes;
+    int maxStackDepth;
 } ObjFunction;
 
-#define STACK_MAX (64 * UINT8_COUNT)
+#define STACK_INITIAL (64 * UINT8_COUNT)
 typedef struct {
     Obj obj;
     ObjFunction *function;
@@ -305,8 +306,9 @@ typedef struct {
 
 struct _vm {
     void* _compilerStub;
-    Value stack[STACK_MAX];
+    Value *stack;
     Value *stackTop;
+    int stackCapacity;
     bool repl;
     CallFrame *frames;
     int frameCount;

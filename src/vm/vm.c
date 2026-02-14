@@ -36,6 +36,30 @@ static void resetStack(DictuVM *vm) {
     vm->compiler = NULL;
 }
 
+static void growStack(DictuVM *vm, int needed) {
+    Value *oldStack = vm->stack;
+
+    while (vm->stackCapacity < needed)
+        vm->stackCapacity *= 2;
+
+    vm->stack = realloc(vm->stack, sizeof(Value) * vm->stackCapacity);
+    if (vm->stack == NULL) {
+        fprintf(stderr, "Unable to grow stack\n");
+        exit(71);
+    }
+
+    ptrdiff_t delta = vm->stack - oldStack;
+    if (delta == 0) return;
+
+    vm->stackTop += delta;
+
+    for (int i = 0; i < vm->frameCount; i++)
+        vm->frames[i].slots += delta;
+
+    for (ObjUpvalue *uv = vm->openUpvalues; uv != NULL; uv = uv->next)
+        uv->value += delta;
+}
+
 #define HANDLE_UNPACK                                                               \
     if (unpack) {                                                                   \
         if (!IS_LIST(peek(vm, 0))) {                                                \
@@ -97,6 +121,13 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     }
 
     memset(vm, '\0', sizeof(DictuVM));
+
+    vm->stack = malloc(sizeof(Value) * STACK_INITIAL);
+    if (vm->stack == NULL) {
+        printf("Unable to allocate stack\n");
+        exit(71);
+    }
+    vm->stackCapacity = STACK_INITIAL;
 
     resetStack(vm);
     vm->objects = NULL;
@@ -184,6 +215,7 @@ void dictuFreeVM(DictuVM *vm) {
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
+    free(vm->stack);
 
 #if defined(DEBUG_TRACE_MEM) || defined(DEBUG_FINAL_MEM)
 #ifdef __MINGW32__
@@ -284,6 +316,10 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
     frame->ip = closure->function->chunk.code;
 
     frame->slots = vm->stackTop - argCount - 1;
+
+    int needed = (int)(vm->stackTop - vm->stack) + closure->function->maxStackDepth;
+    if (needed > vm->stackCapacity)
+        growStack(vm, needed);
 
     return true;
 }

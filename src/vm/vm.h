@@ -6,8 +6,7 @@
 #include "value.h"
 #include "compiler.h"
 
-// TODO: Work out the maximum stack size at compilation time
-#define STACK_MAX (64 * UINT8_COUNT)
+#define STACK_INITIAL (64 * UINT8_COUNT)
 
 typedef struct {
     ObjClosure *closure;
@@ -17,8 +16,9 @@ typedef struct {
 
 struct _vm {
     Compiler *compiler;
-    Value stack[STACK_MAX];
+    Value *stack;
     Value *stackTop;
+    int stackCapacity;
     bool repl;
     CallFrame *frames;
     int frameCount;

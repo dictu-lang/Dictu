@@ -86,6 +86,12 @@ static bool match(Compiler *compiler, LangTokenType type) {
     return true;
 }
 
+static void trackStack(Compiler *compiler, int effect) {
+    compiler->stackDepth += effect;
+    if (compiler->stackDepth > compiler->maxStackDepth)
+        compiler->maxStackDepth = compiler->stackDepth;
+}
+
 static void emitByte(Compiler *compiler, uint8_t byte) {
     writeChunk(compiler->parser->vm, currentChunk(compiler), byte, compiler->parser->previous.line);
 }
@@ -122,6 +128,7 @@ static void emitReturn(Compiler *compiler) {
     } else {
         emitByte(compiler, OP_NIL);
     }
+    trackStack(compiler, 1);
 
     emitByte(compiler, OP_RETURN);
 }
@@ -174,6 +181,8 @@ static void initCompiler(Parser *parser, Compiler *compiler, Compiler *parent, F
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
+    compiler->stackDepth = 0;
+    compiler->maxStackDepth = 0;
 
     parser->vm->compiler = compiler;
 
@@ -225,6 +234,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
     emitReturn(compiler);
 
     ObjFunction *function = compiler->function;
+    function->maxStackDepth = compiler->maxStackDepth;
 #ifdef DEBUG_PRINT_CODE
     if (!compiler->parser->hadError) {
 
@@ -243,6 +253,7 @@ static ObjFunction *endCompiler(Compiler *compiler) {
             emitByte(compiler->enclosing, compiler->upvalues[i].isLocal ? 1 : 0);
             emitByte(compiler->enclosing, compiler->upvalues[i].index);
         }
+        trackStack(compiler->enclosing, 1);
     }
 
     freeTable(compiler->parser->vm, &compiler->stringConstants);
@@ -263,8 +274,10 @@ static void endScope(Compiler *compiler) {
 
         if (compiler->locals[compiler->localCount - 1].isUpvalue) {
             emitByte(compiler, OP_CLOSE_UPVALUE);
+            trackStack(compiler, -1);
         } else {
             emitByte(compiler, OP_POP);
+            trackStack(compiler, -1);
         }
         compiler->localCount--;
     }
@@ -449,6 +462,7 @@ static void defineVariable(Compiler *compiler, uint8_t global, bool constant) {
         }
 
         emitBytes(compiler, OP_DEFINE_MODULE, global);
+        trackStack(compiler, -1);
     } else {
         // Mark the local as defined now.
         compiler->locals[compiler->localCount - 1].depth = compiler->scopeDepth;
@@ -499,6 +513,7 @@ static void and_(Compiler *compiler, LangToken previousToken, bool canAssign) {
 
     // Compile the right operand.
     emitByte(compiler, OP_POP); // Left operand.
+    trackStack(compiler, -1);
     parsePrecedence(compiler, PREC_AND);
 
     patchJump(compiler, endJump);
@@ -593,54 +608,70 @@ static void binary(Compiler *compiler, LangToken previousToken, bool canAssign) 
         (currentToken == TOKEN_NUMBER || currentToken == TOKEN_LEFT_PAREN) &&
         foldBinary(compiler, operatorType)
             ) {
+        trackStack(compiler, -1);
         return;
     }
 
     switch (operatorType) {
         case TOKEN_BANG_EQUAL:
             emitBytes(compiler, OP_EQUAL, OP_NOT);
+            trackStack(compiler, -1);
             break;
         case TOKEN_EQUAL_EQUAL:
             emitByte(compiler, OP_EQUAL);
+            trackStack(compiler, -1);
             break;
         case TOKEN_GREATER:
             emitByte(compiler, OP_GREATER);
+            trackStack(compiler, -1);
             break;
         case TOKEN_GREATER_EQUAL:
             emitBytes(compiler, OP_LESS, OP_NOT);
+            trackStack(compiler, -1);
             break;
         case TOKEN_LESS:
             emitByte(compiler, OP_LESS);
+            trackStack(compiler, -1);
             break;
         case TOKEN_LESS_EQUAL:
             emitBytes(compiler, OP_GREATER, OP_NOT);
+            trackStack(compiler, -1);
             break;
         case TOKEN_PLUS:
             emitByte(compiler, OP_ADD);
+            trackStack(compiler, -1);
             break;
         case TOKEN_MINUS:
             emitByte(compiler, OP_SUBTRACT);
+            trackStack(compiler, -1);
             break;
         case TOKEN_STAR:
             emitByte(compiler, OP_MULTIPLY);
+            trackStack(compiler, -1);
             break;
         case TOKEN_STAR_STAR:
             emitByte(compiler, OP_POW);
+            trackStack(compiler, -1);
             break;
         case TOKEN_SLASH:
             emitByte(compiler, OP_DIVIDE);
+            trackStack(compiler, -1);
             break;
         case TOKEN_PERCENT:
             emitByte(compiler, OP_MOD);
+            trackStack(compiler, -1);
             break;
         case TOKEN_AMPERSAND:
             emitByte(compiler, OP_BITWISE_AND);
+            trackStack(compiler, -1);
             break;
         case TOKEN_CARET:
             emitByte(compiler, OP_BITWISE_XOR);
+            trackStack(compiler, -1);
             break;
         case TOKEN_PIPE:
             emitByte(compiler, OP_BITWISE_OR);
+            trackStack(compiler, -1);
             break;
         default:
             return;
@@ -655,6 +686,7 @@ static void ternary(Compiler *compiler, LangToken previousToken, bool canAssign)
 
     // Compile the then branch.
     emitByte(compiler, OP_POP); // Condition.
+    trackStack(compiler, -1);
     expression(compiler);
 
     // Jump over the else branch when the if branch is taken.
@@ -663,6 +695,7 @@ static void ternary(Compiler *compiler, LangToken previousToken, bool canAssign)
     // Compile the else branch.
     patchJump(compiler, elseJump);
     emitByte(compiler, OP_POP); // Condition.
+    trackStack(compiler, -1);
 
     consume(compiler, TOKEN_COLON, "Expected colon after ternary expression");
     expression(compiler);
@@ -679,6 +712,7 @@ static void call(Compiler *compiler, LangToken previousToken, bool canAssign) {
 
     emitBytes(compiler, OP_CALL, argCount);
     emitByte(compiler, unpack);
+    trackStack(compiler, -argCount);
 }
 
 static bool privatePropertyExists(LangToken name, Compiler *compiler) {
@@ -707,6 +741,7 @@ static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
         }
 
         emitBytes(compiler, name, unpack);
+        trackStack(compiler, -argCount);
         return;
     }
 
@@ -715,41 +750,63 @@ static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
         if (canAssign && match(compiler, TOKEN_EQUAL)) {
             expression(compiler);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_ADD);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE, name);
         }
@@ -757,41 +814,63 @@ static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
         if (canAssign && match(compiler, TOKEN_EQUAL)) {
             expression(compiler);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_ADD);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
+            trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
+            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
+            trackStack(compiler, -2);
         } else {
             emitBytes(compiler, OP_GET_ATTRIBUTE, name);
         }
@@ -813,12 +892,15 @@ static void literal(Compiler *compiler, bool canAssign) {
     switch (compiler->parser->previous.type) {
         case TOKEN_FALSE:
             emitByte(compiler, OP_FALSE);
+            trackStack(compiler, 1);
             break;
         case TOKEN_NIL:
             emitByte(compiler, OP_NIL);
+            trackStack(compiler, 1);
             break;
         case TOKEN_TRUE:
             emitByte(compiler, OP_TRUE);
+            trackStack(compiler, 1);
             break;
         default:
             return; // Unreachable.
@@ -924,6 +1006,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             }
 
             emitBytes(fnCompiler, OP_SET_INIT_ATTRIBUTES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+            trackStack(fnCompiler, -1);
         }
 
         if (fnCompiler->function->privatePropertyCount > 0) {
@@ -939,6 +1022,7 @@ static void beginFunction(Compiler *compiler, Compiler *fnCompiler, FunctionType
             }
 
             emitBytes(fnCompiler, OP_SET_PRIVATE_INIT_ATTRIBUTES, makeConstant(fnCompiler, OBJ_VAL(fnCompiler->function)));
+            trackStack(fnCompiler, -1);
         }
     }
 
@@ -1003,6 +1087,7 @@ static Value parseNumber(Compiler *compiler, bool canAssign) {
 
 static void number(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, parseNumber(compiler, canAssign));
+    trackStack(compiler, 1);
 }
 
 static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
@@ -1028,6 +1113,7 @@ static void or_(Compiler *compiler, LangToken previousToken, bool canAssign) {
     // Compile the right operand.
     patchJump(compiler, elseJump);
     emitByte(compiler, OP_POP); // Left operand.
+    trackStack(compiler, -1);
 
     parsePrecedence(compiler, PREC_OR);
     patchJump(compiler, endJump);
@@ -1102,6 +1188,7 @@ static void rString(Compiler *compiler, bool canAssign) {
         Parser *parser = compiler->parser;
         emitConstant(compiler, OBJ_VAL(copyString(parser->vm, parser->previous.start + 1,
                                                   parser->previous.length - 2)));
+        trackStack(compiler, 1);
 
         return;
     }
@@ -1131,6 +1218,7 @@ static Value parseString(Compiler *compiler, bool canAssign) {
 
 static void string(Compiler *compiler, bool canAssign) {
     emitConstant(compiler, parseString(compiler, canAssign));
+    trackStack(compiler, 1);
 }
 
 static void list(Compiler *compiler, bool canAssign) {
@@ -1147,6 +1235,7 @@ static void list(Compiler *compiler, bool canAssign) {
     } while (match(compiler, TOKEN_COMMA));
 
     emitBytes(compiler, OP_NEW_LIST, count);
+    trackStack(compiler, -count + 1);
     consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
 }
 
@@ -1166,6 +1255,7 @@ static void dict(Compiler *compiler, bool canAssign) {
     } while (match(compiler, TOKEN_COMMA));
 
     emitBytes(compiler, OP_NEW_DICT, count);
+    trackStack(compiler, -count * 2 + 1);
 
     consume(compiler, TOKEN_RIGHT_BRACE, "Expected closing '}'");
 }
@@ -1175,8 +1265,10 @@ static void subscript(Compiler *compiler, LangToken previousToken, bool canAssig
     // slice with no initial index [1, 2, 3][:100]
     if (match(compiler, TOKEN_COLON)) {
         emitByte(compiler, OP_EMPTY);
+        trackStack(compiler, 1);
         expression(compiler);
         emitByte(compiler, OP_SLICE);
+        trackStack(compiler, -2);
         consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         return;
     }
@@ -1189,10 +1281,12 @@ static void subscript(Compiler *compiler, LangToken previousToken, bool canAssig
         // i.e [1, 2, 3][1:]
         if (check(compiler, TOKEN_RIGHT_BRACKET)) {
             emitByte(compiler, OP_EMPTY);
+            trackStack(compiler, 1);
         } else {
             expression(compiler);
         }
         emitByte(compiler, OP_SLICE);
+        trackStack(compiler, -2);
         consume(compiler, TOKEN_RIGHT_BRACKET, "Expected closing ']'");
         return;
     }
@@ -1202,36 +1296,52 @@ static void subscript(Compiler *compiler, LangToken previousToken, bool canAssig
     if (canAssign && match(compiler, TOKEN_EQUAL)) {
         expression(compiler);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_ADD);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_SUBTRACT);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_MULTIPLY);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_DIVIDE);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_AND);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_XOR);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_OR);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
+        trackStack(compiler, -2);
     } else {
         emitByte(compiler, OP_SUBSCRIPT);
+        trackStack(compiler, -1);
     }
 }
 
@@ -1280,50 +1390,66 @@ static void namedVariable(Compiler *compiler, LangToken name, bool canAssign) {
         checkConst(compiler, setOp, arg);
         expression(compiler);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_ADD);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_SUBTRACT);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_MULTIPLY);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_DIVIDE);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_AND);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_XOR);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_OR);
+        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
     } else {
         emitBytes(compiler, getOp, (uint8_t) arg);
+        trackStack(compiler, 1);
     }
 }
 
@@ -1366,6 +1492,7 @@ static void super_(Compiler *compiler, bool canAssign) {
         pushSuperclass(compiler);
         emitBytes(compiler, OP_SUPER, argCount);
         emitBytes(compiler, name, unpack);
+        trackStack(compiler, -argCount);
     } else {
         pushSuperclass(compiler);
         emitBytes(compiler, OP_GET_SUPER, name);
@@ -1671,6 +1798,7 @@ static void method(Compiler *compiler, bool private, LangToken *identifier, bool
     }
 
     emitBytes(compiler, OP_METHOD, constant);
+    trackStack(compiler, -1);
 }
 
 static void setupClassCompiler(Compiler *compiler, ClassCompiler *classCompiler, bool abstract) {
@@ -1936,6 +2064,7 @@ static void parseClassBody(Compiler *compiler) {
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
             emitByte(compiler, false);
+            trackStack(compiler, -1);
 
             if (hasAnnotation) {
                 DictuVM *vm = compiler->parser->vm;
@@ -1957,6 +2086,7 @@ static void parseClassBody(Compiler *compiler) {
             expression(compiler);
             emitBytes(compiler, OP_SET_CLASS_VAR, name);
             emitByte(compiler, true);
+            trackStack(compiler, -1);
 
             if (hasAnnotation) {
                 DictuVM *vm = compiler->parser->vm;
@@ -2023,8 +2153,10 @@ static void classDeclaration(Compiler *compiler) {
         addLocal(compiler, syntheticToken("super"));
 
         emitBytes(compiler, OP_SUBCLASS, CLASS_DEFAULT);
+        trackStack(compiler, 1);
     } else {
         emitBytes(compiler, OP_CLASS, CLASS_DEFAULT);
+        trackStack(compiler, 1);
     }
     emitByte(compiler, nameConstant);
 
@@ -2065,8 +2197,10 @@ static void abstractClassDeclaration(Compiler *compiler) {
         addLocal(compiler, syntheticToken("super"));
 
         emitBytes(compiler, OP_SUBCLASS, CLASS_ABSTRACT);
+        trackStack(compiler, 1);
     } else {
         emitBytes(compiler, OP_CLASS, CLASS_ABSTRACT);
+        trackStack(compiler, 1);
     }
     emitByte(compiler, nameConstant);
 
@@ -2093,6 +2227,7 @@ static void traitDeclaration(Compiler *compiler) {
     setupClassCompiler(compiler, &classCompiler, false);
 
     emitBytes(compiler, OP_CLASS, CLASS_TRAIT);
+    trackStack(compiler, 1);
     emitByte(compiler, nameConstant);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before trait body.");
@@ -2112,6 +2247,7 @@ static void enumDeclaration(Compiler *compiler) {
     declareVariable(compiler, &compiler->parser->previous);
 
     emitBytes(compiler, OP_ENUM, nameConstant);
+    trackStack(compiler, 1);
 
     consume(compiler, TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
 
@@ -2129,9 +2265,11 @@ static void enumDeclaration(Compiler *compiler) {
             expression(compiler);
         } else {
             emitConstant(compiler, NUMBER_VAL(index));
+            trackStack(compiler, 1);
         }
 
         emitBytes(compiler, OP_SET_ENUM_VALUE, name);
+        trackStack(compiler, -1);
         index++;
     } while (match(compiler, TOKEN_COMMA));
 
@@ -2162,6 +2300,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
         expression(compiler);
 
         emitBytes(compiler, OP_UNPACK_LIST, varCount);
+        trackStack(compiler, -1 + varCount);
 
         if (compiler->scopeDepth == 0) {
             for (int i = varCount - 1; i >= 0; --i) {
@@ -2184,6 +2323,7 @@ static void varDeclaration(Compiler *compiler, bool constant) {
             } else {
                 // Default to nil.
                 emitByte(compiler, OP_NIL);
+                trackStack(compiler, 1);
             }
 
             defineVariable(compiler, global, constant);
@@ -2208,8 +2348,10 @@ static void expressionStatement(Compiler *compiler) {
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after expression.");
     if (compiler->parser->vm->repl && t != TOKEN_EQUAL && compiler->type == TYPE_TOP_LEVEL) {
         emitByte(compiler, OP_POP_REPL);
+        trackStack(compiler, -1);
     } else {
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
     }
 }
 
@@ -2324,6 +2466,7 @@ static void endLoop(Compiler *compiler) {
     if (compiler->loop->end != -1) {
         patchJump(compiler, compiler->loop->end);
         emitByte(compiler, OP_POP); // Condition.
+        trackStack(compiler, -1);
     }
 
     int i = compiler->loop->body;
@@ -2384,6 +2527,7 @@ static void forStatement(Compiler *compiler) {
         // Jump out of the loop if the condition is false.
         compiler->loop->end = emitJump(compiler, OP_JUMP_IF_FALSE);
         emitByte(compiler, OP_POP); // Condition.
+        trackStack(compiler, -1);
     }
 
     // Increment step.
@@ -2395,6 +2539,7 @@ static void forStatement(Compiler *compiler) {
         int incrementStart = currentChunk(compiler)->count;
         expression(compiler);
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
         consume(compiler, TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
         emitLoop(compiler, compiler->loop->start);
@@ -2429,10 +2574,12 @@ static void breakStatement(Compiler *compiler) {
         if(compiler->locals[i].isUpvalue)
         {
             emitByte(compiler, OP_CLOSE_UPVALUE);
+            trackStack(compiler, -1);
         }
         else
         {
             emitByte(compiler, OP_POP);
+            trackStack(compiler, -1);
         }
     }
 
@@ -2453,10 +2600,12 @@ static void continueStatement(Compiler *compiler) {
         if(compiler->locals[i].isUpvalue)
         {
             emitByte(compiler, OP_CLOSE_UPVALUE);
+            trackStack(compiler, -1);
         }
         else
         {
             emitByte(compiler, OP_POP);
+            trackStack(compiler, -1);
         }
     }
 
@@ -2473,6 +2622,7 @@ static void ifStatement(Compiler *compiler) {
 
     // Compile the then branch.
     emitByte(compiler, OP_POP); // Condition.
+    trackStack(compiler, -1);
     statement(compiler);
 
     // Jump over the else branch when the if branch is taken.
@@ -2481,6 +2631,7 @@ static void ifStatement(Compiler *compiler) {
     // Compile the else branch.
     patchJump(compiler, elseJump);
     emitByte(compiler, OP_POP); // Condition.
+    trackStack(compiler, -1);
 
     if (match(compiler, TOKEN_ELSE)) statement(compiler);
 
@@ -2518,6 +2669,7 @@ static void switchStatement(Compiler *compiler) {
     } while(match(compiler, TOKEN_CASE));
 
     emitByte(compiler, OP_POP); // expression.
+    trackStack(compiler, -1);
     if (match(compiler,TOKEN_DEFAULT)){
         consume(compiler, TOKEN_COLON, "Expect ':' after default.");
         statement(compiler);
@@ -2559,6 +2711,7 @@ static void withStatement(Compiler *compiler) {
     local->constant = true;
 
     emitByte(compiler, OP_OPEN_FILE);
+    trackStack(compiler, -1);
     block(compiler);
     emitBytes(compiler, OP_CLOSE_FILE, fileIndex);
     endScope(compiler);
@@ -2602,11 +2755,14 @@ static void importStatement(Compiler *compiler) {
                 compiler->parser->previous.length - 2)));
 
         emitBytes(compiler, OP_IMPORT, importConstant);
+        trackStack(compiler, 1);
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
 
         if (match(compiler, TOKEN_AS)) {
             uint8_t importName = parseVariable(compiler, "Expect import alias.", false);
             emitByte(compiler, OP_IMPORT_VARIABLE);
+            trackStack(compiler, -1);
             defineVariable(compiler, importName, false);
         }
     } else {
@@ -2628,10 +2784,13 @@ static void importStatement(Compiler *compiler) {
 
         emitBytes(compiler, OP_IMPORT_BUILTIN, index);
         emitByte(compiler, importName);
+        trackStack(compiler, 1);
 
         if (dictuSource) {
             emitByte(compiler, OP_POP);
+            trackStack(compiler, -1);
             emitByte(compiler, OP_IMPORT_VARIABLE);
+            trackStack(compiler, -1);
         }
 
         defineVariable(compiler, importName, false);
@@ -2650,7 +2809,9 @@ static void fromImportStatement(Compiler *compiler) {
 
         consume(compiler, TOKEN_IMPORT, "Expect 'import' after import path.");
         emitBytes(compiler, OP_IMPORT, importConstant);
+        trackStack(compiler, 1);
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
 
         uint8_t variables[255];
         LangToken tokens[255];
@@ -2672,6 +2833,7 @@ static void fromImportStatement(Compiler *compiler) {
         for (int i = 0; i < varCount; ++i) {
             emitByte(compiler, variables[i]);
         }
+        trackStack(compiler, -1 + varCount);
 
         // This needs to be two separate loops as we need
         // all the variables popped before defining.
@@ -2720,7 +2882,9 @@ static void fromImportStatement(Compiler *compiler) {
 
         emitBytes(compiler, OP_IMPORT_BUILTIN, index);
         emitByte(compiler, importName);
+        trackStack(compiler, 1);
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
 
         emitByte(compiler, OP_IMPORT_BUILTIN_VARIABLE);
         emitBytes(compiler, importName, varCount);
@@ -2728,6 +2892,7 @@ static void fromImportStatement(Compiler *compiler) {
         for (int i = 0; i < varCount; ++i) {
             emitByte(compiler, variables[i]);
         }
+        trackStack(compiler, -1 + varCount);
 
         if (compiler->scopeDepth == 0) {
             for (int i = varCount - 1; i >= 0; --i) {
@@ -2754,6 +2919,7 @@ static void whileStatement(Compiler *compiler) {
 
     if (check(compiler, TOKEN_LEFT_BRACE)) {
         emitByte(compiler, OP_TRUE);
+        trackStack(compiler, 1);
     } else {
         consume(compiler, TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
         expression(compiler);
@@ -2765,6 +2931,7 @@ static void whileStatement(Compiler *compiler) {
 
     // Compile the body.
     emitByte(compiler, OP_POP); // Condition.
+    trackStack(compiler, -1);
     compiler->loop->body = compiler->function->chunk.count;
     statement(compiler);
 
@@ -2815,6 +2982,7 @@ static void unpackListStatement(Compiler *compiler){
     expression(compiler);
 
     emitBytes(compiler, OP_UNPACK_LIST, varCount);
+    trackStack(compiler, -1 + varCount);
 
 
     for(int i=varCount-1;i>-1;i--){
@@ -2832,7 +3000,9 @@ static void unpackListStatement(Compiler *compiler){
         }
         checkConst(compiler, setOp, arg);
         emitBytes(compiler, setOp, (uint8_t) arg);
+        trackStack(compiler, -1);
         emitByte(compiler, OP_POP);
+        trackStack(compiler, -1);
     }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
