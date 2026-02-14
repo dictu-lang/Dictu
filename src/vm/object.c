@@ -315,10 +315,10 @@ ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot) {
     return upvalue;
 }
 
-char *listToString(Value value) {
+char *listToString(DictuVM *vm, Value value, int *length) {
     int size = 50;
     ObjList *list = AS_LIST(value);
-    char *listString = malloc(sizeof(char) * size);
+    char *listString = ALLOCATE(vm, char, size);
     memcpy(listString, "[", 1);
     int listStringLength = 1;
 
@@ -336,25 +336,18 @@ char *listToString(Value value) {
             element = s->chars;
             elementSize = s->length;
         } else {
-            element = valueToString(listValue);
-            elementSize = strlen(element);
+            element = valueToString(vm, listValue, &elementSize);
         }
 
         if (elementSize > (size - listStringLength - 6)) {
+            int oldSize = size;
             if (elementSize > size) {
                 size = size + elementSize * 2 + 6;
             } else {
                 size = size * 2 + 6;
             }
 
-            char *newB = realloc(listString, sizeof(char) * size);
-
-            if (newB == NULL) {
-                printf("Unable to allocate memory\n");
-                exit(71);
-            }
-
-            listString = newB;
+            listString = GROW_ARRAY(vm, listString, char, oldSize, size);
         }
 
         if (listValue == value) {
@@ -368,7 +361,7 @@ char *listToString(Value value) {
         } else {
             memcpy(listString + listStringLength, element, elementSize);
             listStringLength += elementSize;
-            free(element);
+            FREE_ARRAY(vm, char, element, elementSize + 1);
         }
 
         if (i != list->values.count - 1) {
@@ -380,14 +373,19 @@ char *listToString(Value value) {
     memcpy(listString + listStringLength, "]", 1);
     listString[listStringLength + 1] = '\0';
 
+    if (listStringLength + 2 != size) {
+        listString = SHRINK_ARRAY(vm, listString, char, size, listStringLength + 2);
+    }
+
+    *length = listStringLength + 1;
     return listString;
 }
 
-char *dictToString(Value value) {
+char *dictToString(DictuVM *vm, Value value, int *length) {
    int count = 0;
    int size = 50;
    ObjDict *dict = AS_DICT(value);
-   char *dictString = malloc(sizeof(char) * size);
+   char *dictString = ALLOCATE(vm, char, size);
    memcpy(dictString, "{", 1);
    int dictStringLength = 1;
 
@@ -407,25 +405,18 @@ char *dictToString(Value value) {
            key = s->chars;
            keySize = s->length;
        } else {
-           key = valueToString(item->key);
-           keySize = strlen(key);
+           key = valueToString(vm, item->key, &keySize);
        }
 
        if (keySize > (size - dictStringLength - keySize - 4)) {
+           int oldSize = size;
            if (keySize > size) {
                size += keySize * 2 + 4;
            } else {
                size *= 2 + 4;
            }
 
-           char *newB = realloc(dictString, sizeof(char) * size);
-
-           if (newB == NULL) {
-               printf("Unable to allocate memory\n");
-               exit(71);
-           }
-
-           dictString = newB;
+           dictString = GROW_ARRAY(vm, dictString, char, oldSize, size);
        }
 
        if (IS_STRING(item->key)) {
@@ -437,7 +428,7 @@ char *dictToString(Value value) {
            memcpy(dictString + dictStringLength, key, keySize);
            memcpy(dictString + dictStringLength + keySize, ": ", 2);
            dictStringLength += 2 + keySize;
-           free(key);
+           FREE_ARRAY(vm, char, key, keySize + 1);
        }
 
        char *element;
@@ -450,25 +441,18 @@ char *dictToString(Value value) {
            element = s->chars;
            elementSize = s->length;
        } else {
-           element = valueToString(item->value);
-           elementSize = strlen(element);
+           element = valueToString(vm, item->value, &elementSize);
        }
 
        if (elementSize > (size - dictStringLength - elementSize - 6)) {
+           int oldSize = size;
            if (elementSize > size) {
                size += elementSize * 2 + 6;
            } else {
                size = size * 2 + 6;
            }
 
-           char *newB = realloc(dictString, sizeof(char) * size);
-
-           if (newB == NULL) {
-               printf("Unable to allocate memory\n");
-               exit(71);
-           }
-
-           dictString = newB;
+           dictString = GROW_ARRAY(vm, dictString, char, oldSize, size);
        }
 
        if (item->value == value) {
@@ -482,7 +466,7 @@ char *dictToString(Value value) {
        } else {
            memcpy(dictString + dictStringLength, element, elementSize);
            dictStringLength += elementSize;
-           free(element);
+           FREE_ARRAY(vm, char, element, elementSize + 1);
        }
 
        if (count != dict->count) {
@@ -494,14 +478,19 @@ char *dictToString(Value value) {
    memcpy(dictString + dictStringLength, "}", 1);
    dictString[dictStringLength + 1] = '\0';
 
+   if (dictStringLength + 2 != size) {
+       dictString = SHRINK_ARRAY(vm, dictString, char, size, dictStringLength + 2);
+   }
+
+   *length = dictStringLength + 1;
    return dictString;
 }
 
-char *setToString(Value value) {
+char *setToString(DictuVM *vm, Value value, int *length) {
     int count = 0;
     int size = 50;
     ObjSet *set = AS_SET(value);
-    char *setString = malloc(sizeof(char) * size);
+    char *setString = ALLOCATE(vm, char, size);
     memcpy(setString, "{", 1);
     int setStringLength = 1;
 
@@ -520,25 +509,18 @@ char *setToString(Value value) {
             element = s->chars;
             elementSize = s->length;
         } else {
-            element = valueToString(item->value);
-            elementSize = strlen(element);
+            element = valueToString(vm, item->value, &elementSize);
         }
 
         if (elementSize > (size - setStringLength - 5)) {
+            int oldSize = size;
             if (elementSize > size * 2) {
                 size += elementSize * 2 + 5;
             } else {
                 size = size * 2 + 5;
             }
 
-            char *newB = realloc(setString, sizeof(char) * size);
-
-            if (newB == NULL) {
-                printf("Unable to allocate memory\n");
-                exit(71);
-            }
-
-            setString = newB;
+            setString = GROW_ARRAY(vm, setString, char, oldSize, size);
         }
 
 
@@ -550,7 +532,7 @@ char *setToString(Value value) {
         } else {
             memcpy(setString + setStringLength, element, elementSize);
             setStringLength += elementSize;
-            free(element);
+            FREE_ARRAY(vm, char, element, elementSize + 1);
         }
 
         if (count != set->count) {
@@ -562,16 +544,22 @@ char *setToString(Value value) {
     memcpy(setString + setStringLength, "}", 1);
     setString[setStringLength + 1] = '\0';
 
+    if (setStringLength + 2 != size) {
+        setString = SHRINK_ARRAY(vm, setString, char, size, setStringLength + 2);
+    }
+
+    *length = setStringLength + 1;
     return setString;
 }
 
-char *classToString(Value value) {
+char *classToString(DictuVM *vm, Value value, int *length) {
     ObjClass *klass = AS_CLASS(value);
-    char *classString = malloc(sizeof(char) * (klass->name->length + 7));
+    char *classString = ALLOCATE(vm, char, klass->name->length + 7);
     memcpy(classString, "<Cls ", 5);
     memcpy(classString + 5, klass->name->chars, klass->name->length);
     memcpy(classString + 5 + klass->name->length, ">", 1);
     classString[klass->name->length + 6] = '\0';
+    *length = klass->name->length + 6;
     return classString;
 }
 
@@ -652,185 +640,242 @@ ObjDict *classToDict(DictuVM *vm, Value value) {
     return classDict;
 }
 
-char *instanceToString(Value value) {
+char *instanceToString(DictuVM *vm, Value value, int *length) {
     ObjInstance *instance = AS_INSTANCE(value);
-    char *instanceString = malloc(sizeof(char) * (instance->klass->name->length + 12));
+    int len = instance->klass->name->length + 11;
+    char *instanceString = ALLOCATE(vm, char, len + 1);
     memcpy(instanceString, "<", 1);
     memcpy(instanceString + 1, instance->klass->name->chars, instance->klass->name->length);
     memcpy(instanceString + 1 + instance->klass->name->length, " instance>", 10);
-    instanceString[instance->klass->name->length + 11] = '\0';
+    instanceString[len] = '\0';
+    *length = len;
     return instanceString;
 }
 
-char *objectToString(Value value) {
+char *objectToString(DictuVM *vm, Value value, int *length) {
     switch (OBJ_TYPE(value)) {
         case OBJ_MODULE: {
             ObjModule *module = AS_MODULE(value);
-            char *moduleString = malloc(sizeof(char) * (module->name->length + 11));
-            snprintf(moduleString, (module->name->length + 10), "<Module %s>", module->name->chars);
+            int len = module->name->length + 9;
+            char *moduleString = ALLOCATE(vm, char, len + 1);
+            memcpy(moduleString, "<Module ", 8);
+            memcpy(moduleString + 8, module->name->chars, module->name->length);
+            memcpy(moduleString + 8 + module->name->length, ">", 1);
+            moduleString[len] = '\0';
+            *length = len;
             return moduleString;
         }
 
         case OBJ_CLASS: {
             if (IS_TRAIT(value)) {
                 ObjClass *trait = AS_CLASS(value);
-                char *traitString = malloc(sizeof(char) * (trait->name->length + 10));
-                snprintf(traitString, trait->name->length + 9, "<Trait %s>", trait->name->chars);
+                int len = trait->name->length + 8;
+                char *traitString = ALLOCATE(vm, char, len + 1);
+                memcpy(traitString, "<Trait ", 7);
+                memcpy(traitString + 7, trait->name->chars, trait->name->length);
+                memcpy(traitString + 7 + trait->name->length, ">", 1);
+                traitString[len] = '\0';
+                *length = len;
                 return traitString;
             }
 
-            return classToString(value);
+            return classToString(vm, value, length);
         }
 
         case OBJ_ENUM: {
             ObjEnum *enumObj = AS_ENUM(value);
-            char *enumString = malloc(sizeof(char) * (enumObj->name->length + 8));
+            int len = enumObj->name->length + 7;
+            char *enumString = ALLOCATE(vm, char, len + 1);
             memcpy(enumString, "<Enum ", 6);
             memcpy(enumString + 6, enumObj->name->chars, enumObj->name->length);
             memcpy(enumString + 6 + enumObj->name->length, ">", 1);
-
-            enumString[7 + enumObj->name->length] = '\0';
-
+            enumString[len] = '\0';
+            *length = len;
             return enumString;
         }
 
         case OBJ_BOUND_METHOD: {
             ObjBoundMethod *method = AS_BOUND_METHOD(value);
             char *methodString;
+            int len;
 
             if (method->method->function->name != NULL) {
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 17));
-                        snprintf(methodString, method->method->function->name->length + 17, "<Static Method %s>", method->method->function->name->chars);
+                        len = method->method->function->name->length + 16;
+                        methodString = ALLOCATE(vm, char, len + 1);
+                        memcpy(methodString, "<Static Method ", 15);
+                        memcpy(methodString + 15, method->method->function->name->chars, method->method->function->name->length);
+                        memcpy(methodString + 15 + method->method->function->name->length, ">", 1);
+                        methodString[len] = '\0';
                         break;
                     }
 
                     default: {
-                        methodString = malloc(sizeof(char) * (method->method->function->name->length + 16));
-                        snprintf(methodString, method->method->function->name->length + 16, "<Bound Method %s>", method->method->function->name->chars);
+                        len = method->method->function->name->length + 15;
+                        methodString = ALLOCATE(vm, char, len + 1);
+                        memcpy(methodString, "<Bound Method ", 14);
+                        memcpy(methodString + 14, method->method->function->name->chars, method->method->function->name->length);
+                        memcpy(methodString + 14 + method->method->function->name->length, ">", 1);
+                        methodString[len] = '\0';
                         break;
                     }
                 }
             } else {
                 switch (method->method->function->type) {
                     case TYPE_STATIC: {
-                        methodString = malloc(sizeof(char) * 16);
-                        memcpy(methodString, "<Static Method>", 15);
-                        methodString[15] = '\0';
+                        len = 15;
+                        methodString = ALLOCATE(vm, char, len + 1);
+                        memcpy(methodString, "<Static Method>", len);
+                        methodString[len] = '\0';
                         break;
                     }
 
                     default: {
-                        methodString = malloc(sizeof(char) * 15);
-                        memcpy(methodString, "<Bound Method>", 14);
-                        methodString[14] = '\0';
+                        len = 14;
+                        methodString = ALLOCATE(vm, char, len + 1);
+                        memcpy(methodString, "<Bound Method>", len);
+                        methodString[len] = '\0';
                         break;
                     }
                 }
             }
 
+            *length = len;
             return methodString;
         }
 
         case OBJ_CLOSURE: {
             ObjClosure *closure = AS_CLOSURE(value);
             char *closureString;
+            int len;
 
             if (closure->function->name != NULL) {
-                closureString = malloc(sizeof(char) * (closure->function->name->length + 6));
-                snprintf(closureString, closure->function->name->length + 6, "<fn %s>", closure->function->name->chars);
+                len = closure->function->name->length + 5;
+                closureString = ALLOCATE(vm, char, len + 1);
+                memcpy(closureString, "<fn ", 4);
+                memcpy(closureString + 4, closure->function->name->chars, closure->function->name->length);
+                memcpy(closureString + 4 + closure->function->name->length, ">", 1);
+                closureString[len] = '\0';
             } else {
-                closureString = malloc(sizeof(char) * 9);
-                memcpy(closureString, "<Script>", 8);
-                closureString[8] = '\0';
+                len = 8;
+                closureString = ALLOCATE(vm, char, len + 1);
+                memcpy(closureString, "<Script>", len);
+                closureString[len] = '\0';
             }
 
+            *length = len;
             return closureString;
         }
 
         case OBJ_FUNCTION: {
             ObjFunction *function = AS_FUNCTION(value);
             char *functionString;
+            int len;
 
             if (function->name != NULL) {
-                functionString = malloc(sizeof(char) * (function->name->length + 6));
-                snprintf(functionString, function->name->length + 6, "<fn %s>", function->name->chars);
+                len = function->name->length + 5;
+                functionString = ALLOCATE(vm, char, len + 1);
+                memcpy(functionString, "<fn ", 4);
+                memcpy(functionString + 4, function->name->chars, function->name->length);
+                memcpy(functionString + 4 + function->name->length, ">", 1);
+                functionString[len] = '\0';
             } else {
-                functionString = malloc(sizeof(char) * 5);
-                memcpy(functionString, "<fn>", 4);
-                functionString[4] = '\0';
+                len = 4;
+                functionString = ALLOCATE(vm, char, len + 1);
+                memcpy(functionString, "<fn>", len);
+                functionString[len] = '\0';
             }
 
+            *length = len;
             return functionString;
         }
 
         case OBJ_INSTANCE: {
-            return instanceToString(value);
+            return instanceToString(vm, value, length);
         }
 
         case OBJ_NATIVE: {
-            char *nativeString = malloc(sizeof(char) * 12);
-            memcpy(nativeString, "<fn native>", 11);
-            nativeString[11] = '\0';
+            int len = 11;
+            char *nativeString = ALLOCATE(vm, char, len + 1);
+            memcpy(nativeString, "<fn native>", len);
+            nativeString[len] = '\0';
+            *length = len;
             return nativeString;
         }
 
         case OBJ_STRING: {
             ObjString *stringObj = AS_STRING(value);
-            char *string = malloc(sizeof(char) * stringObj->length + 1);
+            char *string = ALLOCATE(vm, char, stringObj->length + 1);
             memcpy(string, stringObj->chars, stringObj->length);
             string[stringObj->length] = '\0';
+            *length = stringObj->length;
             return string;
         }
 
         case OBJ_FILE: {
             ObjFile *file = AS_FILE(value);
-            char *fileString = malloc(sizeof(char) * (strlen(file->path) + 8));
-            snprintf(fileString, strlen(file->path) + 8, "<File %s>", file->path);
+            int pathLen = strlen(file->path);
+            int len = pathLen + 7;
+            char *fileString = ALLOCATE(vm, char, len + 1);
+            memcpy(fileString, "<File ", 6);
+            memcpy(fileString + 6, file->path, pathLen);
+            memcpy(fileString + 6 + pathLen, ">", 1);
+            fileString[len] = '\0';
+            *length = len;
             return fileString;
         }
 
         case OBJ_LIST: {
-            return listToString(value);
+            return listToString(vm, value, length);
         }
 
         case OBJ_DICT: {
-            return dictToString(value);
+            return dictToString(vm, value, length);
         }
 
         case OBJ_SET: {
-            return setToString(value);
+            return setToString(vm, value, length);
         }
 
         case OBJ_UPVALUE: {
-            char *upvalueString = malloc(sizeof(char) * 8);
-            memcpy(upvalueString, "upvalue", 7);
-            upvalueString[7] = '\0';
+            int len = 7;
+            char *upvalueString = ALLOCATE(vm, char, len + 1);
+            memcpy(upvalueString, "upvalue", len);
+            upvalueString[len] = '\0';
+            *length = len;
             return upvalueString;
         }
 
         case OBJ_ABSTRACT: {
             ObjAbstract *abstract = AS_ABSTRACT(value);
-
-            return abstract->type(abstract);
+            return abstract->type(vm, abstract, length);
         }
 
         case OBJ_RESULT: {
             ObjResult *result = AS_RESULT(value);
             if (result->status == SUCCESS) {
-                char *resultString = malloc(sizeof(char) * 13);
-                snprintf(resultString, 13, "<Result Suc>");
+                int len = 12;
+                char *resultString = ALLOCATE(vm, char, len + 1);
+                memcpy(resultString, "<Result Suc>", len);
+                resultString[len] = '\0';
+                *length = len;
                 return resultString;
             }
 
-            char *resultString = malloc(sizeof(char) * 13);
-            snprintf(resultString, 13, "<Result Err>");
+            int len = 12;
+            char *resultString = ALLOCATE(vm, char, len + 1);
+            memcpy(resultString, "<Result Err>", len);
+            resultString[len] = '\0';
+            *length = len;
             return resultString;
         }
     }
 
-    char *unknown = malloc(sizeof(char) * 9);
-    snprintf(unknown, 8, "%s", "unknown");
+    int len = 7;
+    char *unknown = ALLOCATE(vm, char, len + 1);
+    memcpy(unknown, "unknown", len);
+    unknown[len] = '\0';
+    *length = len;
     return unknown;
 }

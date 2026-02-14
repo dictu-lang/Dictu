@@ -18,7 +18,7 @@ static Value printIO(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValue(args[i]);
+        printValue(vm, args[i]);
     }
 
     return NIL_VAL;
@@ -31,7 +31,7 @@ static Value printlnIO(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValue(args[i]);
+        printValue(vm, args[i]);
         printf("\n");
     }
 
@@ -46,7 +46,7 @@ static Value printErrIO(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValueError(args[i]);
+        printValueError(vm, args[i]);
     }
 
     return NIL_VAL;
@@ -59,7 +59,7 @@ static Value printErrlnIO(DictuVM *vm, int argCount, Value *args) {
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValueError(args[i]);
+        printValueError(vm, args[i]);
         fprintf(stderr, "\n");
     }
 

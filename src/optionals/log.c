@@ -221,11 +221,14 @@ static Value logObjFatalln(DictuVM *vm, int argCount, Value *args) {
     exit(1);
 }
 
-char *logToString(ObjAbstract *abstract) {
+char *logToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *logString = malloc(sizeof(char) * 6);
-    snprintf(logString, 6, "<Log>");
+    int len = 5;
+    char *logString = ALLOCATE(vm, char, len + 1);
+    memcpy(logString, "<Log>", len);
+    logString[len] = '\0';
+    *length = len;
     return logString;
 }
 

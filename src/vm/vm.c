@@ -997,7 +997,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 printf("          ");                                                             \
                 for (Value *stackValue = vm->stack; stackValue < vm->stackTop; stackValue++) {    \
                     printf("[ ");                                                                 \
-                    printValue(*stackValue);                                                      \
+                    printValue(vm, *stackValue);                                                   \
                     printf(" ]");                                                                 \
                 }                                                                                 \
                 printf("\n");                                                                     \
@@ -1056,7 +1056,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
-                printValue(v);
+                printValue(vm, v);
                 printf("\n");
             }
             pop(vm);
@@ -2074,7 +2074,9 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    int keyLen = 0;
+                    char *keyStr = valueToString(vm, indexValue, &keyLen);
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", keyStr);
                 }
 
                 default: {
@@ -2175,7 +2177,9 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                        int keyLen = 0;
+                        char *keyStr = valueToString(vm, indexValue, &keyLen);
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", keyStr);
                     }
 
                     vm->stackTop[-1] = dictValue;

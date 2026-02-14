@@ -80,19 +80,21 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
 
     int length = 0;
     char **replaceStrings = ALLOCATE(vm, char *, argCount);
+    int *replaceLengths = ALLOCATE(vm, int, argCount);
 
     for (int j = 1; j < argCount + 1; j++) {
         Value value = args[j];
-        if (!IS_STRING(value))
-            replaceStrings[j - 1] = valueToString(value);
-        else {
+        if (!IS_STRING(value)) {
+            replaceStrings[j - 1] = valueToString(vm, value, &replaceLengths[j - 1]);
+        } else {
             ObjString *strObj = AS_STRING(value);
-            char *str = malloc(strObj->length + 1);
+            char *str = ALLOCATE(vm, char, strObj->length + 1);
             memcpy(str, strObj->chars, strObj->length + 1);
             replaceStrings[j - 1] = str;
+            replaceLengths[j - 1] = strObj->length;
         }
 
-        length += utf8size_lazy(replaceStrings[j - 1]);
+        length += replaceLengths[j - 1];
     }
 
     char *tmp = string->chars;
@@ -110,10 +112,11 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         runtimeError(vm, "format() placeholders do not match arguments");
 
         for (int i = 0; i < argCount; ++i) {
-            free(replaceStrings[i]);
+            FREE_ARRAY(vm, char, replaceStrings[i], replaceLengths[i] + 1);
         }
 
         FREE_ARRAY(vm, char *, replaceStrings, argCount);
+        FREE_ARRAY(vm, int, replaceLengths, argCount);
         return EMPTY_VAL;
     }
 
@@ -126,16 +129,17 @@ static Value formatString(DictuVM *vm, int argCount, Value *args) {
         pos = utf8str(tmp, "{}");
 
         int tmpLength = pos - tmp;
-        int replaceLength = utf8size_lazy(replaceStrings[i]);
+        int replaceLength = replaceLengths[i];
         memcpy(newStr + stringLength, tmp, tmpLength);
         memcpy(newStr + stringLength + tmpLength, replaceStrings[i],
                replaceLength);
         stringLength += tmpLength + replaceLength;
         tmp = pos + 2;
-        free(replaceStrings[i]);
+        FREE_ARRAY(vm, char, replaceStrings[i], replaceLengths[i] + 1);
     }
 
     FREE_ARRAY(vm, char *, replaceStrings, argCount);
+    FREE_ARRAY(vm, int, replaceLengths, argCount);
     memcpy(newStr + stringLength, tmp, utf8size_lazy(tmp));
     newStr[fullLength - 1] = '\0';
 

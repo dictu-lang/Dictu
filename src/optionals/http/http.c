@@ -277,9 +277,9 @@ static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data) {
     return size * nitems;
 }
 
-static char *dictToPostArgs(ObjDict *dict) {
+static char *dictToPostArgs(DictuVM *vm, ObjDict *dict, int *resultLen) {
     int len = 100;
-    char *ret = malloc(sizeof(char) * len);
+    char *ret = ALLOCATE(vm, char, len);
     int currentLen = 0;
 
     for (int i = 0; i <= dict->capacityMask; i++) {
@@ -289,30 +289,27 @@ static char *dictToPostArgs(ObjDict *dict) {
         }
 
         char *key;
+        int keyLen;
         if (IS_STRING(entry->key)) {
             key = AS_CSTRING(entry->key);
+            keyLen = AS_STRING(entry->key)->length;
         } else {
-            key = valueToString(entry->key);
+            key = valueToString(vm, entry->key, &keyLen);
         }
 
         char *value;
+        int valLen;
         if (IS_STRING(entry->value)) {
             value = AS_CSTRING(entry->value);
+            valLen = AS_STRING(entry->value)->length;
         } else {
-            value = valueToString(entry->value);
+            value = valueToString(vm, entry->value, &valLen);
         }
 
-        int keyLen = strlen(key);
-        int valLen = strlen(value);
-
         if (currentLen + keyLen + valLen > len) {
+            int oldLen = len;
             len = len * 2 + keyLen + valLen;
-            ret = realloc(ret, len);
-
-            if (ret == NULL) {
-                printf("Unable to allocate memory\n");
-                exit(71);
-            }
+            ret = GROW_ARRAY(vm, ret, char, oldLen, len);
         }
 
         memcpy(ret + currentLen, key, keyLen);
@@ -325,15 +322,20 @@ static char *dictToPostArgs(ObjDict *dict) {
         currentLen += 1;
 
         if (!IS_STRING(entry->key)) {
-            free(key);
+            FREE_ARRAY(vm, char, key, keyLen + 1);
         }
         if (!IS_STRING(entry->value)) {
-            free(value);
+            FREE_ARRAY(vm, char, value, valLen + 1);
         }
     }
 
     ret[currentLen] = '\0';
 
+    if (currentLen + 1 != len) {
+        ret = SHRINK_ARRAY(vm, ret, char, len, currentLen + 1);
+    }
+
+    *resultLen = currentLen;
     return ret;
 }
 
@@ -591,8 +593,9 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
             }
         }
 
+        int postValueLen = 0;
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict, &postValueLen);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }
@@ -615,7 +618,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         }
 
         if (postValuesDict != NULL) {
-            free(postValue);
+            FREE_ARRAY(vm, char, postValue, postValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -720,8 +723,9 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
             }
         }
 
+        int putValueLen = 0;
         if (putValuesDict != NULL) {
-            putValue = dictToPostArgs(putValuesDict);
+            putValue = dictToPostArgs(vm, putValuesDict, &putValueLen);
         } else if (putValueString != NULL) {
             putValue = putValueString->chars;
         }
@@ -745,7 +749,7 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
         }
 
         if (putValuesDict != NULL) {
-            free(putValue);
+            FREE_ARRAY(vm, char, putValue, putValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -989,11 +993,14 @@ void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, HttpClient, abstract->data);
 }
 
-char *httpClientToString(ObjAbstract *abstract) {
+char *httpClientToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *httpClientString = malloc(sizeof(char) * 13);
-    snprintf(httpClientString, 13, "<HttpClient>");
+    int len = 12;
+    char *httpClientString = ALLOCATE(vm, char, len + 1);
+    memcpy(httpClientString, "<HttpClient>", len);
+    httpClientString[len] = '\0';
+    *length = len;
     return httpClientString;
 }
 
@@ -1256,8 +1263,9 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[1]);
         char *postValue = "";
 
+        int postValueLen = 0;
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict, &postValueLen);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }
@@ -1272,7 +1280,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         curlResponse = curl_easy_perform(httpClient->curl);
 
         if (postValuesDict != NULL) {
-            free(postValue);
+            FREE_ARRAY(vm, char, postValue, postValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -1332,8 +1340,9 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[1]);
         char *putValue = "";
 
+        int putValueLen = 0;
         if (putValuesDict != NULL) {
-            putValue = dictToPostArgs(putValuesDict);
+            putValue = dictToPostArgs(vm, putValuesDict, &putValueLen);
         } else if (putValueString != NULL) {
             putValue = putValueString->chars;
         }
@@ -1349,7 +1358,7 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
         curlResponse = curl_easy_perform(httpClient->curl);
 
         if (putValuesDict != NULL) {
-            free(putValue);
+            FREE_ARRAY(vm, char, putValue, putValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {

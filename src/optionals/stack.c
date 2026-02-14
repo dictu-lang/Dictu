@@ -29,11 +29,14 @@ void freeStack(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Stack, abstract->data);
 }
 
-char *stackToString(ObjAbstract *abstract) {
+char *stackToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *stackString = malloc(sizeof(char) * 8);
-    snprintf(stackString, 8, "<Stack>");
+    int len = 7;
+    char *stackString = ALLOCATE(vm, char, len + 1);
+    memcpy(stackString, "<Stack>", len);
+    stackString[len] = '\0';
+    *length = len;
     return stackString;
 }
 

@@ -6,10 +6,11 @@ static Value toStringSet(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = setToString(args[0]);
+    int valueStringLen = 0;
+    char *valueString = setToString(vm, args[0], &valueStringLen);
 
-    ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    ObjString *string = copyString(vm, valueString, valueStringLen);
+    FREE_ARRAY(vm, char, valueString, valueStringLen + 1);
 
     return OBJ_VAL(string);
 }
@@ -72,9 +73,10 @@ static Value removeSetItem(DictuVM *vm, int argCount, Value *args) {
     ObjSet *set = AS_SET(args[0]);
 
     if (!setDelete(vm, set, args[1])) {
-        char *str = valueToString(args[1]);
+        int strLen = 0;
+        char *str = valueToString(vm, args[1], &strLen);
         runtimeError(vm, "Value '%s' passed to remove() does not exist within the set", str);
-        free(str);
+        FREE_ARRAY(vm, char, str, strLen + 1);
         return EMPTY_VAL;
     }
 

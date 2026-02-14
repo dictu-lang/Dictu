@@ -56,7 +56,7 @@ static uint32_t hashObject(Obj *object) {
         default: {
 #ifdef DEBUG_PRINT_CODE
             printf("Object: ");
-            printValue(OBJ_VAL(object));
+            printValue(NULL, OBJ_VAL(object));
             printf(" not hashable!\n");
             exit(1);
 #endif
@@ -284,28 +284,33 @@ void graySet(DictuVM *vm, ObjSet *set) {
 }
 
 // Calling function needs to free memory
-char *valueToString(Value value) {
+char *valueToString(DictuVM *vm, Value value, int *length) {
     if (IS_BOOL(value)) {
         char *str = AS_BOOL(value) ? "true" : "false";
-        char *boolString = malloc(sizeof(char) * (strlen(str) + 1));
-        snprintf(boolString, strlen(str) + 1, "%s", str);
+        int len = AS_BOOL(value) ? 4 : 5;
+        char *boolString = ALLOCATE(vm, char, len + 1);
+        memcpy(boolString, str, len + 1);
+        *length = len;
         return boolString;
     } else if (IS_NIL(value)) {
-        char *nilString = malloc(sizeof(char) * 4);
-        snprintf(nilString, 4, "%s", "nil");
+        char *nilString = ALLOCATE(vm, char, 4);
+        memcpy(nilString, "nil", 4);
+        *length = 3;
         return nilString;
     } else if (IS_NUMBER(value)) {
         double number = AS_NUMBER(value);
         int numberStringLength = snprintf(NULL, 0, "%.15g", number) + 1;
-        char *numberString = malloc(sizeof(char) * numberStringLength);
+        char *numberString = ALLOCATE(vm, char, numberStringLength);
         snprintf(numberString, numberStringLength, "%.15g", number);
+        *length = numberStringLength - 1;
         return numberString;
     } else if (IS_OBJ(value)) {
-        return objectToString(value);
+        return objectToString(vm, value, length);
     }
 
-    char *unknown = malloc(sizeof(char) * 8);
+    char *unknown = ALLOCATE(vm, char, 8);
     snprintf(unknown, 8, "%s", "unknown");
+    *length = 7;
     return unknown;
 }
 
@@ -400,16 +405,18 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
 #undef CONVERT_VARIABLE
 }
 
-void printValue(Value value) {
-    char *output = valueToString(value);
+void printValue(DictuVM *vm, Value value) {
+    int length = 0;
+    char *output = valueToString(vm, value, &length);
     printf("%s", output);
-    free(output);
+    FREE_ARRAY(vm, char, output, length + 1);
 }
 
-void printValueError(Value value) {
-    char *output = valueToString(value);
+void printValueError(DictuVM *vm, Value value) {
+    int length = 0;
+    char *output = valueToString(vm, value, &length);
     fprintf(stderr, "%s", output);
-    free(output);
+    FREE_ARRAY(vm, char, output, length + 1);
 }
 
 static bool listComparison(Value a, Value b) {

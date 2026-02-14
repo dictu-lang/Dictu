@@ -67,20 +67,15 @@ void freeFFI(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, FFIInstance, abstract->data);
 }
 
-char *ffiToString(ObjAbstract *abstract) {
+char *ffiToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *ffiString = malloc(sizeof(char) * 11 + 3);
-    snprintf(ffiString, 11 + 3, "<FFIInstance>");
+    int len = 13;
+    char *ffiString = ALLOCATE(vm, char, len + 1);
+    memcpy(ffiString, "<FFIInstance>", len);
+    ffiString[len] = '\0';
+    *length = len;
     return ffiString;
-}
-
-void grayFFI(DictuVM *vm, ObjAbstract *abstract) {
-    (void)vm;
-    FFIInstance *ffi = (FFIInstance *)abstract->data;
-
-    if (ffi == NULL)
-        return;
 }
 
 static Value load(DictuVM *vm, int argCount, Value *args) {
@@ -159,7 +154,6 @@ static Value load(DictuVM *vm, int argCount, Value *args) {
     instance->library = library;
 
     abstract->data = instance;
-    abstract->grayFunc = grayFFI;
     pop(vm);
 
     return OBJ_VAL(abstract);

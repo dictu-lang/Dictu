@@ -13,6 +13,14 @@
 #define GC_HEAP_GROW_FACTOR 2
 
 void *reallocate(DictuVM *vm, void *previous, size_t oldSize, size_t newSize) {
+    if (vm == NULL) {
+        if (newSize == 0) {
+            free(previous);
+            return NULL;
+        }
+        return realloc(previous, newSize);
+    }
+
     vm->bytesAllocated += newSize - oldSize;
 
 #ifdef DEBUG_TRACE_MEM
@@ -45,7 +53,7 @@ void grayObject(DictuVM *vm, Obj *object) {
 
 #ifdef DEBUG_TRACE_GC
     printf("%p gray ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printValue(vm, OBJ_VAL(object));
     printf("\n");
 #endif
 
@@ -77,7 +85,7 @@ static void grayArray(DictuVM *vm, ValueArray *array) {
 static void blackenObject(DictuVM *vm, Obj *object) {
 #ifdef DEBUG_TRACE_GC
     printf("%p blacken ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printValue(vm, OBJ_VAL(object));
     printf("\n");
 #endif
 

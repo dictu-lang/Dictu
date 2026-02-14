@@ -21,11 +21,14 @@ void freeQueue(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Queue, abstract->data);
 }
 
-char *queueToString(ObjAbstract *abstract) {
+char *queueToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *queueString = malloc(sizeof(char) * 8);
-    snprintf(queueString, 8, "<Queue>");
+    int len = 7;
+    char *queueString = ALLOCATE(vm, char, len + 1);
+    memcpy(queueString, "<Queue>", len);
+    queueString[len] = '\0';
+    *length = len;
     return queueString;
 }
 

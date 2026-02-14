@@ -243,11 +243,14 @@ void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Database, abstract->data);
 }
 
-char *sqliteToString(ObjAbstract *abstract) {
+char *sqliteToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *sqliteString = malloc(sizeof(char) * 9);
-    snprintf(sqliteString, 9, "<Sqlite>");
+    int len = 8;
+    char *sqliteString = ALLOCATE(vm, char, len + 1);
+    memcpy(sqliteString, "<Sqlite>", len);
+    sqliteString[len] = '\0';
+    *length = len;
     return sqliteString;
 }
 

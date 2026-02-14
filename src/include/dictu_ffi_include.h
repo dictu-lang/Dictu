@@ -405,7 +405,7 @@ struct sObjFile {
 
 typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
 typedef void (*AbstractGrayFn)(DictuVM *vm, ObjAbstract *abstract);
-typedef char *(*AbstractTypeFn)(ObjAbstract *abstract);
+typedef char *(*AbstractTypeFn)(DictuVM *vm, ObjAbstract *abstract, int *length);
 
 struct sObjAbstract {
     Obj obj;

@@ -34,10 +34,12 @@ static void freeBigInt(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, BigIntData, AS_BIGINT(abstract));
 }
 
-static char *bigIntToString(ObjAbstract *abstract) {
+static char *bigIntToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     int len = bigint_write_size(&AS_BIGINT(abstract)->value, 10);
-    char *str = malloc(len);
-    return bigint_write(str, len, &AS_BIGINT(abstract)->value);
+    char *str = ALLOCATE(vm, char, len);
+    bigint_write(str, len, &AS_BIGINT(abstract)->value);
+    *length = len - 1;
+    return str;
 }
 
 static bool isLong(Value val) {

@@ -328,11 +328,14 @@ void freeSocket(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, SocketData, abstract->data);
 }
 
-char *socketToString(ObjAbstract *abstract) {
+char *socketToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *socketString = malloc(sizeof(char) * 9);
-    snprintf(socketString, 9, "<Socket>");
+    int len = 8;
+    char *socketString = ALLOCATE(vm, char, len + 1);
+    memcpy(socketString, "<Socket>", len);
+    socketString[len] = '\0';
+    *length = len;
     return socketString;
 }
 

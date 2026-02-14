@@ -101,13 +101,13 @@ bool setDelete(DictuVM *vm, ObjSet *set, Value value);
 
 void graySet(DictuVM *vm, ObjSet *set);
 
-char *valueToString(Value value);
+char *valueToString(DictuVM *vm, Value value, int *length);
 
 char *valueTypeToString(DictuVM *vm, Value value, int *length);
 
-void printValue(Value value);
+void printValue(DictuVM *vm, Value value);
 
-void printValueError(Value value);
+void printValueError(DictuVM *vm, Value value);
 
 bool compareStringLess(Value a, Value b);
 

@@ -17,7 +17,7 @@ static int constantInstruction(const char *name, Chunk *chunk,
                                int offset) {
     uint8_t constant = chunk->code[offset + 1];
     printf("%-16s %4d '", name, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 2;
 }
@@ -34,7 +34,7 @@ static int cachedConstantInstruction(const char *name, Chunk *chunk,
     uint8_t constant = chunk->code[offset + 1];
     uint8_t cacheSlot = chunk->code[offset + 2];
     printf("%-16s %4d (cache %d) '", name, constant, cacheSlot);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 3;
 }
@@ -45,7 +45,7 @@ static int invokeInstruction(const char* name, Chunk* chunk,
     uint8_t constant = chunk->code[offset + 2];
     uint8_t unpack = chunk->code[offset + 3];
     printf("%-16s (%d args) %4d unpack - %d '", name, argCount, constant, unpack);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 4;
 }
@@ -57,7 +57,7 @@ static int cachedInvokeInstruction(const char* name, Chunk* chunk,
     uint8_t unpack = chunk->code[offset + 3];
     uint8_t cacheSlot = chunk->code[offset + 4];
     printf("%-16s (%d args) %4d unpack - %d (cache %d) '", name, argCount, constant, unpack, cacheSlot);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 5;
 }
@@ -67,7 +67,7 @@ static int importFromInstruction(const char *name, Chunk *chunk,
     uint8_t constant = chunk->code[offset + 1];
     uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s %4d '", name, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 1 + argCount;
 }
@@ -76,7 +76,7 @@ static int builtinImportInstruction(const char* name, Chunk* chunk,
                              int offset) {
     uint8_t module = chunk->code[offset + 2];
     printf("%-16s '", name);
-    printValue(chunk->constants.values[module]);
+    printValue(NULL, chunk->constants.values[module]);
     printf("'\n");
     return offset + 3;
 }
@@ -86,7 +86,7 @@ static int builtinFromImportInstruction(const char* name, Chunk* chunk,
     uint8_t module = chunk->code[offset + 1];
     uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s '", name);
-    printValue(chunk->constants.values[module]);
+    printValue(NULL, chunk->constants.values[module]);
     printf("'\n");
     return offset + 2 + argCount;
 }
@@ -121,7 +121,7 @@ static int classInstruction(const char* name, Chunk* chunk,
 
 
     printf("%-16s (Type: %s) %4d '", name, typeString, constant);
-    printValue(chunk->constants.values[constant]);
+    printValue(NULL, chunk->constants.values[constant]);
     printf("'\n");
     return offset + 3;
 }
@@ -293,7 +293,7 @@ int disassembleInstruction(Chunk *chunk, int offset) {
             offset++;
             uint8_t constant = chunk->code[offset++];
             printf("%-16s %4d ", "OP_CLOSURE", constant);
-            printValue(chunk->constants.values[constant]);
+            printValue(NULL, chunk->constants.values[constant]);
             printf("\n");
 
             ObjFunction *function = AS_FUNCTION(

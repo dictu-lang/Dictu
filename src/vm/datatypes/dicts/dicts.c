@@ -16,10 +16,11 @@ static Value toStringDict(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = dictToString(args[0]);
+    int valueStringLen = 0;
+    char *valueString = dictToString(vm, args[0], &valueStringLen);
 
-    ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    ObjString *string = copyString(vm, valueString, valueStringLen);
+    FREE_ARRAY(vm, char, valueString, valueStringLen + 1);
 
     return OBJ_VAL(string);
 }
@@ -106,9 +107,10 @@ static Value removeDictItem(DictuVM *vm, int argCount, Value *args) {
         return NIL_VAL;
     }
 
-    char *str = valueToString(args[1]);
+    int strLen = 0;
+    char *str = valueToString(vm, args[1], &strLen);
     runtimeError(vm, "Key '%s' passed to remove() does not exist within the dictionary", str);
-    free(str);
+    FREE_ARRAY(vm, char, str, strLen + 1);
 
     return EMPTY_VAL;
 }

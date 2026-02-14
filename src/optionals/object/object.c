@@ -75,7 +75,7 @@ static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
     
-    printValue(res->value);
+    printValue(vm, res->value);
     printf("\n");
 
     return NIL_VAL;

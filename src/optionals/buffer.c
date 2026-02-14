@@ -16,11 +16,14 @@ void freeBuffer(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Buffer, abstract->data);
 }
 
-char *bufferToString(ObjAbstract *abstract) {
+char *bufferToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *bufferString = malloc(sizeof(char) * 9);
-    snprintf(bufferString, 9, "<Buffer>");
+    int len = 8;
+    char *bufferString = ALLOCATE(vm, char, len + 1);
+    memcpy(bufferString, "<Buffer>", len);
+    bufferString[len] = '\0';
+    *length = len;
     return bufferString;
 }
 

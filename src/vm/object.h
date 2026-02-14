@@ -180,7 +180,7 @@ struct sObjFile {
 
 typedef void (*AbstractFreeFn)(DictuVM *vm, ObjAbstract *abstract);
 typedef void (*AbstractGrayFn)(DictuVM *vm, ObjAbstract *abstract);
-typedef char* (*AbstractTypeFn)(ObjAbstract *abstract);
+typedef char* (*AbstractTypeFn)(DictuVM *vm, ObjAbstract *abstract, int *length);
 
 struct sObjAbstract {
     Obj obj;
@@ -302,13 +302,13 @@ Value newResultError(DictuVM *vm, char *errorMsg);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
 
-char *setToString(Value value);
-char *dictToString(Value value);
-char *listToString(Value value);
-char *classToString(Value value);
+char *setToString(DictuVM *vm, Value value, int *length);
+char *dictToString(DictuVM *vm, Value value, int *length);
+char *listToString(DictuVM *vm, Value value, int *length);
+char *classToString(DictuVM *vm, Value value, int *length);
 ObjDict *classToDict(DictuVM *vm, Value value);
-char *instanceToString(Value value);
-char *objectToString(Value value);
+char *instanceToString(DictuVM *vm, Value value, int *length);
+char *objectToString(DictuVM *vm, Value value, int *length);
 
 static inline bool isObjType(Value value, ObjType type) {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
