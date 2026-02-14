@@ -413,7 +413,7 @@ char *dictToString(DictuVM *vm, Value value, int *length) {
            if (keySize > size) {
                size += keySize * 2 + 4;
            } else {
-               size *= 2 + 4;
+               size = size * 2 + 4;
            }
 
            dictString = GROW_ARRAY(vm, dictString, char, oldSize, size);
