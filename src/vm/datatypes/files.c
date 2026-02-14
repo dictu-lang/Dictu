@@ -8,7 +8,10 @@ static Value writeFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "write() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "write() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -39,7 +42,10 @@ static Value writeLineFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "writeLine() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "writeLine() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -103,7 +109,10 @@ static Value readLineFile(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "readLine() argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "readLine() argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -143,8 +152,19 @@ static Value seekFile(DictuVM *vm, int argCount, Value *args) {
     int seekType = SEEK_SET;
 
     if (argCount == 2) {
-        if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
-            runtimeError(vm, "seek() arguments must be numbers");
+        if (!IS_NUMBER(args[1])) {
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "seek() offset argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
+            return EMPTY_VAL;
+        }
+
+        if (!IS_NUMBER(args[2])) {
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "seek() whence argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -167,7 +187,10 @@ static Value seekFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "seek() argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "seek() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

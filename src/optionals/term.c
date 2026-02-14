@@ -11,7 +11,10 @@ static Value termIsattyNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "arg passed to isatty must be a number.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "arg passed to isatty must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

@@ -50,7 +50,10 @@ static Value addSetItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!isValidKey(args[1])) {
-        runtimeError(vm, "Set value must be an immutable type");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Set value must be a string, number, bool, or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -96,7 +99,10 @@ static Value containsAllSet(DictuVM *vm, int argCount, Value *args) {
     }
 
     if(!IS_LIST(args[1])){
-        runtimeError(vm, "containsAll() argument must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "containsAll() argument must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

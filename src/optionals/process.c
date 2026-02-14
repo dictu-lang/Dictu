@@ -240,7 +240,10 @@ static Value execProcess(DictuVM* vm, int argCount, Value* args) {
     }
 
     if (!IS_LIST(args[0])) {
-        runtimeError(vm, "Argument passed to exec() must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Argument passed to exec() must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -255,7 +258,10 @@ static Value runProcess(DictuVM* vm, int argCount, Value* args) {
     }
 
     if (!IS_LIST(args[0])) {
-        runtimeError(vm, "Argument passed to run() must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Argument passed to run() must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -263,7 +269,10 @@ static Value runProcess(DictuVM* vm, int argCount, Value* args) {
 
     if (argCount == 2) {
         if (!IS_BOOL(args[1])) {
-            runtimeError(vm, "Optional argument passed to run() must be a boolean");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Optional argument passed to run() must be a boolean, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -287,7 +296,10 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "Argument passed to kill() must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Argument passed to kill() must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -309,7 +321,10 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "First argument passed to kill() must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "First argument passed to kill() must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -318,7 +333,10 @@ static Value killProcess(DictuVM* vm, int argCount, Value* args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "Second argument passed to kill() must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Second argument passed to kill() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 

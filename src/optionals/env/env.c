@@ -24,7 +24,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "get() arguments must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "get() arguments must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -32,7 +35,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_STRING(args[1])) {
-            runtimeError(vm, "get() arguments must be a string.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "get() arguments must be a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -56,8 +62,19 @@ static Value set(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || (!IS_STRING(args[1]) && !IS_NIL(args[1]))) {
-        runtimeError(vm, "set() arguments must be a string or nil.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "set() arguments must be a string or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1]) && !IS_NIL(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "set() arguments must be a string or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

@@ -149,7 +149,10 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to split() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to split() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -169,7 +172,10 @@ static Value splitString(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!AS_NUMBER(args[1])) {
-            runtimeError(vm, "Argument passed to split() must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Argument passed to split() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -259,7 +265,10 @@ static Value containsString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to contains() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to contains() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     ObjString *delimiterObj = AS_STRING(args[1]);
@@ -295,7 +304,10 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "Index passed to find() must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Index passed to find() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -303,7 +315,10 @@ static Value findString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Substring passed to find() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Substring passed to find() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     ObjString *substrObj = AS_STRING(args[1]);
@@ -339,7 +354,10 @@ static Value findLastString(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Substring passed to findLast() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Substring passed to findLast() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     utf8_int32_t cp;
@@ -380,7 +398,10 @@ static Value replaceString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
-        runtimeError(vm, "Arguments passed to replace() must be strings");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, !IS_STRING(args[1]) ? args[1] : args[2], &valLength);
+        runtimeError(vm, "Arguments passed to replace() must be strings, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     // Pop values off the stack
@@ -493,7 +514,10 @@ static Value startsWithString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to startsWith() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to startsWith() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -521,7 +545,10 @@ static Value endsWithString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to endsWith() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to endsWith() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -619,7 +646,10 @@ static Value countString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "Argument passed to count() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to count() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -725,7 +755,10 @@ static Value repeatString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "repeat() count argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "repeat() count argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

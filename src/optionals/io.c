@@ -73,8 +73,19 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "copyFile() arguments must be strings.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "copyFile() arguments must be strings, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "copyFile() arguments must be strings, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -112,8 +123,19 @@ static Value copyFileIO(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "copyFile() arguments must be strings.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "copyFile() arguments must be strings, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "copyFile() arguments must be strings, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

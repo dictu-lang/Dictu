@@ -1981,7 +1981,12 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
             for (int i = count * 2; i > 0; i -= 2) {
                 if (!isValidKey(peek(vm, i))) {
-                    RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                    STORE_FRAME;
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, peek(vm, i), &valLength);
+                    runtimeError(vm, "Dictionary key must be a string, number, bool, or nil, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
@@ -2004,7 +2009,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 0);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -2021,7 +2026,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_STRING: {
@@ -2052,13 +2057,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("String index out of bounds.");
+                    RUNTIME_ERROR("String index %d out of bounds for string of length %d.", index, len);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 0);
                     }
 
                     Value v;
@@ -2090,7 +2095,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 1);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -2108,13 +2113,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 1);
                     }
 
                     dictSet(vm, dict, indexValue, assignValue);
@@ -2143,7 +2148,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 1);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -2159,13 +2164,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 1);
                     }
 
                     Value dictValue;
@@ -2450,7 +2455,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
             Value superclass = peek(vm, 0);
             if (!IS_CLASS(superclass)) {
-                RUNTIME_ERROR("Superclass must be a class.");
+                RUNTIME_ERROR_TYPE("Superclass must be a class, got '%s'.", 0);
             }
 
             if (IS_TRAIT(superclass)) {
@@ -2555,11 +2560,11 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value fileName = peek(vm, 1);
 
             if (!IS_STRING(openType)) {
-                RUNTIME_ERROR("File open type must be a string");
+                RUNTIME_ERROR_TYPE("File open type must be a string, got '%s'.", 0);
             }
 
             if (!IS_STRING(fileName)) {
-                RUNTIME_ERROR("Filename must be a string");
+                RUNTIME_ERROR_TYPE("Filename must be a string, got '%s'.", 1);
             }
 
             ObjString *openTypeString = AS_STRING(openType);

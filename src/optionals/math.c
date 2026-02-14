@@ -16,7 +16,10 @@ static Value averageNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to average()");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, value, &valLength);
+            runtimeError(vm, "average() arguments must be numbers, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         average = average + AS_NUMBER(value);
@@ -32,7 +35,10 @@ static Value floorNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to floor()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "floor() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -46,7 +52,10 @@ static Value roundNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to round()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "round() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -60,7 +69,10 @@ static Value ceilNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to ceil()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "ceil() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -74,7 +86,10 @@ static Value absNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to abs()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "abs() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -100,7 +115,10 @@ static Value maxNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to max()");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, value, &valLength);
+            runtimeError(vm, "max() arguments must be numbers, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -128,7 +146,10 @@ static Value minNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 1; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to min()");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, value, &valLength);
+            runtimeError(vm, "min() arguments must be numbers, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -156,7 +177,10 @@ static Value sumNative(DictuVM *vm, int argCount, Value *args) {
     for (int i = 0; i < argCount; ++i) {
         Value value = args[i];
         if (!IS_NUMBER(value)) {
-            runtimeError(vm, "A non-number value passed to sum()");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, value, &valLength);
+            runtimeError(vm, "sum() arguments must be numbers, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         sum = sum + AS_NUMBER(value);
@@ -172,7 +196,10 @@ static Value sqrtNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to sqrt()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "sqrt() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -186,7 +213,10 @@ static Value sinNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to sin()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "sin() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -200,7 +230,10 @@ static Value cosNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to cos()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "cos() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -214,7 +247,10 @@ static Value tanNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "A non-number value passed to tan()");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "tan() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

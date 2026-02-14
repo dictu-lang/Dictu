@@ -43,7 +43,10 @@ static Value extendList(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[1])) {
-        runtimeError(vm, "extend() argument must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "extend() argument must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -76,7 +79,10 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "insert() second argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "insert() second argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -88,7 +94,7 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
         index = list->values.count + index+1;
     }
     if (index < 0 || index > list->values.count) {
-        runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
+        runtimeError(vm, "insert() index %d out of bounds for list of length %d.", index, list->values.count);
         return EMPTY_VAL;
     }
 
@@ -127,7 +133,10 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "pop() index argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "pop() index argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -136,7 +145,7 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
             index = list->values.count + index;
         }
         if (index < 0 || index > list->values.count) {
-            runtimeError(vm, "Index passed to pop() is out of bounds for the list given");
+            runtimeError(vm, "pop() index %d out of bounds for list of length %d.", index, list->values.count);
             return EMPTY_VAL;
         }
 

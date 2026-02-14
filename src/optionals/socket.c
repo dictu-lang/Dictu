@@ -41,8 +41,19 @@ static Value createSocket(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
-        runtimeError(vm, "create() arguments must be numbers");
+    if (!IS_NUMBER(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "create() first argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "create() second argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -65,12 +76,18 @@ static Value bindSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "host passed to bind() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "host passed to bind() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "port passed to bind() must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "port passed to bind() must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -101,7 +118,10 @@ static Value listenSocket(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "listen() argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "listen() argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -162,7 +182,10 @@ static Value writeSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "write() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "write() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -185,7 +208,10 @@ static Value recvSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "recv() argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "recv() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -223,12 +249,18 @@ static Value connectSocket(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "host passed to connect() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "host passed to connect() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "port passed to connect() must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "port passed to connect() must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -265,8 +297,19 @@ static Value setSocketOpt(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
-        runtimeError(vm, "setsocketopt() arguments must be numbers");
+    if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "setsocketopt() first argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "setsocketopt() second argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

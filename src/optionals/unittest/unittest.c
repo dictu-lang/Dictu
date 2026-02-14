@@ -9,7 +9,10 @@ static Value mockNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_CLASS(args[0])) {
-        runtimeError(vm, "First argument passed to mock() must be a class");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "First argument passed to mock() must be a class, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -18,7 +21,10 @@ static Value mockNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_DICT(args[1])) {
-            runtimeError(vm, "Second argument passed to mock() must be a dictionary");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Second argument passed to mock() must be a dictionary, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 

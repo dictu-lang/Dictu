@@ -69,7 +69,10 @@ static Value getDictItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!isValidKey(args[1])) {
-        runtimeError(vm, "Dictionary key passed to get() must be an immutable type");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Dictionary key passed to get() must be a string, number, bool, or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -90,7 +93,10 @@ static Value removeDictItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!isValidKey(args[1])) {
-        runtimeError(vm, "Dictionary key passed to remove() must be an immutable type");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Dictionary key passed to remove() must be a string, number, bool, or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -114,7 +120,10 @@ static Value dictItemExists(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!isValidKey(args[1])) {
-        runtimeError(vm, "Dictionary key passed to exists() must be an immutable type");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Dictionary key passed to exists() must be a string, number, bool, or nil, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

@@ -7,7 +7,10 @@ static Value sha256(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "Argument passed to sha256() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Argument passed to sha256() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -43,8 +46,19 @@ static Value hmac(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "Arguments passed to hmac() must be a string.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Arguments passed to hmac() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Arguments passed to hmac() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -52,7 +66,10 @@ static Value hmac(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_BOOL(args[2])) {
-            runtimeError(vm, "Optional argument passed to hmac() must be a boolean.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Optional argument passed to hmac() must be a boolean, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -89,7 +106,10 @@ static Value bcrypt(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "Argument passed to bcrypt() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Argument passed to bcrypt() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -97,7 +117,10 @@ static Value bcrypt(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "Optional argument passed to bcrypt() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Optional argument passed to bcrypt() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -116,8 +139,19 @@ static Value bcryptVerify(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "Arguments passed to bcryptVerify() must be a string.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Arguments passed to bcryptVerify() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Arguments passed to bcryptVerify() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -133,8 +167,19 @@ static Value verify(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "Arguments passed to verify() must be a string.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Arguments passed to verify() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Arguments passed to verify() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

@@ -9,7 +9,10 @@ static Value objectGetClassRefImpl(DictuVM *vm, int argCount, Value *args, bool 
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "getClassRef() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "getClassRef() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

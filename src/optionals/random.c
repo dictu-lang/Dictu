@@ -19,8 +19,19 @@ static Value randomRange(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
-        runtimeError(vm, "range() arguments must be numbers");
+    if (!IS_NUMBER(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "range() arguments must be numbers, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "range() arguments must be numbers, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -37,7 +48,10 @@ static Value randomSelect(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[0])) {
-        runtimeError(vm, "select() argument must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "select() argument must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

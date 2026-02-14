@@ -27,7 +27,10 @@ static Value hasAttribute(DictuVM *vm, int argCount, Value *args) {
     Value value = args[1];
 
     if (!IS_STRING(value)) {
-        runtimeError(vm, "Argument passed to hasAttribute() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to hasAttribute() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -73,7 +76,10 @@ static Value getAttribute(DictuVM *vm, int argCount, Value *args) {
     Value key = args[1];
 
     if (!IS_STRING(key)) {
-        runtimeError(vm, "Argument passed to getAttribute() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to getAttribute() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -223,7 +229,10 @@ static Value setAttribute(DictuVM *vm, int argCount, Value *args) {
     Value key = args[1];
 
     if (!IS_STRING(key)) {
-        runtimeError(vm, "Argument passed to setAttribute() must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to setAttribute() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -240,7 +249,10 @@ static Value isInstance(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_CLASS(args[1])) {
-        runtimeError(vm, "Argument passed to isInstance() must be a class");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "Argument passed to isInstance() must be a class, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

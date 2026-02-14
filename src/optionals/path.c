@@ -12,7 +12,10 @@ static Value realpathNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "realpath() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "realpath() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -34,7 +37,10 @@ static Value isAbsoluteNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isAbsolute() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "isAbsolute() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -50,7 +56,10 @@ static Value basenameNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "basename() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "basename() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -75,7 +84,10 @@ static Value extnameNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "extname() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "extname() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -107,7 +119,10 @@ static Value dirnameNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "dirname() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "dirname() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -122,7 +137,10 @@ static Value existsNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "exists() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "exists() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -140,7 +158,10 @@ static Value isdirNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isDir() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "isDir() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -165,7 +186,10 @@ static Value isSymlinkNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "isSymbolicLink() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "isSymbolicLink() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -195,7 +219,10 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
         path = ".";
     } else {
         if (!IS_STRING(args[0])) {
-            runtimeError(vm, "listDir() argument must be a string");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[0], &valLength);
+            runtimeError(vm, "listDir() argument must be a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         path = AS_CSTRING(args[0]);
@@ -264,11 +291,11 @@ static Value listDirNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value joinNative(DictuVM *vm, int argCount, Value *args) {
     char* argCountError = "join() takes 1 or more arguments (%d given)";
-    char* nonStringError = "join() argument at index %d is not a string";
+    char* nonStringError = "join() argument at index %d is not a string, got '%s'.";
 
     if (argCount == 1 && IS_LIST(args[0])) {
         argCountError = "List passed to join() must have 1 or more elements (%d given).";
-        nonStringError = "The element at index %d of the list passed to join() is not a string";
+        nonStringError = "The element at index %d of the list passed to join() is not a string, got '%s'.";
         ObjList *list = AS_LIST(args[0]);
         argCount = list->values.count;
         args = list->values.values;
@@ -281,7 +308,10 @@ static Value joinNative(DictuVM *vm, int argCount, Value *args) {
 
     for (int i = 0; i < argCount; ++i) {
         if (!IS_STRING(args[i])) {
-            runtimeError(vm, nonStringError, i);
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[i], &valLength);
+            runtimeError(vm, nonStringError, i, val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
     }
