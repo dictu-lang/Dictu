@@ -756,57 +756,50 @@ static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_ADD);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_PRIVATE_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else {
             emitBytes(compiler, OP_GET_PRIVATE_ATTRIBUTE, name);
         }
@@ -820,57 +813,50 @@ static void dot(Compiler *compiler, LangToken previousToken, bool canAssign) {
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_ADD);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_SUBTRACT);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_MULTIPLY);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_DIVIDE);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_AND);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_XOR);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
             emitBytes(compiler, OP_GET_ATTRIBUTE_NO_POP, name);
             trackStack(compiler, 1);
             expression(compiler);
             emitByte(compiler, OP_BITWISE_OR);
-            trackStack(compiler, -1);
             emitBytes(compiler, OP_SET_ATTRIBUTE, name);
-            trackStack(compiler, -2);
+            trackStack(compiler, -3);
         } else {
             emitBytes(compiler, OP_GET_ATTRIBUTE, name);
         }
@@ -1300,45 +1286,38 @@ static void subscript(Compiler *compiler, LangToken previousToken, bool canAssig
     } else if (canAssign && match(compiler, TOKEN_PLUS_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_ADD);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_SUBTRACT);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_MULTIPLY);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_DIVIDE);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_AND);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_XOR);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         expression(compiler);
         emitBytes(compiler, OP_SUBSCRIPT_PUSH, OP_BITWISE_OR);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_SUBSCRIPT_ASSIGN);
-        trackStack(compiler, -2);
+        trackStack(compiler, -3);
     } else {
         emitByte(compiler, OP_SUBSCRIPT);
         trackStack(compiler, -1);
@@ -1396,57 +1375,50 @@ static void namedVariable(Compiler *compiler, LangToken name, bool canAssign) {
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_ADD);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_MINUS_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_SUBTRACT);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_MULTIPLY_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_MULTIPLY);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_DIVIDE_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_DIVIDE);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_AMPERSAND_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_AND);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_CARET_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_XOR);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else if (canAssign && match(compiler, TOKEN_PIPE_EQUALS)) {
         checkConst(compiler, setOp, arg);
         namedVariable(compiler, name, false);
         expression(compiler);
         emitByte(compiler, OP_BITWISE_OR);
-        trackStack(compiler, -1);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     } else {
         emitBytes(compiler, getOp, (uint8_t) arg);
         trackStack(compiler, 1);
@@ -2788,9 +2760,8 @@ static void importStatement(Compiler *compiler) {
 
         if (dictuSource) {
             emitByte(compiler, OP_POP);
-            trackStack(compiler, -1);
             emitByte(compiler, OP_IMPORT_VARIABLE);
-            trackStack(compiler, -1);
+            trackStack(compiler, -2);
         }
 
         defineVariable(compiler, importName, false);
@@ -3000,9 +2971,8 @@ static void unpackListStatement(Compiler *compiler){
         }
         checkConst(compiler, setOp, arg);
         emitBytes(compiler, setOp, (uint8_t) arg);
-        trackStack(compiler, -1);
         emitByte(compiler, OP_POP);
-        trackStack(compiler, -1);
+        trackStack(compiler, -2);
     }
 
     consume(compiler, TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
