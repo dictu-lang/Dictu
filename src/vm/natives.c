@@ -142,7 +142,7 @@ static Value isDefinedNative(DictuVM *vm, int argCount, Value *args) {
     ObjString *string = AS_STRING(args[0]);
 
     Value value;
-    CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
     if (tableGet(&frame->closure->function->module->values, string, &value))
        return TRUE_VAL;
 

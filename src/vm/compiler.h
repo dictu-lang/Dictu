@@ -102,6 +102,8 @@ typedef struct Compiler {
     Upvalue upvalues[UINT8_COUNT];
 
     int scopeDepth;
+    int stackDepth;
+    int maxStackDepth;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
     ObjDict *fieldAnnotations;

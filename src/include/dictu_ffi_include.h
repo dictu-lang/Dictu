@@ -171,6 +171,7 @@ typedef enum {
     OBJ_FILE,
     OBJ_ABSTRACT,
     OBJ_RESULT,
+    OBJ_FIBER,
     OBJ_UPVALUE
 } ObjType;
 
@@ -212,6 +213,7 @@ typedef enum {
 #define IS_FILE(value) isObjType(value, OBJ_FILE)
 #define IS_ABSTRACT(value) isObjType(value, OBJ_ABSTRACT)
 #define IS_RESULT(value) isObjType(value, OBJ_RESULT)
+#define IS_FIBER(value) isObjType(value, OBJ_FIBER)
 
 
 
@@ -287,9 +289,10 @@ typedef struct {
     int privatePropertyCount;
     int *privatePropertyNames;
     int *privatePropertyIndexes;
+    int maxStackDepth;
 } ObjFunction;
 
-#define STACK_MAX (64 * UINT8_COUNT)
+#define STACK_INITIAL (64 * UINT8_COUNT)
 typedef struct {
     Obj obj;
     ObjFunction *function;
@@ -305,12 +308,9 @@ typedef struct {
 
 struct _vm {
     void* _compilerStub;
-    Value stack[STACK_MAX];
-    Value *stackTop;
+    void *fiber;
+    bool fiberSwitch;
     bool repl;
-    CallFrame *frames;
-    int frameCount;
-    int frameCapacity;
     ObjModule *lastModule;
     Table modules;
     Table globals;
@@ -328,10 +328,10 @@ struct _vm {
     Table instanceMethods;
     Table resultMethods;
     Table enumMethods;
+    Table fiberMethods;
     ObjString *initString;
     ObjString *annotationString;
     ObjString *replVar;
-    ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
     Obj *objects;

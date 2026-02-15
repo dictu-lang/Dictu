@@ -55,6 +55,8 @@ import "object/import.du";
 import "term/import.du";
 import "buffer/import.du";
 import "ffi/import.du";
+import "fiber/import.du";
+import "vm/import.du";
 
 // If we got here no runtime errors were thrown, therefore all tests passed.
 print("All tests passed successfully!");

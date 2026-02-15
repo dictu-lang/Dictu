@@ -19,9 +19,9 @@ static Value objectGetClassRefImpl(DictuVM *vm, int argCount, Value *args, bool 
     CallFrame *frame;
     if (internal) {
         // -2 as we want to go to the callee site, not the Object.du code
-        frame = &vm->frames[vm->frameCount - 2];
+        frame = &vm->fiber->frames[vm->fiber->frameCount - 2];
     } else {
-        frame = &vm->frames[vm->frameCount - 1];
+        frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
     }
 
     if (tableGet(&frame->closure->function->module->values, classString, &klass) && IS_CLASS(klass)) {

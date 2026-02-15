@@ -180,6 +180,23 @@ static void blackenObject(DictuVM *vm, Obj *object) {
             break;
         }
 
+        case OBJ_FIBER: {
+            ObjFiber *fiber = (ObjFiber *)object;
+            // During construction, stack/frames may be NULL.
+            if (fiber->stack != NULL) {
+                for (Value *slot = fiber->stack; slot < fiber->stackTop; slot++)
+                    grayValue(vm, *slot);
+            }
+            if (fiber->frames != NULL) {
+                for (int i = 0; i < fiber->frameCount; i++)
+                    grayObject(vm, (Obj *)fiber->frames[i].closure);
+            }
+            for (ObjUpvalue *uv = fiber->openUpvalues; uv != NULL; uv = uv->next)
+                grayObject(vm, (Obj *)uv);
+            grayObject(vm, (Obj *)fiber->caller);
+            break;
+        }
+
         case OBJ_NATIVE:
         case OBJ_STRING:
         case OBJ_FILE:
@@ -310,6 +327,14 @@ void freeObject(DictuVM *vm, Obj *object) {
             FREE(vm, ObjResult, object);
             break;
         }
+
+        case OBJ_FIBER: {
+            ObjFiber *fiber = (ObjFiber *)object;
+            FREE_ARRAY(vm, Value, fiber->stack, fiber->stackCapacity);
+            FREE_ARRAY(vm, CallFrame, fiber->frames, fiber->frameCapacity);
+            FREE(vm, ObjFiber, object);
+            break;
+        }
     }
 }
 
@@ -319,21 +344,8 @@ void collectGarbage(DictuVM *vm) {
     size_t before = vm->bytesAllocated;
 #endif
 
-    // Mark the stack roots.
-    for (Value *slot = vm->stack; slot < vm->stackTop; slot++) {
-        grayValue(vm, *slot);
-    }
-
-    for (int i = 0; i < vm->frameCount; i++) {
-        grayObject(vm, (Obj *) vm->frames[i].closure);
-    }
-
-    // Mark the open upvalues.
-    for (ObjUpvalue *upvalue = vm->openUpvalues;
-         upvalue != NULL;
-         upvalue = upvalue->next) {
-        grayObject(vm, (Obj *) upvalue);
-    }
+    // Mark the current fiber (transitively marks its stack, frames, upvalues, and caller chain).
+    grayObject(vm, (Obj *)vm->fiber);
 
     // Mark the global roots.
     grayTable(vm, &vm->modules);
@@ -350,6 +362,7 @@ void collectGarbage(DictuVM *vm) {
     grayTable(vm, &vm->instanceMethods);
     grayTable(vm, &vm->resultMethods);
     grayTable(vm, &vm->enumMethods);
+    grayTable(vm, &vm->fiberMethods);
     grayCompilerRoots(vm);
     grayObject(vm, (Obj *) vm->initString);
     grayObject(vm, (Obj *) vm->annotationString);

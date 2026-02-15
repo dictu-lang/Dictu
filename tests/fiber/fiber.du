@@ -1,0 +1,229 @@
+/**
+ * fiber.du
+ *
+ * Testing the Fiber module: creation, call, yield, bidirectional values, isDone
+ */
+from UnitTest import UnitTest;
+
+import Fiber;
+
+class TestFiber < UnitTest {
+
+    // Basic creation
+    testNew() {
+        var f = Fiber.new(def () => { return nil; });
+        this.assertTruthy(f != nil);
+        this.assertEquals(f.toString(), "<Fiber>");
+    }
+
+    // Simple call and return
+    testCallReturn() {
+        var f = Fiber.new(def () => { return 42; });
+        this.assertEquals(f.call(), 42);
+        this.assertTruthy(f.isDone());
+    }
+
+    // isDone before and after
+    testIsDone() {
+        var f = Fiber.new(def () => { return 1; });
+        this.assertFalsey(f.isDone());
+        f.call();
+        this.assertTruthy(f.isDone());
+    }
+
+    // Calling a finished fiber is an error
+    testCallFinishedFiber() {
+        var f = Fiber.new(def () => { return 1; });
+        f.call();
+        this.assertTruthy(f.isDone());
+        // Calling again should error — we can't catch errors in Dictu tests
+        // but we verify isDone is true.
+    }
+
+    // Yield a single value
+    testYield() {
+        var f = Fiber.new(def () => {
+            Fiber.yield(10);
+            return 20;
+        });
+        this.assertEquals(f.call(), 10);
+        this.assertFalsey(f.isDone());
+        this.assertEquals(f.call(), 20);
+        this.assertTruthy(f.isDone());
+    }
+
+    // Multiple yields
+    testMultipleYields() {
+        var f = Fiber.new(def () => {
+            Fiber.yield(1);
+            Fiber.yield(2);
+            Fiber.yield(3);
+            return 4;
+        });
+        this.assertEquals(f.call(), 1);
+        this.assertEquals(f.call(), 2);
+        this.assertEquals(f.call(), 3);
+        this.assertEquals(f.call(), 4);
+        this.assertTruthy(f.isDone());
+    }
+
+    // Bidirectional value passing — first call delivers param
+    testFirstCallParam() {
+        var f = Fiber.new(def (v) => {
+            return v * 10;
+        });
+        this.assertEquals(f.call(5), 50);
+    }
+
+    // Bidirectional value passing — yield returns value from next call
+    testBidirectionalValues() {
+        var f = Fiber.new(def (v) => {
+            var result = Fiber.yield(v * 2);
+            return result * 3;
+        });
+        this.assertEquals(f.call(10), 20);   // yields 10*2=20
+        this.assertEquals(f.call(100), 300);  // resumes with 100, returns 100*3=300
+    }
+
+    // Yield nil when no value given
+    testYieldNil() {
+        var f = Fiber.new(def () => {
+            Fiber.yield();
+            return "done";
+        });
+        this.assertEquals(f.call(), nil);
+        this.assertEquals(f.call(), "done");
+    }
+
+    // Call with no value delivers nil
+    testCallNilParam() {
+        var f = Fiber.new(def (v) => {
+            return v;
+        });
+        this.assertEquals(f.call(), nil);
+    }
+
+    // Fiber.isMain() from main fiber
+    testIsMainFromMain() {
+        this.assertTruthy(Fiber.isMain());
+    }
+
+    // Fiber.isMain() from inside a fiber
+    testIsMainFromFiber() {
+        var isMainInside = nil;
+        var f = Fiber.new(def () => {
+            isMainInside = Fiber.isMain();
+            return nil;
+        });
+        f.call();
+        this.assertFalsey(isMainInside);
+    }
+
+    // Generator pattern: fibonacci
+    testFibonacciGenerator() {
+        var fib = Fiber.new(def () => {
+            var a = 0;
+            var b = 1;
+            while (true) {
+                Fiber.yield(a);
+                var temp = a + b;
+                a = b;
+                b = temp;
+            }
+        });
+
+        this.assertEquals(fib.call(), 0);
+        this.assertEquals(fib.call(), 1);
+        this.assertEquals(fib.call(), 1);
+        this.assertEquals(fib.call(), 2);
+        this.assertEquals(fib.call(), 3);
+        this.assertEquals(fib.call(), 5);
+        this.assertEquals(fib.call(), 8);
+        this.assertEquals(fib.call(), 13);
+        this.assertFalsey(fib.isDone());
+    }
+
+    // Multiple independent fibers
+    testMultipleFibers() {
+        var f1 = Fiber.new(def () => {
+            Fiber.yield("a1");
+            return "a2";
+        });
+        var f2 = Fiber.new(def () => {
+            Fiber.yield("b1");
+            return "b2";
+        });
+
+        this.assertEquals(f1.call(), "a1");
+        this.assertEquals(f2.call(), "b1");
+        this.assertEquals(f1.call(), "a2");
+        this.assertEquals(f2.call(), "b2");
+        this.assertTruthy(f1.isDone());
+        this.assertTruthy(f2.isDone());
+    }
+
+    // Fiber with closure capturing
+    testClosureCapture() {
+        var counter = 0;
+        var f = Fiber.new(def () => {
+            counter += 1;
+            Fiber.yield(counter);
+            counter += 1;
+            return counter;
+        });
+        this.assertEquals(f.call(), 1);
+        this.assertEquals(counter, 1);
+        this.assertEquals(f.call(), 2);
+        this.assertEquals(counter, 2);
+    }
+
+    // Yield in a loop
+    testYieldInLoop() {
+        var f = Fiber.new(def () => {
+            for (var i = 0; i < 5; i += 1) {
+                Fiber.yield(i);
+            }
+            return -1;
+        });
+
+        for (var i = 0; i < 5; i += 1) {
+            this.assertEquals(f.call(), i);
+        }
+        this.assertEquals(f.call(), -1);
+        this.assertTruthy(f.isDone());
+    }
+
+    // Deep recursion in a fiber
+    testDeepRecursion() {
+        var f = Fiber.new(def () => {
+            var sum;
+            sum = def (n) => {
+                if (n <= 0) return 0;
+                return n + sum(n - 1);
+            };
+            return sum(100);
+        });
+        this.assertEquals(f.call(), 5050);
+    }
+
+    // Return different types
+    testReturnTypes() {
+        var f = Fiber.new(def () => {
+            Fiber.yield(42);
+            Fiber.yield("hello");
+            Fiber.yield(true);
+            Fiber.yield([1, 2, 3]);
+            Fiber.yield({"a": 1});
+            return nil;
+        });
+
+        this.assertEquals(f.call(), 42);
+        this.assertEquals(f.call(), "hello");
+        this.assertEquals(f.call(), true);
+        this.assertEquals(f.call(), [1, 2, 3]);
+        this.assertEquals(f.call(), {"a": 1});
+        this.assertEquals(f.call(), nil);
+    }
+}
+
+TestFiber().run();

@@ -36,7 +36,7 @@ static Value mockNative(DictuVM *vm, int argCount, Value *args) {
             continue;
         }
 
-        ObjFunction *emptyFunc = newFunction(vm, vm->frames[vm->frameCount - 1].closure->function->module, TYPE_METHOD, ACCESS_PUBLIC);
+        ObjFunction *emptyFunc = newFunction(vm, vm->fiber->frames[vm->fiber->frameCount - 1].closure->function->module, TYPE_METHOD, ACCESS_PUBLIC);
         push(vm, OBJ_VAL(emptyFunc));
 
         emptyFunc->name = klass->publicMethods.entries[i].key;
