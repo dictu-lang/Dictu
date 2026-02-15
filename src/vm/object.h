@@ -28,6 +28,7 @@
 #define AS_FILE(value)          ((ObjFile*)AS_OBJ(value))
 #define AS_ABSTRACT(value)      ((ObjAbstract*)AS_OBJ(value))
 #define AS_RESULT(value)        ((ObjResult*)AS_OBJ(value))
+#define AS_FIBER(value)         ((ObjFiber*)AS_OBJ(value))
 
 #define IS_MODULE(value)          isObjType(value, OBJ_MODULE)
 #define IS_BOUND_METHOD(value)    isObjType(value, OBJ_BOUND_METHOD)
@@ -46,6 +47,7 @@
 #define IS_FILE(value)            isObjType(value, OBJ_FILE)
 #define IS_ABSTRACT(value)        isObjType(value, OBJ_ABSTRACT)
 #define IS_RESULT(value)          isObjType(value, OBJ_RESULT)
+#define IS_FIBER(value)           isObjType(value, OBJ_FIBER)
 
 typedef enum {
     OBJ_MODULE,
@@ -63,6 +65,7 @@ typedef enum {
     OBJ_FILE,
     OBJ_ABSTRACT,
     OBJ_RESULT,
+    OBJ_FIBER,
     OBJ_UPVALUE
 } ObjType;
 
@@ -221,6 +224,33 @@ typedef struct {
     int upvalueCount;
 } ObjClosure;
 
+typedef struct {
+    ObjClosure *closure;
+    uint8_t *ip;
+    Value *slots;
+} CallFrame;
+
+typedef enum {
+    FIBER_READY,
+    FIBER_RUNNING,
+    FIBER_DONE
+} FiberState;
+
+#define FIBER_STACK_INITIAL 1024
+
+typedef struct sObjFiber {
+    Obj obj;
+    Value *stack;
+    Value *stackTop;
+    int stackCapacity;
+    CallFrame *frames;
+    int frameCount;
+    int frameCapacity;
+    ObjUpvalue *openUpvalues;
+    struct sObjFiber *caller;
+    FiberState state;
+} ObjFiber;
+
 typedef struct sObjClass {
     Obj obj;
     ObjString *name;
@@ -295,6 +325,9 @@ Value newResultSuccess(DictuVM *vm, Value value);
 Value newResultError(DictuVM *vm, char *errorMsg);
 
 ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot);
+
+ObjFiber *newFiber(DictuVM *vm, ObjClosure *closure);
+ObjFiber *newMainFiber(DictuVM *vm);
 
 char *setToString(Value value);
 char *dictToString(Value value);

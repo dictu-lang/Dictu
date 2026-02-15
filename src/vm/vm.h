@@ -8,21 +8,11 @@
 
 #define STACK_INITIAL (64 * UINT8_COUNT)
 
-typedef struct {
-    ObjClosure *closure;
-    uint8_t *ip;
-    Value *slots;
-} CallFrame;
-
 struct _vm {
     Compiler *compiler;
-    Value *stack;
-    Value *stackTop;
-    int stackCapacity;
+    ObjFiber *fiber;
+    bool fiberSwitch;
     bool repl;
-    CallFrame *frames;
-    int frameCount;
-    int frameCapacity;
     ObjModule *lastModule;
     Table modules;
     Table globals;
@@ -40,10 +30,10 @@ struct _vm {
     Table instanceMethods;
     Table resultMethods;
     Table enumMethods;
+    Table fiberMethods;
     ObjString *initString;
     ObjString *annotationString;
     ObjString *replVar;
-    ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
     Obj *objects;

@@ -314,6 +314,70 @@ ObjUpvalue *newUpvalue(DictuVM *vm, Value *slot) {
     return upvalue;
 }
 
+ObjFiber *newFiber(DictuVM *vm, ObjClosure *closure) {
+    ObjFiber *fiber = ALLOCATE_OBJ(vm, ObjFiber, OBJ_FIBER);
+    // Initialize all fields to safe values before any allocation
+    // that could trigger GC (which would try to trace this fiber).
+    fiber->stack = NULL;
+    fiber->stackTop = NULL;
+    fiber->stackCapacity = 0;
+    fiber->frames = NULL;
+    fiber->frameCount = 0;
+    fiber->frameCapacity = 0;
+    fiber->openUpvalues = NULL;
+    fiber->caller = NULL;
+    fiber->state = FIBER_READY;
+
+    // Root the fiber on the current stack so GC won't collect it.
+    push(vm, OBJ_VAL(fiber));
+
+    fiber->stack = ALLOCATE(vm, Value, FIBER_STACK_INITIAL);
+    fiber->stackCapacity = FIBER_STACK_INITIAL;
+    fiber->frames = ALLOCATE(vm, CallFrame, 4);
+    fiber->frameCapacity = 4;
+
+    // Push the closure as slot 0 on the fiber's own stack.
+    fiber->stack[0] = OBJ_VAL(closure);
+    fiber->stackTop = fiber->stack + 1;
+
+    // Set up the first call frame.
+    fiber->frames[0].closure = closure;
+    fiber->frames[0].ip = closure->function->chunk.code;
+    fiber->frames[0].slots = fiber->stack;
+    fiber->frameCount = 1;
+
+    // Unroot the fiber (caller will hold the reference).
+    pop(vm);
+
+    return fiber;
+}
+
+ObjFiber *newMainFiber(DictuVM *vm) {
+    ObjFiber *fiber = ALLOCATE_OBJ(vm, ObjFiber, OBJ_FIBER);
+    // Initialize all fields to safe values before any allocation
+    // that could trigger GC (which would try to trace this fiber).
+    fiber->stack = NULL;
+    fiber->stackTop = NULL;
+    fiber->stackCapacity = 0;
+    fiber->frames = NULL;
+    fiber->frameCount = 0;
+    fiber->frameCapacity = 0;
+    fiber->openUpvalues = NULL;
+    fiber->caller = NULL;
+    fiber->state = FIBER_RUNNING;
+
+    // Root the fiber so GC won't collect it during inner allocations.
+    vm->fiber = fiber;
+
+    fiber->stack = ALLOCATE(vm, Value, FIBER_STACK_INITIAL);
+    fiber->stackCapacity = FIBER_STACK_INITIAL;
+    fiber->stackTop = fiber->stack;
+    fiber->frames = ALLOCATE(vm, CallFrame, 4);
+    fiber->frameCapacity = 4;
+
+    return fiber;
+}
+
 char *listToString(Value value) {
     int size = 50;
     ObjList *list = AS_LIST(value);
@@ -826,6 +890,14 @@ char *objectToString(Value value) {
             char *resultString = malloc(sizeof(char) * 13);
             snprintf(resultString, 13, "<Result Err>");
             return resultString;
+        }
+
+        case OBJ_FIBER: {
+            int len = 7;
+            char *str = malloc(len + 1);
+            memcpy(str, "<Fiber>", len);
+            str[len] = '\0';
+            return str;
         }
     }
 

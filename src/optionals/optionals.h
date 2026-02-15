@@ -30,6 +30,7 @@
 #include "buffer.h"
 #include "unittest/unittest.h"
 #include "ffi.h"
+#include "fiber.h"
 
 typedef Value (*BuiltinModule)(DictuVM *vm);
 
