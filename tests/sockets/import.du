@@ -4,7 +4,7 @@
  * General import file for all the socket tests
  */
 
-// import "constants.du";
-// import "create.du";
-// import "bind.du";
-// import "setsockopt.du";
+import "constants.du";
+import "create.du";
+import "bind.du";
+import "setsockopt.du";
