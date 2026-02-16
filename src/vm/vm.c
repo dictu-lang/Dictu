@@ -25,15 +25,44 @@
 #include "datatypes/instance.h"
 #include "datatypes/result/result.h"
 #include "datatypes/enums.h"
+#include "datatypes/fiber/fiber.h"
 #include "natives.h"
 #include "../optionals/optionals.h"
 #include "value.h"
 
 static void resetStack(DictuVM *vm) {
-    vm->stackTop = vm->stack;
-    vm->frameCount = 0;
-    vm->openUpvalues = NULL;
+    vm->fiber->stackTop = vm->fiber->stack;
+    vm->fiber->frameCount = 0;
+    vm->fiber->openUpvalues = NULL;
     vm->compiler = NULL;
+}
+
+static void growStack(DictuVM *vm, int needed) {
+    ObjFiber *fiber = vm->fiber;
+    int oldCapacity = fiber->stackCapacity;
+    Value *oldStack = fiber->stack;
+
+    while (fiber->stackCapacity < needed)
+        fiber->stackCapacity *= 2;
+
+    fiber->stack = (Value*)reallocate(vm, fiber->stack,
+        sizeof(Value) * oldCapacity,
+        sizeof(Value) * fiber->stackCapacity);
+    if (fiber->stack == NULL) {
+        fprintf(stderr, "Unable to grow stack\n");
+        exit(71);
+    }
+
+    ptrdiff_t delta = fiber->stack - oldStack;
+    if (delta == 0) return;
+
+    fiber->stackTop += delta;
+
+    for (int i = 0; i < fiber->frameCount; i++)
+        fiber->frames[i].slots += delta;
+
+    for (ObjUpvalue *uv = fiber->openUpvalues; uv != NULL; uv = uv->next)
+        uv->value += delta;
 }
 
 #define HANDLE_UNPACK                                                               \
@@ -56,8 +85,8 @@ static void resetStack(DictuVM *vm) {
 #define INSTANCE_HAS_NO_ATTR_ERR RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars)
 
 void runtimeError(DictuVM *vm, const char *format, ...) {
-    for (int i = vm->frameCount - 1; i >= 0; i--) {
-        CallFrame *frame = &vm->frames[i];
+    for (int i = vm->fiber->frameCount - 1; i >= 0; i--) {
+        CallFrame *frame = &vm->fiber->frames[i];
 
         if(frame->closure == NULL) {
             // synthetic frame created by callFunction
@@ -98,11 +127,9 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
 
     memset(vm, '\0', sizeof(DictuVM));
 
-    resetStack(vm);
     vm->objects = NULL;
     vm->repl = repl;
-    vm->frameCapacity = 4;
-    vm->frames = NULL;
+    vm->fiberSwitch = false;
     vm->initString = NULL;
     vm->replVar = NULL;
     vm->bytesAllocated = 0;
@@ -130,8 +157,11 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     initTable(&vm->instanceMethods);
     initTable(&vm->resultMethods);
     initTable(&vm->enumMethods);
+    initTable(&vm->fiberMethods);
 
-    vm->frames = ALLOCATE(vm, CallFrame, vm->frameCapacity);
+    // Create the main fiber — all execution state lives here.
+    vm->fiber = newMainFiber(vm);
+
     vm->initString = copyString(vm, "init", 4);
     vm->annotationString = copyString(vm, "__annotationName", 16);
 
@@ -151,6 +181,7 @@ DictuVM *dictuInitVM(bool repl, int argc, char **argv) {
     declareInstanceMethods(vm);
     declareResultMethods(vm);
     declareEnumMethods(vm);
+    declareFiberMethods(vm);
 
     if (vm->repl) {
         vm->replVar = copyString(vm, "_", 1);
@@ -180,7 +211,7 @@ void dictuFreeVM(DictuVM *vm) {
     freeTable(vm, &vm->instanceMethods);
     freeTable(vm, &vm->resultMethods);
     freeTable(vm, &vm->enumMethods);
-    FREE_ARRAY(vm, CallFrame, vm->frames, vm->frameCapacity);
+    freeTable(vm, &vm->fiberMethods);
     vm->initString = NULL;
     vm->replVar = NULL;
     freeObjects(vm);
@@ -197,17 +228,17 @@ void dictuFreeVM(DictuVM *vm) {
 }
 
 void push(DictuVM *vm, Value value) {
-    *vm->stackTop = value;
-    vm->stackTop++;
+    *vm->fiber->stackTop = value;
+    vm->fiber->stackTop++;
 }
 
 Value pop(DictuVM *vm) {
-    vm->stackTop--;
-    return *vm->stackTop;
+    vm->fiber->stackTop--;
+    return *vm->fiber->stackTop;
 }
 
 Value peek(DictuVM *vm, int distance) {
-    return vm->stackTop[-1 - distance];
+    return vm->fiber->stackTop[-1 - distance];
 }
 
 ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
@@ -253,7 +284,7 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
                 writeValueArray(vm, &list->values, peek(vm, i));
             }
             // +1 for the list pushed earlier on the stack
-            vm->stackTop -= varargs + 1;
+            vm->fiber->stackTop -= varargs + 1;
             push(vm, OBJ_VAL(list));
             argCount = arity;
         } else {
@@ -269,21 +300,25 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
         ObjList *list = newList(vm);
         push(vm, OBJ_VAL(list));
         writeValueArray(vm, &list->values, peek(vm, 1));
-        vm->stackTop -= 2;
+        vm->fiber->stackTop -= 2;
         push(vm, OBJ_VAL(list));
     }
-    if (vm->frameCount == vm->frameCapacity) {
-        int oldCapacity = vm->frameCapacity;
-        vm->frameCapacity = GROW_CAPACITY(vm->frameCapacity);
-        vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,
-                                   oldCapacity, vm->frameCapacity);
+    if (vm->fiber->frameCount == vm->fiber->frameCapacity) {
+        int oldCapacity = vm->fiber->frameCapacity;
+        vm->fiber->frameCapacity = GROW_CAPACITY(vm->fiber->frameCapacity);
+        vm->fiber->frames = GROW_ARRAY(vm, vm->fiber->frames, CallFrame,
+                                   oldCapacity, vm->fiber->frameCapacity);
     }
 
-    CallFrame *frame = &vm->frames[vm->frameCount++];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount++];
     frame->closure = closure;
     frame->ip = closure->function->chunk.code;
 
-    frame->slots = vm->stackTop - argCount - 1;
+    frame->slots = vm->fiber->stackTop - argCount - 1;
+
+    int needed = (int)(vm->fiber->stackTop - vm->fiber->stack) + closure->function->maxStackDepth;
+    if (needed > vm->fiber->stackCapacity)
+        growStack(vm, needed);
 
     return true;
 }
@@ -298,7 +333,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
 
                 // Replace the bound method with the receiver so it's in the
                 // right slot when the method is called.
-                vm->stackTop[-argCount - 1] = bound->receiver;
+                vm->fiber->stackTop[-argCount - 1] = bound->receiver;
                 return call(vm, bound->method, argCount);
             }
 
@@ -311,7 +346,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
                 ObjClass *klass = AS_CLASS(callee);
 
                 // Create the instance.
-                vm->stackTop[-argCount - 1] = OBJ_VAL(newInstance(vm, klass));
+                vm->fiber->stackTop[-argCount - 1] = OBJ_VAL(newInstance(vm, klass));
 
                 // Call the initializer, if there is one.
                 Value initializer;
@@ -326,7 +361,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
             }
 
             case OBJ_CLOSURE: {
-                vm->stackTop[-argCount - 1] = callee;
+                vm->fiber->stackTop[-argCount - 1] = callee;
 
 
 
@@ -335,12 +370,17 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
 
             case OBJ_NATIVE: {
                 NativeFn native = AS_NATIVE(callee);
-                Value result = native(vm, argCount, vm->stackTop - argCount);
+                Value result = native(vm, argCount, vm->fiber->stackTop - argCount);
 
-                if (IS_EMPTY(result))
+                if (IS_EMPTY(result)) {
+                    if (vm->fiberSwitch) {
+                        vm->fiberSwitch = false;
+                        return true;
+                    }
                     return false;
+                }
 
-                vm->stackTop -= argCount + 1;
+                vm->fiber->stackTop -= argCount + 1;
                 push(vm, result);
                 return true;
             }
@@ -361,12 +401,19 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
 static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
     NativeFn native = AS_NATIVE(method);
 
-    Value result = native(vm, argCount, vm->stackTop - argCount - 1);
+    Value result = native(vm, argCount, vm->fiber->stackTop - argCount - 1);
 
-    if (IS_EMPTY(result))
+    if (IS_EMPTY(result)) {
+        if (vm->fiberSwitch) {
+            // Fiber switch occurred — the native already set up both stacks.
+            // The run loop will reload frame/ip from the new vm->fiber.
+            vm->fiberSwitch = false;
+            return true;
+        }
         return false;
+    }
 
-    vm->stackTop -= argCount + 1;
+    vm->fiber->stackTop -= argCount + 1;
     push(vm, result);
     return true;
 }
@@ -374,12 +421,12 @@ static bool callNativeMethod(DictuVM *vm, Value method, int argCount) {
 static bool callNativeMethodExcludeSelf(DictuVM *vm, Value method, int argCount) {
     NativeFn native = AS_NATIVE(method);
 
-    Value result = native(vm, argCount, vm->stackTop - (argCount-1) - 1);
+    Value result = native(vm, argCount, vm->fiber->stackTop - (argCount-1) - 1);
 
     if (IS_EMPTY(result))
         return false;
 
-    vm->stackTop -= argCount + 1;
+    vm->fiber->stackTop -= argCount + 1;
     push(vm, result);
     return true;
 }
@@ -428,7 +475,7 @@ static bool invokeInternal(DictuVM *vm, ObjString *name, int argCount, bool unpa
 
         // Look for a field which may shadow a method.
         if (tableGet(&instance->publicAttributes, name, &value)) {
-            vm->stackTop[-argCount - 1] = value;
+            vm->fiber->stackTop[-argCount - 1] = value;
             return callValue(vm, value, argCount, unpack);
         }
     } else if (IS_CLASS(receiver)) {
@@ -556,7 +603,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
 
                 // Look for a field which may shadow a method.
                 if (tableGet(&instance->publicAttributes, name, &value)) {
-                    vm->stackTop[-argCount - 1] = value;
+                    vm->fiber->stackTop[-argCount - 1] = value;
                     return callValue(vm, value, argCount, unpack);
                 }
 
@@ -589,7 +636,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     push(vm, peek(vm, 0));
 
                     for (int i = 2; i <= argCount + 1; i++) {
-                        vm->stackTop[-i] = peek(vm, i);
+                        vm->fiber->stackTop[-i] = peek(vm, i);
                     }
 
                     return call(vm, AS_CLOSURE(value), argCount + 1);
@@ -609,7 +656,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     push(vm, peek(vm, 0));
 
                     for (int i = 2; i <= argCount + 1; i++) {
-                        vm->stackTop[-i] = peek(vm, i);
+                        vm->fiber->stackTop[-i] = peek(vm, i);
                     }
 
                     return call(vm, AS_CLOSURE(value), argCount + 1);
@@ -649,13 +696,23 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     push(vm, peek(vm, 0));
 
                     for (int i = 2; i <= argCount + 1; i++) {
-                        vm->stackTop[-i] = peek(vm, i);
+                        vm->fiber->stackTop[-i] = peek(vm, i);
                     }
 
                     return call(vm, AS_CLOSURE(value), argCount + 1);
                 }
 
                 runtimeError(vm, "Result has no method %s().", name->chars);
+                return false;
+            }
+
+            case OBJ_FIBER: {
+                Value value;
+                if (tableGet(&vm->fiberMethods, name, &value)) {
+                    return callNativeMethod(vm, value, argCount);
+                }
+
+                runtimeError(vm, "Fiber has no method %s().", name->chars);
                 return false;
             }
 
@@ -683,7 +740,7 @@ static bool invoke(DictuVM *vm, ObjString *name, int argCount, bool unpack) {
                     push(vm, peek(vm, 0));
 
                     for (int i = 2; i <= argCount + 1; i++) {
-                        vm->stackTop[-i] = peek(vm, i);
+                        vm->fiber->stackTop[-i] = peek(vm, i);
                     }
 
                     return call(vm, AS_CLOSURE(value), argCount + 1);
@@ -727,13 +784,13 @@ static bool bindMethod(DictuVM *vm, ObjClass *klass, ObjString *name) {
 // new open upvalue and adds it to the DictuVM's list of upvalues.
 static ObjUpvalue *captureUpvalue(DictuVM *vm, Value *local) {
     // If there are no open upvalues at all, we must need a new one.
-    if (vm->openUpvalues == NULL) {
-        vm->openUpvalues = newUpvalue(vm, local);
-        return vm->openUpvalues;
+    if (vm->fiber->openUpvalues == NULL) {
+        vm->fiber->openUpvalues = newUpvalue(vm, local);
+        return vm->fiber->openUpvalues;
     }
 
     ObjUpvalue *prevUpvalue = NULL;
-    ObjUpvalue *upvalue = vm->openUpvalues;
+    ObjUpvalue *upvalue = vm->fiber->openUpvalues;
 
     // Walk towards the bottom of the stack until we find a previously
     // existing upvalue or reach where it should be.
@@ -753,7 +810,7 @@ static ObjUpvalue *captureUpvalue(DictuVM *vm, Value *local) {
 
     if (prevUpvalue == NULL) {
         // The new one is the first one in the list.
-        vm->openUpvalues = createdUpvalue;
+        vm->fiber->openUpvalues = createdUpvalue;
     } else {
         prevUpvalue->next = createdUpvalue;
     }
@@ -762,9 +819,9 @@ static ObjUpvalue *captureUpvalue(DictuVM *vm, Value *local) {
 }
 
 static void closeUpvalues(DictuVM *vm, Value *last) {
-    while (vm->openUpvalues != NULL &&
-           vm->openUpvalues->value >= last) {
-        ObjUpvalue *upvalue = vm->openUpvalues;
+    while (vm->fiber->openUpvalues != NULL &&
+           vm->fiber->openUpvalues->value >= last) {
+        ObjUpvalue *upvalue = vm->fiber->openUpvalues;
 
         // Move the value into the upvalue itself and point the upvalue to
         // it.
@@ -772,7 +829,7 @@ static void closeUpvalues(DictuVM *vm, Value *last) {
         upvalue->value = &upvalue->closed;
 
         // Pop it off the open upvalue list.
-        vm->openUpvalues = upvalue->next;
+        vm->fiber->openUpvalues = upvalue->next;
     }
 }
 
@@ -874,7 +931,7 @@ static void copyAnnotations(DictuVM *vm, ObjDict *superAnnotations, ObjDict *kla
 
 
 static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
-    CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
     register uint8_t* ip = frame->ip;
 
     #define READ_BYTE() (*ip++)
@@ -906,7 +963,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
           type a = AS_NUMBER(peek(vm, 0));                                                                \
-          vm->stackTop[-1] = valueType(a op b);                                                           \
+          vm->fiber->stackTop[-1] = valueType(a op b);                                                           \
         } while (false)
 
     #define BINARY_OP_FUNCTION(valueType, op, func, type)                                                 \
@@ -917,7 +974,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                                                                                                           \
           type b = AS_NUMBER(pop(vm));                                                                    \
           type a = AS_NUMBER(peek(vm, 0));                                                                \
-          vm->stackTop[-1] = valueType(func(a, b));                                                       \
+          vm->fiber->stackTop[-1] = valueType(func(a, b));                                                       \
         } while (false)
 
     #define STORE_FRAME frame->ip = ip
@@ -955,7 +1012,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             do                                                                                    \
             {                                                                                     \
                 printf("          ");                                                             \
-                for (Value *stackValue = vm->stack; stackValue < vm->stackTop; stackValue++) {    \
+                for (Value *stackValue = vm->fiber->stack; stackValue < vm->fiber->stackTop; stackValue++) {    \
                     printf("[ ");                                                                 \
                     printValue(*stackValue);                                                      \
                     printf(" ]");                                                                 \
@@ -1079,7 +1136,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         CASE_CODE(DEFINE_OPTIONAL): {
             int arity = READ_BYTE();
             int arityOptional = READ_BYTE();
-            int argCount = vm->stackTop - frame->slots - arityOptional - 1;
+            int argCount = vm->fiber->stackTop - frame->slots - arityOptional - 1;
 
             // Temp array while we shuffle the stack.
             // Can not have more than 255 args to a function, so
@@ -1723,7 +1780,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
             frame->ip = ip;
             call(vm, closure, 0);
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
 
             DISPATCH();
@@ -1752,7 +1809,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (IS_CLOSURE(module)) {
                 frame->ip = ip;
                 call(vm, AS_CLOSURE(module), 0);
-                frame = &vm->frames[vm->frameCount - 1];
+                frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
                 ip = frame->ip;
 
                 tableGet(&vm->modules, fileName, &module);
@@ -1825,7 +1882,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 writeValueArray(vm, &list->values, peek(vm, i));
             }
 
-            vm->stackTop -= count + 1;
+            vm->fiber->stackTop -= count + 1;
             push(vm, OBJ_VAL(list));
             DISPATCH();
         }
@@ -1867,7 +1924,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
             }
 
-            vm->stackTop -= count * 2 + 1;
+            vm->fiber->stackTop -= count * 2 + 1;
             push(vm, OBJ_VAL(dict));
 
             DISPATCH();
@@ -2034,7 +2091,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         index = list->values.count + index;
 
                     if (index >= 0 && index < list->values.count) {
-                        vm->stackTop[-1] = list->values.values[index];
+                        vm->fiber->stackTop[-1] = list->values.values[index];
                         push(vm, value);
                         DISPATCH();
                     }
@@ -2053,7 +2110,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
                     }
 
-                    vm->stackTop[-1] = dictValue;
+                    vm->fiber->stackTop[-1] = dictValue;
                     push(vm, value);
 
                     DISPATCH();
@@ -2180,7 +2237,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (!callValue(vm, peek(vm, argCount), argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
             DISPATCH();
         }
@@ -2194,7 +2251,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (!invoke(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
             DISPATCH();
         }
@@ -2208,7 +2265,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (!invokeInternal(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
             DISPATCH();
         }
@@ -2223,7 +2280,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (!invokeFromClass(vm, superclass, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
             DISPATCH();
         }
@@ -2254,7 +2311,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(CLOSE_UPVALUE): {
-            closeUpvalues(vm, vm->stackTop - 1);
+            closeUpvalues(vm, vm->fiber->stackTop - 1);
             pop(vm);
             DISPATCH();
         }
@@ -2265,19 +2322,43 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             // Close any upvalues still in scope.
             closeUpvalues(vm, frame->slots);
 
-            vm->frameCount--;
+            vm->fiber->frameCount--;
 
-            if (vm->frameCount == 0) {
+            if (vm->fiber->frameCount == 0) {
+                // This fiber's top-level function has returned.
+                if (vm->fiber->caller != NULL) {
+                    // Non-main fiber finished: return result to caller.
+                    ObjFiber *finished = vm->fiber;
+                    ObjFiber *caller = finished->caller;
+
+                    // Place the return value where the caller expects it.
+                    caller->stackTop[-1] = result;
+
+                    // Mark this fiber as done, disconnect caller.
+                    finished->state = FIBER_DONE;
+                    finished->caller = NULL;
+
+                    // Switch back to the caller fiber.
+                    caller->state = FIBER_RUNNING;
+                    vm->fiber = caller;
+
+                    // Reload frame and ip for the caller.
+                    frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
+                    ip = frame->ip;
+                    DISPATCH();
+                }
+
+                // Main fiber: normal exit.
                 pop(vm);
                 return INTERPRET_OK;
             }
 
-            vm->stackTop = frame->slots;
+            vm->fiber->stackTop = frame->slots;
             push(vm, result);
 
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
             ip = frame->ip;
-            if (breakFrame != -1 && vm->frameCount == breakFrame) {
+            if (breakFrame != -1 && vm->fiber->frameCount == breakFrame) {
                 return INTERPRET_OK;
             }
 
@@ -2480,15 +2561,15 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
         runtimeError(vm, "Value passed to callFunction is not callable");
         return EMPTY_VAL;
     }
-    int currentFrameCount = vm->frameCount;
-    Value* currentStack = vm->stackTop;
-    if (vm->frameCount == vm->frameCapacity) {
-        int oldCapacity = vm->frameCapacity;
-        vm->frameCapacity = GROW_CAPACITY(vm->frameCapacity);
-        vm->frames = GROW_ARRAY(vm, vm->frames, CallFrame,
-                                   oldCapacity, vm->frameCapacity);
+    int currentFrameCount = vm->fiber->frameCount;
+    Value* currentStack = vm->fiber->stackTop;
+    if (vm->fiber->frameCount == vm->fiber->frameCapacity) {
+        int oldCapacity = vm->fiber->frameCapacity;
+        vm->fiber->frameCapacity = GROW_CAPACITY(vm->fiber->frameCapacity);
+        vm->fiber->frames = GROW_ARRAY(vm, vm->fiber->frames, CallFrame,
+                                   oldCapacity, vm->fiber->frameCapacity);
     }
-    CallFrame *frame = &vm->frames[vm->frameCount++];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount++];
     uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
     frame->ip = code;
     frame->closure = NULL;
@@ -2501,7 +2582,7 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
         exit(70);
     }
     Value v = pop(vm);
-    vm->stackTop = currentStack;
-    vm->frameCount--;
+    vm->fiber->stackTop = currentStack;
+    vm->fiber->frameCount--;
     return v;
 }

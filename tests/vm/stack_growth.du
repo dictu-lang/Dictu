@@ -1,0 +1,48 @@
+/**
+ * stack_growth.du
+ *
+ * Test that the VM grows its stack for deeply recursive functions
+ * rather than crashing with a fixed-size stack overflow.
+ */
+from UnitTest import UnitTest;
+
+class TestStackGrowth < UnitTest {
+    testDeepRecursion() {
+        def recurse(n) {
+            if (n == 0) return 0;
+            return recurse(n - 1) + 1;
+        }
+
+        this.assertEquals(recurse(20000), 20000);
+    }
+
+    testNestedCallChain() {
+        // Each level creates an inner closure, exercising stack depth
+        def outer(n) {
+            if (n == 0) return 0;
+            def inner(m) {
+                return outer(m - 1) + 1;
+            }
+            return inner(n);
+        }
+
+        this.assertEquals(outer(10000), 10000);
+    }
+
+    testDeepClosureChain() {
+        def buildChain(depth) {
+            var value = 0;
+            for (var i = 0; i < depth; i += 1) {
+                const captured = value;
+                value = def() => captured;
+            }
+            return value;
+        }
+
+        // Build a chain of 5000 closures that each capture the previous
+        const chain = buildChain(5000);
+        this.assertNotNil(chain);
+    }
+}
+
+TestStackGrowth().run();

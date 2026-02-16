@@ -21,13 +21,13 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        if (count > vm->frameCount - 1) {
+        if (count > vm->fiber->frameCount - 1) {
             runtimeError(vm, "Optional argument passed to getLine() exceeds the frame count.");
             return EMPTY_VAL;
         }
     }
 
-    CallFrame *frame = &vm->frames[vm->frameCount - 1 - count];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount - 1 - count];
     ObjFunction *function = frame->closure->function;
     size_t instruction = frame->ip - function->chunk.code - 1;
     
@@ -55,13 +55,13 @@ static Value getFile(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
 
-        if (count > vm->frameCount - 1) {
+        if (count > vm->fiber->frameCount - 1) {
             runtimeError(vm, "Optional argument passed to getFile() exceeds the frame count.");
             return EMPTY_VAL;
         }
     }
 
-    CallFrame *frame = &vm->frames[vm->frameCount - 1 - count];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount - 1 - count];
     ObjFunction *function = frame->closure->function;
 
     return OBJ_VAL(function->module->name);
@@ -76,7 +76,7 @@ static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
     }
 
     // -1 as it's pointing to the next frame
-    return NUMBER_VAL(vm->frameCount - 1);
+    return NUMBER_VAL(vm->fiber->frameCount - 1);
 }
 
 Value createInspectModule(DictuVM *vm) {
