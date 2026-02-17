@@ -16,11 +16,14 @@ void freeBuffer(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Buffer, abstract->data);
 }
 
-char *bufferToString(ObjAbstract *abstract) {
+char *bufferToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *bufferString = malloc(sizeof(char) * 9);
-    snprintf(bufferString, 9, "<Buffer>");
+    int len = 8;
+    char *bufferString = ALLOCATE(vm, char, len + 1);
+    memcpy(bufferString, "<Buffer>", len);
+    bufferString[len] = '\0';
+    *length = len;
     return bufferString;
 }
 
@@ -69,7 +72,10 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "resize() size argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "resize() size argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -91,7 +97,7 @@ static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferLen(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "len() takes no arguments");
+        runtimeError(vm, "len() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);
@@ -101,7 +107,7 @@ static Value bufferLen(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferValues(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "values() takes no arguments");
+        runtimeError(vm, "values() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);
@@ -117,7 +123,7 @@ static Value bufferValues(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError(vm, "string() takes no arguments");
+        runtimeError(vm, "string() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
     Buffer *buffer = AS_BUFFER(args[0]);
@@ -127,18 +133,24 @@ static Value bufferString(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint8(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, "writeInt8() takes 2 argument");
+        runtimeError(vm, "writeInt8() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
-                      "writeInt8() index argument must be a number");
+                      "writeInt8() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
-                    "writeInt8() value argument must be a number");
+                    "writeInt8() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -157,23 +169,29 @@ static Value bufferWriteUint16LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt16BE() takes 2 argument"
-                             : "writeUInt16LE() takes 2 argument");
+                             ? "writeUInt16BE() takes 2 arguments"
+                             : "writeUInt16LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt16BE() index argument must be a number"
-                         : "writeUInt16LE() index argument must be a number");
+                         ? "writeUInt16BE() index argument must be a number, got '%s'."
+                         : "writeUInt16LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt16BE() value argument must be a number"
-                         : "writeUInt16LE() value argument must be a number");
+                         ? "writeUInt16BE() value argument must be a number, got '%s'."
+                         : "writeUInt16LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -193,23 +211,29 @@ static Value bufferWriteUint32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt32BE() takes 2 argument"
-                             : "writeUInt32LE() takes 2 argument");
+                             ? "writeUInt32BE() takes 2 arguments"
+                             : "writeUInt32LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt32BE() index argument must be a number"
-                         : "writeUInt32LE() index argument must be a number");
+                         ? "writeUInt32BE() index argument must be a number, got '%s'."
+                         : "writeUInt32LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt32BE() value argument must be a number"
-                         : "writeUInt32LE() value argument must be a number");
+                         ? "writeUInt32BE() value argument must be a number, got '%s'."
+                         : "writeUInt32LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -228,23 +252,29 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeUInt64BE() takes 2 argument"
-                             : "writeUInt64LE() takes 2 argument");
+                             ? "writeUInt64BE() takes 2 arguments"
+                             : "writeUInt64LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt64BE() index argument must be a number"
-                         : "writeUInt64LE() index argument must be a number");
+                         ? "writeUInt64BE() index argument must be a number, got '%s'."
+                         : "writeUInt64LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeUInt64BE() value argument must be a number"
-                         : "writeUInt64LE() value argument must be a number");
+                         ? "writeUInt64BE() value argument must be a number, got '%s'."
+                         : "writeUInt64LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -262,23 +292,29 @@ static Value bufferWriteUint64LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt64BE() takes 2 argument"
-                                           : "writeInt64LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt64BE() takes 2 arguments"
+                                           : "writeInt64LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt64BE() index argument must be a number"
-                         : "writeInt64LE() index argument must be a number");
+                         ? "writeInt64BE() index argument must be a number, got '%s'."
+                         : "writeInt64LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt64BE() value argument must be a number"
-                         : "writeInt64LE() value argument must be a number");
+                         ? "writeInt64BE() value argument must be a number, got '%s'."
+                         : "writeInt64LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -295,23 +331,29 @@ static Value bufferWriteint64LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt32BE() takes 2 argument"
-                                           : "writeInt32LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt32BE() takes 2 arguments"
+                                           : "writeInt32LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt32BE() index argument must be a number"
-                         : "writeInt32LE() index argument must be a number");
+                         ? "writeInt32BE() index argument must be a number, got '%s'."
+                         : "writeInt32LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt32BE() value argument must be a number"
-                         : "writeInt32LE() value argument must be a number");
+                         ? "writeInt32BE() value argument must be a number, got '%s'."
+                         : "writeInt32LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -329,23 +371,29 @@ static Value bufferWriteint32LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeInt16BE() takes 2 argument"
-                                           : "writeInt16LE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeInt16BE() takes 2 arguments"
+                                           : "writeInt16LE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt16BE() index argument must be a number"
-                         : "writeInt16LE() index argument must be a number");
+                         ? "writeInt16BE() index argument must be a number, got '%s'."
+                         : "writeInt16LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeInt16BE() value argument must be a number"
-                         : "writeInt16LE() value argument must be a number");
+                         ? "writeInt16BE() value argument must be a number, got '%s'."
+                         : "writeInt16LE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -363,23 +411,29 @@ static Value bufferWriteint16LE(DictuVM *vm, int argCount, Value *args) {
 static Value bufferWritefloat32LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
-        runtimeError(vm, buffer->bigEndian ? "writeFloatBE() takes 2 argument"
-                                           : "writeFloatLE() takes 2 argument");
+        runtimeError(vm, buffer->bigEndian ? "writeFloatBE() takes 2 arguments"
+                                           : "writeFloatLE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeFloatBE() index argument must be a number"
-                         : "writeFloatLE() index argument must be a number");
+                         ? "writeFloatBE() index argument must be a number, got '%s'."
+                         : "writeFloatLE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeFloatBE() value argument must be a number"
-                         : "writeFloatLE() value argument must be a number");
+                         ? "writeFloatBE() value argument must be a number, got '%s'."
+                         : "writeFloatLE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -398,23 +452,29 @@ static Value bufferWritefloat64LE(DictuVM *vm, int argCount, Value *args) {
     Buffer *buffer = AS_BUFFER(args[0]);
     if (argCount != 2) {
         runtimeError(vm, buffer->bigEndian
-                             ? "writeDoubleBE() takes 2 argument"
-                             : "writeDoubleLE() takes 2 argument");
+                             ? "writeDoubleBE() takes 2 arguments"
+                             : "writeDoubleLE() takes 2 arguments");
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeDoubleBE() index argument must be a number"
-                         : "writeDoubleLE() index argument must be a number");
+                         ? "writeDoubleBE() index argument must be a number, got '%s'."
+                         : "writeDoubleLE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "writeDoubleBE() value argument must be a number"
-                         : "writeDoubleLE() value argument must be a number");
+                         ? "writeDoubleBE() value argument must be a number, got '%s'."
+                         : "writeDoubleLE() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -439,10 +499,13 @@ static Value bufferReadfloat64LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "readDoubleBE() index argument must be a number"
-                         : "readDoubleLE() index argument must be a number");
+                         ? "readDoubleBE() index argument must be a number, got '%s'."
+                         : "readDoubleLE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -466,9 +529,12 @@ static Value bufferReadfloat32LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm, buffer->bigEndian
-                             ? "readFloatBE() index argument must be a number"
-                             : "readFloatLE() index argument must be a number");
+                             ? "readFloatBE() index argument must be a number, got '%s'."
+                             : "readFloatLE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -491,10 +557,13 @@ static Value bufferReadUint64LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "readUInt64BE() index argument must be a number"
-                         : "readUInt64LE() index argument must be a number");
+                         ? "readUInt64BE() index argument must be a number, got '%s'."
+                         : "readUInt64LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -525,10 +594,13 @@ static Value bufferReadUint32LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "readUInt32BE() index argument must be a number"
-                         : "readUInt32LE() index argument must be a number");
+                         ? "readUInt32BE() index argument must be a number, got '%s'."
+                         : "readUInt32LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -550,10 +622,13 @@ static Value bufferReadUint16LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm,
                      buffer->bigEndian
-                         ? "readUInt16BE() index argument must be a number"
-                         : "readUInt16LE() index argument must be a number");
+                         ? "readUInt16BE() index argument must be a number, got '%s'."
+                         : "readUInt16LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -576,9 +651,12 @@ static Value bufferReadint64LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm, buffer->bigEndian
-                             ? "readInt64BE() index argument must be a number"
-                             : "readInt64LE() index argument must be a number");
+                             ? "readInt64BE() index argument must be a number, got '%s'."
+                             : "readInt64LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -608,9 +686,12 @@ static Value bufferReadint32LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm, buffer->bigEndian
-                             ? "readInt32BE() index argument must be a number"
-                             : "readInt32LE() index argument must be a number");
+                             ? "readInt32BE() index argument must be a number, got '%s'."
+                             : "readInt32LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -633,9 +714,12 @@ static Value bufferReadint16LE(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
         runtimeError(vm, buffer->bigEndian
-                             ? "readInt16BE() index argument must be a number"
-                             : "readInt16LE() index argument must be a number");
+                             ? "readInt16BE() index argument must be a number, got '%s'."
+                             : "readInt16LE() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -657,7 +741,10 @@ static Value bufferReadint8(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "readInt8() index argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "readInt8() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
     double index = AS_NUMBER(args[1]);
@@ -753,7 +840,10 @@ static Value bufferGet(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "get() argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "get() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -771,17 +861,23 @@ static Value bufferGet(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "set() takes 2 argument (%d given).", argCount);
+        runtimeError(vm, "set() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "set() index argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "set() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "set() value argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "set() value argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -802,18 +898,24 @@ static Value bufferSet(DictuVM *vm, int argCount, Value *args) {
 
 static Value bufferWriteString(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "writeString() takes 2 argument (%d given).",
+        runtimeError(vm, "writeString() takes 2 arguments (%d given)",
                      argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "writeString() index argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "writeString() index argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[2])) {
-        runtimeError(vm, "writeString() value argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "writeString() value argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -842,7 +944,10 @@ static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
     int length = buffer->size;
     if (argCount > 0) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "readString() start argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "readString() start argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         double startParam = AS_NUMBER(args[1]);
@@ -856,7 +961,10 @@ static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
     }
     if (argCount == 2) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "readString() end argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "readString() end argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         double endParam = AS_NUMBER(args[2]);
@@ -882,7 +990,10 @@ static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
     int length = buffer->size;
     if (argCount > 0) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "subarray() start argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "subarray() start argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         double startParam = AS_NUMBER(args[1]);
@@ -896,7 +1007,10 @@ static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
     }
     if (argCount == 2) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "subarray() end argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "subarray() end argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
         double endParam = AS_NUMBER(args[2]);
@@ -997,7 +1111,10 @@ static Value newBuffer(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "new() argument must be a numbers");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "new() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1017,7 +1134,10 @@ static Value newBufferFromString(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "fromString() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "fromString() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

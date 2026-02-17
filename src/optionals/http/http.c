@@ -277,9 +277,9 @@ static size_t writeHeaders(char *ptr, size_t size, size_t nitems, void *data) {
     return size * nitems;
 }
 
-static char *dictToPostArgs(ObjDict *dict) {
+static char *dictToPostArgs(DictuVM *vm, ObjDict *dict, int *resultLen) {
     int len = 100;
-    char *ret = malloc(sizeof(char) * len);
+    char *ret = ALLOCATE(vm, char, len);
     int currentLen = 0;
 
     for (int i = 0; i <= dict->capacityMask; i++) {
@@ -289,30 +289,27 @@ static char *dictToPostArgs(ObjDict *dict) {
         }
 
         char *key;
+        int keyLen;
         if (IS_STRING(entry->key)) {
             key = AS_CSTRING(entry->key);
+            keyLen = AS_STRING(entry->key)->length;
         } else {
-            key = valueToString(entry->key);
+            key = valueToString(vm, entry->key, &keyLen);
         }
 
         char *value;
+        int valLen;
         if (IS_STRING(entry->value)) {
             value = AS_CSTRING(entry->value);
+            valLen = AS_STRING(entry->value)->length;
         } else {
-            value = valueToString(entry->value);
+            value = valueToString(vm, entry->value, &valLen);
         }
 
-        int keyLen = strlen(key);
-        int valLen = strlen(value);
-
         if (currentLen + keyLen + valLen > len) {
+            int oldLen = len;
             len = len * 2 + keyLen + valLen;
-            ret = realloc(ret, len);
-
-            if (ret == NULL) {
-                printf("Unable to allocate memory\n");
-                exit(71);
-            }
+            ret = GROW_ARRAY(vm, ret, char, oldLen, len);
         }
 
         memcpy(ret + currentLen, key, keyLen);
@@ -325,15 +322,20 @@ static char *dictToPostArgs(ObjDict *dict) {
         currentLen += 1;
 
         if (!IS_STRING(entry->key)) {
-            free(key);
+            FREE_ARRAY(vm, char, key, keyLen + 1);
         }
         if (!IS_STRING(entry->value)) {
-            free(value);
+            FREE_ARRAY(vm, char, value, valLen + 1);
         }
     }
 
     ret[currentLen] = '\0';
 
+    if (currentLen + 1 != len) {
+        ret = SHRINK_ARRAY(vm, ret, char, len, currentLen + 1);
+    }
+
+    *resultLen = currentLen;
     return ret;
 }
 
@@ -421,7 +423,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "Timeout passed to get() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Timeout passed to get() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -431,7 +436,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_LIST(args[1])) {
-            runtimeError(vm, "Headers passed to get() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Headers passed to get() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -439,7 +447,10 @@ static Value get(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to get() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "URL passed to get() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -515,7 +526,10 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 4) {
         if (!IS_NUMBER(args[3])) {
-            runtimeError(vm, "Timeout passed to post() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[3], &valLength);
+            runtimeError(vm, "Timeout passed to post() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -525,7 +539,10 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_LIST(args[2])) {
-            runtimeError(vm, "Headers passed to post() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Headers passed to post() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -539,13 +556,19 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         } else if (IS_STRING(args[1])) {
             postValueString = AS_STRING(args[1]);
         } else {
-            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Post values passed to post() must be a dictionary or a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to post() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "URL passed to post() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -570,8 +593,9 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
             }
         }
 
+        int postValueLen = 0;
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict, &postValueLen);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }
@@ -594,7 +618,7 @@ static Value post(DictuVM *vm, int argCount, Value *args) {
         }
 
         if (postValuesDict != NULL) {
-            free(postValue);
+            FREE_ARRAY(vm, char, postValue, postValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -632,7 +656,10 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 4) {
         if (!IS_NUMBER(args[3])) {
-            runtimeError(vm, "Timeout passed to put() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[3], &valLength);
+            runtimeError(vm, "Timeout passed to put() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -642,7 +669,10 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_LIST(args[2])) {
-            runtimeError(vm, "Headers passed to put() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Headers passed to put() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -656,13 +686,19 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
         } else if (IS_STRING(args[1])) {
             putValueString = AS_STRING(args[1]);
         } else {
-            runtimeError(vm, "Put values passed to put() must be a dictionary or a string.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Put values passed to put() must be a dictionary or a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to put() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "URL passed to put() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -687,8 +723,9 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
             }
         }
 
+        int putValueLen = 0;
         if (putValuesDict != NULL) {
-            putValue = dictToPostArgs(putValuesDict);
+            putValue = dictToPostArgs(vm, putValuesDict, &putValueLen);
         } else if (putValueString != NULL) {
             putValue = putValueString->chars;
         }
@@ -712,7 +749,7 @@ static Value put(DictuVM *vm, int argCount, Value *args) {
         }
 
         if (putValuesDict != NULL) {
-            free(putValue);
+            FREE_ARRAY(vm, char, putValue, putValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -748,7 +785,10 @@ static Value head(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "Timeout passed to head() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Timeout passed to head() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -758,7 +798,10 @@ static Value head(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_LIST(args[1])) {
-            runtimeError(vm, "Headers passed to head() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Headers passed to head() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -766,7 +809,10 @@ static Value head(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to head() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "URL passed to head() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -839,7 +885,10 @@ static Value options(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_NUMBER(args[2])) {
-            runtimeError(vm, "Timeout passed to options() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Timeout passed to options() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -849,7 +898,10 @@ static Value options(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_LIST(args[1])) {
-            runtimeError(vm, "Headers passed to options() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "Headers passed to options() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -857,7 +909,10 @@ static Value options(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "URL passed to options() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "URL passed to options() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -938,11 +993,14 @@ void freeHttpClient(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, HttpClient, abstract->data);
 }
 
-char *httpClientToString(ObjAbstract *abstract) {
+char *httpClientToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *httpClientString = malloc(sizeof(char) * 13);
-    snprintf(httpClientString, 13, "<HttpClient>");
+    int len = 12;
+    char *httpClientString = ALLOCATE(vm, char, len + 1);
+    memcpy(httpClientString, "<HttpClient>", len);
+    httpClientString[len] = '\0';
+    *length = len;
     return httpClientString;
 }
 
@@ -953,7 +1011,10 @@ static Value httpClientSetTimeout(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "timeout value must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "timeout value must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -971,7 +1032,10 @@ static Value httpClientSetInsecure(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_BOOL(args[1])) {
-        runtimeError(vm, "insecure value must be a bool");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "insecure value must be a bool, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -997,7 +1061,10 @@ static Value httpClientSetFollowRedirects(DictuVM *vm, int argCount, Value *args
     }
 
     if (!IS_BOOL(args[1])) {
-        runtimeError(vm, "setFollowRedirects value must be a bool");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "setFollowRedirects value must be a bool, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1019,7 +1086,10 @@ static Value httpClientSetHeaders(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[1])) {
-        runtimeError(vm, "headers value must be a ist");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "headers value must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1049,7 +1119,10 @@ static Value httpClientSetKeyFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "keyFile value must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "keyFile value must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1067,7 +1140,10 @@ static Value httpClientSetCertFile(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "certFile value must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "certFile value must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1085,7 +1161,10 @@ static Value httpClientSetKeyPass(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "keyPasswd value must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "keyPasswd value must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1103,7 +1182,10 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to get() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "URL passed to get() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1142,7 +1224,7 @@ static Value httpClientGet(DictuVM *vm, int argCount, Value *args) {
 
 static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "post() takes at least 1 argument (%d given).", argCount);
+        runtimeError(vm, "post() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -1155,18 +1237,24 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         } else if (IS_STRING(args[2])) {
             postValueString = AS_STRING(args[2]);
         } else {
-            runtimeError(vm, "Post values passed to post() must be a dictionary or a string.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Post values passed to post() must be a dictionary or a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to post() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "URL passed to post() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     CURLcode curlResponse;
-    
+
     HttpClient *httpClient = AS_HTTP_CLIENT(args[0]);
 
     if (httpClient) {
@@ -1175,8 +1263,9 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[1]);
         char *postValue = "";
 
+        int postValueLen = 0;
         if (postValuesDict != NULL) {
-            postValue = dictToPostArgs(postValuesDict);
+            postValue = dictToPostArgs(vm, postValuesDict, &postValueLen);
         } else if (postValueString != NULL) {
             postValue = postValueString->chars;
         }
@@ -1191,7 +1280,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
         curlResponse = curl_easy_perform(httpClient->curl);
 
         if (postValuesDict != NULL) {
-            free(postValue);
+            FREE_ARRAY(vm, char, postValue, postValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -1212,7 +1301,7 @@ static Value httpClientPost(DictuVM *vm, int argCount, Value *args) {
 
 static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
     if (argCount < 1 || argCount > 2) {
-        runtimeError(vm, "put() takes at least 1 argument (%d given).", argCount);
+        runtimeError(vm, "put() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -1225,13 +1314,19 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
         } else if (IS_STRING(args[2])) {
             putValueString = AS_STRING(args[2]);
         } else {
-            runtimeError(vm, "Put values passed to put() must be a dictionary or a string.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Put values passed to put() must be a dictionary or a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to put() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "URL passed to put() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1245,8 +1340,9 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
         char *url = AS_CSTRING(args[1]);
         char *putValue = "";
 
+        int putValueLen = 0;
         if (putValuesDict != NULL) {
-            putValue = dictToPostArgs(putValuesDict);
+            putValue = dictToPostArgs(vm, putValuesDict, &putValueLen);
         } else if (putValueString != NULL) {
             putValue = putValueString->chars;
         }
@@ -1262,7 +1358,7 @@ static Value httpClientPut(DictuVM *vm, int argCount, Value *args) {
         curlResponse = curl_easy_perform(httpClient->curl);
 
         if (putValuesDict != NULL) {
-            free(putValue);
+            FREE_ARRAY(vm, char, putValue, putValueLen + 1);
         }
 
         if (curlResponse != CURLE_OK) {
@@ -1288,7 +1384,10 @@ static Value httpClientHead(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to head() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "URL passed to head() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1337,7 +1436,10 @@ static Value httpClientOptions(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 4) {
         if (!IS_NUMBER(args[3])) {
-            runtimeError(vm, "Timeout passed to options() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[3], &valLength);
+            runtimeError(vm, "Timeout passed to options() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -1347,7 +1449,10 @@ static Value httpClientOptions(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 3) {
         if (!IS_LIST(args[2])) {
-            runtimeError(vm, "Headers passed to options() must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "Headers passed to options() must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -1355,7 +1460,10 @@ static Value httpClientOptions(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "URL passed to options() must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "URL passed to options() must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -1438,7 +1546,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 ObjString *s = AS_STRING(entry->key);
                 key = s->chars;
             } else {
-                runtimeError(vm, "HTTP client options key must be a string");
+                int valLength = 0;
+                char *val = valueTypeToString(vm, entry->key, &valLength);
+                runtimeError(vm, "HTTP client options key must be a string, got '%s'.", val);
+                FREE_ARRAY(vm, char, val, valLength + 1);
                 return EMPTY_VAL;
             }
 
@@ -1447,7 +1558,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                     continue;
                 }
                 if (!IS_NUMBER(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"timeout\" value must be a number");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"timeout\" value must be a number, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1458,7 +1572,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_LIST(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"headers\" value must be a list");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"headers\" value must be a list, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1475,7 +1592,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_BOOL(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"insecure\" value must be a bool");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"insecure\" value must be a bool, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1490,7 +1610,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_BOOL(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"follow_redirects\" value must be a bool");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"follow_redirects\" value must be a bool, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1503,7 +1626,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_STRING(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"keyFile\" value must be a string");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"keyFile\" value must be a string, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1519,7 +1645,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_STRING(entry->value)) {
-                    runtimeError(vm, "HTTP client option \"certFile\" value must be a string");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option \"certFile\" value must be a string, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1535,7 +1664,10 @@ Value newHttpClient(DictuVM *vm, ObjDict *opts) {
                 }
 
                 if (!IS_STRING(entry->value)) {
-                    runtimeError(vm, "HTTP client option key \"keyPasswd\" value must be a string");
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, entry->value, &valLength);
+                    runtimeError(vm, "HTTP client option key \"keyPasswd\" value must be a string, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
                     return EMPTY_VAL;
                 }
 
@@ -1578,7 +1710,10 @@ static Value newClient(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_DICT(args[0])) {
-        runtimeError(vm, "Options dict passed to newClient() must be a dict.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "Options dict passed to newClient() must be a dict, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

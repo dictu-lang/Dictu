@@ -29,11 +29,14 @@ void freeStack(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Stack, abstract->data);
 }
 
-char *stackToString(ObjAbstract *abstract) {
+char *stackToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *stackString = malloc(sizeof(char) * 8);
-    snprintf(stackString, 8, "<Stack>");
+    int len = 7;
+    char *stackString = ALLOCATE(vm, char, len + 1);
+    memcpy(stackString, "<Stack>", len);
+    stackString[len] = '\0';
+    *length = len;
     return stackString;
 }
 
@@ -182,7 +185,10 @@ static Value newStackWithSize(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "newWithSize() argument must be a numbers");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "newWithSize() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 

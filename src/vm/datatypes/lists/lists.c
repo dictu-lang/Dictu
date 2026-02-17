@@ -18,10 +18,11 @@ static Value toStringList(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    char *valueString = listToString(args[0]);
+    int valueStringLen = 0;
+    char *valueString = listToString(vm, args[0], &valueStringLen);
 
-    ObjString *string = copyString(vm, valueString, strlen(valueString));
-    free(valueString);
+    ObjString *string = copyString(vm, valueString, valueStringLen);
+    FREE_ARRAY(vm, char, valueString, valueStringLen + 1);
 
     return OBJ_VAL(string);
 }
@@ -43,7 +44,10 @@ static Value extendList(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_LIST(args[1])) {
-        runtimeError(vm, "extend() argument must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "extend() argument must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -76,7 +80,10 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[2])) {
-        runtimeError(vm, "insert() second argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "insert() second argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -88,7 +95,7 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
         index = list->values.count + index+1;
     }
     if (index < 0 || index > list->values.count) {
-        runtimeError(vm, "Index passed to insert() is out of bounds for the list given");
+        runtimeError(vm, "insert() index %d out of bounds for list of length %d.", index, list->values.count);
         return EMPTY_VAL;
     }
 
@@ -112,7 +119,7 @@ static Value insertListItem(DictuVM *vm, int argCount, Value *args) {
 
 static Value popListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "pop() takes either 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "pop() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -127,7 +134,10 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "pop() index argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "pop() index argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -136,7 +146,7 @@ static Value popListItem(DictuVM *vm, int argCount, Value *args) {
             index = list->values.count + index;
         }
         if (index < 0 || index > list->values.count) {
-            runtimeError(vm, "Index passed to pop() is out of bounds for the list given");
+            runtimeError(vm, "pop() index %d out of bounds for list of length %d.", index, list->values.count);
             return EMPTY_VAL;
         }
 
@@ -220,7 +230,7 @@ static Value containsListItem(DictuVM *vm, int argCount, Value *args) {
 
 static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "join() takes 1 optional argument (%d given)", argCount);
+        runtimeError(vm, "join() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -247,18 +257,19 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     int delimiterLength = strlen(delimiter);
 
     for (int j = 0; j < list->values.count - 1; ++j) {
+        int elementLength;
         if (IS_STRING(list->values.values[j])) {
             output = AS_CSTRING(list->values.values[j]);
+            elementLength = AS_STRING(list->values.values[j])->length;
         } else {
-            output = valueToString(list->values.values[j]);
+            output = valueToString(vm, list->values.values[j], &elementLength);
         }
-        int elementLength = strlen(output);
 
         fullString = GROW_ARRAY(vm, fullString, char, length, length + elementLength + delimiterLength);
 
         memcpy(fullString + length, output, elementLength);
         if (!IS_STRING(list->values.values[j])) {
-            free(output);
+            FREE_ARRAY(vm, char, output, elementLength + 1);
         }
         length += elementLength;
         memcpy(fullString + length, delimiter, delimiterLength);
@@ -266,13 +277,14 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     }
 
     // Outside the loop as we do not want the append the delimiter on the last element
+    int elementLength;
     if (IS_STRING(list->values.values[list->values.count - 1])) {
         output = AS_CSTRING(list->values.values[list->values.count - 1]);
+        elementLength = AS_STRING(list->values.values[list->values.count - 1])->length;
     } else {
-        output = valueToString(list->values.values[list->values.count - 1]);
+        output = valueToString(vm, list->values.values[list->values.count - 1], &elementLength);
     }
 
-    int elementLength = strlen(output);
     fullString = GROW_ARRAY(vm, fullString, char, length, length + elementLength + 1);
     memcpy(fullString + length, output, elementLength);
     length += elementLength;
@@ -280,7 +292,7 @@ static Value joinListItem(DictuVM *vm, int argCount, Value *args) {
     fullString[length] = '\0';
 
     if (!IS_STRING(list->values.values[list->values.count - 1])) {
-        free(output);
+        FREE_ARRAY(vm, char, output, elementLength + 1);
     }
 
     return OBJ_VAL(takeString(vm, fullString, length));

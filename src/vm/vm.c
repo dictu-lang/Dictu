@@ -227,19 +227,45 @@ void dictuFreeVM(DictuVM *vm) {
     free(vm);
 }
 
-void push(DictuVM *vm, Value value) {
+/**
+ * Inlined versions used within the VM dispatch loop for performance.
+ * The extern versions below are kept for use by other translation units
+ * (optionals, natives, datatypes, etc.).
+ */
+static inline void vmPush(DictuVM *vm, Value value) {
     *vm->fiber->stackTop = value;
     vm->fiber->stackTop++;
 }
 
-Value pop(DictuVM *vm) {
+static inline Value vmPop(DictuVM *vm) {
     vm->fiber->stackTop--;
     return *vm->fiber->stackTop;
 }
 
-Value peek(DictuVM *vm, int distance) {
+static inline Value vmPeek(DictuVM *vm, int distance) {
     return vm->fiber->stackTop[-1 - distance];
 }
+
+void push(DictuVM *vm, Value value) {
+    vmPush(vm, value);
+}
+
+Value pop(DictuVM *vm) {
+    return vmPop(vm);
+}
+
+Value peek(DictuVM *vm, int distance) {
+    return vmPeek(vm, distance);
+}
+
+/**
+ * Within this file, redirect push/pop/peek to the inlined versions
+ * via macros. This ensures all call sites in the VM dispatch loop
+ * use the fast inlined path without requiring manual renaming.
+ */
+#define push(vm, value)    vmPush(vm, value)
+#define pop(vm)            vmPop(vm)
+#define peek(vm, distance) vmPeek(vm, distance)
 
 ObjClosure *compileModuleToClosure(DictuVM *vm, char *name, char *source) {
     ObjString *pathObj = copyString(vm, name, strlen(name));
@@ -353,7 +379,7 @@ static bool callValue(DictuVM *vm, Value callee, int argCount, bool unpack) {
                 if (tableGet(&klass->publicMethods, vm->initString, &initializer)) {
                     return call(vm, AS_CLOSURE(initializer), argCount);
                 } else if (argCount != 0) {
-                    runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
+                    runtimeError(vm, "Expected no arguments but got %d.", argCount);
                     return false;
                 }
 
@@ -878,14 +904,28 @@ static void createClass(DictuVM *vm, ObjString *name, ObjClass *superclass, Clas
 }
 
 bool isFalsey(Value value) {
-    return IS_NIL(value) ||
-           (IS_BOOL(value) && !AS_BOOL(value)) ||
-           (IS_NUMBER(value) && AS_NUMBER(value) == 0) ||
-           (IS_STRING(value) && AS_CSTRING(value)[0] == '\0') ||
-           (IS_LIST(value) && AS_LIST(value)->values.count == 0) ||
-           (IS_DICT(value) && AS_DICT(value)->count == 0) ||
-           (IS_RESULT(value) && AS_RESULT(value)->status == ERR) ||
-           (IS_SET(value) && AS_SET(value)->count == 0);
+    // Fast path: nil and false are the most common falsey values.
+    // These are cheap bit-pattern checks with no pointer dereference.
+    if (IS_NIL(value)) return true;
+    if (IS_BOOL(value)) return !AS_BOOL(value);
+
+    // Number zero check — also a cheap non-object check.
+    if (IS_NUMBER(value)) return AS_NUMBER(value) == 0;
+
+    // All remaining falsey values are heap objects.
+    // If it's not an object at all, it's truthy (e.g. EMPTY_VAL).
+    if (!IS_OBJ(value)) return false;
+
+    // Object type checks — each requires a pointer dereference.
+    // Ordered by estimated frequency in typical programs.
+    switch (AS_OBJ(value)->type) {
+        case OBJ_STRING: return AS_CSTRING(value)[0] == '\0';
+        case OBJ_LIST:   return AS_LIST(value)->values.count == 0;
+        case OBJ_DICT:   return AS_DICT(value)->count == 0;
+        case OBJ_SET:    return AS_SET(value)->count == 0;
+        case OBJ_RESULT: return AS_RESULT(value)->status == ERR;
+        default:         return false;
+    }
 }
 
 static void concatenate(DictuVM *vm) {
@@ -1014,7 +1054,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 printf("          ");                                                             \
                 for (Value *stackValue = vm->fiber->stack; stackValue < vm->fiber->stackTop; stackValue++) {    \
                     printf("[ ");                                                                 \
-                    printValue(*stackValue);                                                      \
+                    printValue(vm, *stackValue);                                                   \
                     printf(" ]");                                                                 \
                 }                                                                                 \
                 printf("\n");                                                                     \
@@ -1073,7 +1113,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value v = peek(vm, 0);
             if (!IS_NIL(v)) {
                 setReplVar(vm, v);
-                printValue(v);
+                printValue(vm, v);
                 printf("\n");
             }
             pop(vm);
@@ -1091,9 +1131,27 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(GET_LOCAL_0): {
+            push(vm, frame->slots[0]);
+            DISPATCH();
+        }
+
+        CASE_CODE(GET_LOCAL_1): {
+            push(vm, frame->slots[1]);
+            DISPATCH();
+        }
+
         CASE_CODE(SET_LOCAL): {
             uint8_t slot = READ_BYTE();
             frame->slots[slot] = peek(vm, 0);
+            DISPATCH();
+        }
+
+        CASE_CODE(INCREMENT_LOCAL): {
+            uint8_t slot = READ_BYTE();
+            Value incremented = NUMBER_VAL(AS_NUMBER(frame->slots[slot]) + 1);
+            frame->slots[slot] = incremented;
+            push(vm, incremented);
             DISPATCH();
         }
 
@@ -1179,6 +1237,8 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
         CASE_CODE(GET_ATTRIBUTE): {
             Value receiver = peek(vm, 0);
+            ObjString *name = READ_STRING();
+            uint8_t cacheSlot = READ_BYTE();
 
             if (!IS_OBJ(receiver)) {
                 RUNTIME_ERROR_TYPE("'%s' type has no attributes", 0);
@@ -1187,7 +1247,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(receiver)) {
                 case OBJ_INSTANCE: {
                     ObjInstance *instance = AS_INSTANCE(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&instance->publicAttributes, name, &value)) {
                         pop(vm); // Instance.
@@ -1195,7 +1254,26 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    if (bindMethod(vm, instance->klass, name)) {
+                    // Inline cache fast path for method lookup.
+                    ObjClass *instanceKlass = instance->klass;
+                    InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+                    if (cache->klass == instanceKlass) {
+                        // Cache hit: create bound method directly.
+                        ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(cache->value));
+                        pop(vm); // Instance.
+                        push(vm, OBJ_VAL(bound));
+                        DISPATCH();
+                    }
+
+                    // Cache miss: try publicMethods, populate cache on success.
+                    Value method;
+                    if (tableGet(&instanceKlass->publicMethods, name, &method)) {
+                        cache->klass = instanceKlass;
+                        cache->value = method;
+                        ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(method));
+                        pop(vm); // Instance.
+                        push(vm, OBJ_VAL(bound));
                         DISPATCH();
                     }
 
@@ -1203,15 +1281,16 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                     ObjClass *klass = instance->klass;
 
                     while (klass != NULL) {
-                        if (tableGet(&klass->constants, name, &value)) {
+                        Value value2;
+                        if (tableGet(&klass->constants, name, &value2)) {
                             pop(vm); // Instance.
-                            push(vm, value);
+                            push(vm, value2);
                             DISPATCH();
                         }
 
-                        if (tableGet(&klass->variables, name, &value)) {
+                        if (tableGet(&klass->variables, name, &value2)) {
                             pop(vm); // Instance.
-                            push(vm, value);
+                            push(vm, value2);
                             DISPATCH();
                         }
 
@@ -1227,7 +1306,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_MODULE: {
                     ObjModule *module = AS_MODULE(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&module->values, name, &value)) {
                         pop(vm); // Module.
@@ -1240,21 +1318,19 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_ABSTRACT: {
                     ObjAbstract *abstract = AS_ABSTRACT(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
                     if (tableGet(&abstract->values, name, &value)) {
                         pop(vm); // Abstract.
                         push(vm, value);
                         DISPATCH();
                     }
-                    RUNTIME_ERROR("'no attribute: '%s'.",name->chars);
+                    RUNTIME_ERROR("Undefined attribute '%s'.", name->chars);
                 }
 
                 case OBJ_CLASS: {
                     ObjClass *klass = AS_CLASS(receiver);
                     // Used to keep a reference to the class for the runtime error below
                     ObjClass *klassStore = klass;
-                    ObjString *name = READ_STRING();
 
                     Value value;
                     while (klass != NULL) {
@@ -1278,7 +1354,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         push(vm, klassStore->classAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->classAnnotations));
                         DISPATCH();
                     }
-                    
+
                     if (strcmp(name->chars, "methodAnnotations") == 0) {
                         pop(vm); // Klass
                         push(vm, klassStore->methodAnnotations == NULL ? NIL_VAL : OBJ_VAL(klassStore->methodAnnotations));
@@ -1296,7 +1372,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
                 case OBJ_ENUM: {
                     ObjEnum *enumObj = AS_ENUM(receiver);
-                    ObjString *name = READ_STRING();
                     Value value;
 
                     if (tableGet(&enumObj->values, name, &value)) {
@@ -1315,9 +1390,10 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(GET_PRIVATE_ATTRIBUTE): {
+            ObjString *name = READ_STRING();
+
             if (IS_INSTANCE(peek(vm, 0))) {
                 ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-                ObjString *name = READ_STRING();
                 Value value;
                 if (tableGet(&instance->privateAttributes, name, &value)) {
                     pop(vm); // Instance.
@@ -1359,7 +1435,6 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 ObjClass *klass = AS_CLASS(peek(vm, 0));
                 // Used to keep a reference to the class for the runtime error below
                 ObjClass *klassStore = klass;
-                ObjString *name = READ_STRING();
 
                 Value value;
                 while (klass != NULL) {
@@ -1385,19 +1460,38 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
         }
 
         CASE_CODE(GET_ATTRIBUTE_NO_POP): {
+            ObjString *name = READ_STRING();
+            uint8_t cacheSlot = READ_BYTE();
+
             if (!IS_INSTANCE(peek(vm, 0))) {
-                RUNTIME_ERROR("Only instances have attrributes.");
+                RUNTIME_ERROR("Only instances have attributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
             Value value;
             if (tableGet(&instance->publicAttributes, name, &value)) {
                 push(vm, value);
                 DISPATCH();
             }
 
-            if (bindMethod(vm, instance->klass, name)) {
+            // Inline cache fast path for method lookup.
+            ObjClass *instanceKlass = instance->klass;
+            InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+            if (cache->klass == instanceKlass) {
+                // Cache hit: create bound method, keep instance on stack.
+                ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(cache->value));
+                push(vm, OBJ_VAL(bound));
+                DISPATCH();
+            }
+
+            // Cache miss: try publicMethods, populate cache on success.
+            Value method;
+            if (tableGet(&instanceKlass->publicMethods, name, &method)) {
+                cache->klass = instanceKlass;
+                cache->value = method;
+                ObjBoundMethod *bound = newBoundMethod(vm, OBJ_VAL(instance), AS_CLOSURE(method));
+                push(vm, OBJ_VAL(bound));
                 DISPATCH();
             }
 
@@ -1422,16 +1516,17 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 RUNTIME_ERROR("Cannot access private attribute '%s' on '%s' instance.", name->chars, instance->klass->name->chars);
             }
 
-            RUNTIME_ERROR("'%s' instance has no attribute2: '%s'.", instance->klass->name->chars, name->chars);
+            RUNTIME_ERROR("'%s' instance has no attribute: '%s'.", instance->klass->name->chars, name->chars);
         }
 
         CASE_CODE(GET_PRIVATE_ATTRIBUTE_NO_POP): {
+            ObjString *name = READ_STRING();
+
             if (!IS_INSTANCE(peek(vm, 0))) {
                 RUNTIME_ERROR("Only instances have attributes.");
             }
 
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
-            ObjString *name = READ_STRING();
             Value value;
             if (tableGet(&instance->privateAttributes, name, &value)) {
                 push(vm, value);
@@ -1491,7 +1586,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                 DISPATCH();
             }
 
-            RUNTIME_ERROR_TYPE("Can not set attribute on type '%s'", 1);
+            RUNTIME_ERROR_TYPE("Cannot set attribute on type '%s'", 1);
         }
 
         CASE_CODE(SET_PRIVATE_ATTRIBUTE): {
@@ -1565,40 +1660,55 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(NOT_EQUAL): {
+            Value b = pop(vm);
+            Value a = pop(vm);
+            push(vm, BOOL_VAL(!valuesEqual(a, b)));
+            DISPATCH();
+        }
+
         CASE_CODE(GREATER): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(peek(vm, 0));
+                vm->fiber->stackTop[-1] = BOOL_VAL(a > b);
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
                 // Use variables here as function argument evaluation order is unspecified
                 Value first = pop(vm);
                 Value second = pop(vm);
 
                 push(vm, BOOL_VAL(compareStringGreater(first, second)));
             } else {
-                BINARY_OP(BOOL_VAL, >, double);
+                UNSUPPORTED_OPERAND_TYPE_ERROR(>);
             }
 
             DISPATCH();
         }
 
         CASE_CODE(LESS): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(peek(vm, 0));
+                vm->fiber->stackTop[-1] = BOOL_VAL(a < b);
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
                 Value first = pop(vm);
                 Value second = pop(vm);
 
                 push(vm, BOOL_VAL(compareStringLess(first, second)));
             } else {
-                BINARY_OP(BOOL_VAL, <, double);
+                UNSUPPORTED_OPERAND_TYPE_ERROR(<);
             }
 
             DISPATCH();
         }
 
         CASE_CODE(ADD): {
-            if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
-                concatenate(vm);
-            } else if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1))) {
                 double b = AS_NUMBER(pop(vm));
                 double a = AS_NUMBER(pop(vm));
                 push(vm, NUMBER_VAL(a + b));
+            } else if (IS_STRING(peek(vm, 0)) && IS_STRING(peek(vm, 1))) {
+                concatenate(vm);
             } else if (IS_LIST(peek(vm, 0)) && IS_LIST(peek(vm, 1))) {
                 ObjList *listOne = AS_LIST(peek(vm, 1));
                 ObjList *listTwo = AS_LIST(peek(vm, 0));
@@ -1722,6 +1832,16 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             DISPATCH();
         }
 
+        CASE_CODE(LESS_JUMP): {
+            uint16_t offset = READ_SHORT();
+            Value b = pop(vm);
+            Value a = pop(vm);
+            if (!IS_NUMBER(a) || !IS_NUMBER(b) || AS_NUMBER(a) >= AS_NUMBER(b)) {
+                ip += offset;
+            }
+            DISPATCH();
+        }
+
         CASE_CODE(LOOP): {
             uint16_t offset = READ_SHORT();
             ip -= offset;
@@ -1829,7 +1949,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             if (tableGet(&vm->modules, fileName, &moduleVal)) {
                 module = AS_MODULE(moduleVal);
             } else {
-                RUNTIME_ERROR("ERROR!!");
+                RUNTIME_ERROR("Unknown module '%s'.", fileName->chars);
             }
 
             for (int i = 0; i < varCount; i++) {
@@ -1918,7 +2038,12 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
             for (int i = count * 2; i > 0; i -= 2) {
                 if (!isValidKey(peek(vm, i))) {
-                    RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                    STORE_FRAME;
+                    int valLength = 0;
+                    char *val = valueTypeToString(vm, peek(vm, i), &valLength);
+                    runtimeError(vm, "Dictionary key must be a string, number, bool, or nil, got '%s'.", val);
+                    FREE_ARRAY(vm, char, val, valLength + 1);
+                    return INTERPRET_RUNTIME_ERROR;
                 }
 
                 dictSet(vm, dict, peek(vm, i), peek(vm, i - 1));
@@ -1941,7 +2066,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 0);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -1958,7 +2083,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_STRING: {
@@ -1989,13 +2114,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("String index out of bounds.");
+                    RUNTIME_ERROR("String index %d out of bounds for string of length %d.", index, len);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 0);
                     }
 
                     Value v;
@@ -2006,7 +2131,9 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                    int keyLen = 0;
+                    char *keyStr = valueToString(vm, indexValue, &keyLen);
+                    RUNTIME_ERROR("Key %s does not exist within dictionary.", keyStr);
                 }
 
                 default: {
@@ -2027,7 +2154,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 1);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -2045,13 +2172,13 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 1);
                     }
 
                     dictSet(vm, dict, indexValue, assignValue);
@@ -2080,7 +2207,7 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             switch (getObjType(subscriptValue)) {
                 case OBJ_LIST: {
                     if (!IS_NUMBER(indexValue)) {
-                        RUNTIME_ERROR("List index must be a number.");
+                        RUNTIME_ERROR_TYPE("List index must be a number, got '%s'.", 1);
                     }
 
                     ObjList *list = AS_LIST(subscriptValue);
@@ -2096,18 +2223,20 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
                         DISPATCH();
                     }
 
-                    RUNTIME_ERROR("List index out of bounds.");
+                    RUNTIME_ERROR("List index %d out of bounds for list of length %d.", index, list->values.count);
                 }
 
                 case OBJ_DICT: {
                     ObjDict *dict = AS_DICT(subscriptValue);
                     if (!isValidKey(indexValue)) {
-                        RUNTIME_ERROR("Dictionary key must be an immutable type.");
+                        RUNTIME_ERROR_TYPE("Dictionary key must be a string, number, bool, or nil, got '%s'.", 1);
                     }
 
                     Value dictValue;
                     if (!dictGet(dict, indexValue, &dictValue)) {
-                        RUNTIME_ERROR("Key %s does not exist within dictionary.", valueToString(indexValue));
+                        int keyLen = 0;
+                        char *keyStr = valueToString(vm, indexValue, &keyLen);
+                        RUNTIME_ERROR("Key %s does not exist within dictionary.", keyStr);
                     }
 
                     vm->fiber->stackTop[-1] = dictValue;
@@ -2246,7 +2375,42 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
             bool unpack = READ_BYTE();
+            uint8_t cacheSlot = READ_BYTE();
 
+            // Inline cache fast path for instance method calls.
+            Value receiver = peek(vm, argCount);
+            if (IS_INSTANCE(receiver) && !unpack) {
+                ObjInstance *instance = AS_INSTANCE(receiver);
+                ObjClass *klass = instance->klass;
+                InlineCacheEntry *cache = &frame->closure->function->inlineCaches[cacheSlot];
+
+                if (cache->klass == klass) {
+                    // Cache hit: skip tableGet, call directly.
+                    frame->ip = ip;
+                    if (!call(vm, AS_CLOSURE(cache->value), argCount)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
+                    ip = frame->ip;
+                    DISPATCH();
+                }
+
+                // Cache miss: try publicMethods, populate cache on success.
+                Value value;
+                if (tableGet(&klass->publicMethods, method, &value)) {
+                    cache->klass = klass;
+                    cache->value = value;
+                    frame->ip = ip;
+                    if (!call(vm, AS_CLOSURE(value), argCount)) {
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                    frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
+                    ip = frame->ip;
+                    DISPATCH();
+                }
+            }
+
+            // Slow path: full invoke() for non-instance, unpack, or non-method cases.
             frame->ip = ip;
             if (!invoke(vm, method, argCount, unpack)) {
                 return INTERPRET_RUNTIME_ERROR;
@@ -2376,11 +2540,11 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
 
             Value superclass = peek(vm, 0);
             if (!IS_CLASS(superclass)) {
-                RUNTIME_ERROR("Superclass must be a class.");
+                RUNTIME_ERROR_TYPE("Superclass must be a class, got '%s'.", 0);
             }
 
             if (IS_TRAIT(superclass)) {
-                RUNTIME_ERROR("Superclass can not be a trait.");
+                RUNTIME_ERROR("Superclass cannot be a trait.");
             }
 
             createClass(vm, READ_STRING(), AS_CLASS(superclass), type);
@@ -2481,11 +2645,11 @@ static DictuInterpretResult runWithBreakFrame(DictuVM *vm, int breakFrame) {
             Value fileName = peek(vm, 1);
 
             if (!IS_STRING(openType)) {
-                RUNTIME_ERROR("File open type must be a string");
+                RUNTIME_ERROR_TYPE("File open type must be a string, got '%s'.", 0);
             }
 
             if (!IS_STRING(fileName)) {
-                RUNTIME_ERROR("Filename must be a string");
+                RUNTIME_ERROR_TYPE("Filename must be a string, got '%s'.", 1);
             }
 
             ObjString *openTypeString = AS_STRING(openType);

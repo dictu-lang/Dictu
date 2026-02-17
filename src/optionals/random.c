@@ -3,7 +3,7 @@
 static Value randomRandom(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
     if (argCount > 0) {
-        runtimeError(vm, "random() takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "random() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -15,12 +15,23 @@ static Value randomRandom(DictuVM *vm, int argCount, Value *args) {
 
 static Value randomRange(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 2) {
-        runtimeError(vm, "range() takes 2 arguments (%0d given)", argCount);
+        runtimeError(vm, "range() takes 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[0]) || !IS_NUMBER(args[1])) {
-        runtimeError(vm, "range() arguments must be numbers");
+    if (!IS_NUMBER(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "range() arguments must be numbers, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "range() arguments must be numbers, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -32,12 +43,15 @@ static Value randomRange(DictuVM *vm, int argCount, Value *args) {
 
 static Value randomSelect(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError(vm, "select() takes one argument (%d provided)", argCount);
+        runtimeError(vm, "select() takes 1 argument (%d given)", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_LIST(args[0])) {
-        runtimeError(vm, "select() argument must be a list");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "select() argument must be a list, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
