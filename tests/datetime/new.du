@@ -1,0 +1,24 @@
+/**
+ * new.du
+ *
+ * Testing the new function in the Datetime module:
+ *
+ */
+from UnitTest import UnitTest;
+
+import Datetime;
+import System;
+
+class TestDateTimeModNew < UnitTest {
+    testDatetimeNew() {
+        this.assertNotNil(Datetime.new());
+    }
+
+    testDatetimeNewWithArg() {
+        this.assertNotNil(Datetime.new(11111));
+    }
+}
+
+if (System.platform != "windows") {
+    TestDateTimeModNew().run();
+}
