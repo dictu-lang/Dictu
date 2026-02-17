@@ -2,12 +2,15 @@
 
 Value includeNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "include() takes 1 or 2 arguments (%d given)", argCount);
+        runtimeError(vm, "include() takes 1 or 2 arguments (%d given).", argCount);
         return EMPTY_VAL;
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "include() first argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "include() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -15,7 +18,10 @@ Value includeNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_BOOL(args[1])) {
-            runtimeError(vm, "include() second argument must be a boolean");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "include() second argument must be a boolean, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
