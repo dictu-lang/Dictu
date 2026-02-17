@@ -28,6 +28,9 @@ const ignored = {
         'range.du',
         'select.du',
     ],
+    'importlib': [
+        'data'
+    ],
     '*': [
         'import.du',
     ]

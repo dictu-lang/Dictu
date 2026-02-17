@@ -1,0 +1,37 @@
+/**
+ * fibers.du
+ *
+ * Testing the Importlib.include() method with fibers
+ */
+from UnitTest import UnitTest;
+
+import Importlib;
+import Fiber;
+
+class TestImportLibFibers < UnitTest {
+    testImportLibFibers() {
+        var checkRunOrder = 0;
+        var f = Fiber.new(def () => {
+            Fiber.yield(Importlib.include('data/level1.du'));
+            checkRunOrder += 1;
+            Fiber.yield(Importlib.include('data/level2.du'));
+            checkRunOrder += 2;
+            return Importlib.include('data/level3.du');
+        });
+
+        this.assertEquals(f.call().list, [5, 6, 7]);
+        this.assertEquals(checkRunOrder, 0);
+        checkRunOrder += 10;
+        this.assertEquals(checkRunOrder, 10);
+        this.assertEquals(f.call().list, [3, 4, 5]);
+        this.assertEquals(checkRunOrder, 11);
+        checkRunOrder += 20;
+        this.assertEquals(checkRunOrder, 31);
+        this.assertEquals(f.call().list, [1, 2, 3]);
+        this.assertEquals(checkRunOrder, 33);
+        checkRunOrder += 30;
+        this.assertEquals(checkRunOrder, 63);
+    }
+}
+
+TestImportLibFibers().run();

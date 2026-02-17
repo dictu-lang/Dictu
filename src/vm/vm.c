@@ -2727,6 +2727,7 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     }
     int currentFrameCount = vm->fiber->frameCount;
     Value* currentStack = vm->fiber->stackTop;
+    push(vm, function);
     if (vm->fiber->frameCount == vm->fiber->frameCapacity) {
         int oldCapacity = vm->fiber->frameCapacity;
         vm->fiber->frameCapacity = GROW_CAPACITY(vm->fiber->frameCapacity);
@@ -2737,7 +2738,6 @@ Value callFunction(DictuVM* vm, Value function, int argCount, Value* args) {
     uint8_t code[4] = {OP_CALL, argCount, 0, OP_RETURN};
     frame->ip = code;
     frame->closure = NULL;
-    push(vm, function);
     for(int i = 0; i < argCount; i++) {
         push(vm, args[i]);
     }

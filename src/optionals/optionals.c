@@ -33,6 +33,7 @@ BuiltinModules modules[] = {
     {"Buffer", &createBufferModule, false},
     {"FFI", &createFFIModule, false},
     {"Fiber", &createFiberModule, false},
+    {"Importlib", &createImportlibModule, false},
     {NULL, NULL, false}
 };
 
