@@ -22,7 +22,7 @@ Value includeNative(DictuVM *vm, int argCount, Value *args) {
         reload = AS_BOOL(args[1]);
     }
 
-    CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    CallFrame *frame = &vm->fiber->frames[vm->fiber->frameCount - 1];
     char path[PATH_MAX];
 
     if (!resolvePath(frame->closure->function->module->path->chars, AS_CSTRING(args[0]), path)) {
