@@ -395,6 +395,9 @@ char *valueTypeToString(DictuVM *vm, Value value, int *length) {
             case OBJ_RESULT: {
                 CONVERT(result, 6);
             }
+            case OBJ_FIBER: {
+                CONVERT(Fiber, 5);
+            }
             default:
                 break;
         }

@@ -104,6 +104,8 @@ typedef struct Compiler {
 
     int scopeDepth;
     int nextCacheSlot;
+    int stackDepth;
+    int maxStackDepth;
     ObjDict *classAnnotations;
     ObjDict *methodAnnotations;
     ObjDict *fieldAnnotations;
