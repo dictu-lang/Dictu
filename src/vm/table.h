@@ -9,7 +9,6 @@
 typedef struct {
     ObjString *key;
     Value value;
-    uint32_t psl;
 } Entry;
 
 typedef struct {

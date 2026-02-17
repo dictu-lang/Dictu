@@ -1,4 +1,5 @@
 #include "json.h"
+#include "../vm/memory.h"
 
 static Value parseJson(DictuVM *vm, json_value *json) {
     switch (json->type) {
@@ -74,7 +75,10 @@ static Value parse(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "parse() argument must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "parse() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -137,16 +141,19 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
                     }
 
                     char *key;
+                    int keyLen;
 
                     if (IS_STRING(entry->key)) {
                         ObjString *s = AS_STRING(entry->key);
                         key = s->chars;
+                        keyLen = s->length;
                     } else if (IS_NIL(entry->key)) {
-                        key = malloc(5);
-                        memcpy(key, "null", 4);
-                        key[4] = '\0';
+                        keyLen = 4;
+                        key = ALLOCATE(vm, char, keyLen + 1);
+                        memcpy(key, "null", keyLen);
+                        key[keyLen] = '\0';
                     } else {
-                        key = valueToString(entry->key);
+                        key = valueToString(vm, entry->key, &keyLen);
                     }
 
                     json_object_push(
@@ -156,7 +163,7 @@ json_value* stringifyJson(DictuVM *vm, Value value) {
                     );
 
                     if (!IS_STRING(entry->key)) {
-                        free(key);
+                        FREE_ARRAY(vm, char, key, keyLen + 1);
                     }
                 }
 
@@ -182,7 +189,10 @@ Value stringify(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "stringify() second argument must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "stringify() second argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 

@@ -9,7 +9,10 @@ static Value objectGetClassRefImpl(DictuVM *vm, int argCount, Value *args, bool 
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "getClassRef() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "getClassRef() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -61,7 +64,7 @@ static Value objectHash(DictuVM *vm, int argCount, Value *args) {
 
 static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 1 && argCount != 2) {
-        runtimeError(vm, "prettyPrint() takes 1 or arguments (%d given)", argCount);
+        runtimeError(vm, "prettyPrint() takes 1 or 2 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -72,7 +75,7 @@ static Value objectPrettyPrint(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
     
-    printValue(res->value);
+    printValue(vm, res->value);
     printf("\n");
 
     return NIL_VAL;

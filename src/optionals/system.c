@@ -13,7 +13,7 @@ static Value getgidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getgid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getgid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -24,7 +24,7 @@ static Value getegidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getegid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getegid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -35,7 +35,7 @@ static Value getuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getuid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getuid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -46,7 +46,7 @@ static Value geteuidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "geteuid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "geteuid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -57,7 +57,7 @@ static Value getppidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getppid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getppid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -68,7 +68,7 @@ static Value getpidNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getpid() doesn't take any argument (%d given)", argCount);
+        runtimeError(vm, "getpid() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -82,12 +82,26 @@ static Value chownNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "first chown() argument must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "first chown() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
-    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
-        runtimeError(vm, "second and third chown() arguments must be numbers.");
+    if (!IS_NUMBER(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "second chown() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_NUMBER(args[2])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[2], &valLength);
+        runtimeError(vm, "third chown() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -106,7 +120,7 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "uname() doesn't take any arguments (%d given)).", argCount);
+        runtimeError(vm, "uname() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -166,7 +180,7 @@ static Value unameNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "mkdirTemp() takes 0 or 1 argument(s) (%d given)", argCount);
+        runtimeError(vm, "mkdirTemp() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -174,7 +188,10 @@ static Value mkdirTempNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_STRING(args[0])) {
-            runtimeError(vm, "mkdirTemp() first argument must be a string");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[0], &valLength);
+            runtimeError(vm, "mkdirTemp() first argument must be a string, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -211,7 +228,10 @@ static Value rmdirNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "rmdir() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "rmdir() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -233,7 +253,10 @@ static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "mkdir() first argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "mkdir() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -243,7 +266,10 @@ static Value mkdirNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "mkdir() second argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "mkdir() second argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -265,7 +291,10 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "mkdirAll() first argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "mkdirAll() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -275,7 +304,10 @@ static Value mkdirAllNative(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "mkdirAll() second argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "mkdirAll() second argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -320,14 +352,20 @@ static Value accessNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "access() first argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "access() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
     char *file = AS_CSTRING(args[0]);
 
     if (!IS_NUMBER(args[1])) {
-        runtimeError(vm, "access() second argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "access() second argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -350,7 +388,10 @@ static Value removeNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "remove() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "remove() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -372,7 +413,10 @@ static Value setCWDNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "setCWD() argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "setCWD() argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -425,7 +469,10 @@ static Value sleepNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "sleep() argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "sleep() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -456,7 +503,10 @@ static Value exitNative(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError(vm, "exit() argument must be a number");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "exit() argument must be a number, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -470,8 +520,19 @@ static Value chmodNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "chmod() arguments must be strings.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "chmod() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "chmod() second argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -493,8 +554,19 @@ static Value renameNative(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0]) || !IS_STRING(args[1])) {
-        runtimeError(vm, "rename() arguments must be strings.");
+    if (!IS_STRING(args[0])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "rename() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
+        return EMPTY_VAL;
+    }
+
+    if (!IS_STRING(args[1])) {
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "rename() second argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -502,7 +574,7 @@ static Value renameNative(DictuVM *vm, int argCount, Value *args) {
     char *new = AS_CSTRING(args[1]);
 
     if (rename(old, new) != 0) {
-        return newResultError(vm, "failed to reaneme file");
+        return newResultError(vm, "Failed to rename file");
     }
 
     return newResultSuccess(vm, NIL_VAL);

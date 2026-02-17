@@ -2,7 +2,7 @@
 
 static Value getLine(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "getLine() takes takes 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "getLine() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -10,7 +10,10 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[0])) {
-            runtimeError(vm, "Optional argument passed to getLine() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[0], &valLength);
+            runtimeError(vm, "Optional argument passed to getLine() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -36,7 +39,7 @@ static Value getLine(DictuVM *vm, int argCount, Value *args) {
 
 static Value getFile(DictuVM *vm, int argCount, Value *args) {
     if (argCount != 0 && argCount != 1) {
-        runtimeError(vm, "getFile() takes takes 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "getFile() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -44,7 +47,10 @@ static Value getFile(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 1) {
         if (!IS_NUMBER(args[0])) {
-            runtimeError(vm, "Optional argument passed to getFile() must be a number.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[0], &valLength);
+            runtimeError(vm, "Optional argument passed to getFile() must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -71,7 +77,7 @@ static Value getFrameCount(DictuVM *vm, int argCount, Value *args) {
     UNUSED(args);
 
     if (argCount != 0) {
-        runtimeError(vm, "getFrameCount() takes takes 0 arguments (%d given)", argCount);
+        runtimeError(vm, "getFrameCount() takes no arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 

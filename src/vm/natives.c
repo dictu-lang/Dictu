@@ -33,7 +33,7 @@ static Value setNative(DictuVM *vm, int argCount, Value *args) {
 
 static Value inputNative(DictuVM *vm, int argCount, Value *args) {
     if (argCount > 1) {
-        runtimeError(vm, "input() takes either 0 or 1 arguments (%d given)", argCount);
+        runtimeError(vm, "input() takes 0 or 1 arguments (%d given)", argCount);
         return EMPTY_VAL;
     }
 
@@ -83,15 +83,13 @@ static Value inputNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value printNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(vm);
-
     if (argCount == 0) {
         printf("\n");
         return NIL_VAL;
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValue(args[i]);
+        printValue(vm, args[i]);
         printf("\n");
     }
 
@@ -99,15 +97,13 @@ static Value printNative(DictuVM *vm, int argCount, Value *args) {
 }
 
 static Value printErrorNative(DictuVM *vm, int argCount, Value *args) {
-    UNUSED(vm);
-
     if (argCount == 0) {
         fprintf(stderr, "\n");
         return NIL_VAL;
     }
 
     for (int i = 0; i < argCount; ++i) {
-        printValueError(args[i]);
+        printValueError(vm, args[i]);
         fprintf(stderr, "\n");
     }
 

@@ -49,7 +49,10 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[1])) {
-        runtimeError(vm, "execute() first argument must be a string.");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[1], &valLength);
+        runtimeError(vm, "execute() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -66,7 +69,10 @@ static Value execute(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_LIST(args[2])) {
-            runtimeError(vm, "execute() second argument must be a list.");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[2], &valLength);
+            runtimeError(vm, "execute() second argument must be a list, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -181,7 +187,10 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
     }
 
     if (!IS_STRING(args[0])) {
-        runtimeError(vm, "connect() first argument must be a string");
+        int valLength = 0;
+        char *val = valueTypeToString(vm, args[0], &valLength);
+        runtimeError(vm, "connect() first argument must be a string, got '%s'.", val);
+        FREE_ARRAY(vm, char, val, valLength + 1);
         return EMPTY_VAL;
     }
 
@@ -189,7 +198,10 @@ static Value connectSqlite(DictuVM *vm, int argCount, Value *args) {
 
     if (argCount == 2) {
         if (!IS_NUMBER(args[1])) {
-            runtimeError(vm, "connect() second argument must be a number");
+            int valLength = 0;
+            char *val = valueTypeToString(vm, args[1], &valLength);
+            runtimeError(vm, "connect() second argument must be a number, got '%s'.", val);
+            FREE_ARRAY(vm, char, val, valLength + 1);
             return EMPTY_VAL;
         }
 
@@ -231,11 +243,14 @@ void freeSqlite(DictuVM *vm, ObjAbstract *abstract) {
     FREE(vm, Database, abstract->data);
 }
 
-char *sqliteToString(ObjAbstract *abstract) {
+char *sqliteToString(DictuVM *vm, ObjAbstract *abstract, int *length) {
     UNUSED(abstract);
 
-    char *sqliteString = malloc(sizeof(char) * 9);
-    snprintf(sqliteString, 9, "<Sqlite>");
+    int len = 8;
+    char *sqliteString = ALLOCATE(vm, char, len + 1);
+    memcpy(sqliteString, "<Sqlite>", len);
+    sqliteString[len] = '\0';
+    *length = len;
     return sqliteString;
 }
 

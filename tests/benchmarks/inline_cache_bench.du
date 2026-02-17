@@ -1,0 +1,184 @@
+// Benchmark: Inline Cache + Quick Wins + Specialized Opcodes
+//
+// Tests the performance of:
+//   1. Method invocation (OP_INVOKE inline cache)
+//   2. Property/method access (OP_GET_ATTRIBUTE inline cache)
+//   3. Compound assignment (OP_GET_ATTRIBUTE_NO_POP inline cache)
+//   4. isFalsey fast path (restructured with early returns)
+//   5. valuesEqual fast path (identity check)
+//   6. OP_GET_LOCAL_0 / OP_GET_LOCAL_1 (specialized opcodes)
+//   7. OP_NOT_EQUAL (fused opcode)
+//
+// Run with: ./dictu tests/benchmarks/inline_cache_bench.du
+
+import System;
+
+// --- Setup ---
+
+class Point {
+    var x = 0;
+    var y = 0;
+
+    init(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    distance() {
+        return (this.x * this.x + this.y * this.y);
+    }
+
+    translate(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    equals(other) {
+        return this.x == other.x and this.y == other.y;
+    }
+}
+
+class Counter {
+    var count = 0;
+
+    init() {
+        this.count = 0;
+    }
+
+    increment() {
+        this.count += 1;
+    }
+
+    get() {
+        return this.count;
+    }
+}
+
+const ITERATIONS = 2000000;
+
+// --- Benchmark 1: OP_INVOKE inline cache (monomorphic method call) ---
+{
+    var p = Point(3, 4);
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        p.distance();
+    }
+    var elapsed = System.clock() - start;
+    print("1. Method invocation (OP_INVOKE):        {}s".format(elapsed));
+}
+
+// --- Benchmark 2: OP_GET_ATTRIBUTE inline cache (method as value) ---
+{
+    var p = Point(3, 4);
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        var d = p.distance;
+    }
+    var elapsed = System.clock() - start;
+    print("2. Method access (OP_GET_ATTRIBUTE):      {}s".format(elapsed));
+}
+
+// --- Benchmark 3: OP_GET_ATTRIBUTE inline cache (field access) ---
+{
+    var p = Point(3, 4);
+    var start = System.clock();
+    var sum = 0;
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        sum += p.x;
+    }
+    var elapsed = System.clock() - start;
+    print("3. Field access (OP_GET_ATTRIBUTE):       {}s".format(elapsed));
+}
+
+// --- Benchmark 4: Compound assignment (OP_GET_ATTRIBUTE_NO_POP cache) ---
+{
+    var c = Counter();
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        c.count += 1;
+    }
+    var elapsed = System.clock() - start;
+    print("4. Compound assign (GET_ATTR_NO_POP):     {}s".format(elapsed));
+}
+
+// --- Benchmark 5: Counter.increment() exercises invoke + compound assign ---
+{
+    var c = Counter();
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        c.increment();
+    }
+    var elapsed = System.clock() - start;
+    print("5. Counter.increment() (invoke+compound): {}s".format(elapsed));
+}
+
+// --- Benchmark 6: valuesEqual fast path (identity check) ---
+{
+    var a = "hello";
+    var b = a;
+    var count = 0;
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        if (a == b) {
+            count += 1;
+        }
+    }
+    var elapsed = System.clock() - start;
+    print("6. valuesEqual identity (a == a):          {}s".format(elapsed));
+}
+
+// --- Benchmark 7: OP_NOT_EQUAL fused opcode ---
+{
+    var a = 1;
+    var b = 2;
+    var count = 0;
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        if (a != b) {
+            count += 1;
+        }
+    }
+    var elapsed = System.clock() - start;
+    print("7. Not-equal fused (a != b):              {}s".format(elapsed));
+}
+
+// --- Benchmark 8: isFalsey fast path (bool/nil checks) ---
+{
+    var val = true;
+    var count = 0;
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        if (val) {
+            count += 1;
+        }
+    }
+    var elapsed = System.clock() - start;
+    print("8. isFalsey fast path (bool truthiness):  {}s".format(elapsed));
+}
+
+// --- Benchmark 9: GET_LOCAL_0/1 specialized opcodes (tight loop) ---
+{
+    var sum = 0;
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        sum += i;
+    }
+    var elapsed = System.clock() - start;
+    print("9. Tight loop (GET_LOCAL_0/1):             {}s".format(elapsed));
+}
+
+// --- Benchmark 10: Combined real-world simulation ---
+{
+    var p1 = Point(0, 0);
+    var p2 = Point(1, 1);
+    var start = System.clock();
+    for (var i = 0; i < ITERATIONS; i += 1) {
+        p1.translate(1, 1);
+        p1.distance();
+        if (p1.equals(p2) != true) {
+            p2.translate(1, 1);
+        }
+    }
+    var elapsed = System.clock() - start;
+    print("10. Combined simulation:                   {}s".format(elapsed));
+}
