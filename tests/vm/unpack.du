@@ -1,0 +1,34 @@
+/**
+ * unpack.du
+ *
+ * Test that unpacking a large list into a variadic call grows the
+ * stack rather than overflowing it.
+ */
+from UnitTest import UnitTest;
+
+class TestUnpack < UnitTest {
+    testUnpackLargeList() {
+        def sum(...nums) {
+            var total = 0;
+            nums.forEach(def(n) => total += n);
+            return total;
+        }
+
+        var big = [];
+        for (var i = 0; i < 5000; i += 1) {
+            big.push(1);
+        }
+
+        this.assertEquals(sum(...big), 5000);
+    }
+
+    testUnpackSmallList() {
+        def add(a, b, c) {
+            return a + b + c;
+        }
+
+        this.assertEquals(add(...[1, 2, 3]), 6);
+    }
+}
+
+TestUnpack().run();

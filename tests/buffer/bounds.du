@@ -1,0 +1,38 @@
+/**
+* bounds.du
+*
+* Testing that out-of-bounds and negative buffer offsets are rejected
+* with a Result error rather than corrupting memory.
+*/
+from UnitTest import UnitTest;
+import Buffer;
+
+class TestBufferBounds < UnitTest {
+    testWriteOutOfBounds() {
+        const buffer = Buffer.new(10).unwrap();
+        this.assertEquals(buffer.writeInt8(1000000, 65).success(), false);
+        this.assertEquals(buffer.writeInt8(-1, 65).success(), false);
+        this.assertEquals(buffer.writeInt32LE(9, 1).success(), false);
+    }
+
+    testReadOutOfBounds() {
+        const buffer = Buffer.new(10).unwrap();
+        this.assertEquals(buffer.readInt8(1000000).success(), false);
+        this.assertEquals(buffer.readInt8(-1).success(), false);
+        this.assertEquals(buffer.readUInt64LE(3).success(), false);
+    }
+
+    testStringAndSubarrayNegativeStart() {
+        const buffer = Buffer.new(10).unwrap();
+        this.assertEquals(buffer.readString(-5).success(), false);
+        this.assertEquals(buffer.subarray(-5).success(), false);
+    }
+
+    testInBoundsStillWorks() {
+        const buffer = Buffer.new(10).unwrap();
+        this.assertEquals(buffer.writeInt8(3, 65).success(), true);
+        this.assertEquals(buffer.readInt8(3).unwrap(), 65);
+    }
+}
+
+TestBufferBounds().run();

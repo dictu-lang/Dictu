@@ -48,21 +48,24 @@ uint8_t *swap(uint8_t *ptr, size_t len, bool bigEndian) {
     return ptr;
 }
 
-bool ensureSize(Buffer *buffer, size_t offset, size_t size) {
-    return buffer->size - offset >= size;
+bool ensureSize(Buffer *buffer, double offset, size_t size) {
+    if (offset < 0 || offset > (double)buffer->size)
+        return false;
+    size_t off = (size_t)offset;
+    return size <= (size_t)buffer->size - off;
 }
 
-bool writeInternal(Buffer *buffer, size_t offset, uint8_t *data, size_t len) {
+bool writeInternal(Buffer *buffer, double offset, uint8_t *data, size_t len) {
     if (!ensureSize(buffer, offset, len))
         return false;
-    memcpy(buffer->bytes + offset, data, len);
+    memcpy(buffer->bytes + (size_t)offset, data, len);
     return true;
 }
 
-uint8_t *getReadPtr(Buffer *buffer, size_t offset, size_t len) {
+uint8_t *getReadPtr(Buffer *buffer, double offset, size_t len) {
     if (!ensureSize(buffer, offset, len))
         return NULL;
-    return buffer->bytes + offset;
+    return buffer->bytes + (size_t)offset;
 }
 
 static Value bufferResize(DictuVM *vm, int argCount, Value *args) {
@@ -951,7 +954,7 @@ static Value bufferReadString(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
         double startParam = AS_NUMBER(args[1]);
-        if (startParam >= buffer->size) {
+        if (startParam < 0 || startParam >= buffer->size) {
             return newResultError(vm,
                                   "start greater or equals than buffer length");
         } else {
@@ -997,7 +1000,7 @@ static Value bufferSubArray(DictuVM *vm, int argCount, Value *args) {
             return EMPTY_VAL;
         }
         double startParam = AS_NUMBER(args[1]);
-        if (startParam >= buffer->size) {
+        if (startParam < 0 || startParam >= buffer->size) {
             return newResultError(vm,
                                   "start greater or equals than buffer length");
         } else {

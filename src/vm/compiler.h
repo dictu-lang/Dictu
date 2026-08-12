@@ -83,6 +83,7 @@ typedef struct {
     LangToken previous;
     bool hadError;
     bool panicMode;
+    int expressionDepth;
     ObjModule *module;
 } Parser;
 

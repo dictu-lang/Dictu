@@ -86,8 +86,9 @@ static void skipWhitespace(Scanner *scanner) {
                 if (peekNext(scanner) == '!') {
                     // Ignore shebang line
                     while (peek(scanner) != '\n' && !isAtEnd(scanner)) advance(scanner);
+                    break;
                 }
-                break;
+                return;
             case '/':
                 if (peekNext(scanner) == '*') {
                     // Multiline comments
