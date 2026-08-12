@@ -1,4 +1,5 @@
 #include "result.h"
+#include "../../memory.h"
 
 #include "result-source.h"
 
@@ -11,7 +12,10 @@ static Value unwrap(DictuVM *vm, int argCount, Value *args) {
     ObjResult *result = AS_RESULT(args[0]);
 
     if (result->status == ERR) {
-        runtimeError(vm, "Attempted unwrap() on an error Result value '%s'", AS_CSTRING(result->value));
+        int errLength = 0;
+        char *errString = valueToString(vm, result->value, &errLength);
+        runtimeError(vm, "Attempted unwrap() on an error Result value '%s'", errString);
+        FREE_ARRAY(vm, char, errString, errLength + 1);
         return EMPTY_VAL;
     }
 

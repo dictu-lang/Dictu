@@ -168,11 +168,6 @@ static Value generateErrorResult(DictuVM *vm, int argCount, Value *args) {
         return EMPTY_VAL;
     }
 
-    if (!IS_STRING(args[0])) {
-        runtimeError(vm, "Error() only takes a string as an argument");
-        return EMPTY_VAL;
-    }
-
     return OBJ_VAL(newResult(vm, ERR, args[0]));
 }
 
