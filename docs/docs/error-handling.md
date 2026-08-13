@@ -18,8 +18,9 @@ nav_order: 14
 Dictu does not have exceptions like many other languages, and instead
 uses a Result type. A Result is a type which can be in one of two states,
 SUCCESS or ERROR. Logic which may return an error will always return a Result
-type which will wrap a value on success or wrap a string on failure with a given
-error message. This wrapped value *must* be unwrapped before accessing it.
+type which will wrap a value on success or wrap a value describing the failure
+on error - typically a string message, though any value can be wrapped. This
+wrapped value *must* be unwrapped before accessing it.
 
 Because Dictu has no exceptions, it also has no way to catch a runtime error.
 Unwrapping a Result that is in an ERROR state raises a runtime error, which
@@ -43,13 +44,34 @@ Any type can be passed to Success to be wrapped.
 var result = Success(10);
 ```
 
+The wrapped value is retrieved by unwrapping, but the Result should be checked before
+you do so - see [Checking a Result](#checking-a-result). Once you know it is a success the
+value comes back out unchanged.
+
+```cs
+if (result) {
+    print(result.unwrap()); // 10
+}
+```
+
 #### Error
 
 Creating an Error type is incredibly simple with the builtin `Error()` function.
-Only a string can be passed to Error to be wrapped.
+A string message is the most common thing to wrap, but any value can be passed to Error -
+for example a list or dictionary carrying structured detail about the failure.
 
 ```cs
 var result = Error("Some error happened!!");
+var detailed = Error({"code": 404, "reason": "Not found"});
+```
+
+As with Success, check the Result before retrieving the wrapped value, using
+`.unwrapError()` in the error case (see [Checking a Result](#checking-a-result)).
+
+```cs
+if (not result) {
+    print(result.unwrapError()); // "Some error happened!!"
+}
 ```
 
 ## Checking a Result
@@ -153,12 +175,12 @@ if (num) {
 }
 ```
 
-### .unwrapError() -> String
+### .unwrapError() -> Value
 
-A Result that has a type of ERROR will always contain an error message as to why it failed, however 
-attempting to unwrap a Result that is an ERROR gives you a runtime error. Instead you must use
-`.unwrapError()`. Attempting to use `unwrapError` on a Result with type SUCCESS will raise a runtime
-error.
+A Result that has a type of ERROR wraps a value describing why it failed - usually a string
+message, though it can be any value. Attempting to `.unwrap()` a Result that is an ERROR gives
+you a runtime error, so to retrieve the wrapped error value you must use `.unwrapError()`.
+Attempting to use `unwrapError` on a Result with type SUCCESS will raise a runtime error.
 
 ```cs
 "num".toNumber().unwrapError(); // "Cannot convert 'num' to number"
