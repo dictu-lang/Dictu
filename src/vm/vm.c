@@ -30,6 +30,8 @@
 #include "../optionals/optionals.h"
 #include "value.h"
 
+#define MAX_FRAME_COUNT 1000000
+
 static void resetStack(DictuVM *vm) {
     vm->fiber->stackTop = vm->fiber->stack;
     vm->fiber->frameCount = 0;
@@ -73,6 +75,11 @@ static void growStack(DictuVM *vm, int needed) {
         }                                                                           \
                                                                                     \
         ObjList *list = AS_LIST(pop(vm));                                     \
+                                                                                    \
+        int unpackNeeded = (int)(vm->fiber->stackTop - vm->fiber->stack)            \
+                           + list->values.count;                                    \
+        if (unpackNeeded > vm->fiber->stackCapacity)                                \
+            growStack(vm, unpackNeeded);                                            \
                                                                                     \
         for (int i = 0; i < list->values.count; ++i) {                              \
             push(vm, list->values.values[i]);                                       \
@@ -328,6 +335,10 @@ static bool call(DictuVM *vm, ObjClosure *closure, int argCount) {
         writeValueArray(vm, &list->values, peek(vm, 1));
         vm->fiber->stackTop -= 2;
         push(vm, OBJ_VAL(list));
+    }
+    if (vm->fiber->frameCount == MAX_FRAME_COUNT) {
+        runtimeError(vm, "Maximum recursion depth exceeded.");
+        return false;
     }
     if (vm->fiber->frameCount == vm->fiber->frameCapacity) {
         int oldCapacity = vm->fiber->frameCapacity;

@@ -15,6 +15,8 @@
 
 #endif
 
+#define MAX_EXPRESSION_DEPTH 1000
+
 static Chunk *currentChunk(Compiler *compiler) {
     return &compiler->function->chunk;
 }
@@ -1151,7 +1153,7 @@ int parseEscapeSequences(Parser *parser, char *string, int length) {
                     break;
                 }
                 case 'x': {
-                    if (string[i + 2] == '\0' || string[i + 3] == '\0') {
+                    if (i + 3 >= length) {
                         error(parser, "\\x escape code expects format \\xhh");
                         break;
                     }
@@ -1694,10 +1696,16 @@ ParseRule rules[] = {
 
 static void parsePrecedence(Compiler *compiler, Precedence precedence) {
     Parser *parser = compiler->parser;
+    if (++parser->expressionDepth > MAX_EXPRESSION_DEPTH) {
+        error(parser, "Expression nesting too deep.");
+        parser->expressionDepth--;
+        return;
+    }
     advance(parser);
     ParsePrefixFn prefixRule = getRule(parser->previous.type)->prefix;
     if (prefixRule == NULL) {
         error(parser, "Expected expression.");
+        parser->expressionDepth--;
         return;
     }
 
@@ -1716,6 +1724,8 @@ static void parsePrecedence(Compiler *compiler, Precedence precedence) {
         // have, so the LHS must not be a valid lvalue.
         error(parser, "Invalid assignment target.");
     }
+
+    parser->expressionDepth--;
 }
 
 static ParseRule *getRule(LangTokenType type) {
@@ -3176,6 +3186,7 @@ ObjFunction *compile(DictuVM *vm, ObjModule *module, const char *source) {
     parser.vm = vm;
     parser.hadError = false;
     parser.panicMode = false;
+    parser.expressionDepth = 0;
     parser.module = module;
 
     Scanner scanner;

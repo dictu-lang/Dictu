@@ -17,6 +17,9 @@ class TestStringEscapeCodes < UnitTest {
         this.assertEquals('\''.len(), 1);
         this.assertEquals('\"'.len(), 1);
         this.assertEquals('\x01'.len(), 1);
+        this.assertEquals("\x41", "A");
+        this.assertEquals("\x41\x42", "AB");
+        this.assertEquals("a\x42c", "aBc");
     }
 }
 

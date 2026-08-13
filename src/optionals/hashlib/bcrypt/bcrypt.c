@@ -71,6 +71,16 @@
 #define	BCRYPT_SALTSPACE	(7 + (BCRYPT_MAXSALT * 4 + 2) / 3 + 1)
 #define	BCRYPT_HASHSPACE	61
 
+/* ciphertext holds exactly 24 magic bytes and is never NUL-terminated */
+#if defined(__has_attribute)
+    #if __has_attribute(nonstring)
+        #define BCRYPT_NONSTRING __attribute__((nonstring))
+    #endif
+#endif
+#ifndef BCRYPT_NONSTRING
+    #define BCRYPT_NONSTRING
+#endif
+
 char   *bcrypt_gensalt(u_int8_t);
 
 static int encode_base64(char *, const u_int8_t *, size_t);
@@ -139,7 +149,7 @@ bcrypt_hashpass(const char *key, const char *salt, char *encrypted,
     u_int16_t j;
     size_t key_len;
     u_int8_t salt_len, logr, minor;
-    u_int8_t ciphertext[4 * BCRYPT_WORDS] = "OrpheanBeholderScryDoubt";
+    u_int8_t ciphertext[4 * BCRYPT_WORDS] BCRYPT_NONSTRING = "OrpheanBeholderScryDoubt";
     u_int8_t csalt[BCRYPT_MAXSALT];
     u_int32_t cdata[BCRYPT_WORDS];
 

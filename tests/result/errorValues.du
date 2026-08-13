@@ -1,0 +1,43 @@
+/**
+* errorValues.du
+*
+* Testing that Error() accepts non-string values, giving Result<T, E>
+* semantics where the error can carry structured data.
+*/
+from UnitTest import UnitTest;
+
+class TestResultErrorValues < UnitTest {
+    testErrorWithNumber() {
+        const result = Error(404);
+
+        this.assertType(result, "result");
+        this.assertFalsey(result.success());
+        this.assertEquals(result.unwrapError(), 404);
+    }
+
+    testErrorWithList() {
+        const result = Error([1, 2, 3]);
+
+        this.assertEquals(result.unwrapError(), [1, 2, 3]);
+    }
+
+    testErrorWithDict() {
+        const result = Error({"code": 500, "msg": "boom"});
+
+        this.assertEquals(result.unwrapError()["code"], 500);
+    }
+
+    testErrorMatchError() {
+        const value = Error(404).matchError(def(error) => error + 1);
+
+        this.assertEquals(value, 405);
+    }
+
+    testErrorStringStillWorks() {
+        const result = Error("plain message");
+
+        this.assertEquals(result.unwrapError(), "plain message");
+    }
+}
+
+TestResultErrorValues().run();

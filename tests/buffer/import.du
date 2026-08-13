@@ -13,3 +13,4 @@ import "string.du";
 import "stringFuncs.du";
 import "subarray.du";
 import "integers.du";
+import "bounds.du";

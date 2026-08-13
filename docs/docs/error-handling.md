@@ -18,8 +18,14 @@ nav_order: 14
 Dictu does not have exceptions like many other languages, and instead
 uses a Result type. A Result is a type which can be in one of two states,
 SUCCESS or ERROR. Logic which may return an error will always return a Result
-type which will wrap a value on success or wrap a string on failure with a given
-error message. This wrapped value *must* be unwrapped before accessing it.
+type which will wrap a value on success or wrap a value describing the failure
+on error - typically a string message, though any value can be wrapped. This
+wrapped value *must* be unwrapped before accessing it.
+
+Because Dictu has no exceptions, it also has no way to catch a runtime error.
+Unwrapping a Result that is in an ERROR state raises a runtime error, which
+terminates the program. **Always check a Result before unwrapping it** - the
+idiomatic ways to do that are described below.
 
 ### Result type
 
@@ -36,49 +42,161 @@ Any type can be passed to Success to be wrapped.
 
 ```cs
 var result = Success(10);
-print(result.unwrap()); // 10
+```
+
+The wrapped value is retrieved by unwrapping, but the Result should be checked before
+you do so - see [Checking a Result](#checking-a-result). Once you know it is a success the
+value comes back out unchanged.
+
+```cs
+if (result) {
+    print(result.unwrap()); // 10
+}
 ```
 
 #### Error
 
 Creating an Error type is incredibly simple with the builtin `Error()` function.
-Only a string can be passed to Error to be wrapped.
+A string message is the most common thing to wrap, but any value can be passed to Error -
+for example a list or dictionary carrying structured detail about the failure.
 
 ```cs
 var result = Error("Some error happened!!");
-print(result.unwrapError()); // 'Some error happened!!'
+var detailed = Error({"code": 404, "reason": "Not found"});
 ```
 
-### .unwrap() -> Value
-
-As previously explained to get a value out of a Result it needs to be unwrapped.
-If you attempt to unwrap a Result that is of ERROR status a runtime error will be raised.
+As with Success, check the Result before retrieving the wrapped value, using
+`.unwrapError()` in the error case (see [Checking a Result](#checking-a-result)).
 
 ```cs
-var num = "10".toNumber();
-print(num); // <Result Suc>
-print(num.unwrap()); // 10
+if (not result) {
+    print(result.unwrapError()); // "Some error happened!!"
+}
 ```
 
-### .unwrapError() -> String
+## Checking a Result
 
-A Result that has a type of ERROR will always contain an error message as to why it failed, however 
-attempting to unwrap a Result that is an ERROR gives you a runtime error. Instead you must use
-`.unwrapError()`. Attempting to use `unwrapError` on a Result with type SUCCESS will raise a runtime
-error.
+### Truthiness
+
+A Result in an ERROR state is falsey, and a Result in a SUCCESS state is truthy.
+This means a Result can be checked directly in a conditional, without calling any
+method on it.
 
 ```cs
-"num".toNumber().unwrapError(); // 'Can not convert 'num' to number'
+const result = "10".toNumber();
+
+if (not result) {
+    print("Could not parse the number");
+}
 ```
+
+This checks the *state* of the Result, not the value it wraps, so a Success that
+wraps a falsey value is still truthy.
+
+```cs
+if (Success(0)) {
+    print("Still truthy - 0 is the wrapped value, not the state");
+}
+```
+
+See the [truthy / falsey](/docs/variables#truthy--falsey) section for the full list of
+falsey values.
 
 ### .success() -> Boolean
 
-Check if a Result type is in a SUCCESS state, returns a boolean.
+`.success()` is the explicit form of the same check, and returns a boolean.
 
 ```cs
 "10".toNumber().success(); // true
 "number".toNumber().success(); // false
 ```
+
+Use whichever reads better. `if (not result)` is more concise, `.success()` is more
+explicit about what is being tested.
+
+## Propagating errors
+
+Because a Result is just a value, an error is propagated by returning it. Guard each
+call that can fail, and return the Result unchanged if it failed. Once past the guard,
+`.unwrap()` cannot fail.
+
+```cs
+def parsePoint(input) {
+    const parts = input.split(",");
+
+    const x = parts[0].toNumber();
+    if (not x) return x;
+
+    const y = parts[1].toNumber();
+    if (not y) return y;
+
+    return Success([x.unwrap(), y.unwrap()]);
+}
+```
+
+The caller then checks once, and only the outermost caller needs to decide what to
+do about the failure.
+
+```cs
+const point = parsePoint("10,20");
+if (not point) {
+    print("Could not parse the point: {}".format(point.unwrapError()));
+    System.exit(1);
+}
+
+print(point.unwrap()); // [10, 20]
+```
+
+To add context to an error as it travels up, wrap the message in a new Error.
+
+```cs
+const x = parts[0].toNumber();
+if (not x) {
+    return Error("parsing x coordinate: {}".format(x.unwrapError()));
+}
+```
+
+## Unwrapping
+
+### .unwrap() -> Value
+
+`.unwrap()` returns the value wrapped by a Result in a SUCCESS state.
+
+Attempting to unwrap a Result that is in an ERROR state raises a runtime error which
+cannot be caught, so only call `.unwrap()` once you have established the Result is a
+success.
+
+```cs
+const num = "10".toNumber();
+print(num); // <Result Suc>
+
+if (num) {
+    print(num.unwrap()); // 10
+}
+```
+
+### .unwrapError() -> Value
+
+A Result that has a type of ERROR wraps a value describing why it failed - usually a string
+message, though it can be any value. Attempting to `.unwrap()` a Result that is an ERROR gives
+you a runtime error, so to retrieve the wrapped error value you must use `.unwrapError()`.
+Attempting to use `unwrapError` on a Result with type SUCCESS will raise a runtime error.
+
+```cs
+"num".toNumber().unwrapError(); // "Cannot convert 'num' to number"
+```
+
+## Matching
+
+The match methods take callbacks and are a convenient way to handle both states of a
+Result in a single expression.
+
+Note that these callbacks cannot be used to propagate an error out of the enclosing
+function. A `return` inside a callback returns from the callback itself, not from the
+function containing the `.match()` call, so execution continues afterwards. Use the
+callbacks to handle an error where it occurs - by logging it, exiting, or substituting
+a value - and use the guard pattern described in [propagating errors](#propagating-errors)
+when the error needs to travel up to the caller.
 
 ### .match(Func: success, Func: error) -> Value
 
@@ -111,7 +229,7 @@ print(number);
 
 ### .matchWrap(Func: success, Func: error) -> Result
 
-`.matchWrap` is exactly the same as `.wrap` however, the value returned from either callback
+`.matchWrap` is exactly the same as `.match` however, the value returned from either callback
 function is implicitly wrapped back up into a Result object. This allows us to easily deal
 with the error at a different call site and avoids the necessity for explicit wrapping.
 
